@@ -12,12 +12,8 @@ import {
     Server,
     Fingerprint,
     ArrowRight,
-    Activity,
-    Database,
-    ShieldCheck,
-    Zap,
-    BarChart3,
-    Brain,
+    Shield,
+    CheckCircle,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { THEME, useAdaptiveTheme } from '../../utils/theme';
@@ -26,81 +22,96 @@ import { useTheme } from '../../context/ThemeContext';
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  STYLES
+//  STYLES — VaultDB Light Theme
 // ─────────────────────────────────────────────────────────────────────────────
 const STYLES = `
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
 
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-  @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(2px); } }
+  @keyframes containerIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes textIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%     { transform: translateX(-8px); }
+    40%     { transform: translateX(6px); }
+    60%     { transform: translateX(-4px); }
+    80%     { transform: translateX(2px); }
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  @keyframes blob1 {
+  @keyframes shapeDrift {
     0%, 100% { transform: translate(0, 0) scale(1); }
-    25% { transform: translate(60px, -40px) scale(1.12); }
-    50% { transform: translate(-30px, 60px) scale(0.92); }
-    75% { transform: translate(40px, 30px) scale(1.05); }
+    25%      { transform: translate(20px, -15px) scale(1.04); }
+    50%      { transform: translate(-10px, 20px) scale(0.98); }
+    75%      { transform: translate(15px, 10px) scale(1.02); }
   }
-  @keyframes blob2 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    25% { transform: translate(-70px, 40px) scale(1.08); }
-    50% { transform: translate(50px, -50px) scale(0.95); }
-    75% { transform: translate(-20px, -30px) scale(1.06); }
-  }
-  @keyframes blob3 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    25% { transform: translate(40px, 50px) scale(0.94); }
-    50% { transform: translate(-60px, -20px) scale(1.1); }
-    75% { transform: translate(30px, -40px) scale(1); }
-  }
-
-  @keyframes pulse-dot {
+  @keyframes ringRotate { to { transform: rotate(360deg); } }
+  @keyframes pulseDot {
     0%, 100% { opacity: .6; }
-    50% { opacity: 1; }
+    50%      { opacity: 1; }
+  }
+  @keyframes successPop {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
+  }
+  @keyframes drawCheck {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes progressFill {
+    to { width: 100%; }
   }
 
-  .light-input:focus {
+  .vdb-input:focus {
     outline: none;
-    border-color: #8b5cf6 !important;
-    box-shadow: 0 0 0 3px rgba(139,92,246,.1) !important;
+    border-color: #00b874 !important;
+    box-shadow: 0 0 0 4px rgba(0,184,116,0.08), 0 1px 3px rgba(0,0,0,0.04) !important;
+    background: #fff !important;
   }
-  .light-input::placeholder { color: #94a3b8; }
-  .light-input:-webkit-autofill,
-  .light-input:-webkit-autofill:hover,
-  .light-input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px #f8fafc inset !important;
-    -webkit-text-fill-color: #1e293b !important;
-    caret-color: #1e293b;
+  .vdb-input::placeholder { color: #b8bdd0; font-weight: 400; }
+  .vdb-input:-webkit-autofill,
+  .vdb-input:-webkit-autofill:hover,
+  .vdb-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #f3f4f8 inset !important;
+    -webkit-text-fill-color: #1a1e2e !important;
+    caret-color: #1a1e2e;
     transition: background-color 5000s ease-in-out 0s;
   }
 
-  .login-btn:not(:disabled):hover {
+  .vdb-submit:not(:disabled):hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 16px 40px rgba(139,92,246,.3), 0 0 50px rgba(139,92,246,.1) !important;
+    box-shadow: 0 8px 28px rgba(0,184,116,0.25), 0 4px 16px rgba(0,184,116,0.15) !important;
   }
-  .login-btn:not(:disabled):active { transform: translateY(0) !important; }
-  .sso-btn:hover {
-    background: #f1f5f9 !important;
-    border-color: #cbd5e1 !important;
+  .vdb-submit:not(:disabled):active { transform: translateY(0) !important; }
+  .vdb-sso:hover {
+    background: #f8f9fc !important;
+    border-color: #00b874 !important;
+    color: #1a1e2e !important;
     transform: translateY(-1px) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05), 0 0 0 3px rgba(0,184,116,0.08) !important;
   }
-  .forgot-btn:hover { color: #8b5cf6 !important; }
-  .theme-toggle:hover {
-    background: rgba(255,255,255,.12) !important;
+  .vdb-sso:active { transform: translateY(0) !important; }
+  .vdb-forgot:hover { color: #00b874 !important; }
+  .vdb-toggle:hover {
+    background: rgba(255,255,255,0.12) !important;
     transform: scale(1.1) rotate(15deg) !important;
   }
 
-  .feature-item:hover .feature-icon {
-    background: rgba(255,255,255,.1) !important;
-    border-color: rgba(255,255,255,.15) !important;
+  @media (max-width: 860px) {
+    .vdb-container { flex-direction: column !important; max-width: 480px !important; min-height: auto !important; }
+    .vdb-brand { display: none !important; }
+    .vdb-form { padding: 44px 36px !important; border-radius: 22px !important; }
   }
-
-  @media (max-width: 900px) {
-    .login-split { flex-direction: column !important; }
-    .login-left { display: none !important; }
-    .login-right { flex: 1 1 100% !important; }
+  @media (max-width: 480px) {
+    .vdb-page { padding: 16px !important; }
+    .vdb-form { padding: 36px 24px !important; }
+    .vdb-sso-row { grid-template-columns: 1fr !important; }
   }
 `;
 
@@ -109,80 +120,55 @@ const STYLES = `
 // ─────────────────────────────────────────────────────────────────────────────
 const ServerStatus = ({ status }: { status: { status: string; latency?: number } }) => {
     const isOnline = status.status === 'online';
-    const color = isOnline ? '#34d399' : status.status === 'offline' ? '#f87171' : '#fbbf24';
+    const color = isOnline ? '#00b874' : status.status === 'offline' ? '#e53e5c' : '#f59e0b';
     const label = isOnline ? 'ONLINE' : status.status === 'offline' ? 'OFFLINE' : 'CHECKING';
 
     return (
-        <div
-            style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '5px 14px',
-                borderRadius: 100,
-                background: `${color}08`,
-                border: `1px solid ${color}18`,
-                fontSize: 9,
-                fontWeight: 600,
-                color,
-                letterSpacing: '.12em',
-                fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', monospace",
-            }}
-        >
+        <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '5px 14px', borderRadius: 100,
+            background: `${color}0a`, border: `1px solid ${color}20`,
+            fontSize: 9, fontWeight: 600, color, letterSpacing: '.12em',
+            fontFamily: "'JetBrains Mono', monospace",
+        }}>
             {status.status === 'checking' ? (
                 <Loader size={10} style={{ animation: 'spin 1s linear infinite' }} />
             ) : (
-                <div
-                    style={{
-                        width: 5,
-                        height: 5,
-                        borderRadius: '50%',
-                        background: color,
-                        boxShadow: `0 0 10px ${color}80`,
-                        animation: isOnline ? 'pulse-dot 2s ease-in-out infinite' : 'none',
-                    }}
-                />
+                <div style={{
+                    width: 5, height: 5, borderRadius: '50%', background: color,
+                    boxShadow: `0 0 10px ${color}80`,
+                    animation: isOnline ? 'pulseDot 2s ease-in-out infinite' : 'none',
+                }} />
             )}
             {label}
+            {status.latency && <span style={{ opacity: 0.5 }}>{status.latency}ms</span>}
         </div>
     );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  FEATURE LIST (left panel)
+//  DECORATIVE RINGS (brand panel bottom-right)
 // ─────────────────────────────────────────────────────────────────────────────
-const FEATURES = [
-    {
-        icon: Database,
-        title: 'Multi-Engine Support',
-        desc: 'Monitor PostgreSQL, MongoDB, and MySQL from a unified dashboard.',
-    },
-    {
-        icon: Activity,
-        title: 'Real-Time Metrics',
-        desc: '203+ live metrics with WebSocket streaming and instant alerts.',
-    },
-    {
-        icon: Brain,
-        title: 'AI-Powered Analysis',
-        desc: 'Anomaly detection, query classification, and capacity forecasting.',
-    },
-    {
-        icon: Zap,
-        title: 'Query Optimization',
-        desc: 'Identify slow queries, analyze execution plans, and get fix suggestions.',
-    },
-    {
-        icon: BarChart3,
-        title: 'Performance Reports',
-        desc: 'Export CSV, PDF, and JSON reports with historical trend analysis.',
-    },
-    {
-        icon: ShieldCheck,
-        title: 'Enterprise Security',
-        desc: 'SSO integration, role-based access, audit logs, and TLS encryption.',
-    },
-];
+const DecoRings = () => (
+    <div style={{ position: 'absolute', bottom: -60, right: -60, width: 280, height: 280, zIndex: 0 }}>
+        {[
+            { inset: 0, dur: '30s', dir: 'normal', borderColor: 'rgba(0,229,160,0.08)', dotColor: '#00e5a0', dotPos: { top: 0, left: '50%', transform: 'translate(-50%,-50%)' } },
+            { inset: 30, dur: '24s', dir: 'reverse', borderColor: 'rgba(71,179,255,0.07)', dotColor: '#47b3ff', dotPos: { bottom: 10, right: 10 } },
+            { inset: 60, dur: '18s', dir: 'normal', borderColor: 'rgba(167,139,250,0.06)', dotColor: '#a78bfa', dotPos: { top: '50%', left: 0, transform: 'translate(-50%,-50%)' } },
+        ].map((r, i) => (
+            <div key={i} style={{
+                position: 'absolute', inset: r.inset, border: `1px solid ${r.borderColor}`,
+                borderRadius: '50%', animation: `ringRotate ${r.dur} linear infinite`,
+                animationDirection: r.dir as any,
+            }}>
+                <div style={{
+                    position: 'absolute', width: 6, height: 6, background: r.dotColor,
+                    borderRadius: '50%', boxShadow: `0 0 12px ${r.dotColor}80`, ...r.dotPos as any,
+                }} />
+            </div>
+        ))}
+    </div>
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  LOGIN PAGE
@@ -204,6 +190,7 @@ const LoginPage = () => {
     const [attempts, setAttempts] = useState(0);
     const [lockoutUntil, setLockoutUntil] = useState(0);
     const [rateLimitError, setRateLimitError] = useState('');
+    const [loginSuccess, setLoginSuccess] = useState(false);
     const userRef = useRef<HTMLInputElement>(null);
     const pwdRef = useRef<HTMLInputElement>(null);
 
@@ -214,15 +201,8 @@ const LoginPage = () => {
                 const t0 = performance.now();
                 const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(5000) });
                 const d = await res.json();
-                if (!cancelled) {
-                    setServerStatus({
-                        status: d.status === 'ok' ? 'online' : 'degraded',
-                        latency: Math.round(performance.now() - t0),
-                    });
-                }
-            } catch {
-                if (!cancelled) setServerStatus({ status: 'offline' });
-            }
+                if (!cancelled) setServerStatus({ status: d.status === 'ok' ? 'online' : 'degraded', latency: Math.round(performance.now() - t0) });
+            } catch { if (!cancelled) setServerStatus({ status: 'offline' }); }
         };
         check();
         const iv = setInterval(check, 15000);
@@ -252,7 +232,7 @@ const LoginPage = () => {
         try { localStorage.removeItem('pg_monitor_active_tab'); } catch {}
         try {
             await login(username, password);
-            setAttempts(0); setLockoutUntil(0);
+            setAttempts(0); setLockoutUntil(0); setLoginSuccess(true);
         } catch (err) {
             const n = attempts + 1; setAttempts(n);
             if (n >= 5) { setLockoutUntil(Date.now() + 5 * 60 * 1000); setAttempts(0); }
@@ -278,283 +258,438 @@ const LoginPage = () => {
 
     const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading;
 
+    // ─── Shared values ─────────────────────────────────
+    const accent = '#00b874';
+    const accentHover = '#00a066';
+    const fontDisplay = "'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+    const fontMono = "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace";
+
     return (
-        <div
-            className="login-split"
-            style={{
-                height: '100vh',
-                width: '100vw',
-                display: 'flex',
-                fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-                overflow: 'hidden',
-                position: 'relative',
-                background: '#0a0e1a',
-            }}
-        >
+        <div style={{ height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative', fontFamily: fontDisplay }}>
             <style>{STYLES}</style>
 
-            {/* ═══════════════════════════════════════════════════════════════════
-                LEFT PANEL — Tool info & features (text only)
-            ═══════════════════════════════════════════════════════════════════ */}
-            <div
-                className="login-left"
-                style={{
-                    flex: '1 1 50%',
-                    position: 'relative',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    padding: '40px 44px',
-                    overflow: 'auto',
-                    background: 'linear-gradient(160deg, #0b0a1a 0%, #12102a 30%, #141030 55%, #0c1428 80%, #0a0d1e 100%)',
-                }}
-            >
-                {/* Gradient blobs (background only) */}
-                <div style={{ position: 'absolute', top: '5%', left: '10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,.1) 0%, transparent 65%)', filter: 'blur(90px)', animation: 'blob1 20s ease-in-out infinite', pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: 350, height: 350, borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,.08) 0%, transparent 65%)', filter: 'blur(90px)', animation: 'blob2 25s ease-in-out infinite', pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', top: '50%', right: '30%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(244,63,94,.06) 0%, transparent 65%)', filter: 'blur(90px)', animation: 'blob3 22s ease-in-out infinite', pointerEvents: 'none' }} />
+            {/* ═══ BACKGROUND LAYER ═══ */}
+            <div style={{
+                position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden',
+                background: `
+                    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0,184,116,0.06), transparent 50%),
+                    radial-gradient(ellipse 70% 50% at 80% 90%, rgba(59,139,219,0.05), transparent 50%),
+                    radial-gradient(ellipse 60% 40% at 60% 30%, rgba(124,92,196,0.035), transparent 50%),
+                    #eceef4`,
+            }}>
+                {/* Dot grid */}
+                <div style={{
+                    position: 'absolute', inset: 0,
+                    backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.045) 1px, transparent 1px)',
+                    backgroundSize: '32px 32px',
+                }} />
+                {/* Floating shapes */}
+                {[
+                    { w: 400, top: -100, left: -50, bg: 'rgba(0,184,116,0.1)', dur: '14s', delay: '0s' },
+                    { w: 350, bottom: -80, right: -60, bg: 'rgba(59,139,219,0.08)', dur: '18s', delay: '-4s' },
+                    { w: 250, top: '40%', right: '20%', bg: 'rgba(124,92,196,0.06)', dur: '16s', delay: '-8s' },
+                ].map((s, i) => (
+                    <div key={i} style={{
+                        position: 'absolute', width: s.w, height: s.w, borderRadius: '50%',
+                        filter: 'blur(80px)', opacity: 0.5, background: s.bg,
+                        animation: `shapeDrift ${s.dur} ease-in-out infinite`,
+                        animationDelay: s.delay,
+                        ...(s.top !== undefined ? { top: s.top } : {}),
+                        ...(s.bottom !== undefined ? { bottom: s.bottom } : {}),
+                        ...(s.left !== undefined ? { left: s.left } : {}),
+                        ...(s.right !== undefined ? { right: s.right } : {}),
+                    } as any} />
+                ))}
+            </div>
 
-                {/* Content */}
-                <div style={{ position: 'relative', zIndex: 1, maxWidth: 480 }}>
-                    {/* Logo + Name */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, animation: 'fadeInLeft .6s ease-out' }}>
-                        <div
-                            style={{
-                                width: 40,
-                                height: 40,
-                                borderRadius: 12,
-                                background: 'linear-gradient(135deg, rgba(139,92,246,.5), rgba(6,182,212,.5))',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                boxShadow: '0 6px 20px rgba(139,92,246,.15)',
-                                border: '1px solid rgba(255,255,255,.1)',
-                            }}
-                        >
-                            <Server size={20} color="#fff" strokeWidth={1.5} />
-                        </div>
-                        <div>
-                            <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '0.06em' }}>
-                                VIGIL
-                            </h1>
-                            <p style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', margin: 0, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500 }}>
-                                Database Command Center
-                            </p>
-                        </div>
-                    </div>
+            {/* ═══ PAGE ═══ */}
+            <div className="vdb-page" style={{
+                position: 'relative', zIndex: 1, display: 'flex', height: '100%',
+                alignItems: 'center', justifyContent: 'center', padding: 24,
+            }}>
+                <div className="vdb-container" style={{
+                    display: 'flex', width: 980, maxWidth: '100%', minHeight: 600,
+                    background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(0,0,0,0.08)',
+                    borderRadius: 22, overflow: 'hidden',
+                    backdropFilter: 'blur(40px) saturate(1.4)',
+                    boxShadow: '0 24px 80px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.04)',
+                    animation: 'containerIn 0.8s cubic-bezier(0.16,1,0.3,1) both',
+                }}>
 
-                    {/* Tagline */}
-                    <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', lineHeight: 1.35, marginBottom: 8, letterSpacing: '-0.01em', animation: 'fadeInLeft .6s ease-out .1s both' }}>
-                        Every database,{' '}
-                        <span style={{ background: 'linear-gradient(135deg, #a78bfa, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                            one command center.
-                        </span>
-                    </h2>
-                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', lineHeight: 1.6, marginBottom: 24, maxWidth: 420, animation: 'fadeInLeft .6s ease-out .2s both' }}>
-                        Monitor, analyze, and optimize your PostgreSQL, MongoDB, and MySQL databases with AI-powered insights and real-time alerting.
-                    </p>
+                    {/* ═══ LEFT — BRAND PANEL ═══ */}
+                    <div className="vdb-brand" style={{
+                        width: 430, minWidth: 430, position: 'relative',
+                        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                        padding: '52px 44px', overflow: 'hidden', color: '#fff',
+                        background: 'linear-gradient(145deg, #0b2030 0%, #0e2a3e 40%, #102535 100%)',
+                    }}>
+                        {/* Glow overlays */}
+                        <div style={{
+                            position: 'absolute', inset: 0, pointerEvents: 'none',
+                            background: `
+                                radial-gradient(ellipse 60% 50% at 20% 20%, rgba(0,229,160,0.12), transparent 60%),
+                                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(71,179,255,0.08), transparent 60%)`,
+                        }} />
 
-                    {/* Feature list */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        {FEATURES.map(({ icon: Icon, title, desc }, i) => (
-                            <div
-                                key={title}
-                                className="feature-item"
-                                style={{
-                                    display: 'flex',
-                                    gap: 12,
-                                    alignItems: 'center',
-                                    animation: `fadeInLeft .5s ease-out ${0.3 + i * 0.08}s both`,
-                                    cursor: 'default',
-                                }}
-                            >
-                                <div
-                                    className="feature-icon"
-                                    style={{
-                                        width: 32,
-                                        height: 32,
-                                        borderRadius: 8,
-                                        background: 'rgba(255,255,255,.04)',
-                                        border: '1px solid rgba(255,255,255,.06)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        flexShrink: 0,
-                                        transition: 'all .25s',
-                                    }}
-                                >
-                                    <Icon size={14} color="rgba(167,139,250,.7)" strokeWidth={1.5} />
+                        {/* Top content */}
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            {/* Logo */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 52 }}>
+                                <div style={{
+                                    width: 50, height: 50, borderRadius: 14,
+                                    background: 'linear-gradient(135deg, #00e5a0, #00b87a)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: '0 8px 32px rgba(0,229,160,0.3)', position: 'relative',
+                                }}>
+                                    <Server size={24} color="#fff" strokeWidth={1.5} style={{ position: 'relative', zIndex: 1 }} />
+                                    <div style={{
+                                        position: 'absolute', inset: 0, borderRadius: 14,
+                                        background: 'linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.22))',
+                                    }} />
                                 </div>
-                                <div>
-                                    <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,.85)', marginBottom: 1, letterSpacing: '0.01em' }}>
-                                        {title}
-                                    </div>
-                                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', lineHeight: 1.45 }}>
-                                        {desc}
+                                <span style={{
+                                    fontWeight: 800, fontSize: '1.5rem', letterSpacing: 3,
+                                    background: 'linear-gradient(135deg, #00e5a0, #47b3ff)',
+                                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                                }}>VIGIL</span>
+                            </div>
+
+                            {/* Headline */}
+                            <h1 style={{
+                                fontSize: '2.1rem', fontWeight: 800, lineHeight: 1.2,
+                                letterSpacing: -0.5, marginBottom: 18, color: '#fff',
+                                animation: 'textIn 0.8s ease-out 0.3s both',
+                            }}>
+                                Your databases,<br />
+                                <span style={{
+                                    background: 'linear-gradient(135deg, #00e5a0, rgba(0,229,160,0.6))',
+                                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                                }}>under control.</span>
+                            </h1>
+
+                            <p style={{
+                                fontSize: '0.92rem', color: 'rgba(255,255,255,0.55)',
+                                lineHeight: 1.7, maxWidth: 330,
+                                animation: 'textIn 0.8s ease-out 0.45s both',
+                            }}>
+                                Monitor performance, track queries, and manage your entire PostgreSQL infrastructure from a single command center.
+                            </p>
+
+                            {/* Testimonial */}
+                            <div style={{
+                                marginTop: 36, padding: '18px 20px',
+                                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
+                                borderRadius: 12, backdropFilter: 'blur(10px)',
+                                animation: 'textIn 0.8s ease-out 0.7s both',
+                            }}>
+                                <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 10 }}>
+                                    "VIGIL cut our incident response time by 80%. We can't imagine managing our fleet without it."
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <div style={{
+                                        width: 28, height: 28, borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #00e5a0, #47b3ff)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontWeight: 700, fontSize: '0.6rem', color: '#fff',
+                                    }}>SR</div>
+                                    <div>
+                                        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Sarah Rivera</div>
+                                        <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', fontFamily: fontMono }}>VP Engineering</div>
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        </div>
+
+                        {/* Decorative rings */}
+                        <DecoRings />
+
+                        {/* Bottom stats */}
+                        <div style={{
+                            position: 'relative', zIndex: 1, display: 'flex', gap: 30,
+                            animation: 'textIn 0.8s ease-out 0.6s both',
+                        }}>
+                            {[
+                                { value: '99.99%', label: 'Uptime SLA' },
+                                { value: '4.2ms', label: 'Avg Latency' },
+                                { value: '12K+', label: 'Databases' },
+                            ].map(s => (
+                                <div key={s.label}>
+                                    <div style={{ fontFamily: fontMono, fontWeight: 700, fontSize: '1.35rem', color: '#00e5a0' }}>{s.value}</div>
+                                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{s.label}</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                </div>
-            </div>
-
-            {/* ═══════════════════════════════════════════════════════════════════
-                RIGHT PANEL — Clean white login form
-            ═══════════════════════════════════════════════════════════════════ */}
-            <div
-                className="login-right"
-                style={{
-                    flex: '1 1 50%',
-                    position: 'relative',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '48px 40px',
-                    overflow: 'auto',
-                    background: '#ffffff',
-                }}
-            >
-                <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 380, animation: 'fadeIn .7s ease-out' }}>
-                    {/* Header */}
-                    <div style={{ textAlign: 'center', marginBottom: 28 }}>
-                        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#1e293b', margin: '0 0 6px', letterSpacing: '-0.01em' }}>
-                            Welcome back
-                        </h2>
-                        <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>
+                    {/* ═══ RIGHT — FORM PANEL ═══ */}
+                    <div className="vdb-form" style={{
+                        flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                        padding: '52px 56px', position: 'relative', background: '#ffffff',
+                    }}>
+                        {/* Title */}
+                        <h2 style={{
+                            fontSize: '1.65rem', fontWeight: 800, color: '#1a1e2e',
+                            marginBottom: 6, letterSpacing: -0.3,
+                            animation: 'textIn 0.6s ease-out 0.2s both',
+                        }}>Welcome back</h2>
+                        <p style={{
+                            color: '#9198ae', fontSize: '0.9rem', marginBottom: 32,
+                            animation: 'textIn 0.6s ease-out 0.3s both',
+                        }}>
                             Sign in to your command center
                         </p>
-                    </div>
 
-                    {/* Server status — light version */}
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 22 }}>
-                        <ServerStatus status={serverStatus} />
-                    </div>
+                        {/* Server status */}
+                        <div style={{ marginBottom: 24, animation: 'textIn 0.6s ease-out 0.32s both' }}>
+                            <ServerStatus status={serverStatus} />
+                        </div>
 
-                    {/* Card */}
-                    <div
-                        style={{
-                            background: '#ffffff',
-                            borderRadius: 16,
-                            padding: '28px 24px',
-                            border: '1px solid #e2e8f0',
-                            boxShadow: '0 1px 3px rgba(0,0,0,.04)',
-                            animation: shake ? 'shake .5s ease' : 'none',
-                        }}
-                    >
+                        {/* SSO row */}
+                        <div className="vdb-sso-row" style={{
+                            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+                            marginBottom: 28, animation: 'textIn 0.6s ease-out 0.35s both',
+                        }}>
+                            <button type="button" className="vdb-sso" onClick={() => loginWithSSO('google')} style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                                padding: '12px 16px', background: '#ffffff',
+                                border: '1.5px solid rgba(0,0,0,0.12)', borderRadius: 10,
+                                color: '#5a6078', fontFamily: fontDisplay, fontWeight: 600, fontSize: '0.88rem',
+                                cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)',
+                            }}>
+                                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                                Google
+                            </button>
+                            <button type="button" className="vdb-sso" onClick={() => loginWithSSO('github')} style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                                padding: '12px 16px', background: '#ffffff',
+                                border: '1.5px solid rgba(0,0,0,0.12)', borderRadius: 10,
+                                color: '#5a6078', fontFamily: fontDisplay, fontWeight: 600, fontSize: '0.88rem',
+                                cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)',
+                            }}>
+                                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" fill="#24292f"/></svg>
+                                GitHub
+                            </button>
+                        </div>
+
+                        {/* Divider */}
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: 16,
+                            marginBottom: 26, animation: 'textIn 0.6s ease-out 0.4s both',
+                        }}>
+                            <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.08)' }} />
+                            <span style={{ fontSize: '0.72rem', fontFamily: fontMono, color: '#b8bdd0', letterSpacing: 0.8, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>or continue with email</span>
+                            <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.08)' }} />
+                        </div>
+
                         {/* Error */}
                         {(error || rateLimitError) && (
-                            <div style={{ marginBottom: 16, padding: '11px 14px', borderRadius: 10, background: '#fef2f2', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <AlertCircle size={14} color="#ef4444" style={{ flexShrink: 0 }} />
-                                <span style={{ color: '#ef4444', fontSize: 12, fontWeight: 500 }}>{error || rateLimitError}</span>
+                            <div style={{
+                                marginBottom: 16, padding: '11px 14px', borderRadius: 10,
+                                background: 'rgba(229,62,92,0.07)', border: '1px solid rgba(229,62,92,0.2)',
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                animation: shake ? 'shake .5s ease' : 'none',
+                            }}>
+                                <AlertCircle size={14} color="#e53e5c" style={{ flexShrink: 0 }} />
+                                <span style={{ color: '#e53e5c', fontSize: 12, fontWeight: 500 }}>{error || rateLimitError}</span>
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                             {/* Username */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Username</label>
-                                <div style={{ position: 'relative' }}>
-                                    <User size={16} color="#94a3b8" strokeWidth={1.5} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                                    <input ref={userRef} className="light-input" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter username" autoComplete="username" disabled={authLoading}
-                                        style={{ width: '100%', padding: '12px 14px 12px 42px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, color: '#1e293b', fontSize: 14, fontFamily: 'inherit', outline: 'none', transition: 'all .25s', opacity: authLoading ? 0.5 : 1 }}
+                            <div style={{ marginBottom: 20, animation: 'textIn 0.6s ease-out 0.42s both' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#5a6078', letterSpacing: 0.2 }}>Username</label>
+                                </div>
+                                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                    <User size={18} color="#b8bdd0" strokeWidth={1.5} style={{ position: 'absolute', left: 15, pointerEvents: 'none', transition: 'color 0.3s' }} />
+                                    <input ref={userRef} className="vdb-input" type="text" value={username}
+                                        onChange={e => setUsername(e.target.value)} placeholder="Enter username"
+                                        autoComplete="username" disabled={authLoading}
+                                        style={{
+                                            width: '100%', padding: '14px 16px 14px 48px',
+                                            background: '#f3f4f8', border: '1.5px solid rgba(0,0,0,0.08)',
+                                            borderRadius: 10, color: '#1a1e2e', fontFamily: fontDisplay,
+                                            fontSize: '0.92rem', outline: 'none',
+                                            transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)',
+                                            opacity: authLoading ? 0.5 : 1,
+                                        }}
                                     />
                                 </div>
                             </div>
 
                             {/* Password */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                <label style={{ fontSize: 11, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Password</label>
-                                <div style={{ position: 'relative' }}>
-                                    <KeyRound size={16} color="#94a3b8" strokeWidth={1.5} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                                    <input ref={pwdRef} className="light-input" type={showPwd ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" autoComplete="current-password" disabled={authLoading}
-                                        style={{ width: '100%', padding: '12px 44px 12px 42px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, color: '#1e293b', fontSize: 14, fontFamily: 'inherit', outline: 'none', transition: 'all .25s', opacity: authLoading ? 0.5 : 1 }}
+                            <div style={{ marginBottom: 20, animation: 'textIn 0.6s ease-out 0.48s both' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#5a6078', letterSpacing: 0.2 }}>Password</label>
+                                    <button type="button" className="vdb-forgot" onClick={() => setShowForgotPassword(true)}
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9198ae', padding: 0, fontSize: '0.72rem', fontFamily: fontMono, transition: 'color 0.3s' }}>
+                                        Forgot password?
+                                    </button>
+                                </div>
+                                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                    <KeyRound size={18} color="#b8bdd0" strokeWidth={1.5} style={{ position: 'absolute', left: 15, pointerEvents: 'none', transition: 'color 0.3s' }} />
+                                    <input ref={pwdRef} className="vdb-input" type={showPwd ? 'text' : 'password'} value={password}
+                                        onChange={e => setPassword(e.target.value)} placeholder="Enter your password"
+                                        autoComplete="current-password" disabled={authLoading}
+                                        style={{
+                                            width: '100%', padding: '14px 44px 14px 48px',
+                                            background: '#f3f4f8', border: '1.5px solid rgba(0,0,0,0.08)',
+                                            borderRadius: 10, color: '#1a1e2e', fontFamily: fontDisplay,
+                                            fontSize: '0.92rem', outline: 'none',
+                                            transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)',
+                                            opacity: authLoading ? 0.5 : 1,
+                                        }}
                                     />
-                                    <button type="button" onClick={() => setShowPwd((s) => !s)} tabIndex={-1}
-                                        style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 4, display: 'flex', transition: 'color .2s' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.color = '#8b5cf6'; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; }}
-                                    >
-                                        {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1}
+                                        style={{
+                                            position: 'absolute', right: 14, background: 'none', border: 'none',
+                                            cursor: 'pointer', color: '#b8bdd0', padding: 4, display: 'flex',
+                                            transition: 'color 0.3s',
+                                        }}
+                                        onMouseEnter={e => { e.currentTarget.style.color = accent; }}
+                                        onMouseLeave={e => { e.currentTarget.style.color = '#b8bdd0'; }}>
+                                        {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Remember + Forgot */}
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }} onClick={() => setRememberMe((r) => !r)}>
-                                    <div style={{ width: 16, height: 16, borderRadius: 5, flexShrink: 0, border: `1.5px solid ${rememberMe ? '#8b5cf6' : '#cbd5e1'}`, background: rememberMe ? '#8b5cf6' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .25s' }}>
-                                        {rememberMe && <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                                    </div>
-                                    <span style={{ color: '#64748b' }}>Remember me</span>
+                            {/* Remember me */}
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                marginBottom: 26, animation: 'textIn 0.6s ease-out 0.52s both',
+                            }}>
+                                <div onClick={() => setRememberMe(r => !r)} style={{
+                                    width: 20, height: 20, borderRadius: 6, flexShrink: 0, cursor: 'pointer',
+                                    border: `1.5px solid ${rememberMe ? accent : 'rgba(0,0,0,0.12)'}`,
+                                    background: rememberMe ? accent : '#f3f4f8',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+                                    boxShadow: rememberMe ? `0 2px 8px rgba(0,184,116,0.15)` : '0 1px 3px rgba(0,0,0,0.04)',
+                                }}>
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"
+                                        style={{ opacity: rememberMe ? 1 : 0, transform: rememberMe ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s ease' }}>
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
                                 </div>
-                                <button type="button" className="forgot-btn" onClick={() => setShowForgotPassword(true)}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0, fontSize: 12, transition: 'color .2s' }}>
-                                    Forgot password?
-                                </button>
+                                <span onClick={() => setRememberMe(r => !r)} style={{ fontSize: '0.84rem', color: '#5a6078', cursor: 'pointer' }}>
+                                    Remember this device for 30 days
+                                </span>
                             </div>
 
-                            {/* Sign in */}
-                            <button type="submit" className="login-btn" disabled={!canSubmit}
-                                style={{
-                                    marginTop: 4, background: canSubmit ? 'linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%)' : '#f1f5f9',
-                                    border: 'none', padding: '13px 20px', borderRadius: 10,
-                                    color: canSubmit ? '#fff' : '#94a3b8', fontWeight: 600, fontSize: 14, fontFamily: 'inherit',
-                                    cursor: canSubmit ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                    transition: 'all .3s ease', boxShadow: canSubmit ? '0 8px 24px rgba(139,92,246,.2)' : 'none', letterSpacing: '0.02em',
-                                }}
-                            >
-                                {authLoading ? (<><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Authenticating...</>) : (<>Sign In <ArrowRight size={16} strokeWidth={2} /></>)}
-                            </button>
-
-                            {/* Divider */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '2px 0' }}>
-                                <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
-                                <span style={{ fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.12em', fontWeight: 500 }}>or</span>
-                                <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
-                            </div>
-
-                            {/* SSO */}
-                            <button type="button" className="sso-btn" onClick={() => loginWithSSO('okta')}
-                                style={{ padding: '12px 20px', borderRadius: 10, background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', fontWeight: 500, fontSize: 13, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, cursor: 'pointer', transition: 'all .25s' }}>
-                                <Fingerprint size={15} color="#8b5cf6" strokeWidth={1.5} />
-                                Continue with SSO
+                            {/* Submit */}
+                            <button type="submit" className="vdb-submit" disabled={!canSubmit} style={{
+                                width: '100%', padding: 15, border: 'none', borderRadius: 10,
+                                background: canSubmit ? `linear-gradient(135deg, ${accent}, ${accentHover})` : '#f3f4f8',
+                                color: canSubmit ? '#fff' : '#b8bdd0',
+                                fontFamily: fontDisplay, fontWeight: 700, fontSize: '0.95rem',
+                                letterSpacing: 0.3, cursor: canSubmit ? 'pointer' : 'not-allowed',
+                                transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)', position: 'relative', overflow: 'hidden',
+                                boxShadow: canSubmit ? '0 4px 16px rgba(0,184,116,0.15), 0 1px 3px rgba(0,0,0,0.04)' : 'none',
+                                animation: 'textIn 0.6s ease-out 0.56s both',
+                            }}>
+                                {authLoading ? (
+                                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                                        <Loader size={16} style={{ animation: 'spin 0.6s linear infinite' }} /> Authenticating...
+                                    </span>
+                                ) : (
+                                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                                        Sign in to VIGIL <ArrowRight size={16} strokeWidth={2} />
+                                    </span>
+                                )}
                             </button>
                         </form>
-                    </div>
 
-                    {/* Footer */}
-                    <div style={{ textAlign: 'center', marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 10, color: '#cbd5e1', letterSpacing: '.04em' }}>
-                        <Lock size={10} /> TLS 1.3 encrypted
+                        {/* Footer */}
+                        <div style={{
+                            textAlign: 'center', marginTop: 28, display: 'flex',
+                            alignItems: 'center', justifyContent: 'center', gap: 6,
+                            fontSize: '0.72rem', color: '#b8bdd0', fontFamily: fontMono,
+                            animation: 'textIn 0.6s ease-out 0.65s both',
+                        }}>
+                            <Shield size={13} color={accent} />
+                            Protected by 256-bit TLS encryption
+                        </div>
+
+                        {/* Success overlay */}
+                        {loginSuccess && (
+                            <div style={{
+                                position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.96)',
+                                backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column',
+                                alignItems: 'center', justifyContent: 'center', zIndex: 10,
+                                borderRadius: '0 22px 22px 0',
+                            }}>
+                                <div style={{
+                                    width: 76, height: 76, borderRadius: '50%',
+                                    background: 'rgba(0,184,116,0.08)', border: '2px solid rgba(0,184,116,0.15)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    marginBottom: 20, animation: 'successPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
+                                }}>
+                                    <CheckCircle size={34} color={accent} strokeWidth={2} />
+                                </div>
+                                <div style={{ fontWeight: 800, fontSize: '1.35rem', color: '#1a1e2e', marginBottom: 6, animation: 'textIn 0.5s ease 0.5s both' }}>Welcome back!</div>
+                                <div style={{ color: '#9198ae', fontSize: '0.88rem', animation: 'textIn 0.5s ease 0.6s both' }}>Redirecting to your dashboard...</div>
+                                <div style={{ width: 180, height: 3, background: '#f3f4f8', borderRadius: 2, marginTop: 20, overflow: 'hidden', animation: 'textIn 0.5s ease 0.7s both' }}>
+                                    <div style={{ height: '100%', background: accent, borderRadius: 2, width: '0%', animation: 'progressFill 2s ease 0.8s forwards' }} />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* ═══════════════════════════════════════════════════════════════════
-                FORGOT PASSWORD MODAL
-            ═══════════════════════════════════════════════════════════════════ */}
+            {/* ═══ FORGOT PASSWORD MODAL ═══ */}
             {showForgotPassword && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, animation: 'fadeIn .3s ease' }} onClick={() => setShowForgotPassword(false)}>
-                    <div style={{ background: 'rgba(255,255,255,.06)', backdropFilter: 'blur(24px) saturate(1.3)', WebkitBackdropFilter: 'blur(24px) saturate(1.3)', borderRadius: 20, padding: '32px', maxWidth: '380px', width: '90%', border: '1px solid rgba(255,255,255,.08)', boxShadow: '0 24px 80px rgba(0,0,0,.4)' }} onClick={(e) => e.stopPropagation()}>
-                        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Reset Password</h3>
-                        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', marginBottom: 20 }}>Enter your email and we'll send you a reset link.</p>
+                <div style={{
+                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+                    backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 1000, animation: 'textIn .3s ease',
+                }} onClick={() => setShowForgotPassword(false)}>
+                    <div style={{
+                        background: '#fff', borderRadius: 20, padding: 32, maxWidth: 400, width: '90%',
+                        border: '1px solid rgba(0,0,0,0.08)',
+                        boxShadow: '0 24px 80px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.06)',
+                    }} onClick={e => e.stopPropagation()}>
+                        <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1a1e2e', marginBottom: 8 }}>Reset Password</h3>
+                        <p style={{ fontSize: 13, color: '#9198ae', marginBottom: 20 }}>Enter your email and we'll send you a reset link.</p>
                         <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            <input className="glass-input" type="email" placeholder="Enter your email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} disabled={resetLoading}
-                                style={{ padding: '11px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,.08)', background: 'rgba(255,255,255,.04)', color: 'rgba(255,255,255,.9)', fontSize: 13, fontFamily: 'inherit', outline: 'none', transition: 'all .25s' }}
+                            <input className="vdb-input" type="email" placeholder="Enter your email" value={resetEmail}
+                                onChange={e => setResetEmail(e.target.value)} disabled={resetLoading}
+                                style={{
+                                    padding: '12px 14px', borderRadius: 10,
+                                    border: '1.5px solid rgba(0,0,0,0.08)', background: '#f3f4f8',
+                                    color: '#1a1e2e', fontSize: 13, fontFamily: fontDisplay, outline: 'none',
+                                    transition: 'all 0.3s',
+                                }}
                             />
                             {resetMessage && (
-                                <div style={{ padding: '10px 12px', borderRadius: 10, background: resetMessage.includes('failed') ? 'rgba(244,63,94,.1)' : 'rgba(34,197,94,.1)', color: resetMessage.includes('failed') ? '#fb7185' : '#34d399', fontSize: 12 }}>
+                                <div style={{
+                                    padding: '10px 12px', borderRadius: 10,
+                                    background: resetMessage.includes('failed') || resetMessage.includes('Unable') ? 'rgba(229,62,92,0.07)' : 'rgba(0,184,116,0.07)',
+                                    color: resetMessage.includes('failed') || resetMessage.includes('Unable') ? '#e53e5c' : accent, fontSize: 12,
+                                }}>
                                     {resetMessage}
                                 </div>
                             )}
                             <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                                <button type="submit" disabled={!resetEmail.trim() || resetLoading}
-                                    style={{ flex: 1, padding: '11px 16px', borderRadius: 10, border: 'none', background: resetEmail.trim() && !resetLoading ? 'linear-gradient(135deg, #8b5cf6, #06b6d4)' : 'rgba(255,255,255,.04)', color: resetEmail.trim() && !resetLoading ? '#fff' : 'rgba(255,255,255,.2)', fontSize: 12, fontWeight: 600, cursor: resetEmail.trim() && !resetLoading ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'all .25s' }}>
+                                <button type="submit" disabled={!resetEmail.trim() || resetLoading} style={{
+                                    flex: 1, padding: '12px 16px', borderRadius: 10, border: 'none',
+                                    background: resetEmail.trim() && !resetLoading ? `linear-gradient(135deg, ${accent}, ${accentHover})` : '#f3f4f8',
+                                    color: resetEmail.trim() && !resetLoading ? '#fff' : '#b8bdd0',
+                                    fontSize: 13, fontWeight: 600, cursor: resetEmail.trim() && !resetLoading ? 'pointer' : 'not-allowed',
+                                    fontFamily: fontDisplay, transition: 'all 0.3s',
+                                }}>
                                     {resetLoading ? 'Sending...' : 'Send Reset Link'}
                                 </button>
-                                <button type="button" onClick={() => setShowForgotPassword(false)}
-                                    style={{ flex: 1, padding: '11px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,.08)', background: 'transparent', color: 'rgba(255,255,255,.4)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .25s' }}>
+                                <button type="button" onClick={() => setShowForgotPassword(false)} style={{
+                                    flex: 1, padding: '12px 16px', borderRadius: 10,
+                                    border: '1.5px solid rgba(0,0,0,0.08)', background: 'transparent',
+                                    color: '#5a6078', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                    fontFamily: fontDisplay, transition: 'all 0.3s',
+                                }}>
                                     Cancel
                                 </button>
                             </div>
@@ -564,8 +699,14 @@ const LoginPage = () => {
             )}
 
             {/* Theme Toggle */}
-            <button className="theme-toggle" onClick={toggleTheme} title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-                style={{ position: 'fixed', bottom: 24, left: 24, zIndex: 100, width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,.35)', transition: 'all .3s', outline: 'none' }}>
+            <button className="vdb-toggle" onClick={toggleTheme} title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                style={{
+                    position: 'fixed', bottom: 24, left: 24, zIndex: 100,
+                    width: 40, height: 40, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.08)',
+                    backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: '#9198ae', transition: 'all .3s', outline: 'none',
+                }}>
                 {isDark ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}
             </button>
         </div>
