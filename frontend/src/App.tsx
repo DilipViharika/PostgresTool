@@ -4224,37 +4224,8 @@ const DashboardInner = ({ onLogout }) => {
                             )}
                         </div>
 
-                        {/* Right: sparkline + status + bell + theme */}
+                        {/* Right: connection switcher + status + bell + theme */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    padding: '5px 10px',
-                                    background: 'rgba(139,92,246,0.05)',
-                                    borderRadius: 8,
-                                    border: `1px solid ${DS.border}`,
-                                }}
-                            >
-                                <MiniSparkline color={DS.cyan} />
-                                <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono }}>QPS</span>
-                            </div>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    padding: '5px 10px',
-                                    background: 'rgba(52,211,153,0.05)',
-                                    borderRadius: 8,
-                                    border: `1px solid ${DS.border}`,
-                                }}
-                            >
-                                <MiniSparkline color={DS.emerald} />
-                                <span style={{ fontSize: 10, color: DS.textMuted, fontFamily: DS.fontMono }}>CPU</span>
-                            </div>
-                            <div style={{ width: 1, height: 24, background: DS.border }} />
                             <Suspense fallback={<ConnectionSelector />}>
                                 <ConnectionSwitcherLazy />
                             </Suspense>
