@@ -759,13 +759,18 @@ function rowToConn(row) {
  *  Admin / super_admin pass userId=null to load all connections.
  */
 async function dbLoadConnections(userId, role) {
-    const isAdmin = (role === 'admin' || role === 'super_admin');
-    const { rows } = isAdmin
-        ? await pool.query('SELECT * FROM pgmonitoringtool.vigil_connections ORDER BY id')
-        : await pool.query(
-            'SELECT * FROM pgmonitoringtool.vigil_connections WHERE (user_id = $1 OR user_id IS NULL) ORDER BY id',
-            [userId]
-          );
+    // Always scope to the user's own connections — admins see all connections
+    // only through the /api/admin/connections endpoint, not in their personal pool
+    const { rows } = await pool.query(
+        'SELECT * FROM pgmonitoringtool.vigil_connections WHERE user_id = $1 ORDER BY id',
+        [userId]
+    );
+    return rows.map(rowToConn);
+}
+
+/** Admin-only: load ALL connections across all users (for admin panel) */
+async function dbLoadAllConnections() {
+    const { rows } = await pool.query('SELECT * FROM pgmonitoringtool.vigil_connections ORDER BY id');
     return rows.map(rowToConn);
 }
 
@@ -852,24 +857,24 @@ async function dbUpdateConnection(id, fields) {
 }
 
 /** Delete a connection by ID */
-async function dbDeleteConnection(id) {
-    await pool.query('DELETE FROM pgmonitoringtool.vigil_connections WHERE id = $1', [id]);
+async function dbDeleteConnection(id, userId) {
+    // Safety: always scope delete by user_id to prevent cross-user deletion
+    const result = await pool.query(
+        'DELETE FROM pgmonitoringtool.vigil_connections WHERE id = $1 AND user_id = $2 RETURNING id',
+        [id, userId]
+    );
+    if (result.rowCount === 0) {
+        throw new Error('Connection not found or not owned by user');
+    }
 }
 
 /** Clear is_default for all connections belonging to a user, then set one */
 async function dbSetDefault(userId, role, newDefaultId) {
-    const isAdmin = (role === 'admin' || role === 'super_admin');
-    if (isAdmin) {
-        await pool.query(
-            'UPDATE pgmonitoringtool.vigil_connections SET is_default = (id = $1)',
-            [newDefaultId]
-        );
-    } else {
-        await pool.query(
-            'UPDATE pgmonitoringtool.vigil_connections SET is_default = (id = $1) WHERE user_id = $2',
-            [newDefaultId, userId]
-        );
-    }
+    // Always scope by user_id — each user manages their own default connection
+    await pool.query(
+        'UPDATE pgmonitoringtool.vigil_connections SET is_default = (id = $1) WHERE user_id = $2',
+        [newDefaultId, userId]
+    );
 }
 
 // In-memory cache rebuilt from DB on every request (no more stale global state)
@@ -2161,7 +2166,7 @@ app.delete('/api/connections/:id', authenticate, async (req, res) => {
             cache.clear();
         }
 
-        await dbDeleteConnection(id);
+        await dbDeleteConnection(id, req.user.id);
 
         // If it was the default, promote the next connection for this user
         if (c.isDefault) {
