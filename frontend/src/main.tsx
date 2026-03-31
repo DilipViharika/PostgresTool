@@ -16,7 +16,13 @@ initErrorTracking({
   enabled: import.meta.env.PROD,
 })
 
-createRoot(document.getElementById('root')).render(
+const root = document.getElementById('root')
+
+// Remove pre-loader (CSS-only spinner shown before React mounts)
+const preLoader = document.getElementById('pre-loader')
+if (preLoader) preLoader.remove()
+
+createRoot(root).render(
   <StrictMode>
     <ErrorTrackingBoundary>
       <ThemeProvider>
