@@ -16,6 +16,9 @@ frontend/.env*
 backend/.env
 backend/.env.*
 
+# Migration scripts with hardcoded credentials
+backend/neon-migrate.mjs
+
 # IDE
 .idea/
 .vscode/

@@ -73,6 +73,8 @@ const CONFIG = Object.freeze({
         'https://postgres-tool.vercel.app',
         process.env.FRONTEND_URL,
         process.env.CORS_ORIGIN,
+        // Vercel provides VERCEL_URL (e.g. "my-app-abc123.vercel.app") for preview deploys
+        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
     ].filter(Boolean),
     SLOW_QUERY_MIN:  Number(process.env.SLOW_QUERY_MINUTES) || 5,
     WS_INTERVAL_MS:  Number(process.env.WS_INTERVAL_MS)     || 5000,
@@ -177,10 +179,15 @@ const HAS_ADMIN_DB = !!(process.env.DATABASE_URL || (process.env.PGHOST && proce
         for (const e of errors) {
             console.error(JSON.stringify({ ts: new Date().toISOString(), level: 'FATAL', msg: e }));
         }
-        if (IS_PROD) {
+        if (IS_PROD && process.env.VERCEL !== '1') {
+            // On traditional servers (Railway, Docker, local), crash immediately
+            // so the process supervisor can restart with correct env vars.
             console.error('Aborting startup due to configuration errors.');
             process.exit(1);
         }
+        // On Vercel serverless, don't call process.exit() — it kills the
+        // cold-start and returns a generic 500. Instead, log the errors and
+        // let individual route handlers detect the misconfiguration gracefully.
     }
 })();
 
@@ -450,12 +457,15 @@ function cached(key, ttl) {
 }
 
 const rateBuckets = new Map();
-setInterval(() => {
-    const now = Date.now();
-    for (const [k, v] of rateBuckets) {
-        if (now - v.windowStart > CONFIG.RATE_LIMIT.WINDOW_MS) rateBuckets.delete(k);
-    }
-}, 600_000);
+// Cleanup stale rate-limit buckets — skip on Vercel (stateless, no long-lived process)
+if (process.env.VERCEL !== '1') {
+    setInterval(() => {
+        const now = Date.now();
+        for (const [k, v] of rateBuckets) {
+            if (now - v.windowStart > CONFIG.RATE_LIMIT.WINDOW_MS) rateBuckets.delete(k);
+        }
+    }, 600_000);
+}
 
 function rateLimiter(req, res, next) {
     const ip  = req.ip || 'unknown';
@@ -472,12 +482,14 @@ function rateLimiter(req, res, next) {
 }
 
 const strictBuckets = new Map();
-setInterval(() => {
-    const now = Date.now();
-    for (const [k, v] of strictBuckets) {
-        if (now - v.windowStart > 600_000) strictBuckets.delete(k);
-    }
-}, 600_000);
+if (process.env.VERCEL !== '1') {
+    setInterval(() => {
+        const now = Date.now();
+        for (const [k, v] of strictBuckets) {
+            if (now - v.windowStart > 600_000) strictBuckets.delete(k);
+        }
+    }, 600_000);
+}
 function strictRateLimiter(windowMs = 60_000, maxReqs = 10) {
     return (req, res, next) => {
         const key = `${req.ip || 'unknown'}:${req.path}`;
@@ -550,13 +562,15 @@ const loginAttempts = new Map();
 const LOGIN_MAX_ATTEMPTS  = 5;
 const LOGIN_WINDOW_MS     = 15 * 60 * 1000;
 
-// Cleanup stale login attempt records every 5 minutes
-setInterval(() => {
-    const now = Date.now();
-    for (const [key, record] of loginAttempts) {
-        if (now - record.windowStart > 30 * 60_000) loginAttempts.delete(key);
-    }
-}, 300_000);
+// Cleanup stale login attempt records every 5 minutes (skip on Vercel — stateless)
+if (process.env.VERCEL !== '1') {
+    setInterval(() => {
+        const now = Date.now();
+        for (const [key, record] of loginAttempts) {
+            if (now - record.windowStart > 30 * 60_000) loginAttempts.delete(key);
+        }
+    }, 300_000);
+}
 
 function recordLoginAttempt(username, success) {
     const now    = Date.now();
@@ -905,7 +919,9 @@ const ensureConnections = async (req, res, next) => {
 // EXPRESS APP
 // ─────────────────────────────────────────────────────────────────────────────
 const app    = express();
-const server = http.createServer(app);
+// On Vercel serverless, Express is invoked directly — no need for an HTTP server.
+// Only create the raw server for local/Docker/Railway where we need WebSocket + listen().
+const server = process.env.VERCEL !== '1' ? http.createServer(app) : null;
 
 app.use(cors({
     origin: (origin, cb) => {
@@ -957,6 +973,14 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
     }
     if (typeof password !== 'string' || password.length > 256) {
         return res.status(400).json({ error: 'Invalid password' });
+    }
+
+    // If no admin database pool is available, authentication is impossible
+    if (!pool && IS_PROD) {
+        return res.status(503).json({
+            error: 'Authentication service unavailable',
+            detail: 'Admin database is not configured. Set DATABASE_URL in environment variables.',
+        });
     }
 
     if (isLoginLocked(username)) {
@@ -1239,13 +1263,15 @@ app.post('/api/auth/change-password', requireScreen('*'), async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const resetTokens = new Map(); // In-memory store: token -> { userId, expiresAt }
 
-// Cleanup expired reset tokens every 5 minutes
-setInterval(() => {
-    const now = Date.now();
-    for (const [token, data] of resetTokens) {
-        if (now > data.expiresAt.getTime()) resetTokens.delete(token);
-    }
-}, 300_000);
+// Cleanup expired reset tokens every 5 minutes (skip on Vercel — stateless)
+if (process.env.VERCEL !== '1') {
+    setInterval(() => {
+        const now = Date.now();
+        for (const [token, data] of resetTokens) {
+            if (now > data.expiresAt.getTime()) resetTokens.delete(token);
+        }
+    }, 300_000);
+}
 
 app.post('/api/auth/forgot-password', async (req, res) => {
     const { email, username } = req.body;
@@ -2807,7 +2833,7 @@ app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE
 // QUERY PLAN REGRESSION
 // ─────────────────────────────────────────────────────────────────────────────
 const planBaselines = new Map();
-setInterval(() => { if (planBaselines.size > 500) planBaselines.clear(); }, 600_000);
+if (process.env.VERCEL !== '1') setInterval(() => { if (planBaselines.size > 500) planBaselines.clear(); }, 600_000);
 
 app.post('/api/regression/capture', authenticate, async (req, res) => {
     try {
@@ -2969,7 +2995,7 @@ app.get('/api/cloudwatch/metrics', authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const dbaTaskStore = new Map();
 let taskIdCounter = 1;
-setInterval(() => { for (const [k,v] of dbaTaskStore) { if (Date.now() - (v.updatedAt || 0) > 86400_000) dbaTaskStore.delete(k); } }, 600_000);
+if (process.env.VERCEL !== '1') setInterval(() => { for (const [k,v] of dbaTaskStore) { if (Date.now() - (v.updatedAt || 0) > 86400_000) dbaTaskStore.delete(k); } }, 600_000);
 
 const defaultTasks = [
     { category: 'Daily',   priority: 'high',   title: 'Check active connections and long-running queries',  recurrence: 'daily'   },
@@ -3185,7 +3211,8 @@ async function captureAlertSnapshot() {
     } catch (_) { /* silent */ }
 }
 
-setInterval(captureAlertSnapshot, 30_000);
+// Alert snapshot capture — only on long-lived processes (not Vercel serverless)
+if (process.env.VERCEL !== '1') setInterval(captureAlertSnapshot, 30_000);
 
 app.get('/api/alerts/correlation', authenticate, cached('alerts:corr', 15_000), async (req, res) => {
     try {
