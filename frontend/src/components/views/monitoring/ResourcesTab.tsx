@@ -1039,8 +1039,8 @@ const ResourcesTab = () => {
     /* ── Computed metrics ── */
     const totalSize  = growth.reduce((s, t) => s + Number(t.total_size_gb || 0), 0);
     const totalRows  = growth.reduce((s, t) => s + (t.row_count || 0), 0);
-    const avgBloat   = vacuum.length ? vacuum.reduce((s, v) => s + v.bloat_ratio_pct, 0) / vacuum.length : 0;
-    const highBloat  = vacuum.filter(v => v.bloat_ratio_pct > 20 && !resolvedOptimizations[v.table_name]).length;
+    const avgBloat   = vacuum.length ? vacuum.reduce((s, v) => s + (Number(v.bloat_ratio_pct) || 0), 0) / vacuum.length : 0;
+    const highBloat  = vacuum.filter(v => (Number(v.bloat_ratio_pct) || 0) > 20 && !resolvedOptimizations[v.table_name]).length;
     const deadCount  = deadCode.tables.length;
 
     const storageBreakdown = useMemo(() => {
@@ -1121,7 +1121,7 @@ const ResourcesTab = () => {
         { label: 'Total Storage',   value: `${totalSize.toFixed(1)} GB`, sub: `of ${totalStorageGB.toFixed(0)} GB capacity`,                color: THEME.primary,   icon: HardDrive },
         { label: 'Total Rows',      value: fmtNum(totalRows),             sub: `${growth.length} tables tracked`,                             color: THEME.secondary, icon: Table2 },
         { label: 'Avg Bloat',       value: `${avgBloat.toFixed(1)}%`,    sub: highBloat > 0 ? `${highBloat} need attention` : 'all healthy', color: avgBloat > 20 ? THEME.danger : THEME.success, icon: Trash2 },
-        { label: 'Dead Code',       value: deadCount,                      sub: `${deadCode.tables.reduce((s, t) => s + t.size_gb, 0).toFixed(1)} GB reclaimable`, color: THEME.warning, icon: Eye },
+        { label: 'Dead Code',       value: deadCount,                      sub: `${deadCode.tables.reduce((s, t) => s + (Number(t.size_gb) || 0), 0).toFixed(1)} GB reclaimable`, color: THEME.warning, icon: Eye },
     ];
 
     /* ═══════════════════════════════════════════════════════════════
