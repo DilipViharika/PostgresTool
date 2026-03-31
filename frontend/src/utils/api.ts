@@ -46,6 +46,7 @@ function appendConnectionId(path) {
         '/api/sessions',
         '/api/audit',
         '/api/repo',
+        '/api/sdk',
     ];
     if (skipPatterns.some(p => path.startsWith(p))) return path;
 

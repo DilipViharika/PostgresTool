@@ -14,7 +14,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
-import { fetchData, postData } from '../../../utils/api';
+import { API_BASE } from '../../../utils/api';
 import {
     LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
     ResponsiveContainer, PieChart, Pie, Cell
@@ -126,6 +126,45 @@ const Styles = () => (
         .sdk-stagger > *:nth-child(6){animation-delay:0.35s;}
     `}</style>
 );
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SDK-SAFE FETCH — avoids auth:logout dispatch on 401
+   ═══════════════════════════════════════════════════════════════════════════ */
+function sdkFetch(path) {
+    const token = localStorage.getItem('vigil_token');
+    const url = `${API_BASE || ''}${path}`;
+    return fetch(url, {
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    }).then(async (res) => {
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || data.detail || `Request failed (${res.status})`);
+        }
+        return res.json();
+    });
+}
+
+function sdkPost(path, body) {
+    const token = localStorage.getItem('vigil_token');
+    const url = `${API_BASE || ''}${path}`;
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
+    }).then(async (res) => {
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || data.detail || `Request failed (${res.status})`);
+        }
+        return res.json();
+    });
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    HELPER FUNCTIONS
@@ -329,7 +368,7 @@ const RegisterAppModal = ({ isOpen, onClose, onSuccess, isSubmitting }) => {
         if (!formData.name.trim()) return;
         setRegError('');
         try {
-            const result = await postData('/api/sdk/apps', formData);
+            const result = await sdkPost('/api/sdk/apps', formData);
             setGeneratedKey(result.key);
             setFormData({ name: '', appType: 'nodejs', environment: 'staging' });
             if (onSuccess) onSuccess(result.record || result);
@@ -506,9 +545,9 @@ const DetailView = ({ app, onBack }) => {
             try {
                 setLoading(true);
                 const [detail, stats, eventsList] = await Promise.all([
-                    fetchData(`/api/sdk/apps/${app.id}`),
-                    fetchData(`/api/sdk/apps/${app.id}/stats?from=${Date.now() - 86400000}&to=${Date.now()}&groupBy=hour`),
-                    fetchData(`/api/sdk/apps/${app.id}/events?page=1&limit=20`),
+                    sdkFetch(`/api/sdk/apps/${app.id}`),
+                    sdkFetch(`/api/sdk/apps/${app.id}/stats?from=${Date.now() - 86400000}&to=${Date.now()}&groupBy=hour`),
+                    sdkFetch(`/api/sdk/apps/${app.id}/events?page=1&limit=20`),
                 ]);
                 setDetailData(detail);
                 setStatsData(stats?.timeline || []);
@@ -815,7 +854,7 @@ export default function SDKDashboardTab() {
     // Fetch apps list
     const fetchApps = useCallback(async () => {
         try {
-            const data = await fetchData('/api/sdk/apps');
+            const data = await sdkFetch('/api/sdk/apps');
             const list = Array.isArray(data) ? data : data?.apps || [];
             setApps(list);
             setError(null);
