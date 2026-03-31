@@ -284,6 +284,7 @@ export function buildTabConfig() {
         },
         { id: 'kubernetes', icon: Container, label: 'Kubernetes', component: _components.KubernetesTab, badge: null },
         { id: 'status-page', icon: Globe, label: 'Status Page', component: _components.StatusPageTab, badge: null },
+        { id: 'sdk-dashboard', icon: Blocks, label: 'SDK Integration', component: _components.SDKDashboardTab, badge: null },
         {
             id: 'ai-monitoring',
             icon: Brain,

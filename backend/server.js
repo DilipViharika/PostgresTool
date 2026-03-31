@@ -47,6 +47,7 @@ import observabilityRoutes from './routes/observabilityRoutes.js';
 import reportRoutes    from './routes/reportRoutes.js';
 import mysqlRoutes     from './routes/mysqlRoutes.js';
 import mongoRoutes     from './routes/mongoRoutes.js';
+import sdkRoutes       from './routes/sdkRoutes.js';
 
 // ── Optional DB drivers (graceful fallback if not installed) ──
 let mysql2 = null;
@@ -1422,6 +1423,7 @@ for (const prefix of modularMounts) {
     // ── MySQL & MongoDB routes ────────────────────────────────────────────────
     app.use(prefix, mysqlRoutes(pool, authenticate, getPool, CONNECTIONS));
     app.use(prefix, mongoRoutes(pool, authenticate, getMongoClient, CONNECTIONS));
+    app.use(prefix, sdkRoutes(pool, authenticate, requireScreen));
 }
 
 // ── Enterprise routes (hidden — uncomment when ready) ────────────────────────

@@ -279,6 +279,64 @@ export const feedback = pgmonitoringtool.table(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SDK Integration — Applications
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const sdkApplications = pgmonitoringtool.table(
+  'sdk_applications',
+  {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    appType: text('app_type').notNull().default('custom'),
+    environment: text('environment').notNull().default('production'),
+    apiKeyHash: text('api_key_hash').notNull(),
+    apiKeyPrefix: text('api_key_prefix').notNull(),
+    status: text('status').notNull().default('active'),
+    config: json('config').default({}),
+    lastHeartbeatAt: timestamp('last_heartbeat_at'),
+    createdBy: integer('created_by').references(() => users.id),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('sdk_apps_keyhash_unique').on(table.apiKeyHash),
+    index('sdk_apps_status_idx').on(table.status),
+  ]
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SDK Integration — Events
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const sdkEvents = pgmonitoringtool.table(
+  'sdk_events',
+  {
+    id: serial('id').primaryKey(),
+    appId: integer('app_id').notNull().references(() => sdkApplications.id, { onDelete: 'cascade' }),
+    eventType: text('event_type').notNull(),
+    severity: text('severity').notNull().default('info'),
+    title: text('title').notNull(),
+    message: text('message'),
+    metadata: json('metadata').default({}),
+    tags: text('tags').array().default([]),
+    durationMs: integer('duration_ms'),
+    statusCode: integer('status_code'),
+    endpoint: text('endpoint'),
+    httpMethod: text('http_method'),
+    errorType: text('error_type'),
+    stackTrace: text('stack_trace'),
+    fingerprint: text('fingerprint'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('sdk_events_app_idx').on(table.appId, table.createdAt),
+    index('sdk_events_type_idx').on(table.eventType),
+    index('sdk_events_severity_idx').on(table.severity),
+    index('sdk_events_created_idx').on(table.createdAt),
+  ]
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Relations
 // ─────────────────────────────────────────────────────────────────────────────
 

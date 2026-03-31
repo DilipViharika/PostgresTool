@@ -99,6 +99,7 @@ const KubernetesTab = lazyRetry(() => import('./components/views/monitoring/Kube
 const StatusPageTab = lazyRetry(() => import('./components/views/monitoring/StatusPageTab'));
 const AIMonitoringTab = lazyRetry(() => import('./components/views/monitoring/AIMonitoringTab'));
 const ObservabilityHub = lazyRetry(() => import('./components/views/monitoring/ObservabilityHub'));
+const SDKDashboardTab = lazyRetry(() => import('./components/views/monitoring/SDKDashboardTab'));
 
 // Gap features — Database
 const AIQueryAdvisorTab = lazyRetry(() => import('./components/views/database/AIQueryAdvisorTab'));
@@ -238,6 +239,7 @@ registerComponents({
     StatusPageTab,
     AIMonitoringTab,
     ObservabilityHub,
+    SDKDashboardTab,
     SqlConsoleTab,
     ApiQueriesTab,
     RepositoryTab,
