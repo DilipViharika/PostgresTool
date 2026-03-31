@@ -94,7 +94,7 @@ const OrgSwitcher = () => {
         },
         orgItemActive: {
             backgroundColor: 'rgba(139,92,246,0.15)',
-            color: '#8b5cf6',
+            color: '#00b874',
             fontWeight: '600',
         },
         avatar: {

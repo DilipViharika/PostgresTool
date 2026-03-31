@@ -38,11 +38,11 @@ const SortDesc     = ({ size, color }) => <ChevronDown size={size} color={color}
    ═══════════════════════════════════════════════════════════════════════════ */
 const T = {
     get primary()     { return THEME.primary     || '#3b82f6'; },
-    get secondary()   { return THEME.secondary   || '#818cf8'; },
+    get secondary()   { return THEME.secondary   || '#00b874'; },
     get success()     { return THEME.success     || '#10b981'; },
     get warning()     { return THEME.warning     || '#f59e0b'; },
     get danger()      { return THEME.danger      || '#ef4444'; },
-    get info()        { return THEME.info        || '#8b5cf6'; },
+    get info()        { return THEME.info        || '#00b874'; },
     get teal()        { return THEME.primary     || '#14b8a6'; },
     get glass()       { return THEME.glass       || 'rgba(255,255,255,0.04)'; },
     get glassBorder() { return THEME.glassBorder || 'rgba(255,255,255,0.08)'; },
@@ -51,7 +51,7 @@ const T = {
     get textMain()    { return THEME.textMain    || '#f1f5f9'; },
     get textMuted()   { return THEME.textMuted   || '#94a3b8'; },
     get textDim()     { return THEME.textDim     || '#64748b'; },
-    get fontBody()    { return THEME.fontBody    || "'DM Sans', sans-serif"; },
+    get fontBody()    { return THEME.fontBody    || "'Outfit', sans-serif"; },
     get fontMono()    { return THEME.fontMono    || "'JetBrains Mono', monospace"; },
 };
 
@@ -174,13 +174,13 @@ const RISK_LEVELS = {
 };
 
 const SETTING_CATEGORIES = {
-    memory:      { label: 'Memory',         icon: MemoryStick, color: '#818cf8', keys: ['shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_buffers','temp_buffers','huge_pages'] },
+    memory:      { label: 'Memory',         icon: MemoryStick, color: '#00b874', keys: ['shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_buffers','temp_buffers','huge_pages'] },
     connections: { label: 'Connections',    icon: Network,     color: '#3b82f6', keys: ['max_connections','superuser_reserved_connections','max_prepared_transactions','tcp_keepalives','listen_addresses','port'] },
     performance: { label: 'Performance',    icon: Zap,         color: '#f59e0b', keys: ['max_worker_processes','max_parallel_workers','max_parallel_workers_per_gather','random_page_cost','effective_io_concurrency','parallel_tuple_cost','jit'] },
     wal:         { label: 'WAL & Recovery', icon: Shield,      color: '#10b981', keys: ['wal_level','max_wal_size','min_wal_size','checkpoint_timeout','checkpoint_completion_target','archive_mode','wal_compression'] },
-    logging:     { label: 'Logging',        icon: FileText,    color: '#8b5cf6', keys: ['log_statement','log_min_duration_statement','log_connections','log_disconnections','logging_collector','log_destination'] },
+    logging:     { label: 'Logging',        icon: FileText,    color: '#00b874', keys: ['log_statement','log_min_duration_statement','log_connections','log_disconnections','logging_collector','log_destination'] },
     autovacuum:  { label: 'Autovacuum',     icon: RefreshCw,   color: '#14b8a6', keys: ['autovacuum','autovacuum_max_workers','autovacuum_naptime','autovacuum_vacuum_threshold','autovacuum_analyze_threshold','autovacuum_vacuum_scale_factor'] },
-    security:    { label: 'Security',       icon: Lock,        color: '#a78bfa', keys: ['ssl','password_encryption','krb_server_keyfile','pg_hba','row_security','fsync','synchronous_commit'] },
+    security:    { label: 'Security',       icon: Lock,        color: '#00e5a0', keys: ['ssl','password_encryption','krb_server_keyfile','pg_hba','row_security','fsync','synchronous_commit'] },
 };
 
 const categorize = (name) => {
@@ -1142,7 +1142,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
     const [filter, setFilter] = useState('all');
     const [search, setSearch] = useState('');
 
-    const EXT_CATEGORY_COLORS = { monitoring:'#3b82f6', security:'#a78bfa', utility:'#f59e0b', search:'#10b981', geospatial:'#14b8a6', partitioning:'#818cf8', timeseries:'#8b5cf6', ai:'#f97316', maintenance:'#64748b' };
+    const EXT_CATEGORY_COLORS = { monitoring:'#3b82f6', security:'#00e5a0', utility:'#f59e0b', search:'#10b981', geospatial:'#14b8a6', partitioning:'#00b874', timeseries:'#00b874', ai:'#f97316', maintenance:'#64748b' };
 
     const filtered = useMemo(() => {
         let list = Array.isArray(extData) ? extData : [];
@@ -1266,7 +1266,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
 const HBA_SAMPLE = [];
 const HBA_METHODS  = ['trust','reject','md5','scram-sha-256','password','gss','sspi','ident','peer','ldap','radius','cert','pam'];
 const HBA_TYPES    = ['local','host','hostssl','hostnossl','hostgssenc','hostnogssenc'];
-const METHOD_CLR   = { trust:'#ff465a', reject:'#64748b', md5:'#f5c518', 'scram-sha-256':'#4ade80', ldap:'#63d7ff', cert:'#a78bfa' };
+const METHOD_CLR   = { trust:'#ff465a', reject:'#64748b', md5:'#f5c518', 'scram-sha-256':'#4ade80', ldap:'#63d7ff', cert:'#00e5a0' };
 
 /* ── Shared mini form controls — defined OUTSIDE HBAView so React doesn't remount on each render ── */
 const HBASelect = ({ val, opts, onChange, w = 120 }) => (
@@ -1407,7 +1407,7 @@ const ExtDashboard = ({ extData = [] }) => {
     const installed  = extData.filter(e => e.installed);
     const categories = extData.reduce((acc, e) => { acc[e.category] = (acc[e.category]||0)+1; return acc; }, {});
     const catEntries = Object.entries(categories).sort((a,b)=>b[1]-a[1]);
-    const clrs = ['#63d7ff','#4ade80','#f5c518','#f472b6','#a78bfa','#fb923c'];
+    const clrs = ['#63d7ff','#4ade80','#f5c518','#f472b6','#00e5a0','#fb923c'];
     const secFlags = extData.filter(e => e.installed && (e.name==='dblink'||e.name==='pg_tle'||e.superuser)).length;
 
     return (

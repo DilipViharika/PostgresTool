@@ -113,7 +113,7 @@ const LicenseManagement = () => {
             backgroundColor: '#0a0e27',
             minHeight: '100vh',
             color: '#f1f5f9',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Outfit', sans-serif",
         },
         header: {
             marginBottom: '30px',
@@ -166,7 +166,7 @@ const LicenseManagement = () => {
         value: {
             fontSize: '14px',
             fontWeight: '600',
-            color: '#8b5cf6',
+            color: '#00b874',
             margin: '0',
             wordBreak: 'break-all',
         },
@@ -192,7 +192,7 @@ const LicenseManagement = () => {
             justifyContent: 'center',
             gap: '8px',
             padding: '10px 16px',
-            backgroundColor: '#8b5cf6',
+            backgroundColor: '#00b874',
             color: '#0a0e27',
             border: 'none',
             borderRadius: '6px',
@@ -236,7 +236,7 @@ const LicenseManagement = () => {
         },
         tierColumn: {
             fontWeight: '600',
-            color: '#8b5cf6',
+            color: '#00b874',
         },
         checkIcon: {
             color: '#10b981',

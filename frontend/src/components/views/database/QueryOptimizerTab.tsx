@@ -554,7 +554,7 @@ const FlameGraph = ({ plan }) => {
     flatten(plan?.Plan);
     const maxDepth = nodes.length > 0 ? Math.max(...nodes.map(n => n.depth), 0) : 0;
     const maxTime = nodes.length > 0 ? Math.max(...nodes.map(n => n.time), 1) : 1;
-    const FLAME_COLORS = [THEME.primary, THEME.warning, THEME.danger, '#a78bfa', '#34d399', '#f472b6'];
+    const FLAME_COLORS = [THEME.primary, THEME.warning, THEME.danger, '#00e5a0', '#34d399', '#f472b6'];
 
     return (
         <div>
@@ -683,7 +683,7 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
             {/* Header */}
             <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0, background: `linear-gradient(135deg, ${THEME.primary}06, ${THEME.secondary || THEME.primary}04)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${THEME.primary}30, ${THEME.secondary || '#a78bfa'}30)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${THEME.primary}30, ${THEME.secondary || '#00e5a0'}30)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Wand2 size={15} color={THEME.primary} />
                     </div>
                     <div>
@@ -847,7 +847,7 @@ const ServiceAttributionPanel = () => {
     const totalTime = safeAttribution.reduce((s, r) => s + (r?.total_time_ms || 0), 0);
     const maxCostShare = sorted.length > 0 ? Math.max(...sorted.map(s => s.cost_share || 0)) : 0;
 
-    const teamColors = { Platform: THEME.primary, Commerce: THEME.warning, Data: '#a78bfa', Growth: '#34d399', Search: '#f472b6' };
+    const teamColors = { Platform: THEME.primary, Commerce: THEME.warning, Data: '#00e5a0', Growth: '#34d399', Search: '#f472b6' };
 
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -892,7 +892,7 @@ const ServiceAttributionPanel = () => {
                             <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.06em' }}>Database Time Distribution by Service</div>
                             <div style={{ height: 32, borderRadius: 6, overflow: 'hidden', display: 'flex' }}>
                                 {sorted.map((svc, i) => {
-                                    const colors = [THEME.primary, THEME.warning, '#a78bfa', '#34d399', THEME.danger, '#f472b6'];
+                                    const colors = [THEME.primary, THEME.warning, '#00e5a0', '#34d399', THEME.danger, '#f472b6'];
                                     return (
                                         <div key={svc.service} title={`${svc.service}: ${svc.cost_share.toFixed(1)}%`}
                                              style={{ flex: svc.cost_share, background: colors[i % colors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'flex 0.5s ease' }}>
@@ -903,7 +903,7 @@ const ServiceAttributionPanel = () => {
                             </div>
                             <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
                                 {sorted.map((svc, i) => {
-                                    const colors = [THEME.primary, THEME.warning, '#a78bfa', '#34d399', THEME.danger, '#f472b6'];
+                                    const colors = [THEME.primary, THEME.warning, '#00e5a0', '#34d399', THEME.danger, '#f472b6'];
                                     return (
                                         <span key={svc.service} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: THEME.textDim }}>
                                             <div style={{ width: 8, height: 8, borderRadius: 2, background: colors[i % colors.length], flexShrink: 0 }} />
@@ -916,7 +916,7 @@ const ServiceAttributionPanel = () => {
 
                         {/* Per-service cards */}
                         {sorted.map((svc, i) => {
-                            const colors = [THEME.primary, THEME.warning, '#a78bfa', '#34d399', THEME.danger, '#f472b6'];
+                            const colors = [THEME.primary, THEME.warning, '#00e5a0', '#34d399', THEME.danger, '#f472b6'];
                             const c = colors[i % colors.length];
                             const teamColor = teamColors[svc.team] || THEME.textDim;
                             return (
@@ -1187,7 +1187,7 @@ const SlowQueryPanel = ({ onLoadQuery }) => {
         .sort((a, b) => (b?.[sortBy] || 0) - (a?.[sortBy] || 0));
 
     const selected = filtered.find(q => q.id === selectedId);
-    const tagColors = { 'no-index': THEME.danger, 'seq-scan': THEME.warning, 'aggregation': THEME.primary, 'hot-table': '#a78bfa', 'wide-select': THEME.warning, 'bulk-delete': THEME.danger, 'locks': THEME.danger };
+    const tagColors = { 'no-index': THEME.danger, 'seq-scan': THEME.warning, 'aggregation': THEME.primary, 'hot-table': '#00e5a0', 'wide-select': THEME.warning, 'bulk-delete': THEME.danger, 'locks': THEME.danger };
 
     return (
         <div style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>

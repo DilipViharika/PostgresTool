@@ -25,7 +25,7 @@ const T = {
 const ROLE_CFG = {
     superadmin: { label: 'Super Admin', color: '#f59e0b', bg: '#f59e0b18', icon: 'SA' },
     admin:      { label: 'Admin',       color: '#6c63ff', bg: '#6c63ff1a', icon: 'AD' },
-    editor:     { label: 'Editor',      color: '#8b5cf6', bg: '#8b5cf614', icon: 'ED' },
+    editor:     { label: 'Editor',      color: '#00b874', bg: '#00b87414', icon: 'ED' },
     viewer:     { label: 'Viewer',      color: '#10b981', bg: '#10b98114', icon: 'VW' },
     guest:      { label: 'Guest',       color: '#9395a5', bg: '#9395a518', icon: 'GS' },
 };
@@ -49,7 +49,7 @@ const getInitials = (n) => {
 };
 
 const getAvatarColor = (n) => {
-    var p = ['#6c63ff','#8b5cf6','#10b981','#f59e0b','#8b5cf6','#ec4899','#ff6b35'];
+    var p = ['#6c63ff','#00b874','#10b981','#f59e0b','#00b874','#ec4899','#ff6b35'];
     var h = 0;
     var str = n || '';
     for (var i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);

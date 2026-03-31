@@ -43,7 +43,7 @@ const CSS = `
 .ud-row:hover{background:rgba(255,255,255,.04)!important}
 .ud-btn{transition:all .16s;cursor:pointer}
 .ud-btn:hover{opacity:.8}
-.ai-thinking{background:linear-gradient(90deg,#8b5cf610 25%,#8b5cf630 50%,#8b5cf610 75%);background-size:200% 100%;animation:ud-shimmer 1.6s ease-in-out infinite}
+.ai-thinking{background:linear-gradient(90deg,#00b87410 25%,#00b87430 50%,#00b87410 75%);background-size:200% 100%;animation:ud-shimmer 1.6s ease-in-out infinite}
 .ai-glow{animation:ai-glow 3s ease-in-out infinite}
 .ai-token{animation:ud-typewriter .15s ease both}
 button{outline:none;font-family:inherit}
@@ -2360,7 +2360,7 @@ export default function UnifiedDashboard() {
     return (
         <FilterCtx.Provider value={filter}>
             <style>{CSS}</style>
-            <div style={{ display: 'flex', height: '100%', width: '100%', background: THEME.bg, fontFamily: "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif", color: THEME.textMain, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', height: '100%', width: '100%', background: THEME.bg, fontFamily: "'Plus Jakarta Sans', 'Outfit', system-ui, sans-serif", color: THEME.textMain, overflow: 'hidden' }}>
 
                 {/* ── SIDEBAR ─────────────────────────────────── */}
                 <aside style={{ width: 244, flexShrink: 0, background: THEME.surface, borderRight: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

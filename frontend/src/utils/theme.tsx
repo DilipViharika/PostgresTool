@@ -12,36 +12,36 @@ import { useTheme } from '../context/ThemeContext';
 
 // ── Internal token sets (not exported) ───────────────────────────────────────
 const _DARK = {
-    // ── Backgrounds — deep indigo-navy, not purple-void ─────────────────────────
-    bg:            '#0a0d1e',
-    bgAlt:         '#0e1225',
-    surface:       '#131836',
-    surfaceHover:  '#1a1f45',
-    surfaceRaised: '#1e2450',
+    // ── Backgrounds — VaultDB dark teal ─────────────────────────────────────────
+    bg:            '#0b1a24',
+    bgAlt:         '#0b1e2c',
+    surface:       '#0e2a3e',
+    surfaceHover:  '#133348',
+    surfaceRaised: '#163d55',
 
     // ── Glass ─────────────────────────────────────────────────────────────────
-    glass:             'rgba(19, 24, 54, 0.65)',
-    glassHeavy:        'rgba(10, 13, 30, 0.92)',
-    glassBorder:       'rgba(139, 92, 246, 0.12)',
-    glassBorderHover:  'rgba(139, 92, 246, 0.32)',
+    glass:             'rgba(14, 42, 62, 0.65)',
+    glassHeavy:        'rgba(11, 26, 36, 0.92)',
+    glassBorder:       'rgba(0, 184, 116, 0.12)',
+    glassBorderHover:  'rgba(0, 184, 116, 0.32)',
 
     // ── Typography ────────────────────────────────────────────────────────────
-    textMain:    '#f0f0ff',   // violet-white
-    textMuted:   '#8b8fa8',   // muted slate
-    textDim:     '#4a4e6a',   // dim slate
-    textInverse: '#0a0d1e',
+    textMain:    '#f0f4ff',
+    textMuted:   '#8b9ab8',
+    textDim:     '#4a5e7a',
+    textInverse: '#0b1a24',
 
-    // ── Violet — primary pulse ────────────────────────────────────────────────
-    primary:      '#8b5cf6',
-    primaryDark:  '#7c3aed',
-    primaryLight: '#a78bfa',
-    primaryFaint: 'rgba(139, 92, 246, 0.07)',
+    // ── Green — primary accent ───────────────────────────────────────────────
+    primary:      '#00b874',
+    primaryDark:  '#00a066',
+    primaryLight: '#00e5a0',
+    primaryFaint: 'rgba(0, 184, 116, 0.07)',
 
-    // ── Cyan — secondary contrast ──────────────────────────────────────────────
-    secondary:      '#06b6d4',
-    secondaryDark:  '#0891b2',
-    secondaryLight: '#22d3ee',
-    secondaryFaint: 'rgba(6, 182, 212, 0.07)',
+    // ── Green — secondary (unified accent) ──────────────────────────────────
+    secondary:      '#00b874',
+    secondaryDark:  '#00a066',
+    secondaryLight: '#00e5a0',
+    secondaryFaint: 'rgba(0, 184, 116, 0.07)',
 
     // ── Emerald Pulse — success ───────────────────────────────────────────────
     success:      '#2EE89C',
@@ -63,20 +63,20 @@ const _DARK = {
     infoDark:  '#2A90D4',
     infoLight: '#90D4FF',
 
-    // ── Violet Haze — AI/system ───────────────────────────────────────────────
-    ai:      '#a78bfa',
-    aiDark:  '#8b5cf6',
-    aiLight: '#c4b5fd',
+    // ── AI/system ─────────────────────────────────────────────────────────────
+    ai:      '#00e5a0',
+    aiDark:  '#00b874',
+    aiLight: '#70FFBD',
 
     // ── Structural accents ────────────────────────────────────────────────────
-    grid:      '#1a1f3a',
-    gridAlt:   '#252b50',
+    grid:      '#0e2a3e',
+    gridAlt:   '#133348',
     pearl:     '#e0e4f0',
-    deepTeal:  '#0a0820',
-    inkBlack:  '#060818',
-    phosphor:  '#8b5cf6',    // primary alias for shimmer animations (purple)
-    biolume:   '#06b6d4',    // secondary alias for glow animations (cyan)
-    mariana:   '#080a18',
+    deepTeal:  '#081218',
+    inkBlack:  '#081218',
+    phosphor:  '#00b874',    // primary alias for shimmer animations (green)
+    biolume:   '#00b874',    // secondary alias for glow animations (green)
+    mariana:   '#091620',
 
     // ── Shadows ───────────────────────────────────────────────────────────────
     shadowSm:     '0 1px 3px rgba(0,0,0,0.85)',
@@ -86,8 +86,8 @@ const _DARK = {
     shadowInner:  'inset 0 2px 8px rgba(0,0,0,0.55)',
     shadowNeon:       (color) => `0 0 6px ${color}50, 0 0 20px ${color}28, 0 0 50px ${color}12`,
     shadowNeonStrong: (color) => `0 0 6px ${color}90, 0 0 24px ${color}55, 0 0 70px ${color}25`,
-    shadowGold:   '0 0 8px rgba(6,182,212,0.35), 0 0 25px rgba(6,182,212,0.15)',
-    shadowTeal:   '0 0 8px rgba(139,92,246,0.45), 0 0 28px rgba(139,92,246,0.18)',
+    shadowGold:   '0 0 8px rgba(0,184,116,0.35), 0 0 25px rgba(0,184,116,0.15)',
+    shadowTeal:   '0 0 8px rgba(0,184,116,0.45), 0 0 28px rgba(0,184,116,0.18)',
     shadowDeep:   '0 30px 80px rgba(0,0,0,0.95), 0 8px 24px rgba(0,0,0,0.75)',
 
     // ── Border Radius ─────────────────────────────────────────────────────────
@@ -107,10 +107,10 @@ const _DARK = {
     transitionBounce: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
 
     // ── Typography ────────────────────────────────────────────────────────────
-    fontDisplay:     "'Cinzel', 'Playfair Display', Georgia, serif",
-    fontBody:        "'DM Sans', 'Outfit', sans-serif",
+    fontDisplay:     "'Outfit', 'Inter', -apple-system, sans-serif",
+    fontBody:        "'Outfit', 'Inter', sans-serif",
     fontMono:        "'JetBrains Mono', 'Fira Code', monospace",
-    fontDecorative:  "'Cormorant Garamond', Georgia, serif",
+    fontDecorative:  "'Outfit', sans-serif",
 
     // ── Spacing ───────────────────────────────────────────────────────────────
     space: (n) => `${n * 4}px`,
@@ -118,36 +118,36 @@ const _DARK = {
 
 // ── Internal light-mode token set ────────────────────────────────────────────
 const _LIGHT = {
-    // ── Backgrounds — clean white matching login right panel ─────────────────────
-    bg:            '#f8fafc',
-    bgAlt:         '#f1f5f9',
+    // ── Backgrounds — VaultDB light ─────────────────────────────────────────────
+    bg:            '#eceef4',
+    bgAlt:         '#e4e7ef',
     surface:       '#ffffff',
-    surfaceHover:  '#f8fafc',
-    surfaceRaised: '#f1f5f9',
+    surfaceHover:  '#f3f4f8',
+    surfaceRaised: '#f3f4f8',
 
     // ── Glass ─────────────────────────────────────────────────────────────────
     glass:             'rgba(255, 255, 255, 0.88)',
-    glassHeavy:        'rgba(248, 250, 252, 0.95)',
-    glassBorder:       'rgba(139, 92, 246, 0.12)',
-    glassBorderHover:  'rgba(139, 92, 246, 0.30)',
+    glassHeavy:        'rgba(255, 255, 255, 0.95)',
+    glassBorder:       'rgba(0, 184, 116, 0.12)',
+    glassBorderHover:  'rgba(0, 184, 116, 0.30)',
 
     // ── Typography ────────────────────────────────────────────────────────────
-    textMain:    '#1e293b',
-    textMuted:   '#64748b',
-    textDim:     '#94a3b8',
-    textInverse: '#f8fafc',
+    textMain:    '#1a1e2e',
+    textMuted:   '#5a6078',
+    textDim:     '#9198ae',
+    textInverse: '#ffffff',
 
-    // ── Violet — primary pulse ────────────────────────────────────────────────
-    primary:      '#8b5cf6',
-    primaryDark:  '#7c3aed',
-    primaryLight: '#a78bfa',
-    primaryFaint: 'rgba(139, 92, 246, 0.06)',
+    // ── Green — primary accent ───────────────────────────────────────────────
+    primary:      '#00b874',
+    primaryDark:  '#00a066',
+    primaryLight: '#00e5a0',
+    primaryFaint: 'rgba(0, 184, 116, 0.06)',
 
-    // ── Cyan — secondary contrast ──────────────────────────────────────────────
-    secondary:      '#06b6d4',
-    secondaryDark:  '#0891b2',
-    secondaryLight: '#22d3ee',
-    secondaryFaint: 'rgba(6, 182, 212, 0.06)',
+    // ── Green — secondary (unified accent) ──────────────────────────────────
+    secondary:      '#00b874',
+    secondaryDark:  '#00a066',
+    secondaryLight: '#00e5a0',
+    secondaryFaint: 'rgba(0, 184, 116, 0.06)',
 
     // ── Success ───────────────────────────────────────────────────────────────
     success:      '#16a34a',
@@ -169,20 +169,20 @@ const _LIGHT = {
     infoDark:  '#0369a1',
     infoLight: '#38bdf8',
 
-    // ── Violet — AI/system ────────────────────────────────────────────────────
-    ai:      '#8b5cf6',
-    aiDark:  '#7c3aed',
-    aiLight: '#a78bfa',
+    // ── AI/system ─────────────────────────────────────────────────────────────
+    ai:      '#00e5a0',
+    aiDark:  '#00b874',
+    aiLight: '#70FFBD',
 
     // ── Structural accents ────────────────────────────────────────────────────
-    grid:      '#e2e8f0',
-    gridAlt:   '#cbd5e1',
-    pearl:     '#1e293b',
-    deepTeal:  '#e0f2fe',
-    inkBlack:  '#f8fafc',
-    phosphor:  '#8b5cf6',
-    biolume:   '#06b6d4',
-    mariana:   '#f0f9ff',
+    grid:      '#e4e7ef',
+    gridAlt:   '#d0d4e0',
+    pearl:     '#1a1e2e',
+    deepTeal:  '#e4e7ef',
+    inkBlack:  '#eceef4',
+    phosphor:  '#00b874',
+    biolume:   '#00b874',
+    mariana:   '#f3f4f8',
 
     // ── Shadows — softer ──────────────────────────────────────────────────────
     shadowSm:     '0 1px 3px rgba(0,0,0,0.10)',
@@ -192,8 +192,8 @@ const _LIGHT = {
     shadowInner:  'inset 0 2px 8px rgba(0,0,0,0.06)',
     shadowNeon:       (color) => `0 0 4px ${color}30, 0 0 12px ${color}15, 0 0 30px ${color}08`,
     shadowNeonStrong: (color) => `0 0 5px ${color}55, 0 0 16px ${color}30, 0 0 45px ${color}15`,
-    shadowGold:   '0 0 6px rgba(6,182,212,0.25), 0 0 18px rgba(6,182,212,0.12)',
-    shadowTeal:   '0 0 6px rgba(139,92,246,0.30), 0 0 18px rgba(139,92,246,0.14)',
+    shadowGold:   '0 0 6px rgba(0,184,116,0.25), 0 0 18px rgba(0,184,116,0.12)',
+    shadowTeal:   '0 0 6px rgba(0,184,116,0.30), 0 0 18px rgba(0,184,116,0.14)',
     shadowDeep:   '0 30px 80px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.06)',
 
     // ── Border Radius (same) ──────────────────────────────────────────────────
@@ -212,11 +212,11 @@ const _LIGHT = {
     transitionSpring: 'all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
     transitionBounce: 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
 
-    // ── Typography (same) ─────────────────────────────────────────────────────
-    fontDisplay:     "'Cinzel', 'Playfair Display', Georgia, serif",
-    fontBody:        "'DM Sans', 'Outfit', sans-serif",
+    // ── Typography ─────────────────────────────────────────────────────────────
+    fontDisplay:     "'Outfit', 'Inter', -apple-system, sans-serif",
+    fontBody:        "'Outfit', 'Inter', sans-serif",
     fontMono:        "'JetBrains Mono', 'Fira Code', monospace",
-    fontDecorative:  "'Cormorant Garamond', Georgia, serif",
+    fontDecorative:  "'Outfit', sans-serif",
 
     // ── Spacing (same) ────────────────────────────────────────────────────────
     space: (n) => `${n * 4}px`,
@@ -250,7 +250,7 @@ export const ChartDefs = () => (
 
             {/* ── Glow Filters ── */}
 
-            {/* Violet glow — primary #8b5cf6 */}
+            {/* Violet glow — primary #00b874 */}
             <filter id="tealGlow" height="300%" width="300%" x="-100%" y="-100%">
                 <feGaussianBlur stdDeviation="5" result="blur" />
                 <feColorMatrix type="matrix"
@@ -259,7 +259,7 @@ export const ChartDefs = () => (
                 <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
 
-            {/* Cyan glow — secondary #06b6d4 */}
+            {/* Cyan glow — secondary #00b874 */}
             <filter id="goldGlow" height="300%" width="300%" x="-100%" y="-100%">
                 <feGaussianBlur stdDeviation="5" result="blur" />
                 <feColorMatrix type="matrix"

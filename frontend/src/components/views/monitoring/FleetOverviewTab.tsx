@@ -253,10 +253,10 @@ const DatabaseCard = ({ connection, health, isActive, onSwitch }) => {
 
     const getDBTypeIcon = (dbType) => {
         switch (dbType?.toLowerCase()) {
-            case 'mysql': return <Database size={20} color="#8b5cf6" />;
-            case 'mongodb': return <Server size={20} color="#8b5cf6" />;
+            case 'mysql': return <Database size={20} color="#00b874" />;
+            case 'mongodb': return <Server size={20} color="#00b874" />;
             case 'postgresql':
-            default: return <Database size={20} color="#8b5cf6" />;
+            default: return <Database size={20} color="#00b874" />;
         }
     };
 
@@ -396,8 +396,8 @@ const OvStyles = () => (
             to { transform: rotate(360deg); }
         }
         @keyframes cardGlow {
-            0%, 100% { box-shadow: 0 0 0 rgba(139, 92, 246, 0); }
-            50% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.2), inset 0 0 20px rgba(139, 92, 246, 0.05); }
+            0%, 100% { box-shadow: 0 0 0 rgba(0, 184, 116, 0); }
+            50% { box-shadow: 0 0 20px rgba(0, 184, 116, 0.2), inset 0 0 20px rgba(0, 184, 116, 0.05); }
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -544,7 +544,7 @@ const styles = {
         width: '40px',
         height: '40px',
         borderRadius: '8px',
-        background: `rgba(139, 92, 246, 0.08)`,
+        background: `rgba(0, 184, 116, 0.08)`,
         border: `1px solid ${THEME.primary}`,
         flexShrink: 0,
     },
@@ -627,7 +627,7 @@ const styles = {
         gap: '4px',
         padding: '4px 10px',
         borderRadius: '6px',
-        background: `rgba(139, 92, 246, 0.1)`,
+        background: `rgba(0, 184, 116, 0.1)`,
         border: `1px solid ${THEME.primary}`,
         fontSize: '11px',
         fontWeight: '600',

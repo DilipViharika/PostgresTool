@@ -26,13 +26,13 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
    THEME
    ───────────────────────────────────────────────────────────────── */
 const buildTheme = (isDark) => ({
-    primary: isDark ? '#8b5cf6' : '#8b5cf6',
-    secondary: isDark ? '#06b6d4' : '#10b981',
+    primary: isDark ? '#00b874' : '#00b874',
+    secondary: isDark ? '#00b874' : '#10b981',
     success: isDark ? '#2EE89C' : '#22c55e',
     danger: isDark ? '#FF4560' : '#ef4444',
     warning: isDark ? '#FFB520' : '#f59e0b',
     info: isDark ? '#5BB8F5' : '#3b82f6',
-    ai: isDark ? '#B88BFF' : '#8b5cf6',
+    ai: isDark ? '#B88BFF' : '#00b874',
     bg: isDark ? '#07030D' : '#f0f4f8',
     surface: isDark ? '#120A1F' : '#ffffff',
     surfaceHover: isDark ? '#1A1029' : '#f1f5f9',
@@ -43,7 +43,7 @@ const buildTheme = (isDark) => ({
     textMuted: isDark ? '#9888B4' : '#64748b',
     textDim: isDark ? '#4A3A5E' : '#94a3b8',
     fontMono: `'JetBrains Mono', 'Fira Code', monospace`,
-    fontBody: `'DM Sans', system-ui, sans-serif`,
+    fontBody: `'Outfit', system-ui, sans-serif`,
 });
 
 /* ── Helpers ── */

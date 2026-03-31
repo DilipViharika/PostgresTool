@@ -492,7 +492,7 @@ const ChartView = ({ result }) => {
                     })()}
                     {chartType === 'pie' && (() => {
                         const total = chartData.reduce((s,d)=>s+Math.abs(d.y),0) || 1;
-                        const colors = ['#63d7ff','#4ade80','#f5c518','#f472b6','#a78bfa','#fb923c','#34d399','#60a5fa'];
+                        const colors = ['#63d7ff','#4ade80','#f5c518','#f472b6','#00e5a0','#fb923c','#34d399','#60a5fa'];
                         let angle = -Math.PI / 2;
                         const cx = 50, cy = 48, r = 38;
                         const slices = chartData.slice(0,8).map((d,i) => {

@@ -611,13 +611,13 @@ const SecurityRadar = ({ complianceChecks = [] }) => {
 
     return (
         <div className="card" style={{ padding: '0 0 12px' }}>
-            <SectionHeader icon={BarChart2} title="Security Posture Radar" iconColor="#a78bfa" />
+            <SectionHeader icon={BarChart2} title="Security Posture Radar" iconColor="#00e5a0" />
             <ResponsiveContainer width="100%" height={220}>
                 <RadarChart data={radarData} cx="50%" cy="50%" outerRadius={75}>
                     <PolarGrid stroke={THEME.grid} />
                     <PolarAngleAxis dataKey="axis" tick={{ fill: THEME.textMuted, fontSize: 11 }} />
                     <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-                    <Radar name="Score" dataKey="val" stroke="#a78bfa" fill="#a78bfa" fillOpacity={0.15} strokeWidth={2} dot={{ fill: '#a78bfa', r: 3 }} />
+                    <Radar name="Score" dataKey="val" stroke="#00e5a0" fill="#00e5a0" fillOpacity={0.15} strokeWidth={2} dot={{ fill: '#00e5a0', r: 3 }} />
                 </RadarChart>
             </ResponsiveContainer>
         </div>
@@ -905,7 +905,7 @@ const ComplianceReportGenerator = () => {
     if (!fw) {
         return (
             <div className="card" style={{ padding: 20, marginTop: 18 }}>
-                <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor="#a78bfa" />
+                <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor="#00e5a0" />
                 <div style={{ padding: '20px', textAlign: 'center', color: THEME.textDim }}>
                     No compliance frameworks configured
                 </div>
@@ -915,7 +915,7 @@ const ComplianceReportGenerator = () => {
 
     return (
         <div className="card" style={{ padding: 20, marginTop: 18 }}>
-            <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor="#a78bfa" />
+            <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor="#00e5a0" />
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, margin: '16px 0' }}>
                 {safeFrameworks.map(f => (
@@ -991,7 +991,7 @@ const ComplianceReportGenerator = () => {
                     </div>
 
                     <button onClick={handleGenerate} disabled={generating}
-                        style={{ marginTop: 16, background: generating ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)', color: '#a78bfa', padding: '10px 18px', borderRadius: 8, cursor: generating ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: THEME.fontBody, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                        style={{ marginTop: 16, background: generating ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)', color: '#00e5a0', padding: '10px 18px', borderRadius: 8, cursor: generating ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: THEME.fontBody, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
                         {generating ? (
                             <><RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} /> Generating…</>
                         ) : (

@@ -940,7 +940,7 @@ const ResourcesTab = () => {
                     days: ['Current'],
                     series: top10.map((t, i) => ({
                         name: t.table_name,
-                        color: [THEME.primary, THEME.secondary, THEME.success, THEME.warning, THEME.danger, '#8b5cf6', '#06b6d4', '#f97316', '#84cc16', '#ec4899'][i % 10],
+                        color: [THEME.primary, THEME.secondary, THEME.success, THEME.warning, THEME.danger, '#00b874', '#00b874', '#f97316', '#84cc16', '#ec4899'][i % 10],
                         data: [Number(t.growth_rate || 0)],
                     })),
                 });

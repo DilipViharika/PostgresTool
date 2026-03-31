@@ -324,7 +324,7 @@ const WAIT_COLORS = {
     'IO': THEME.warning,
     'CPU': THEME.primary,
     'Client': THEME.success,
-    'IPC': '#a78bfa',
+    'IPC': '#00e5a0',
     'Timeout': '#fb923c',
     'Extension': THEME.textDim,
 };

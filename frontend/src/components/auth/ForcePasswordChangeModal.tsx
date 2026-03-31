@@ -171,11 +171,11 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                     <div style={{
                         width: 40, height: 40, borderRadius: '50%',
-                        background: 'linear-gradient(135deg, rgba(139,92,246,.2), rgba(6,182,212,.2))',
+                        background: 'linear-gradient(135deg, rgba(139,92,246,.2), rgba(0,184,116,.2))',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0,
                     }}>
-                        <KeyRound size={20} color="#8b5cf6" />
+                        <KeyRound size={20} color="#00b874" />
                     </div>
                     <div>
                         <h3 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0 }}>
@@ -196,7 +196,7 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
                     border: '1px solid rgba(139,92,246,.1)',
                     display: 'flex', alignItems: 'center', gap: 10,
                 }}>
-                    <Lock size={14} color="#8b5cf6" style={{ flexShrink: 0 }} />
+                    <Lock size={14} color="#00b874" style={{ flexShrink: 0 }} />
                     <span style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', lineHeight: 1.4 }}>
                         Your account requires a password update for security. Please set a new password below.
                     </span>
@@ -308,7 +308,7 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
                             style={{
                                 flex: 2, padding: '12px 16px', borderRadius: 10, border: 'none',
                                 background: isValid && !loading
-                                    ? 'linear-gradient(135deg, #8b5cf6, #06b6d4)'
+                                    ? 'linear-gradient(135deg, #00b874, #00b874)'
                                     : 'rgba(255,255,255,.04)',
                                 color: isValid && !loading ? '#fff' : 'rgba(255,255,255,.2)',
                                 fontSize: 13, fontWeight: 600,

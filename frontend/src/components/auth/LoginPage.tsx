@@ -145,7 +145,7 @@ const DecoRings = () => (
         {[
             { inset: 0, dur: '30s', dir: 'normal', borderColor: 'rgba(0,229,160,0.08)', dotColor: '#00e5a0', dotPos: { top: 0, left: '50%', transform: 'translate(-50%,-50%)' } },
             { inset: 30, dur: '24s', dir: 'reverse', borderColor: 'rgba(71,179,255,0.07)', dotColor: '#47b3ff', dotPos: { bottom: 10, right: 10 } },
-            { inset: 60, dur: '18s', dir: 'normal', borderColor: 'rgba(167,139,250,0.06)', dotColor: '#a78bfa', dotPos: { top: '50%', left: 0, transform: 'translate(-50%,-50%)' } },
+            { inset: 60, dur: '18s', dir: 'normal', borderColor: 'rgba(167,139,250,0.06)', dotColor: '#00e5a0', dotPos: { top: '50%', left: 0, transform: 'translate(-50%,-50%)' } },
         ].map((r, i) => (
             <div key={i} style={{
                 position: 'absolute', inset: r.inset, border: `1px solid ${r.borderColor}`,

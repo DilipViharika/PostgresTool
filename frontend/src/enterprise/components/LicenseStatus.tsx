@@ -39,13 +39,13 @@ const LicenseStatus = ({ showDetails = false }) => {
         },
         pro: {
             label: 'Pro',
-            color: '#8b5cf6',
+            color: '#00b874',
             bgColor: 'rgba(139,92,246,0.1)',
             icon: '◆',
         },
         enterprise: {
             label: 'Enterprise',
-            color: '#a78bfa',
+            color: '#00e5a0',
             bgColor: 'rgba(167,139,250,0.1)',
             icon: '◈',
         },

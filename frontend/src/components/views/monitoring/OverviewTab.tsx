@@ -718,7 +718,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 /* Alerts are fetched from /api/overview/alerts — no mock data */
 
-const SEVERITY_COLOR = { critical: '#ef4444', warning: '#f59e0b', info: '#8b5cf6' };
+const SEVERITY_COLOR = { critical: '#ef4444', warning: '#f59e0b', info: '#00b874' };
 const SEVERITY_ICON = { critical: AlertCircle, warning: AlertTriangle, info: Info };
 
 const NotificationBell = () => {
@@ -1855,8 +1855,8 @@ const ConnectionStatusBanner = () => {
                         <span
                             style={{
                                 fontSize: 10,
-                                color: '#a78bfa',
-                                background: '#a78bfa18',
+                                color: '#00e5a0',
+                                background: '#00e5a018',
                                 padding: '1px 7px',
                                 borderRadius: 20,
                                 fontFamily: 'monospace',

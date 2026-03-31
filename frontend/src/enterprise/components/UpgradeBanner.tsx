@@ -50,8 +50,8 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
         border: 'rgba(139,92,246,0.2)',
         text: '#f0f4ff',
         muted: '#94a3b8',
-        accent: '#8b5cf6',
-        accentDark: '#8b5cf6',
+        accent: '#00b874',
+        accentDark: '#00b874',
     } : {
         bg: '#f8fafc',
         border: 'rgba(99,102,241,0.2)',

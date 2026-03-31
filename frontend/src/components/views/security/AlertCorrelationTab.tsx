@@ -879,7 +879,7 @@ export default function AlertCorrelationTab() {
                             <span style={{ color: THEME.textMain, fontSize: 13, fontWeight: 600 }}>
                                 {cfg.label}
                             </span>
-                            <span style={{ color: '#818cf8', fontWeight: 700, fontSize: 14 }}>
+                            <span style={{ color: '#00b874', fontWeight: 700, fontSize: 14 }}>
                                 {sensitivity[cfg.key]}
                                 {cfg.unit}
                             </span>
@@ -898,7 +898,7 @@ export default function AlertCorrelationTab() {
                             }
                             style={{
                                 width: '100%',
-                                accentColor: '#818cf8',
+                                accentColor: '#00b874',
                                 cursor: 'pointer',
                             }}
                         />
@@ -932,7 +932,7 @@ export default function AlertCorrelationTab() {
                             width: 44,
                             height: 24,
                             borderRadius: 12,
-                            background: sensitivity.autoCorrelate ? '#818cf8' : THEME.glassBorder,
+                            background: sensitivity.autoCorrelate ? '#00b874' : THEME.glassBorder,
                             cursor: 'pointer',
                             position: 'relative',
                             transition: 'background .2s',
@@ -983,7 +983,7 @@ export default function AlertCorrelationTab() {
                             padding: '10px 0',
                             borderRadius: 8,
                             border: 'none',
-                            background: '#818cf8',
+                            background: '#00b874',
                             color: '#fff',
                             cursor: 'pointer',
                             fontSize: 13,
@@ -1062,7 +1062,7 @@ export default function AlertCorrelationTab() {
                                                             ? '#ef4444'
                                                             : ai === 1
                                                             ? '#f97316'
-                                                            : '#818cf8',
+                                                            : '#00b874',
                                                 }}
                                             />
                                             {ai > 0 && (
