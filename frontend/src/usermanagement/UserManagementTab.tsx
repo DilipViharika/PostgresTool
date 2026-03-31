@@ -10,7 +10,7 @@ import { AuditLog, SecurityPanel } from './PermissionMatrix/AuditAndSecurity';
 import { UserDrawer, PasswordModal, UserFormModal } from './PermissionMatrix/Modals';
 
 const T = THEME;
-const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION 1 — CONSTANTS

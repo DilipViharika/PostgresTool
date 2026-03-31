@@ -882,7 +882,7 @@ const SchemaVersioningTab = () => {
         }
     }, [migrations]);
 
-    const wsUrl = (import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app').replace(/^http/, 'ws');
+    const wsUrl = (import.meta.env.VITE_API_URL || '').replace(/^http/, 'ws');
     const { isConnected } = useWebSocket(wsUrl, () => {});
 
     const allTags = useMemo(() => {

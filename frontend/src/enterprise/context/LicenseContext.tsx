@@ -9,7 +9,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchData } from '../../utils/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  CONTEXT

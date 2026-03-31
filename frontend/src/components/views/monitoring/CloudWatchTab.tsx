@@ -192,7 +192,7 @@ const AWS_REGIONS = [
     'ca-central-1',
 ];
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const STORAGE_KEY = 'vigil_cw_instances';
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('vigil_token')}` });
 

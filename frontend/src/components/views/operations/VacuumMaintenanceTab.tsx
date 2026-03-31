@@ -401,7 +401,7 @@ export default function VacuumMaintenanceTab() {
         setDeadTupleLoading(true);
         try {
             const token = localStorage.getItem('vigil_token') || localStorage.getItem('authToken');
-            const API_BASE = import.meta.env.VITE_API_URL || 'https://postgrestoolbackend.vercel.app';
+            const API_BASE = import.meta.env.VITE_API_URL || '';
             const res = await fetch(`${API_BASE}/api/vacuum/dead-tuple-rate`, {
                 headers: { Authorization: `Bearer ${token}` },
             });

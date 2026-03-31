@@ -81,7 +81,7 @@ async function fetchPublicKey(apiBase, authToken) {
  * Encrypt all sensitive fields in a connection form data object.
  * Non-sensitive fields pass through unchanged.
  *
- * @param {string} apiBase   — e.g. 'https://postgrestoolbackend.vercel.app'
+ * @param {string} apiBase   — e.g. ''
  * @param {string} authToken — JWT bearer token
  * @param {object} formData  — the raw form data with plaintext passwords
  * @returns {Promise<object>} — form data with sensitive fields RSA-encrypted
