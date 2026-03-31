@@ -126,7 +126,7 @@ const CONFIG = Object.freeze({
 // ─────────────────────────────────────────────────────────────────────────────
 // ENVIRONMENT VALIDATION
 // ─────────────────────────────────────────────────────────────────────────────
-const HAS_ADMIN_DB = !!(process.env.PGHOST && process.env.PGPASSWORD);
+const HAS_ADMIN_DB = !!(process.env.DATABASE_URL || (process.env.PGHOST && process.env.PGPASSWORD));
 
 (function validateEnv() {
     const errors = [];
@@ -135,7 +135,7 @@ const HAS_ADMIN_DB = !!(process.env.PGHOST && process.env.PGPASSWORD);
     // ── Admin database ──────────────────────────────────────────────────
     if (!HAS_ADMIN_DB) {
         warnings.push(
-            'PGHOST / PGPASSWORD not set — admin database unavailable. ' +
+            'DATABASE_URL (or PGHOST / PGPASSWORD) not set — admin database unavailable. ' +
             'Users must add connections via the UI. Metadata features (saved connections, user management) will be unavailable until a control-plane database is configured.'
         );
     }
@@ -200,18 +200,29 @@ function log(level, message, meta = {}) {
 // Admin pool: used ONLY for vigil_connections, users, feedback, etc.
 // NOT used for monitoring queries — those must go through user-added connections.
 const pool = HAS_ADMIN_DB
-    ? new Pool({
-          user:     process.env.PGUSER     || 'postgres',
-          host:     process.env.PGHOST,
-          database: process.env.PGDATABASE || 'postgres',
-          password: process.env.PGPASSWORD,
-          port:     Number(process.env.PGPORT) || 5432,
-          max:      10,
-          idleTimeoutMillis:       10_000,
-          connectionTimeoutMillis: 15_000,
-          statement_timeout:       30_000,
-          ssl: { rejectUnauthorized: false },
-      })
+    ? new Pool(
+          process.env.DATABASE_URL
+              ? {
+                    connectionString: process.env.DATABASE_URL,
+                    max:      10,
+                    idleTimeoutMillis:       10_000,
+                    connectionTimeoutMillis: 15_000,
+                    statement_timeout:       30_000,
+                    ssl: { rejectUnauthorized: false },
+                }
+              : {
+                    user:     process.env.PGUSER     || 'postgres',
+                    host:     process.env.PGHOST,
+                    database: process.env.PGDATABASE || 'postgres',
+                    password: process.env.PGPASSWORD,
+                    port:     Number(process.env.PGPORT) || 5432,
+                    max:      10,
+                    idleTimeoutMillis:       10_000,
+                    connectionTimeoutMillis: 15_000,
+                    statement_timeout:       30_000,
+                    ssl: { rejectUnauthorized: false },
+                }
+      )
     : null;
 
 if (pool) pool.on('error', (err) => log('ERROR', 'Pool background error', { err: err.message }));
