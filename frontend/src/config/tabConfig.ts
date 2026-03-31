@@ -375,30 +375,6 @@ export function buildTabConfig() {
             badge: null,
         },
 
-        // ── Demo ─────────────────────────────────────────────────────
-        { section: 'Demo', accent: DS.amber },
-        { id: 'demo-postgres', icon: Database, label: 'PostgreSQL Demo', component: _components.DemoPostgresTab, badge: null },
-        { id: 'demo-mysql', icon: Database, label: 'MySQL Demo', component: _components.DemoMySQLTab, badge: null },
-        { id: 'demo-mongodb', icon: Database, label: 'MongoDB Demo', component: _components.DemoMongoDBTab, badge: null },
-
-        // ── User Management ──────────────────────────────────────────
-        //    User roles, permissions, audit logs, and security
-        { section: 'User Management', accent: DS.indigo || DS.violet },
-        {
-            id: 'UserManagement',
-            icon: Users,
-            label: 'Users & Roles',
-            component: _components.UserManagementTab,
-            badge: null,
-        },
-        {
-            id: 'user-audit',
-            icon: FileText,
-            label: 'Audit & Security',
-            component: _components.AuditAndSecurityTab,
-            badge: null,
-        },
-
         // ── Admin ────────────────────────────────────────────────────
         { section: 'Admin', accent: DS.rose },
         {
@@ -437,6 +413,30 @@ export function buildTabConfig() {
             component: _components.CustomDashboardTab,
             badge: null,
         },
+
+        // ── User Management ──────────────────────────────────────────
+        //    User roles, permissions, audit logs, and security
+        { section: 'User Management', accent: DS.indigo || DS.violet },
+        {
+            id: 'UserManagement',
+            icon: Users,
+            label: 'Users & Roles',
+            component: _components.UserManagementTab,
+            badge: null,
+        },
+        {
+            id: 'user-audit',
+            icon: FileText,
+            label: 'Audit & Security',
+            component: _components.AuditAndSecurityTab,
+            badge: null,
+        },
+
+        // ── Demo ─────────────────────────────────────────────────────
+        { section: 'Demo', accent: DS.amber },
+        { id: 'demo-postgres', icon: Database, label: 'PostgreSQL Demo', component: _components.DemoPostgresTab, badge: null },
+        { id: 'demo-mysql', icon: Database, label: 'MySQL Demo', component: _components.DemoMySQLTab, badge: null },
+        { id: 'demo-mongodb', icon: Database, label: 'MongoDB Demo', component: _components.DemoMongoDBTab, badge: null },
     ];
 }
 
