@@ -1151,7 +1151,7 @@ const ResourcesTab = () => {
                     <TabBtn id="analytics" label="Analytics"       icon={BarChart3} />
                     <TabBtn id="storage"   label="Storage & I/O"   icon={HardDrive} />
                     <TabBtn id="deadcode"  label="Dead Code"        icon={Eye}       badge={deadCount > 0 ? deadCount : undefined} />
-                    <TabBtn id="retention" label="Retention"        icon={Clock} count={policies.filter(p => p.enabled).length} />
+                    <TabBtn id="retention" label="Retention"        icon={Clock} />
                     <TabBtn id="logs"      label="Maintenance"      icon={History}      count={logs.length} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: THEME.textDim }}>
@@ -1762,7 +1762,7 @@ const ResourcesTab = () => {
                             {[
                                 { label: 'Total Saved',  value: '4.12 GB',  color: THEME.success,   icon: TrendingUp },
                                 { label: 'Operations',   value: String(logs.length), color: THEME.primary, icon: Zap },
-                                { label: 'Success Rate', value: `${Math.round(logs.filter(l => l.status === 'Success').length / logs.length * 100)}%`, color: logs.some(l => l.status === 'Failed') ? THEME.warning : THEME.success, icon: CheckCircle },
+                                { label: 'Success Rate', value: `${logs.length ? Math.round(logs.filter(l => l.status === 'Success').length / logs.length * 100) : 0}%`, color: logs.some(l => l.status === 'Failed') ? THEME.warning : THEME.success, icon: CheckCircle },
                                 { label: 'Avg Duration', value: '2m 40s',   color: THEME.warning,   icon: Timer },
                             ].map((s, i) => (
                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 20px', borderRight: i < 3 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
