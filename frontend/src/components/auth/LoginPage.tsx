@@ -104,13 +104,12 @@ const STYLES = `
   }
 
   @media (max-width: 860px) {
-    .vdb-container { flex-direction: column !important; max-width: 480px !important; min-height: auto !important; }
+    .vdb-container { flex-direction: column !important; }
     .vdb-brand { display: none !important; }
-    .vdb-form { padding: 32px 28px !important; border-radius: 22px !important; }
+    .vdb-form { padding: 32px 28px !important; }
   }
   @media (max-width: 480px) {
-    .vdb-page { padding: 16px !important; }
-    .vdb-form { padding: 36px 24px !important; }
+    .vdb-form { padding: 28px 20px !important; }
     .vdb-sso-row { grid-template-columns: 1fr !important; }
   }
 `;
@@ -305,14 +304,13 @@ const LoginPage = () => {
             {/* ═══ PAGE ═══ */}
             <div className="vdb-page" style={{
                 position: 'relative', zIndex: 1, display: 'flex', height: '100%',
-                alignItems: 'center', justifyContent: 'center', padding: 24,
+                alignItems: 'stretch', justifyContent: 'stretch', padding: 0,
             }}>
                 <div className="vdb-container" style={{
-                    display: 'flex', width: '92vw', maxWidth: 1200, maxHeight: 'calc(100vh - 48px)',
-                    background: 'rgba(255,255,255,0.92)', border: '1px solid rgba(0,0,0,0.08)',
-                    borderRadius: 22, overflow: 'hidden',
+                    display: 'flex', width: '100%', height: '100%',
+                    background: 'rgba(255,255,255,0.92)',
+                    overflow: 'hidden',
                     backdropFilter: 'blur(40px) saturate(1.4)',
-                    boxShadow: '0 24px 80px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.04)',
                     animation: 'containerIn 0.8s cubic-bezier(0.16,1,0.3,1) both',
                 }}>
 
