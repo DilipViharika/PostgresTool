@@ -2821,8 +2821,6 @@ const Sidebar = ({
                 .filter((g) => {
                     // Demo always visible
                     if (g.section === 'Demo') return true;
-                    // Connections always visible so users can add/manage databases
-                    if (g.section === 'Connections') return true;
                     // User Management only for super_admin
                     if (g.section === 'User Management') return currentUser?.role === 'super_admin';
                     // No connection → hide everything else

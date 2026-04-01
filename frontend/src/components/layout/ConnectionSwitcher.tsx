@@ -16,16 +16,18 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { THEME, useAdaptiveTheme } from '../../utils/theme';
 import { useConnection } from '../../context/ConnectionContext';
+import { useNavigation } from '../../context/NavigationContext';
 
 import {
     Database, ChevronDown, Search, Check, Loader2,
-    Server, AlertCircle, CheckCircle, AlertTriangle
+    Server, AlertCircle, CheckCircle, AlertTriangle, Settings
 } from 'lucide-react';
 
 const ConnectionSwitcher = () => {
     useAdaptiveTheme();
 
     const { connections, activeConnectionId, switchConnection, loading } = useConnection();
+    const { goToTab } = useNavigation();
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSwitching, setIsSwitching] = useState(false);
@@ -118,10 +120,19 @@ const ConnectionSwitcher = () => {
         // to prevent the flash of "No connection" on every page refresh
         const isLoading = loading;
         return (
-            <div style={styles.emptyState}>
+            <button
+                onClick={() => !isLoading && goToTab('connections')}
+                style={{
+                    ...styles.emptyState,
+                    cursor: isLoading ? 'default' : 'pointer',
+                    border: 'none', background: 'none',
+                    fontFamily: 'inherit',
+                }}
+                title={isLoading ? 'Connecting...' : 'Manage Connections'}
+            >
                 <Database size={14} color={isLoading ? THEME.primary : THEME.textMuted} />
                 <span>{isLoading ? 'Connecting...' : 'No connection'}</span>
-            </div>
+            </button>
         );
     }
 
@@ -255,10 +266,27 @@ const ConnectionSwitcher = () => {
                             )}
                         </div>
 
-                        {/* Footer with shortcut hint */}
+                        {/* Footer with Manage + shortcut hint */}
                         <div style={styles.footer}>
-                            <kbd style={styles.shortcutKey}>Ctrl+K</kbd>
-                            <span>to toggle</span>
+                            <button
+                                onClick={() => { setIsOpen(false); goToTab('connections'); }}
+                                style={{
+                                    background: 'none', border: 'none', color: THEME.primary,
+                                    fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: 5,
+                                    padding: '2px 0', fontFamily: 'inherit',
+                                    transition: 'opacity 0.15s',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                            >
+                                <Settings size={12} />
+                                Manage Connections
+                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <kbd style={styles.shortcutKey}>Ctrl+K</kbd>
+                                <span>to toggle</span>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -443,7 +471,7 @@ const styles = {
     footer: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         gap: '6px',
         padding: '8px 12px',
         borderTop: `1px solid ${THEME.glassBorder}`,

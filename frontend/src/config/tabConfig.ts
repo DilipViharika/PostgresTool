@@ -72,8 +72,8 @@ export function buildTabConfig() {
     const DS = getDS();
     return [
         // ── Connections ─────────────────────────────────────────────
-        //    Add/manage database connections — always visible in sidebar
-        { section: 'Connections', accent: DS.violet },
+        //    Add/manage database connections — accessible via header ConnectionSwitcher
+        { section: 'Connections', accent: DS.violet, hidden: true },
         {
             id: 'connections',
             icon: Link2,

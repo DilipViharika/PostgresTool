@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connections Tab Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Outfit', system-ui, sans-serif;
+    background: #0b1a24;
+    color: #e0e6f0;
+    min-height: 100vh;
+    padding: 32px 28px;
+  }
+
+  /* Header */
+  .header { margin-bottom: 32px; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .header h2 { font-size: 26px; font-weight: 800; color: #e0e6f0; letter-spacing: -0.02em; }
+  .header-meta { display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .header-meta p { font-size: 13px; color: #6b8094; font-weight: 500; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 14px; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; }
+  .badge-pg { background: rgba(74,144,217,0.13); color: #4a90d9; border: 1px solid rgba(74,144,217,0.27); }
+  .badge-my { background: rgba(245,166,35,0.13); color: #f5a623; border: 1px solid rgba(245,166,35,0.27); }
+  .badge-active { background: rgba(0,184,116,0.13); color: #00b874; border: 1px solid rgba(0,184,116,0.27); }
+
+  .controls { display: flex; gap: 10px; align-items: center; }
+  .btn { border-radius: 7px; padding: 8px 14px; cursor: pointer; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; letter-spacing: 0.02em; transition: all 0.15s; font-family: inherit; }
+  .btn-refresh { background: #133348; border: 1px solid rgba(255,255,255,0.08); color: #6b8094; }
+  .btn-primary { background: rgba(0,184,116,0.18); border: 1px solid rgba(0,184,116,0.4); color: #00b874; }
+  .btn-primary:hover { background: rgba(0,184,116,0.3); }
+
+  /* Search */
+  .search-wrap { position: relative; margin-bottom: 0; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #6b8094; pointer-events: none; }
+  .search-input {
+    width: 100%; padding: 8px 12px 8px 36px;
+    background: #133348; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; color: #e0e6f0; font-size: 13px; outline: none;
+    transition: border-color 0.2s; font-family: inherit;
+  }
+  .search-input:focus { border-color: #00b874; }
+
+  /* Cards Grid */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 32px; }
+
+  /* Connection Card */
+  .conn-card {
+    background: #0e2a3e; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; padding: 20px; position: relative; overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+    animation: slideUp 0.4s ease-out backwards;
+  }
+  .conn-card:nth-child(2) { animation-delay: 0.05s; }
+  .conn-card:nth-child(3) { animation-delay: 0.1s; }
+  .conn-card.active {
+    border: 2px solid rgba(74,144,217,0.4);
+    background: rgba(74,144,217,0.05);
+  }
+  .conn-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+  .card-glow { position: absolute; top: -40px; left: -40px; width: 120px; height: 120px; border-radius: 50%; pointer-events: none; }
+  .glow-pg { background: rgba(74,144,217,0.07); }
+  .glow-my { background: rgba(245,166,35,0.07); }
+  .active-dot { position: absolute; top: 14px; right: 14px; width: 10px; height: 10px; border-radius: 50%; background: #4a90d9; box-shadow: 0 0 8px #4a90d9; animation: pulse 1s ease-in-out infinite; }
+
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; position: relative; z-index: 1; }
+  .card-header .icon { font-size: 28px; }
+  .card-name { font-size: 15px; font-weight: 700; color: #e0e6f0; }
+  .card-host { font-size: 12px; color: #6b8094; margin-top: 4px; }
+  .card-host span { font-weight: 600; }
+
+  .card-details {
+    background: #133348; border-radius: 8px; padding: 10px 12px;
+    margin-bottom: 14px; font-size: 11px; position: relative; z-index: 1;
+  }
+  .detail-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .detail-row:last-child { margin-bottom: 0; }
+  .detail-label { color: #6b8094; }
+  .detail-value { color: #a0b0c0; font-weight: 500; }
+  .ssl-on { color: #4ade80; font-weight: 500; }
+  .ssl-off { color: #6b7280; font-weight: 500; }
+
+  .test-status {
+    display: flex; align-items: center; gap: 6px; padding: 8px 10px;
+    border-radius: 8px; margin-bottom: 14px; font-size: 11px; font-weight: 600;
+    position: relative; z-index: 1;
+  }
+  .test-pass { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); color: #4ade80; }
+  .test-fail { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #ef4444; }
+
+  .card-actions { display: flex; gap: 8px; position: relative; z-index: 1; }
+  .btn-test { background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); color: #6366f1; flex: 1; justify-content: center; }
+  .btn-default { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.25); color: #4ade80; }
+  .btn-switch { background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.3); color: #a78bfa; }
+  .btn-switch.active { background: rgba(139,92,246,0.18); opacity: 0.7; }
+  .btn-edit { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; }
+  .btn-delete { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #ef4444; }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state { grid-column: 1 / -1; animation: fadeUp 0.4s ease-out; }
+  .empty-header { text-align: center; margin-bottom: 40px; }
+  .empty-icon { font-size: 64px; margin-bottom: 16px; animation: float 3s ease-in-out infinite; display: inline-block; }
+  .empty-header h3 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .empty-header p { font-size: 14px; color: #6b8094; }
+
+  .section-title { font-size: 12px; font-weight: 700; color: #6b8094; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+
+  /* Quick Start Cards */
+  .qs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 48px; }
+  .qs-card {
+    background: #0e2a3e; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+    padding: 24px; cursor: pointer; transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+    position: relative; overflow: hidden; text-align: left; display: flex; flex-direction: column; gap: 12px;
+  }
+  .qs-card:hover { transform: translateY(-4px); }
+  .qs-card.pg:hover { border-color: #4a90d9; background: rgba(74,144,217,0.05); box-shadow: 0 12px 32px rgba(74,144,217,0.12); }
+  .qs-card.my:hover { border-color: #f5a623; background: rgba(245,166,35,0.05); box-shadow: 0 12px 32px rgba(245,166,35,0.12); }
+  .qs-card.mo:hover { border-color: #00ed64; background: rgba(0,237,100,0.05); box-shadow: 0 12px 32px rgba(0,237,100,0.12); }
+  .qs-glow { position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; border-radius: 50%; pointer-events: none; }
+  .qs-card .icon { font-size: 32px; position: relative; z-index: 1; }
+  .qs-card .label { font-size: 15px; font-weight: 700; color: #e0e6f0; margin-bottom: 4px; }
+  .qs-card .port { font-size: 12px; color: #6b8094; }
+  .qs-card .arrow { position: absolute; bottom: 12px; right: 12px; opacity: 0.5; color: #6b8094; font-size: 18px; }
+
+  /* Getting Started */
+  .gs-panel { background: #0e2a3e; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 48px; }
+  .gs-step { display: flex; gap: 12px; }
+  .gs-num { width: 32px; height: 32px; border-radius: 50%; background: rgba(0,184,116,0.13); border: 2px solid #00b874; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #00b874; flex-shrink: 0; }
+  .gs-title { font-size: 13px; font-weight: 600; color: #e0e6f0; margin-bottom: 2px; }
+  .gs-desc { font-size: 11px; color: #6b8094; }
+
+  /* Features */
+  .feat-panel { background: #0e2a3e; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 24px; }
+  .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .feat-item { display: flex; align-items: center; gap: 10px; }
+  .feat-item span:first-child { font-size: 16px; }
+  .feat-item span:last-child { font-size: 12px; color: #6b8094; }
+
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+  @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+
+  /* Tab Switcher */
+  .tab-switch { display: flex; gap: 8px; margin-bottom: 32px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px; }
+  .tab-btn { background: none; border: none; color: #6b8094; font-size: 13px; font-weight: 600; cursor: pointer; padding: 8px 16px; border-radius: 8px 8px 0 0; font-family: inherit; transition: all 0.15s; }
+  .tab-btn.active { color: #00b874; background: rgba(0,184,116,0.08); border-bottom: 2px solid #00b874; }
+</style>
+</head>
+<body>
+
+<!-- Tab Switcher -->
+<div class="tab-switch">
+  <button class="tab-btn active" onclick="showView('empty')">Empty State</button>
+  <button class="tab-btn" onclick="showView('populated')">With Connections</button>
+</div>
+
+<!-- ═══════════════ EMPTY STATE VIEW ═══════════════ -->
+<div id="view-empty">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h2>Database Connections</h2>
+        <div class="header-meta">
+          <p>0 connections · Encrypted at rest</p>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-refresh">↻</button>
+        <button class="btn btn-primary">＋ New Connection</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="empty-state">
+      <div class="empty-header">
+        <div class="empty-icon">🔌</div>
+        <h3>No connections yet</h3>
+        <p>Connect to PostgreSQL, MySQL, MongoDB or other databases to start monitoring</p>
+      </div>
+
+      <div class="section-title">Quick Start</div>
+      <div class="qs-grid">
+        <div class="qs-card pg">
+          <div class="qs-glow" style="background: rgba(74,144,217,0.09)"></div>
+          <div class="icon">🐘</div>
+          <div>
+            <div class="label">PostgreSQL</div>
+            <div class="port">Default port <span style="color:#4a90d9;font-weight:600">5432</span></div>
+          </div>
+          <div class="arrow">›</div>
+        </div>
+        <div class="qs-card my">
+          <div class="qs-glow" style="background: rgba(245,166,35,0.09)"></div>
+          <div class="icon">🐬</div>
+          <div>
+            <div class="label">MySQL</div>
+            <div class="port">Default port <span style="color:#f5a623;font-weight:600">3306</span></div>
+          </div>
+          <div class="arrow">›</div>
+        </div>
+        <div class="qs-card mo">
+          <div class="qs-glow" style="background: rgba(0,237,100,0.09)"></div>
+          <div class="icon">🍃</div>
+          <div>
+            <div class="label">MongoDB</div>
+            <div class="port">Default port <span style="color:#00ed64;font-weight:600">27017</span></div>
+          </div>
+          <div class="arrow">›</div>
+        </div>
+      </div>
+
+      <div class="section-title">Getting Started</div>
+      <div class="gs-panel">
+        <div class="gs-step">
+          <div class="gs-num">1</div>
+          <div><div class="gs-title">Host & Port</div><div class="gs-desc">Enter database server address</div></div>
+        </div>
+        <div class="gs-step">
+          <div class="gs-num">2</div>
+          <div><div class="gs-title">Credentials</div><div class="gs-desc">Username and password for authentication</div></div>
+        </div>
+        <div class="gs-step">
+          <div class="gs-num">3</div>
+          <div><div class="gs-title">Database</div><div class="gs-desc">Specify which database to connect to</div></div>
+        </div>
+        <div class="gs-step">
+          <div class="gs-num">4</div>
+          <div><div class="gs-title">Security (Optional)</div><div class="gs-desc">Enable SSL, SSH tunnel, or other options</div></div>
+        </div>
+      </div>
+
+      <div class="section-title">Supported Features</div>
+      <div class="feat-panel">
+        <div class="feat-grid">
+          <div class="feat-item"><span>📊</span><span>Real-time Monitoring</span></div>
+          <div class="feat-item"><span>🔌</span><span>Connection Pooling</span></div>
+          <div class="feat-item"><span>⚠️</span><span>Query Analysis</span></div>
+          <div class="feat-item"><span>🔒</span><span>Encryption</span></div>
+          <div class="feat-item"><span>🌐</span><span>SSH Tunnel</span></div>
+          <div class="feat-item"><span>✅</span><span>Health Checks</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ POPULATED VIEW ═══════════════ -->
+<div id="view-populated" style="display:none">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h2>Database Connections</h2>
+        <div class="header-meta">
+          <p>3 connections · Encrypted at rest</p>
+          <div style="display:flex;gap:8px;">
+            <span class="badge badge-pg">2 PostgreSQL</span>
+            <span class="badge badge-my">1 MySQL</span>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-refresh">↻</button>
+        <button class="btn btn-primary">＋ New Connection</button>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" type="text" placeholder="Search by name, host, database...">
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <!-- Card 1: Active PostgreSQL -->
+    <div class="conn-card active" style="border-top: 2px solid rgba(74,144,217,0.33);">
+      <div class="card-glow glow-pg" style="animation: pulse 2s ease-in-out infinite;"></div>
+      <div class="active-dot"></div>
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="icon">🐘</span>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="card-name">Production DB</span>
+              <span class="badge" style="background:rgba(74,222,128,0.13);color:#4ade80;border:1px solid rgba(74,222,128,0.27);">DEFAULT</span>
+              <span class="badge badge-active">ACTIVE</span>
+            </div>
+            <div class="card-host"><span style="color:#4a90d9;font-weight:600">PostgreSQL</span> • db.prod.example.com:5432</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-details">
+        <div class="detail-row"><span class="detail-label">database</span><span class="detail-value">vigil_prod</span></div>
+        <div class="detail-row"><span class="detail-label">user</span><span class="detail-value">admin</span></div>
+        <div class="detail-row"><span class="detail-label">ssl</span><span class="ssl-on">enabled</span></div>
+      </div>
+      <div class="test-status test-pass">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Test passed
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-test">⚡ Test</button>
+        <button class="btn btn-switch active">✓</button>
+        <button class="btn btn-edit">✎</button>
+        <button class="btn btn-delete">🗑</button>
+      </div>
+    </div>
+
+    <!-- Card 2: PostgreSQL Staging -->
+    <div class="conn-card" style="border-top: 2px solid rgba(74,144,217,0.33);">
+      <div class="card-glow glow-pg"></div>
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="icon">🐘</span>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="card-name">Staging DB</span>
+              <span class="badge" style="background:rgba(0,184,116,0.13);color:#00b874;border:1px solid rgba(0,184,116,0.27);display:flex;align-items:center;gap:4px">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9l6 6m0-6l-6 6"/></svg>
+                SSH
+              </span>
+            </div>
+            <div class="card-host"><span style="color:#4a90d9;font-weight:600">PostgreSQL</span> • staging.example.com:5432</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-details">
+        <div class="detail-row"><span class="detail-label">database</span><span class="detail-value">vigil_staging</span></div>
+        <div class="detail-row"><span class="detail-label">user</span><span class="detail-value">dev_user</span></div>
+        <div class="detail-row"><span class="detail-label">ssl</span><span class="ssl-on">enabled</span></div>
+        <div class="detail-row" style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.06)">
+          <span class="detail-label">tunnel via</span><span style="color:#00b874;font-weight:500">dev@bastion.example.com:22</span>
+        </div>
+      </div>
+      <div class="test-status test-pass">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Test passed
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-test">⚡ Test</button>
+        <button class="btn btn-default">✓</button>
+        <button class="btn btn-switch">🔗</button>
+        <button class="btn btn-edit">✎</button>
+        <button class="btn btn-delete">🗑</button>
+      </div>
+    </div>
+
+    <!-- Card 3: MySQL -->
+    <div class="conn-card" style="border-top: 2px solid rgba(245,166,35,0.33);">
+      <div class="card-glow glow-my"></div>
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="icon">🐬</span>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="card-name">Analytics MySQL</span>
+            </div>
+            <div class="card-host"><span style="color:#f5a623;font-weight:600">MySQL</span> • analytics.example.com:3306</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-details">
+        <div class="detail-row"><span class="detail-label">database</span><span class="detail-value">analytics_db</span></div>
+        <div class="detail-row"><span class="detail-label">user</span><span class="detail-value">analyst</span></div>
+        <div class="detail-row"><span class="detail-label">ssl</span><span class="ssl-off">disabled</span></div>
+      </div>
+      <div class="test-status test-fail">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Test failed
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-test">⚡ Test</button>
+        <button class="btn btn-default">✓</button>
+        <button class="btn btn-switch">🔗</button>
+        <button class="btn btn-edit">✎</button>
+        <button class="btn btn-delete">🗑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(view) {
+  document.getElementById('view-empty').style.display = view === 'empty' ? 'block' : 'none';
+  document.getElementById('view-populated').style.display = view === 'populated' ? 'block' : 'none';
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
