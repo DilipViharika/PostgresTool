@@ -4168,7 +4168,8 @@ const DashboardInner = ({ onLogout }) => {
 
                         {/* Left: breadcrumb + reconnecting */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                            {/* Enhanced breadcrumb navigation */}
+                            {/* Enhanced breadcrumb navigation — hidden for connections tab */}
+                            {activeTab !== 'connections' && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <span
@@ -4201,6 +4202,7 @@ const DashboardInner = ({ onLogout }) => {
                                 </div>
                                 {/* Tab counter removed */}
                             </div>
+                            )}
 
                             {reconnecting && (
                                 <div
