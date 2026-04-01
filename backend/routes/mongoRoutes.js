@@ -325,21 +325,20 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
             const { client, db } = await getMongoClient(req.query.connectionId || null, req.user?.id);
             const collections = await db.listCollections().toArray();
 
-            const stats = [];
-            for (const coll of collections) {
-                try {
-                    const collStats = await db.command({ collStats: coll.name });
-                    stats.push({
+            // Use Promise.all to fetch all collection stats concurrently instead of sequentially
+            const statsPromises = collections.map(coll =>
+                db.command({ collStats: coll.name })
+                    .then(collStats => ({
                         name: coll.name,
                         size: Math.round((collStats.size || 0) / 1024 / 1024),
                         count: collStats.count || 0,
                         avgDocSize: Math.round(collStats.avgObjSize || 0),
                         indexes: collStats.nindexes || 0
-                    });
-                } catch (e) {
-                    // Skip
-                }
-            }
+                    }))
+                    .catch(e => null) // Return null for failed queries
+            );
+            const results = await Promise.all(statsPromises);
+            const stats = results.filter(s => s !== null);
 
             return res.json(stats);
         } catch (error) {
@@ -355,18 +354,18 @@ export default function mongoRoutes(pool, authenticate, getMongoClient, CONNECTI
             let totalIndexes = 0;
             let unusedIndexes = 0;
 
-            for (const coll of collections) {
-                try {
-                    const collection = db.collection(coll.name);
-                    const stats = await collection
-                        .aggregate([{ $indexStats: {} }])
-                        .toArray();
+            // Use Promise.all to fetch index stats concurrently instead of sequentially
+            const indexStatsPromises = collections.map(coll =>
+                db.collection(coll.name)
+                    .aggregate([{ $indexStats: {} }])
+                    .toArray()
+                    .catch(e => []) // Return empty array for failed queries
+            );
+            const allIndexStats = await Promise.all(indexStatsPromises);
 
-                    totalIndexes += stats.length;
-                    unusedIndexes += stats.filter(s => (s.accesses?.ops || 0) === 0).length;
-                } catch (e) {
-                    // Skip
-                }
+            for (const stats of allIndexStats) {
+                totalIndexes += stats.length;
+                unusedIndexes += stats.filter(s => (s.accesses?.ops || 0) === 0).length;
             }
 
             /* Derive real metrics from serverStatus */

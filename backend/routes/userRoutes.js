@@ -27,6 +27,56 @@ function log(level, message, meta = {}) {
     fn(JSON.stringify(entry));
 }
 
+/**
+ * Validates user input for creation and updates.
+ * Returns an object with { valid: boolean, error?: string }
+ */
+function validateUserInput(userData) {
+    const { username, password, name, email, role } = userData;
+
+    // Email validation - simple regex
+    if (email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return { valid: false, error: 'Email must be in valid format (e.g., user@example.com)' };
+        }
+    }
+
+    // Username validation - 3-50 chars, alphanumeric + underscore only
+    if (username) {
+        if (username.length < 3 || username.length > 50) {
+            return { valid: false, error: 'Username must be between 3 and 50 characters' };
+        }
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            return { valid: false, error: 'Username can only contain letters, numbers, and underscores' };
+        }
+    }
+
+    // Password validation - minimum 8 characters
+    if (password) {
+        if (password.length < 8) {
+            return { valid: false, error: 'Password must be at least 8 characters' };
+        }
+    }
+
+    // Name validation - 1-100 characters
+    if (name) {
+        if (name.length < 1 || name.length > 100) {
+            return { valid: false, error: 'Name must be between 1 and 100 characters' };
+        }
+    }
+
+    // Role validation - must be one of allowed roles
+    if (role) {
+        const VALID_ROLES = ['super_admin', 'admin', 'developer', 'analyst', 'viewer'];
+        if (!VALID_ROLES.includes(role)) {
+            return { valid: false, error: `Role must be one of: ${VALID_ROLES.join(', ')}` };
+        }
+    }
+
+    return { valid: true };
+}
+
 // ── Per-route rate limiter (used on password-reset) ─────────────────────────
 const _pwResetBuckets = new Map();
 function pwResetLimiter(req, res, next) {
@@ -105,12 +155,15 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
             if (!username || !password || !name || !email || !role) {
                 return res.status(400).json({ error: 'username, password, name, email and role are required' });
             }
+
+            // Validate user input format
+            const validation = validateUserInput(req.body);
+            if (!validation.valid) {
+                return res.status(400).json({ error: validation.error });
+            }
+
             const pwError = validatePasswordStrength(password);
             if (pwError) return res.status(400).json({ error: pwError });
-            const VALID_ROLES = ['super_admin', 'admin', 'developer', 'analyst', 'viewer'];
-            if (!VALID_ROLES.includes(role)) {
-                return res.status(400).json({ error: `Role must be one of: ${VALID_ROLES.join(', ')}` });
-            }
 
             // Uniqueness checks
             if (await usernameExists(pool, username)) {

@@ -10,6 +10,54 @@ import jwt from 'jsonwebtoken';
 import { isSessionActive, authenticateApiKey } from '../services/sessionService.js';
 import type { Pool } from 'pg';
 
+/**
+ * Per-API-key rate limiting
+ * Tracks requests per minute for each API key
+ */
+interface RateLimitBucket {
+  count: number;
+  resetTime: number;
+}
+
+const apiKeyRateLimits = new Map<string, RateLimitBucket>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 60 seconds
+const RATE_LIMIT_MAX = 100; // 100 requests per minute
+
+/**
+ * Check if API key has exceeded rate limit
+ */
+function checkApiKeyRateLimit(apiKey: string): boolean {
+  const now = Date.now();
+  let bucket = apiKeyRateLimits.get(apiKey);
+
+  if (!bucket || now > bucket.resetTime) {
+    // Create or reset bucket
+    bucket = { count: 1, resetTime: now + RATE_LIMIT_WINDOW };
+    apiKeyRateLimits.set(apiKey, bucket);
+    return true; // Within limit
+  }
+
+  bucket.count++;
+  return bucket.count <= RATE_LIMIT_MAX;
+}
+
+/**
+ * Cleanup stale rate limit entries (run every 60 seconds)
+ */
+function startRateLimitCleanup(): void {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, bucket] of apiKeyRateLimits.entries()) {
+      if (now > bucket.resetTime) {
+        apiKeyRateLimits.delete(key);
+      }
+    }
+  }, 60 * 1000);
+}
+
+// Start cleanup on module load
+startRateLimitCleanup();
+
 // ── Types (inline to avoid complex path resolution with NodeNext) ────────────
 export type UserRole = 'super_admin' | 'admin' | 'analyst' | 'viewer' | 'demo';
 export type AccessLevel = 'read' | 'write';
@@ -56,6 +104,12 @@ export function buildAuthenticate(
     // ── API Key auth (X-API-Key header) ─────────────────────────────
     const apiKey = req.headers['x-api-key'] as string | undefined;
     if (apiKey) {
+      // Check rate limit before authenticating
+      if (!checkApiKeyRateLimit(apiKey)) {
+        res.status(429).json({ error: 'Rate limit exceeded (100 requests per minute per API key)' });
+        return;
+      }
+
       const user = await authenticateApiKey(pool!, apiKey).catch(() => null);
       if (!user) {
         res.status(401).json({ error: 'Invalid API key' });

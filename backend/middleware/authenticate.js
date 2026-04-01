@@ -13,6 +13,49 @@ import jwt                          from 'jsonwebtoken';
 import { isSessionActive, authenticateApiKey } from '../services/sessionService.js';
 
 /**
+ * Per-API-key rate limiting
+ * Tracks requests per minute for each API key
+ */
+const apiKeyRateLimits = new Map(); // { apiKey: { count, resetTime } }
+const RATE_LIMIT_WINDOW = 60 * 1000; // 60 seconds
+const RATE_LIMIT_MAX = 100; // 100 requests per minute
+
+/**
+ * Check if API key has exceeded rate limit
+ */
+function checkApiKeyRateLimit(apiKey) {
+    const now = Date.now();
+    let bucket = apiKeyRateLimits.get(apiKey);
+
+    if (!bucket || now > bucket.resetTime) {
+        // Create or reset bucket
+        bucket = { count: 1, resetTime: now + RATE_LIMIT_WINDOW };
+        apiKeyRateLimits.set(apiKey, bucket);
+        return true; // Within limit
+    }
+
+    bucket.count++;
+    return bucket.count <= RATE_LIMIT_MAX;
+}
+
+/**
+ * Cleanup stale rate limit entries (run every 60 seconds)
+ */
+function startRateLimitCleanup() {
+    setInterval(() => {
+        const now = Date.now();
+        for (const [key, bucket] of apiKeyRateLimits.entries()) {
+            if (now > bucket.resetTime) {
+                apiKeyRateLimits.delete(key);
+            }
+        }
+    }, 60 * 1000);
+}
+
+// Start cleanup on module load
+startRateLimitCleanup();
+
+/**
  * Build the authenticate middleware with access to pool and config.
  * Call once at app startup:
  *   app.use('/api/...', buildAuthenticate(pool, CONFIG))
@@ -25,6 +68,11 @@ export function buildAuthenticate(pool, config) {
         // ── API Key auth (X-API-Key header) ─────────────────────────────
         const apiKey = req.headers['x-api-key'];
         if (apiKey) {
+            // Check rate limit before authenticating
+            if (!checkApiKeyRateLimit(apiKey)) {
+                return res.status(429).json({ error: 'Rate limit exceeded (100 requests per minute per API key)' });
+            }
+
             const user = await authenticateApiKey(pool, apiKey).catch(() => null);
             if (!user) return res.status(401).json({ error: 'Invalid API key' });
             if (user.status !== 'active') return res.status(403).json({ error: 'Account suspended' });
@@ -51,10 +99,18 @@ export function buildAuthenticate(pool, config) {
             return res.status(401).json({ error: 'Invalid or expired token' });
         }
 
-        // Optional session revocation check (sid stored in JWT on login)
+        // Session revocation check (sid stored in JWT on login)
         if (payload.sid) {
             const active = await isSessionActive(pool, payload.sid).catch(() => true);
             if (!active) return res.status(401).json({ error: 'Session revoked' });
+        } else {
+            // Legacy token without sid detected — could be revoked but cannot verify
+            // Log warning and set upgrade header to prompt frontend re-authentication
+            console.warn('[SECURITY] Token without sid detected — legacy token may be revoked', {
+                userId: payload.id,
+                timestamp: new Date().toISOString(),
+            });
+            res.set('X-Token-Upgrade-Required', 'true');
         }
 
         req.user = payload;

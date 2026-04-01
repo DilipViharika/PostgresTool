@@ -546,13 +546,26 @@ function validateExplainQuery(sql) {
     return null;
 }
 
+// Blocked for ALL users - these are critical security risks
+const CRITICAL_BLOCKED = /\b(COPY\s+\S+\s+TO\s+PROGRAM|DROP\s+(DATABASE|SCHEMA)|ALTER\s+SYSTEM|CREATE\s+EXTENSION|pg_execute_server_program|pg_read_file|pg_write_file|pg_read_binary_file|pg_execute)\b/i;
+
+// Additional restrictions for non-super_admin users
 const CONSOLE_BLOCKED = /\b(DROP\s+(DATABASE|SCHEMA|ROLE|TABLESPACE)|CREATE\s+(DATABASE|ROLE|USER)|ALTER\s+(SYSTEM|ROLE\s+\S+\s+SUPERUSER)|COPY\s+\S+\s+(FROM|TO)\s+(STDIN|STDOUT|'|E')|LOAD\s+'|pg_read_file|pg_write_file|pg_read_binary_file)\b/i;
 
 function validateConsoleQuery(sql, role) {
     if (!sql || typeof sql !== 'string') return 'Query must be a non-empty string';
     if (sql.length > 50_000) return 'Query too long (max 50,000 characters)';
-    if (role === 'super_admin') return null;
-    if (CONSOLE_BLOCKED.test(sql)) return 'This statement is blocked for your role. Contact a super_admin.';
+
+    // Check critical blocks for ALL users (including super_admin)
+    if (CRITICAL_BLOCKED.test(sql)) {
+        return 'This statement is blocked - it poses a critical security risk and cannot be executed.';
+    }
+
+    // Additional role-based restrictions for non-super_admin users
+    if (role !== 'super_admin' && CONSOLE_BLOCKED.test(sql)) {
+        return 'This statement is blocked for your role. Contact a super_admin.';
+    }
+
     return null;
 }
 
@@ -941,6 +954,23 @@ app.use(cors({
     exposedHeaders: ['X-Cache', 'X-Request-Id'],
 }));
 app.use(securityHeaders);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSRF Protection: Origin header validation for state-changing requests
+// ─────────────────────────────────────────────────────────────────────────────
+// Although this API uses JWT Bearer tokens (not cookies), we add Origin validation
+// as a defense-in-depth measure for state-changing requests.
+app.use((req, res, next) => {
+    // For state-changing requests, validate Origin header
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+        const origin = req.headers.origin;
+        if (origin && !CONFIG.CORS_ORIGINS.includes(origin)) {
+            return res.status(403).json({ error: 'CSRF: Origin not allowed' });
+        }
+    }
+    next();
+});
+
 app.use((req, res, next) => {
     req.id = req.headers['x-request-id'] || randomUUID();
     res.setHeader('X-Request-Id', req.id);
@@ -5421,19 +5451,19 @@ app.use((err, req, res, _next) => {
     const status = err.status || err.statusCode || 500;
 
     // ── Structured logging with request context ─────────────────────────
+    // Always log full details server-side, never expose them to client
     log('ERROR', 'Unhandled error', {
         error:  err.message,
-        stack:  IS_PROD ? undefined : err.stack,
+        stack:  err.stack,
         method: req.method,
         path:   req.path,
         ip:     req.ip,
         userId: req.user?.id,
     });
 
-    // ── Sanitized response (never leak stack traces in production) ──────
+    // ── Sanitized response (NEVER leak stack traces to client) ──────
     res.status(status).json({
         error:   status >= 500 ? 'Internal Server Error' : err.message,
-        ...(IS_PROD ? {} : { message: err.message, stack: err.stack }),
     });
 });
 
@@ -5566,8 +5596,26 @@ async function shutdown(signal) {
         log('ERROR', 'Shutdown error', { error: err.message });
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROCESS SIGNAL HANDLERS & CLEANUP
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    log('ERROR', 'Unhandled Promise Rejection', {
+        reason:   reason instanceof Error ? reason.message : String(reason),
+        stack:    reason instanceof Error ? reason.stack : undefined,
+        promise:  String(promise),
+    });
+    // Do not exit — allow the process to continue but log the failure
+});
+
+// Handle SIGTERM (graceful shutdown from orchestrator)
 process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT',  () => shutdown('SIGINT'));
+
+// Handle SIGINT (graceful shutdown from Ctrl+C)
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // EXPORTS & STARTUP

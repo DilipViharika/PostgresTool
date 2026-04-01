@@ -61,11 +61,31 @@ const readDirectoryRecursive = async (dirPath, basePath = dirPath, depth = 0, ma
     return files;
 };
 
-const validatePath = (requestedPath) => {
+/**
+ * Validates that a path is safe and doesn't escape the repository root.
+ * @param {string} requestedPath - The path to validate
+ * @param {string} repoRoot - The repository root directory (optional)
+ * @returns {string} The validated path
+ * @throws {Error} If path traversal is detected or path is outside repo root
+ */
+const validatePath = (requestedPath, repoRoot = null) => {
     const normalized = path.normalize(requestedPath);
     if (normalized.includes('..')) {
         throw new Error('Invalid path: directory traversal not allowed');
     }
+
+    // If a repo root is specified, verify the resolved path stays within it
+    if (repoRoot) {
+        // Resolve to absolute paths for comparison
+        const absoluteRepo = path.resolve(repoRoot);
+        const absoluteResolved = path.resolve(normalized);
+
+        // Ensure the resolved path starts with the repo root
+        if (!absoluteResolved.startsWith(absoluteRepo + path.sep) && absoluteResolved !== absoluteRepo) {
+            throw new Error('Access denied: path is outside repository root');
+        }
+    }
+
     return normalized;
 };
 
@@ -84,13 +104,13 @@ const checkPathAccess = async (filePath) => {
 
 router.post('/read-directory', async (req, res) => {
     try {
-        const { path: dirPath } = req.body;
+        const { path: dirPath, repoRoot } = req.body;
 
         if (!dirPath) {
             return res.status(400).json({ error: 'Path is required', message: 'Please provide a directory path' });
         }
 
-        const validatedPath = validatePath(dirPath);
+        const validatedPath = validatePath(dirPath, repoRoot);
         const exists = await checkPathAccess(validatedPath);
 
         if (!exists) {
@@ -107,19 +127,22 @@ router.post('/read-directory', async (req, res) => {
 
     } catch (error) {
         console.error('Error reading directory:', error);
+        if (error.message.includes('Access denied')) {
+            return res.status(403).json({ error: 'Forbidden', message: 'Access denied: path is outside repository root' });
+        }
         res.status(500).json({ error: 'Failed to read directory', message: error.message });
     }
 });
 
 router.post('/read-file', async (req, res) => {
     try {
-        const { path: filePath } = req.body;
+        const { path: filePath, repoRoot } = req.body;
 
         if (!filePath) {
             return res.status(400).json({ error: 'Path is required', message: 'Please provide a file path' });
         }
 
-        const validatedPath = validatePath(filePath);
+        const validatedPath = validatePath(filePath, repoRoot);
         const exists = await checkPathAccess(validatedPath);
 
         if (!exists) {
@@ -141,6 +164,9 @@ router.post('/read-file', async (req, res) => {
 
     } catch (error) {
         console.error('Error reading file:', error);
+        if (error.message.includes('Access denied')) {
+            return res.status(403).json({ error: 'Forbidden', message: 'Access denied: path is outside repository root' });
+        }
         if (error.code === 'ERR_INVALID_ARG_VALUE') {
             return res.status(415).json({ error: 'File encoding not supported', message: 'This file appears to be binary or uses an unsupported encoding' });
         }
@@ -150,7 +176,7 @@ router.post('/read-file', async (req, res) => {
 
 router.post('/write-file', async (req, res) => {
     try {
-        const { path: filePath, content } = req.body;
+        const { path: filePath, content, repoRoot } = req.body;
 
         if (!filePath) {
             return res.status(400).json({ error: 'Path is required', message: 'Please provide a file path' });
@@ -159,7 +185,7 @@ router.post('/write-file', async (req, res) => {
             return res.status(400).json({ error: 'Content is required', message: 'Please provide file content' });
         }
 
-        const validatedPath = validatePath(filePath);
+        const validatedPath = validatePath(filePath, repoRoot);
         const dir = path.dirname(validatedPath);
         await fs.mkdir(dir, { recursive: true });
         await fs.writeFile(validatedPath, content, 'utf-8');
@@ -169,19 +195,22 @@ router.post('/write-file', async (req, res) => {
 
     } catch (error) {
         console.error('Error writing file:', error);
+        if (error.message.includes('Access denied')) {
+            return res.status(403).json({ error: 'Forbidden', message: 'Access denied: path is outside repository root' });
+        }
         res.status(500).json({ error: 'Failed to write file', message: error.message });
     }
 });
 
 router.post('/delete-file', async (req, res) => {
     try {
-        const { path: filePath } = req.body;
+        const { path: filePath, repoRoot } = req.body;
 
         if (!filePath) {
             return res.status(400).json({ error: 'Path is required', message: 'Please provide a file path' });
         }
 
-        const validatedPath = validatePath(filePath);
+        const validatedPath = validatePath(filePath, repoRoot);
         const exists = await checkPathAccess(validatedPath);
 
         if (!exists) {
@@ -193,19 +222,22 @@ router.post('/delete-file', async (req, res) => {
 
     } catch (error) {
         console.error('Error deleting file:', error);
+        if (error.message.includes('Access denied')) {
+            return res.status(403).json({ error: 'Forbidden', message: 'Access denied: path is outside repository root' });
+        }
         res.status(500).json({ error: 'Failed to delete file', message: error.message });
     }
 });
 
 router.post('/create-file', async (req, res) => {
     try {
-        const { path: filePath, content = '' } = req.body;
+        const { path: filePath, content = '', repoRoot } = req.body;
 
         if (!filePath) {
             return res.status(400).json({ error: 'Path is required', message: 'Please provide a file path' });
         }
 
-        const validatedPath = validatePath(filePath);
+        const validatedPath = validatePath(filePath, repoRoot);
         const exists = await checkPathAccess(validatedPath);
 
         if (exists) {
@@ -220,19 +252,22 @@ router.post('/create-file', async (req, res) => {
 
     } catch (error) {
         console.error('Error creating file:', error);
+        if (error.message.includes('Access denied')) {
+            return res.status(403).json({ error: 'Forbidden', message: 'Access denied: path is outside repository root' });
+        }
         res.status(500).json({ error: 'Failed to create file', message: error.message });
     }
 });
 
 router.post('/git-status', async (req, res) => {
     try {
-        const { path: repoPath } = req.body;
+        const { path: repoPath, repoRoot } = req.body;
 
         if (!repoPath) {
             return res.status(400).json({ error: 'Path is required', message: 'Please provide a repository path' });
         }
 
-        const validatedPath = validatePath(repoPath);
+        const validatedPath = validatePath(repoPath, repoRoot);
         const gitPath = path.join(validatedPath, '.git');
         const isGitRepo = await checkPathAccess(gitPath);
 
@@ -244,6 +279,9 @@ router.post('/git-status', async (req, res) => {
 
     } catch (error) {
         console.error('Error checking git status:', error);
+        if (error.message.includes('Access denied')) {
+            return res.status(403).json({ error: 'Forbidden', message: 'Access denied: path is outside repository root' });
+        }
         res.status(500).json({ error: 'Failed to check git status', message: error.message });
     }
 });
