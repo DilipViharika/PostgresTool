@@ -752,11 +752,11 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
 
     /* ══════════ RENDER ══════════ */
     return (
-        <div style={{background:THEME.glass,backdropFilter:'blur(20px)',border:`1px solid ${THEME.glassBorder}`,borderRadius:16,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+        <div style={{background:THEME.surface,border:`1px solid ${THEME.glassBorder}`,borderRadius:16,overflow:'hidden',display:'flex',flexDirection:'column'}}>
             <AnimCSS/>
 
             {/* Header */}
-            <div style={{padding:'13px 16px',borderBottom:`1px solid ${THEME.glassBorder}`,display:'flex',alignItems:'center',gap:11}}>
+            <div style={{padding:'13px 16px',borderBottom:`1px solid ${THEME.surfaceBorder}`,display:'flex',alignItems:'center',gap:11}}>
                 <HealthGauge score={healthScore} size={54}/>
                 <div style={{flex:1}}>
                     <div style={{fontSize:10.5,fontWeight:800,color:THEME.textMain,textTransform:'uppercase',letterSpacing:'.06em'}}>Deep Analysis: <span style={{color:THEME.primary}}>{tableName}</span></div>

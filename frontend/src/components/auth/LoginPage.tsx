@@ -302,7 +302,6 @@ const LoginPage = () => {
                     display: 'flex', width: '100%', height: '100%',
                     background: 'rgba(255,255,255,0.92)',
                     overflow: 'hidden',
-                    backdropFilter: 'blur(40px) saturate(1.4)',
                     animation: 'containerIn 0.8s cubic-bezier(0.16,1,0.3,1) both',
                 }}>
 
@@ -573,7 +572,6 @@ const LoginPage = () => {
                         {loginSuccess && (
                             <div style={{
                                 position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.96)',
-                                backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column',
                                 alignItems: 'center', justifyContent: 'center', zIndex: 10,
                                 borderRadius: '0 22px 22px 0',
                             }}>
@@ -600,7 +598,6 @@ const LoginPage = () => {
             {showForgotPassword && (
                 <div style={{
                     position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-                    backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     zIndex: 1000, animation: 'textIn .3s ease',
                 }} onClick={() => setShowForgotPassword(false)}>
                     <div style={{
@@ -659,7 +656,6 @@ const LoginPage = () => {
                     position: 'fixed', bottom: 24, left: 24, zIndex: 100,
                     width: 40, height: 40, borderRadius: '50%',
                     background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.08)',
-                    backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer', color: '#9198ae', transition: 'all .3s', outline: 'none',
                 }}>
                 {isDark ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}

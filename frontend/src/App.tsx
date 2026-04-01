@@ -333,68 +333,52 @@ const AppStyles = () => (
 
         /* ═══ VIGIL VISUAL OVERHAUL — Auto-targeting CSS ═══ */
 
-        /* ── Sidebar: gradient glass background ── */
+        /* ── Sidebar: clean background ── */
         aside {
-            background: linear-gradient(180deg, ${DS._dark ? THEME.mariana : THEME.surfaceHover}, ${DS._dark ? THEME.bgAlt : '#e8ecf2'}) !important;
-            border-right: 1px solid ${DS._dark ? 'rgba(0,184,116,0.08)' : 'rgba(0,0,0,0.06)'} !important;
-            box-shadow: ${DS._dark ? '4px 0 24px rgba(0,0,0,0.4)' : '2px 0 12px rgba(0,0,0,0.04)'} !important;
+            background: ${DS._dark ? THEME.bgAlt : '#ffffff'} !important;
+            border-right: 1px solid ${DS.border} !important;
+            box-shadow: none !important;
         }
 
         aside::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: -1px;
-            bottom: 0;
-            width: 1px;
-            background: linear-gradient(180deg, transparent 5%, ${DS.cyan}30 35%, ${DS.violet}20 70%, transparent 95%);
-            pointer-events: none;
-            z-index: 10;
+            display: none;
         }
 
-        /* ── Header: frosted glass ── */
+        /* ── Header: clean bar ── */
         header {
-            backdrop-filter: blur(24px) saturate(1.4) !important;
-            -webkit-backdrop-filter: blur(24px) saturate(1.4) !important;
-            box-shadow: ${DS._dark ? '0 1px 0 rgba(0,184,116,0.06), 0 4px 20px rgba(0,0,0,0.3)' : '0 1px 0 rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03)'} !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            box-shadow: ${DS._dark ? '0 1px 0 rgba(255,255,255,0.04)' : '0 1px 0 rgba(0,0,0,0.04)'} !important;
         }
 
         header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, ${DS.cyan}30, ${DS.violet}20, transparent);
-            pointer-events: none;
+            display: none;
         }
 
-        /* ── Nav items: polished interactions ── */
+        /* ── Nav items: clean interactions ── */
         .nav-item {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition: all 0.15s ease !important;
             border-radius: 8px !important;
             margin: 1px 0 !important;
             position: relative;
         }
 
         .nav-item:hover {
-            background: ${DS._dark ? 'rgba(0,184,116,0.08)' : 'rgba(0,184,116,0.06)'} !important;
-            transform: translateX(3px);
+            background: ${DS._dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'} !important;
         }
 
         .nav-item[aria-selected="true"] {
-            box-shadow: ${DS._dark ? 'inset 0 0 20px rgba(0,184,116,0.05)' : 'inset 0 0 12px rgba(0,184,116,0.04)'};
+            background: ${DS._dark ? 'rgba(0,184,116,0.1)' : 'rgba(0,184,116,0.06)'} !important;
         }
 
         .section-btn {
-            transition: all 0.2s ease !important;
+            transition: all 0.15s ease !important;
             border-radius: 6px !important;
             margin: 0 !important;
         }
 
         .section-btn:hover {
-            background: ${DS._dark ? 'rgba(0,184,116,0.05)' : 'rgba(0,184,116,0.04)'} !important;
+            background: ${DS._dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)'} !important;
         }
 
         /* ── Tab content animation ── */
@@ -402,18 +386,15 @@ const AppStyles = () => (
             animation: tabIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
-        /* ═══ CARD OVERRIDES — targets all panel-like divs ═══ */
-        /* GlassCard, MetricCard, and panel containers use borderRadius:4 inline */
-        /* We target common patterns to add depth and polish */
-
-        /* Override tiny border-radius on all card-like elements */
+        /* ═══ MODERN CLEAN CARD STYLE ═══ */
+        /* Cards: consistent rounded corners */
         [style*="border-radius: 4px"],
         [style*="borderRadius: 4"],
         [style*="border-radius:4px"] {
-            border-radius: 14px !important;
+            border-radius: 16px !important;
         }
 
-        /* Tables: enhanced styling */
+        /* Tables: clean modern styling */
         table {
             border-collapse: separate !important;
             border-spacing: 0 !important;
@@ -421,89 +402,78 @@ const AppStyles = () => (
 
         table th {
             text-transform: uppercase !important;
-            letter-spacing: 0.08em !important;
-            font-size: 10.5px !important;
-            font-weight: 700 !important;
+            letter-spacing: 0.06em !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
             padding: 12px 16px !important;
-            background: ${DS._dark ? 'rgba(0,184,116,0.03)' : 'rgba(0,184,116,0.02)'} !important;
-            border-bottom: 1px solid ${DS._dark ? 'rgba(0,184,116,0.08)' : 'rgba(0,0,0,0.06)'} !important;
+            background: ${DS._dark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)'} !important;
+            border-bottom: 1px solid ${DS.border} !important;
             color: ${DS.textMuted} !important;
         }
 
         table td {
-            padding: 11px 16px !important;
+            padding: 12px 16px !important;
             border-bottom: 1px solid ${DS.border} !important;
             transition: background 0.15s ease !important;
+            font-size: 13px !important;
         }
 
         table tr:hover td {
-            background: ${DS._dark ? 'rgba(0,184,116,0.03)' : 'rgba(0,184,116,0.02)'} !important;
+            background: ${DS._dark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)'} !important;
         }
 
         table tr:last-child td {
             border-bottom: none !important;
         }
 
-        /* ═══ BUTTON POLISH ═══ */
+        /* ═══ BUTTONS — clean & subtle ═══ */
         button {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
 
-        /* Primary/accent-colored buttons get glow */
         button[style*="background: linear-gradient"],
         button[style*="background:linear-gradient"],
-        button[style*="background: rgb(139, 92"],
         button[style*="background: #00b874"],
         button[style*="background:#00b874"] {
-            box-shadow: 0 4px 14px rgba(0,184,116,0.3), 0 1px 3px rgba(0,0,0,0.2) !important;
+            box-shadow: 0 2px 8px rgba(0,184,116,0.2) !important;
             border-radius: 10px !important;
         }
 
         button[style*="background: linear-gradient"]:hover,
         button[style*="background:linear-gradient"]:hover {
-            box-shadow: 0 6px 20px rgba(0,184,116,0.4), 0 2px 6px rgba(0,0,0,0.2) !important;
+            box-shadow: 0 4px 16px rgba(0,184,116,0.25) !important;
             transform: translateY(-1px) !important;
-            filter: brightness(1.08) !important;
         }
 
-        /* ═══ INPUT FIELDS ═══ */
+        /* ═══ INPUT FIELDS — clean ═══ */
         input, textarea, select {
             transition: all 0.2s ease !important;
             border-radius: 10px !important;
         }
 
         input:focus, textarea:focus, select:focus {
-            border-color: ${DS.cyan}80 !important;
-            box-shadow: 0 0 0 3px ${DS.cyan}12, 0 0 16px ${DS.cyan}08 !important;
+            border-color: ${DS.cyan}60 !important;
+            box-shadow: 0 0 0 3px ${DS.cyan}10 !important;
             outline: none !important;
         }
 
-        /* ═══ BADGE / PILL POLISH ═══ */
-        [style*="border-radius: 20px"],
-        [style*="borderRadius: 20"],
-        [style*="border-radius:20px"] {
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-
-        /* ═══ SCROLLBAR — refined ═══ */
+        /* ═══ SCROLLBAR — minimal ═══ */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
-            background: ${DS._dark ? 'rgba(148,163,184,0.15)' : 'rgba(0,0,0,0.08)'};
+            background: ${DS._dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
             border-radius: 99px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0,184,116,0.5);
+            background: ${DS._dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'};
         }
 
-        /* ═══ RECHARTS TOOLTIP OVERRIDE ═══ */
+        /* ═══ RECHARTS — clean tooltip ═══ */
         .recharts-default-tooltip {
-            background: ${DS._dark ? 'rgba(4,6,15,0.92)' : 'rgba(255,255,255,0.95)'} !important;
-            border: 1px solid ${DS._dark ? 'rgba(0,184,116,0.15)' : 'rgba(0,0,0,0.08)'} !important;
+            background: ${DS._dark ? 'rgba(26,39,54,0.95)' : 'rgba(255,255,255,0.98)'} !important;
+            border: 1px solid ${DS._dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'} !important;
             border-radius: 12px !important;
-            box-shadow: ${DS._dark ? '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,184,116,0.06)' : '0 8px 24px rgba(0,0,0,0.08)'} !important;
-            backdrop-filter: blur(16px) !important;
+            box-shadow: ${DS._dark ? '0 4px 16px rgba(0,0,0,0.3)' : '0 4px 16px rgba(0,0,0,0.06)'} !important;
             padding: 10px 14px !important;
         }
 
@@ -511,34 +481,32 @@ const AppStyles = () => (
             font-weight: 600 !important;
             margin-bottom: 6px !important;
             font-size: 11px !important;
-            letter-spacing: 0.04em !important;
         }
 
-        /* ═══ SELECTION COLOR ═══ */
+        /* ═══ SELECTION ═══ */
         ::selection {
-            background: ${DS.cyan}30;
+            background: ${DS.cyan}25;
             color: ${DS.textPrimary};
         }
 
-        /* ═══ FOCUS VISIBLE RING ═══ */
         *:focus-visible {
-            outline: 2px solid ${DS.cyan}60 !important;
+            outline: 2px solid ${DS.cyan}40 !important;
             outline-offset: 2px !important;
         }
 
-        /* ═══ SMOOTH HOVER CARD LIFT (all interactive card-like divs) ═══ */
+        /* ═══ CARD HOVER — subtle lift ═══ */
         [style*="cursor: pointer"][style*="border-radius"],
         [style*="cursor:pointer"][style*="borderRadius"] {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition: all 0.2s ease !important;
         }
 
         [style*="cursor: pointer"][style*="border-radius"]:hover,
         [style*="cursor:pointer"][style*="borderRadius"]:hover {
-            transform: translateY(-2px) !important;
+            transform: translateY(-1px) !important;
             box-shadow: ${
                 DS._dark
-                    ? '0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,184,116,0.1)'
-                    : '0 8px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,184,116,0.08)'
+                    ? '0 4px 16px rgba(0,0,0,0.3)'
+                    : '0 4px 16px rgba(0,0,0,0.06)'
             } !important;
         }
 
@@ -568,34 +536,7 @@ const AppStyles = () => (
             position: relative;
         }
 
-        /* ── Ambient floating orbs in main content ── */
-        #root::before {
-            content: '';
-            position: fixed;
-            top: -200px;
-            right: -200px;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, ${DS._dark ? 'rgba(0,184,116,0.04)' : 'rgba(0,184,116,0.03)'} 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            animation: subtleFloat 20s ease-in-out infinite;
-        }
-
-        #root::after {
-            content: '';
-            position: fixed;
-            bottom: -200px;
-            left: -100px;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, ${DS._dark ? 'rgba(0,184,116,0.03)' : 'rgba(0,184,116,0.02)'} 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            animation: subtleFloat 25s ease-in-out infinite reverse;
-        }
+        /* Ambient orbs removed for clean modern look */
 
         /* ── Scrollbar styling (sidebar + main content) ── */
         .sidebar-nav::-webkit-scrollbar { width: 3px; }
@@ -700,59 +641,8 @@ const AppStyles = () => (
 /* ─────────────────────────────────────────────────────────────────
    AMBIENT BACKGROUND ORBS (decorative, pointer-events: none)
    ───────────────────────────────────────────────────────────────── */
-const AmbientOrbs = () => (
-    <div
-        style={{
-            position: 'fixed',
-            inset: 0,
-            pointerEvents: 'none',
-            zIndex: 0,
-            overflow: 'hidden',
-            opacity: DS._dark ? 1 : 0.15,
-            transition: 'opacity 0.4s ease',
-        }}
-    >
-        {/* Top-left purple orb */}
-        <div
-            style={{
-                position: 'absolute',
-                top: -120,
-                left: -80,
-                width: 500,
-                height: 500,
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(0,184,116,0.06) 0%, transparent 70%)',
-                animation: 'orb 18s ease-in-out infinite',
-            }}
-        />
-        {/* Bottom-right cyan orb */}
-        <div
-            style={{
-                position: 'absolute',
-                bottom: -100,
-                right: -60,
-                width: 600,
-                height: 600,
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(0,184,116,0.05) 0%, transparent 70%)',
-                animation: 'orb 24s ease-in-out infinite reverse',
-            }}
-        />
-        {/* Center subtle purple hint */}
-        <div
-            style={{
-                position: 'absolute',
-                top: '40%',
-                left: '50%',
-                width: 800,
-                height: 300,
-                borderRadius: '50%',
-                background: 'radial-gradient(ellipse, rgba(0,184,116,0.02) 0%, transparent 70%)',
-                transform: 'translate(-50%,-50%)',
-            }}
-        />
-    </div>
-);
+/* AmbientOrbs — simplified for clean modern look */
+const AmbientOrbs = () => null;
 
 /* ─────────────────────────────────────────────────────────────────
    LIVE MINI-SPARKLINE in header (purely visual / decorative)
@@ -4148,18 +4038,7 @@ const DashboardInner = ({ onLogout }) => {
                             zIndex: 40,
                         }}
                     >
-                        {/* Accent underline */}
-                        <div
-                            style={{
-                                position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                height: 1,
-                                background: `linear-gradient(90deg, transparent, ${accent}60, transparent)`,
-                                animation: 'headerGlow 4s ease-in-out infinite',
-                            }}
-                        />
+                        {/* Clean bottom border — no animation */}
 
                         {/* Left: breadcrumb + reconnecting */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>

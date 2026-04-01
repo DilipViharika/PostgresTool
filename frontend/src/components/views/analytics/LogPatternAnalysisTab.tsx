@@ -48,11 +48,10 @@ const SummaryCard = ({ label, value, subtext, color = THEME.primary, isLoading }
         return (
             <div
                 style={{
-                    background: THEME.glass,
-                    border: `1px solid ${THEME.glassBorder}`,
+                    background: THEME.surface,
+                    border: `1px solid ${THEME.surfaceBorder}`,
                     borderRadius: '12px',
                     padding: '20px',
-                    backdropFilter: 'blur(10px)',
                 }}
             >
                 <div style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '8px' }}>
@@ -74,11 +73,10 @@ const SummaryCard = ({ label, value, subtext, color = THEME.primary, isLoading }
         <div
             className="slide-up"
             style={{
-                background: THEME.glass,
-                border: `1px solid ${THEME.glassBorder}`,
+                background: THEME.surface,
+                border: `1px solid ${THEME.surfaceBorder}`,
                 borderRadius: '12px',
                 padding: '20px',
-                backdropFilter: 'blur(10px)',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
             }}
@@ -87,8 +85,8 @@ const SummaryCard = ({ label, value, subtext, color = THEME.primary, isLoading }
                 e.currentTarget.style.borderColor = `rgba(0, 184, 116, 0.25)`;
             }}
             onMouseLeave={(e) => {
-                e.currentTarget.style.background = THEME.glass;
-                e.currentTarget.style.borderColor = THEME.glassBorder;
+                e.currentTarget.style.background = THEME.surface;
+                e.currentTarget.style.borderColor = THEME.surfaceBorder;
             }}
         >
             <div style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '8px' }}>
@@ -114,11 +112,10 @@ const LockWaitsTable = ({ lockWaits }) => {
         return (
             <div
                 style={{
-                    background: THEME.glass,
-                    border: `1px solid ${THEME.glassBorder}`,
+                    background: THEME.surface,
+                    border: `1px solid ${THEME.surfaceBorder}`,
                     borderRadius: '12px',
                     padding: '32px',
-                    backdropFilter: 'blur(10px)',
                     textAlign: 'center',
                     color: THEME.textMuted,
                 }}
@@ -131,10 +128,9 @@ const LockWaitsTable = ({ lockWaits }) => {
     return (
         <div
             style={{
-                background: THEME.glass,
-                border: `1px solid ${THEME.glassBorder}`,
+                background: THEME.surface,
+                border: `1px solid ${THEME.surfaceBorder}`,
                 borderRadius: '12px',
-                backdropFilter: 'blur(10px)',
                 overflow: 'hidden',
             }}
         >
@@ -237,11 +233,10 @@ const WaitEventBreakdown = ({ waitEvents }) => {
     return (
         <div
             style={{
-                background: THEME.glass,
-                border: `1px solid ${THEME.glassBorder}`,
+                background: THEME.surface,
+                border: `1px solid ${THEME.surfaceBorder}`,
                 borderRadius: '12px',
                 padding: '20px',
-                backdropFilter: 'blur(10px)',
                 marginTop: '16px',
             }}
         >
@@ -309,11 +304,10 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
                     display: 'flex',
                     alignItems: 'center',
                     marginBottom: '16px',
-                    background: THEME.glass,
-                    border: `1px solid ${THEME.glassBorder}`,
+                    background: THEME.surface,
+                    border: `1px solid ${THEME.surfaceBorder}`,
                     borderRadius: '8px',
                     padding: '8px 12px',
-                    backdropFilter: 'blur(10px)',
                 }}
             >
                 <Search size={16} style={{ color: THEME.textMuted, marginRight: '8px' }} />
@@ -336,11 +330,10 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
             {filtered.length === 0 ? (
                 <div
                     style={{
-                        background: THEME.glass,
-                        border: `1px solid ${THEME.glassBorder}`,
+                        background: THEME.surface,
+                        border: `1px solid ${THEME.surfaceBorder}`,
                         borderRadius: '12px',
                         padding: '32px',
-                        backdropFilter: 'blur(10px)',
                         textAlign: 'center',
                         color: THEME.textMuted,
                     }}
@@ -350,10 +343,9 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
             ) : (
                 <div
                     style={{
-                        background: THEME.glass,
-                        border: `1px solid ${THEME.glassBorder}`,
+                        background: THEME.surface,
+                        border: `1px solid ${THEME.surfaceBorder}`,
                         borderRadius: '12px',
-                        backdropFilter: 'blur(10px)',
                         overflow: 'hidden',
                     }}
                 >
@@ -469,11 +461,10 @@ const DBActivitySection = ({ dbActivity }) => {
         return (
             <div
                 style={{
-                    background: THEME.glass,
-                    border: `1px solid ${THEME.glassBorder}`,
+                    background: THEME.surface,
+                    border: `1px solid ${THEME.surfaceBorder}`,
                     borderRadius: '12px',
                     padding: '32px',
-                    backdropFilter: 'blur(10px)',
                     textAlign: 'center',
                     color: THEME.textMuted,
                 }}
@@ -520,11 +511,10 @@ const DBActivitySection = ({ dbActivity }) => {
                             key={idx}
                             className="slide-up"
                             style={{
-                                background: THEME.glass,
-                                border: `1px solid ${THEME.glassBorder}`,
+                                background: THEME.surface,
+                                border: `1px solid ${THEME.surfaceBorder}`,
                                 borderRadius: '12px',
                                 padding: '16px',
-                                backdropFilter: 'blur(10px)',
                             }}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -593,11 +583,10 @@ const DBActivitySection = ({ dbActivity }) => {
             {/* Cache Hit Ratio Chart */}
             <div
                 style={{
-                    background: THEME.glass,
-                    border: `1px solid ${THEME.glassBorder}`,
+                    background: THEME.surface,
+                    border: `1px solid ${THEME.surfaceBorder}`,
                     borderRadius: '12px',
                     padding: '20px',
-                    backdropFilter: 'blur(10px)',
                 }}
             >
                 <div style={{ marginBottom: '16px', color: THEME.textMain, fontWeight: '500' }}>
@@ -610,7 +599,7 @@ const DBActivitySection = ({ dbActivity }) => {
                         <Tooltip
                             contentStyle={{
                                 background: THEME.surface,
-                                border: `1px solid ${THEME.glassBorder}`,
+                                border: `1px solid ${THEME.surfaceBorder}`,
                                 borderRadius: '8px',
                                 color: THEME.textMain,
                             }}
@@ -680,11 +669,10 @@ const HealthInsights = ({ data }) => {
     return (
         <div
             style={{
-                background: THEME.glass,
-                border: `1px solid ${THEME.glassBorder}`,
+                background: THEME.surface,
+                border: `1px solid ${THEME.surfaceBorder}`,
                 borderRadius: '12px',
                 padding: '20px',
-                backdropFilter: 'blur(10px)',
                 marginTop: '24px',
             }}
         >
@@ -800,7 +788,6 @@ export default function LogPatternAnalysisTab() {
                             fontWeight: '700',
                             color: THEME.textMain,
                             margin: 0,
-                            fontFamily: THEME.fontDisplay,
                         }}
                     >
                         Log Pattern Analysis
@@ -850,7 +837,7 @@ export default function LogPatternAnalysisTab() {
                         onChange={(e) => setAutoRefresh(e.target.value)}
                         style={{
                             background: THEME.surface,
-                            border: `1px solid ${THEME.glassBorder}`,
+                            border: `1px solid ${THEME.surfaceBorder}`,
                             color: THEME.textMain,
                             padding: '8px 12px',
                             borderRadius: '8px',

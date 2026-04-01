@@ -167,8 +167,6 @@ const OvStyles = () => (
             transform-origin: left;
             animation: ovBarGrow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
-        .ov-glow         { animation: ovGlowPulse 3.5s ease-in-out infinite; }
-        .ov-glow-warn    { animation: ovGlowPulseWarn 2.8s ease-in-out infinite; }
         .ov-bell-anim    { animation: ovBell 1.2s ease-in-out; }
 
         .ov-notif-item {
@@ -190,12 +188,12 @@ const OvStyles = () => (
         }
 
         .ov-metric-card:hover {
-            border-color: ${THEME.glassBorderHover} !important;
-            transform: translateY(-2px);
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            box-shadow: ${THEME.shadowMd} !important;
+            transform: translateY(-1px);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .ov-metric-card {
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .ov-vacuum-urgent { animation: ovVacuumPulse 2s ease-in-out infinite; }
@@ -220,33 +218,27 @@ const OvStyles = () => (
 const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, accentColor }) => (
     <div
         style={{
-            background: THEME.glass,
-            backdropFilter: 'blur(18px)',
-            WebkitBackdropFilter: 'blur(18px)',
-            border: `1px solid ${accentColor ? `${accentColor}22` : THEME.glassBorder}`,
-            borderRadius: 12,
+            background: THEME.surface,
+            border: `1px solid ${THEME.surfaceBorder}`,
+            borderRadius: 14,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
             position: 'relative',
-            boxShadow: accentColor
-                ? `0 0 0 1px ${accentColor}12, 0 4px 16px rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.08)`
-                : `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
+            boxShadow: THEME.shadowSm,
             ...style,
         }}
     >
-        <div className="ov-card-shine" />
         {title && (
             <div
                 style={{
-                    padding: '14px 20px',
-                    borderBottom: `1px solid ${accentColor ? `${accentColor}18` : THEME.glassBorder}`,
+                    padding: '12px 18px',
+                    borderBottom: `1px solid ${THEME.surfaceBorder}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     flexShrink: 0,
                     minHeight: 44,
-                    background: accentColor ? `${accentColor}06` : 'rgba(255,255,255,0.02)',
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -259,21 +251,17 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                background: accentColor ? `${accentColor}16` : `${THEME.textDim}12`,
-                                boxShadow: accentColor ? `0 0 8px ${accentColor}20` : 'none',
+                                background: accentColor ? `${accentColor}12` : `${THEME.textDim}10`,
                             }}
                         >
-                            <TIcon size={13} color={accentColor || THEME.textDim} />
+                            <TIcon size={13} color={accentColor || THEME.textMuted} />
                         </div>
                     )}
                     <span
-                        className="ov-display"
                         style={{
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: THEME.textMuted,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.1em',
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: THEME.textMain,
                         }}
                     >
                         {title}
@@ -315,7 +303,7 @@ const StatusBadge = ({ label, color, pulse }) => (
                 height: 6,
                 borderRadius: '50%',
                 background: color,
-                boxShadow: `0 0 8px ${color}80, 0 0 12px ${color}40`,
+                boxShadow: `0 0 4px ${color}40`,
                 flexShrink: 0,
                 animation: pulse ? 'ovPulse 1.5s ease-in-out infinite' : 'none',
             }}
@@ -502,9 +490,9 @@ const ChartTooltip = ({ active, payload, label }) => {
     return (
         <div
             style={{
-                background: THEME.glassHeavy,
-                backdropFilter: 'blur(16px)',
-                border: `1px solid ${THEME.glassBorder}`,
+                background: THEME.surfaceHeavy,
+                
+                border: `1px solid ${THEME.surfaceBorder}`,
                 borderRadius: 12,
                 padding: '12px 16px',
                 fontSize: 12,
@@ -536,7 +524,7 @@ const Divider = ({ style = {} }) => (
     <div
         style={{
             height: 1,
-            background: `linear-gradient(90deg, transparent, ${THEME.glassBorder}, transparent)`,
+            background: `linear-gradient(90deg, transparent, ${THEME.surfaceBorder}, transparent)`,
             ...style,
         }}
     />
@@ -616,16 +604,16 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                         top: 'calc(100% + 8px)',
                         left: 0,
                         zIndex: 200,
-                        background: THEME.glassHeavy,
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${THEME.glassBorder}`,
+                        background: THEME.surfaceHeavy,
+                        
+                        border: `1px solid ${THEME.surfaceBorder}`,
                         borderRadius: 12,
                         overflow: 'hidden',
                         minWidth: 240,
                         boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
                     }}
                 >
-                    <div style={{ padding: '8px 12px 6px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                    <div style={{ padding: '8px 12px 6px', borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
                         <span
                             style={{
                                 fontSize: 9.5,
@@ -653,7 +641,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                                 padding: '11px 14px',
                                 background: e.id === currentEnv ? `${e.color}10` : 'transparent',
                                 border: 'none',
-                                borderBottom: `1px solid ${THEME.glassBorder}20`,
+                                borderBottom: `1px solid ${THEME.surfaceBorder}20`,
                                 cursor: 'pointer',
                                 transition: 'background 0.15s',
                             }}
@@ -761,7 +749,7 @@ const NotificationBell = () => {
                     height: 36,
                     borderRadius: 12,
                     background: open ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${unread > 0 ? `${SEVERITY_COLOR.critical}40` : THEME.glassBorder}`,
+                    border: `1px solid ${unread > 0 ? `${SEVERITY_COLOR.critical}40` : THEME.surfaceBorder}`,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -810,9 +798,9 @@ const NotificationBell = () => {
                         top: 'calc(100% + 8px)',
                         right: 0,
                         zIndex: 200,
-                        background: THEME.glassHeavy,
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${THEME.glassBorder}`,
+                        background: THEME.surfaceHeavy,
+                        
+                        border: `1px solid ${THEME.surfaceBorder}`,
                         borderRadius: 12,
                         overflow: 'hidden',
                         width: 320,
@@ -822,7 +810,7 @@ const NotificationBell = () => {
                     <div
                         style={{
                             padding: '10px 14px',
-                            borderBottom: `1px solid ${THEME.glassBorder}`,
+                            borderBottom: `1px solid ${THEME.surfaceBorder}`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
@@ -873,7 +861,7 @@ const NotificationBell = () => {
                                         gap: 10,
                                         padding: '11px 14px',
                                         background: a.read ? 'transparent' : `${sc}06`,
-                                        borderBottom: `1px solid ${THEME.glassBorder}20`,
+                                        borderBottom: `1px solid ${THEME.surfaceBorder}20`,
                                         borderLeft: a.read ? '2px solid transparent' : `2px solid ${sc}`,
                                     }}
                                 >
@@ -916,7 +904,7 @@ const NotificationBell = () => {
                     <div
                         style={{
                             padding: '8px 14px',
-                            borderTop: `1px solid ${THEME.glassBorder}`,
+                            borderTop: `1px solid ${THEME.surfaceBorder}`,
                             display: 'flex',
                             justifyContent: 'center',
                         }}
@@ -968,7 +956,7 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                     height: 32,
                     borderRadius: 8,
                     background: 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${THEME.glassBorder}`,
+                    border: `1px solid ${THEME.surfaceBorder}`,
                     cursor: loading ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -997,7 +985,7 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                     borderRadius: 10,
                     height: 32,
                     background: interval === 0 ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${interval === 0 ? '#ef444440' : THEME.glassBorder}`,
+                    border: `1px solid ${interval === 0 ? '#ef444440' : THEME.surfaceBorder}`,
                     cursor: 'pointer',
                     color: interval === 0 ? '#ef4444' : THEME.textMuted,
                     transition: 'all 0.15s',
@@ -1022,16 +1010,16 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                         top: 'calc(100% + 6px)',
                         right: 0,
                         zIndex: 200,
-                        background: THEME.glassHeavy,
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${THEME.glassBorder}`,
+                        background: THEME.surfaceHeavy,
+                        
+                        border: `1px solid ${THEME.surfaceBorder}`,
                         borderRadius: 12,
                         overflow: 'hidden',
                         minWidth: 140,
                         boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
                     }}
                 >
-                    <div style={{ padding: '7px 11px 5px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                    <div style={{ padding: '7px 11px 5px', borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
                         <span
                             style={{
                                 fontSize: 9,
@@ -1059,7 +1047,7 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                                 padding: '9px 12px',
                                 background: opt.value === interval ? `${THEME.primary}12` : 'transparent',
                                 border: 'none',
-                                borderBottom: `1px solid ${THEME.glassBorder}15`,
+                                borderBottom: `1px solid ${THEME.surfaceBorder}15`,
                                 cursor: 'pointer',
                                 transition: 'background 0.12s',
                             }}
@@ -1162,14 +1150,14 @@ const BackupStatusCard = ({ lastBackup }) => {
                 gap: 10,
                 padding: '16px 18px',
                 borderRadius: 12,
-                background: THEME.glass,
-                backdropFilter: 'blur(12px)',
-                border: `1px solid ${isOld ? `${THEME.warning}30` : THEME.glassBorder}`,
+                background: THEME.surface,
+                
+                border: `1px solid ${isOld ? `${THEME.warning}30` : THEME.surfaceBorder}`,
                 position: 'relative',
                 overflow: 'hidden',
                 boxShadow: isOld
                     ? `0 0 0 1px ${THEME.warning}12, 0 4px 12px rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.06)`
-                    : `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
+                    : `0 0 0 1px ${THEME.surfaceBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
             }}
             className={isOld ? 'ov-glow-warn' : ''}
         >
@@ -1244,7 +1232,7 @@ const BackupStatusCard = ({ lastBackup }) => {
                     alignItems: 'center',
                     gap: 5,
                     paddingTop: 8,
-                    borderTop: `1px solid ${THEME.glassBorder}`,
+                    borderTop: `1px solid ${THEME.surfaceBorder}`,
                 }}
             >
                 <Clock size={9} color={THEME.textDim} />
@@ -1283,9 +1271,9 @@ const LongTxnCard = ({ data, onNavigate }) => {
                 style={{
                     padding: '16px 18px',
                     borderRadius: 12,
-                    background: THEME.glass,
-                    backdropFilter: 'blur(12px)',
-                    border: `1px solid ${THEME.glassBorder}`,
+                    background: THEME.surface,
+                    
+                    border: `1px solid ${THEME.surfaceBorder}`,
                     position: 'relative',
                     overflow: 'hidden',
                     boxShadow:
@@ -1375,9 +1363,9 @@ const LongTxnCard = ({ data, onNavigate }) => {
             style={{
                 padding: '16px 18px',
                 borderRadius: 12,
-                background: THEME.glass,
-                backdropFilter: 'blur(12px)',
-                border: `1px solid ${THEME.glassBorder}`,
+                background: THEME.surface,
+                
+                border: `1px solid ${THEME.surfaceBorder}`,
                 position: 'relative',
                 overflow: 'hidden',
                 boxShadow:
@@ -1546,9 +1534,9 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
             style={{
                 padding: '16px 18px',
                 borderRadius: 12,
-                background: THEME.glass,
-                backdropFilter: 'blur(12px)',
-                border: `1px solid ${vacuum.urgentCount > 3 ? `${THEME.danger}28` : THEME.glassBorder}`,
+                background: THEME.surface,
+                
+                border: `1px solid ${vacuum.urgentCount > 3 ? `${THEME.danger}28` : THEME.surfaceBorder}`,
                 position: 'relative',
                 overflow: 'hidden',
                 boxShadow:
@@ -1843,8 +1831,8 @@ const ConnectionStatusBanner = () => {
         <div
             style={{
                 borderRadius: 14,
-                background: THEME.glass,
-                backdropFilter: 'blur(12px)',
+                background: THEME.surface,
+                
                 border: `1px solid ${statusColor}28`,
                 padding: '12px 16px',
                 display: 'flex',
@@ -2202,8 +2190,8 @@ const OverviewTab = () => {
                             style={{
                                 height: 110,
                                 borderRadius: 14,
-                                background: THEME.glass,
-                                border: `1px solid ${THEME.glassBorder}`,
+                                background: THEME.surface,
+                                border: `1px solid ${THEME.surfaceBorder}`,
                                 opacity: 0.4,
                                 animation: `ovPulse 1.5s ease-in-out infinite`,
                                 animationDelay: `${i * 0.1}s`,
@@ -2216,8 +2204,8 @@ const OverviewTab = () => {
                         style={{
                             height: 320,
                             borderRadius: 16,
-                            background: THEME.glass,
-                            border: `1px solid ${THEME.glassBorder}`,
+                            background: THEME.surface,
+                            border: `1px solid ${THEME.surfaceBorder}`,
                             opacity: 0.2,
                             animation: 'ovPulse 1.5s ease-in-out infinite 0.5s',
                         }}
@@ -2226,8 +2214,8 @@ const OverviewTab = () => {
                         style={{
                             height: 320,
                             borderRadius: 16,
-                            background: THEME.glass,
-                            border: `1px solid ${THEME.glassBorder}`,
+                            background: THEME.surface,
+                            border: `1px solid ${THEME.surfaceBorder}`,
                             opacity: 0.2,
                             animation: 'ovPulse 1.5s ease-in-out infinite 0.65s',
                         }}
@@ -2250,8 +2238,8 @@ const OverviewTab = () => {
                     style={{
                         padding: '8px 20px',
                         borderRadius: 8,
-                        border: `1px solid ${THEME.glassBorder}`,
-                        background: THEME.glass,
+                        border: `1px solid ${THEME.surfaceBorder}`,
+                        background: THEME.surface,
                         color: THEME.text,
                         cursor: 'pointer',
                         fontSize: 13,
@@ -2385,37 +2373,31 @@ const OverviewTab = () => {
                 {metricCards.map((m, i) => (
                     <div
                         key={i}
-                        className={`ov-metric-card ${!m.healthy ? 'ov-glow-warn' : 'ov-glow'}`}
+                        className="ov-metric-card"
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
                             gap: 10,
                             padding: '16px 18px',
-                            borderRadius: 12,
-                            background: THEME.glass,
-                            backdropFilter: 'blur(14px)',
-                            border: `1px solid ${!m.healthy ? `${m.color}28` : THEME.glassBorder}`,
+                            borderRadius: 14,
+                            background: THEME.surface,
+                            border: `1px solid ${THEME.surfaceBorder}`,
                             position: 'relative',
                             overflow: 'hidden',
-                            boxShadow: !m.healthy
-                                    ? `0 0 0 1px ${m.color}12, inset 0 1px 2px rgba(255,255,255,0.08)`
-                                    : `0 0 0 1px ${THEME.glassBorder}, inset 0 1px 2px rgba(255,255,255,0.06)`,
+                            boxShadow: THEME.shadowSm,
                         }}
                     >
-                        <div className="ov-card-shine" />
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div
                                 style={{
-                                    width: 32,
-                                    height: 32,
+                                    width: 36,
+                                    height: 36,
                                     borderRadius: 10,
                                     flexShrink: 0,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     background: `${m.color}12`,
-                                    border: `1px solid ${m.color}20`,
-                                    boxShadow: `0 0 8px ${m.color}25`,
                                 }}
                             >
                                 <m.icon size={15} color={m.color} />
@@ -2424,11 +2406,9 @@ const OverviewTab = () => {
                         <div>
                             <div
                                 style={{
-                                    fontSize: 9.5,
-                                    color: THEME.textDim,
-                                    fontWeight: 600,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.05em',
+                                    fontSize: 11,
+                                    color: THEME.textSub,
+                                    fontWeight: 500,
                                     lineHeight: 1,
                                     marginBottom: 5,
                                 }}
@@ -2439,9 +2419,9 @@ const OverviewTab = () => {
                                 <span
                                     className="ov-mono"
                                     style={{
-                                        fontSize: 22,
+                                        fontSize: 24,
                                         fontWeight: 700,
-                                        color: m.color,
+                                        color: THEME.textMain,
                                         lineHeight: 1,
                                         letterSpacing: '-0.02em',
                                     }}
@@ -2559,7 +2539,7 @@ const OverviewTab = () => {
                             gap: 16,
                             marginTop: 12,
                             paddingTop: 12,
-                            borderTop: `1px solid ${THEME.glassBorder}`,
+                            borderTop: `1px solid ${THEME.surfaceBorder}`,
                         }}
                     >
                         {[
@@ -2812,7 +2792,7 @@ const OverviewTab = () => {
                         gap: 0,
                         marginTop: 10,
                         paddingTop: 10,
-                        borderTop: `1px solid ${THEME.glassBorder}`,
+                        borderTop: `1px solid ${THEME.surfaceBorder}`,
                     }}
                 >
                     {[
@@ -2827,7 +2807,7 @@ const OverviewTab = () => {
                             style={{
                                 flex: 1,
                                 paddingRight: 12,
-                                borderRight: i < 4 ? `1px solid ${THEME.glassBorder}` : 'none',
+                                borderRight: i < 4 ? `1px solid ${THEME.surfaceBorder}` : 'none',
                                 paddingLeft: i > 0 ? 12 : 0,
                             }}
                         >
@@ -3029,7 +3009,7 @@ const OverviewTab = () => {
                             alignItems: 'center',
                             gap: 8,
                             padding: '11px 18px',
-                            borderTop: `1px solid ${THEME.glassBorder}`,
+                            borderTop: `1px solid ${THEME.surfaceBorder}`,
                         }}
                     >
                         <Layers size={11} color={THEME.textDim} />

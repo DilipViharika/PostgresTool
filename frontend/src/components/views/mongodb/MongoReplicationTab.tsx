@@ -56,7 +56,6 @@ const Styles = () => (
             height: 12px;
             border-radius: 50%;
             margin-right: 8px;
-            animation: mongoGlow 2s infinite;
         }
 
         .mongo-member-status.primary {

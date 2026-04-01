@@ -700,8 +700,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -1150,8 +1150,8 @@ function DemoMySQLTab({ tabId }) {
                                         <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                         <Tooltip
                                             contentStyle={{
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1180,8 +1180,8 @@ function DemoMySQLTab({ tabId }) {
                                         <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                         <Tooltip
                                             contentStyle={{
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1207,8 +1207,8 @@ function DemoMySQLTab({ tabId }) {
                                         <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                         <Tooltip
                                             contentStyle={{
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1324,8 +1324,8 @@ function DemoMySQLTab({ tabId }) {
                                         <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                         <Tooltip
                                             contentStyle={{
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1621,8 +1621,8 @@ function DemoMySQLTab({ tabId }) {
                                         <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                         <Tooltip
                                             contentStyle={{
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1653,8 +1653,8 @@ function DemoMySQLTab({ tabId }) {
                                         <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                         <Tooltip
                                             contentStyle={{
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1686,8 +1686,8 @@ function DemoMySQLTab({ tabId }) {
                                         <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                         <Tooltip
                                             contentStyle={{
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1724,8 +1724,8 @@ function DemoMySQLTab({ tabId }) {
                                         <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                         <Tooltip
                                             contentStyle={{
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1956,8 +1956,8 @@ function DemoMySQLTab({ tabId }) {
                                         <YAxis stroke={THEME.textDim} style={{ fontSize: 9 }} />
                                         <Tooltip
                                             contentStyle={{
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -2371,8 +2371,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -2508,8 +2508,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -2586,8 +2586,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -2645,8 +2645,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -2854,8 +2854,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3064,8 +3064,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3167,8 +3167,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3235,8 +3235,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3265,8 +3265,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3380,8 +3380,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3448,8 +3448,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3533,8 +3533,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3601,8 +3601,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3862,8 +3862,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3912,8 +3912,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -4124,8 +4124,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -4237,8 +4237,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -4397,8 +4397,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -4523,8 +4523,8 @@ function DemoMySQLTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />

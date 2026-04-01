@@ -69,13 +69,12 @@ const StatusBadge = ({ label, color, pulse }) => (
 /* ── Panel ── */
 const Panel = ({ title, icon: TIcon, rightNode, children, accentColor }) => (
     <div style={{
-        background: THEME.glass, backdropFilter: 'blur(16px)',
-        border: `1px solid ${THEME.glassBorder}`, borderRadius: 14,
+        border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 14,
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
     }}>
         <div style={{
             padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            borderBottom: `1px solid ${THEME.glassBorder}`,
+            borderBottom: `1px solid ${THEME.surfaceBorder}`,
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {TIcon && <TIcon size={14} color={accentColor || THEME.primary} />}
@@ -92,8 +91,7 @@ const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
         <div style={{
-            background: THEME.glassHeavy, backdropFilter: 'blur(12px)',
-            border: `1px solid ${THEME.glassBorder}`, borderRadius: 8,
+            border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 8,
             padding: '8px 12px', fontSize: 11,
         }}>
             <div style={{ fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>{label}</div>
@@ -121,8 +119,7 @@ const MiniSparkline = ({ data = [], color = THEME.primary, width = 56, height = 
 const MetricCard = ({ icon: Icon, label, value, sub, color, spark, trend, trendUp = true }) => (
     <div style={{
         padding: '14px 16px', borderRadius: 12,
-        background: THEME.glass, backdropFilter: 'blur(12px)',
-        border: `1px solid ${THEME.glassBorder}`,
+        border: `1px solid ${THEME.surfaceBorder}`,
         display: 'flex', flexDirection: 'column', gap: 6,
     }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -174,12 +171,11 @@ const DatabaseCard = ({ connection, health, isActive, onSwitch }) => {
     return (
         <div className="fleet-card-hover" onClick={() => onSwitch(connection.id)} style={{
             padding: 20, borderRadius: 14, cursor: 'pointer', position: 'relative',
-            background: THEME.glass, backdropFilter: 'blur(12px)',
-            border: `1px solid ${isActive ? THEME.primary : THEME.glassBorder}`,
+            border: `1px solid ${isActive ? THEME.primary : THEME.surfaceBorder}`,
             boxShadow: isActive ? `0 0 20px ${THEME.primary}20` : 'none',
         }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, paddingBottom: 14, borderBottom: `1px solid ${THEME.glassBorder}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, paddingBottom: 14, borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flex: 1 }}>
                     <div style={{ width: 42, height: 42, borderRadius: 10, background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Database size={20} color={THEME.primary} />
@@ -233,7 +229,7 @@ const DatabaseCard = ({ connection, health, isActive, onSwitch }) => {
 
             {/* Footer */}
             {health?.lastChecked && (
-                <div style={{ paddingTop: 12, borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10.5, color: THEME.textDim }}>
+                <div style={{ paddingTop: 12, borderTop: `1px solid ${THEME.surfaceBorder}`, fontSize: 10.5, color: THEME.textDim }}>
                     Last checked: {new Date(health.lastChecked).toLocaleTimeString()}
                 </div>
             )}
@@ -355,12 +351,12 @@ const FleetOverviewTab = () => {
                 <FleetStyles />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
                     {[0,1,2,3,4,5].map(i => (
-                        <div key={i} style={{ height: 96, borderRadius: 12, background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, opacity: 0.3, animation: 'fleetPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
+                        <div key={i} style={{ height: 96, borderRadius: 12, background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, opacity: 0.3, animation: 'fleetPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
                     ))}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                     {[0,1].map(i => (
-                        <div key={i} style={{ height: 280, borderRadius: 14, background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, opacity: 0.2, animation: 'fleetPulse 1.5s ease-in-out infinite', animationDelay: `${0.6 + i * 0.15}s` }} />
+                        <div key={i} style={{ height: 280, borderRadius: 14, background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, opacity: 0.2, animation: 'fleetPulse 1.5s ease-in-out infinite', animationDelay: `${0.6 + i * 0.15}s` }} />
                     ))}
                 </div>
             </div>
@@ -379,7 +375,6 @@ const FleetOverviewTab = () => {
                 </div>
                 <button onClick={handleRefresh} disabled={refreshing} style={{
                     display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 8,
-                    border: `1px solid ${THEME.glassBorder}`, background: THEME.glass, backdropFilter: 'blur(8px)',
                     color: THEME.primary, fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: refreshing ? 0.6 : 1,
                 }}>
                     <RefreshCw size={14} style={{ animation: refreshing ? 'fleetSpin 1s linear infinite' : 'none' }} /> Refresh
@@ -491,7 +486,7 @@ const FleetOverviewTab = () => {
                             const host = conn.host || '';
                             const region = host.includes('us-') ? 'US' : host.includes('eu-') ? 'EU' : host.includes('ap-') ? 'APAC' : host.includes('localhost') ? 'Local' : 'Cloud';
                             return (
-                                <div key={conn.id} style={{ padding: 14, background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10 }}>
+                                <div key={conn.id} style={{ padding: 14, background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 10 }}>
                                     <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{region}</div>
                                     <div style={{ fontSize: 15, fontWeight: 700, color: THEME.primary, margin: '6px 0' }}>{conn.name}</div>
                                     <div style={{ fontSize: 10, color: THEME.textDim }}>

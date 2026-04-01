@@ -100,7 +100,6 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                 borderRadius: '12px',
                 padding: '20px',
                 marginBottom: '20px',
-                backdropFilter: 'blur(8px)',
             }}
         >
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
@@ -343,7 +342,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                     onClick={onCancel}
                     style={{
                         padding: '10px 16px',
-                        background: THEME.glassLight,
+                        background: THEME.surfaceLight,
                         color: THEME.textMain,
                         border: `1px solid ${THEME.border}`,
                         borderRadius: '8px',
@@ -359,7 +358,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                     }}
                     onMouseLeave={(e) => {
                         e.target.style.borderColor = THEME.border;
-                        e.target.style.background = THEME.glassLight;
+                        e.target.style.background = THEME.surfaceLight;
                     }}
                 >
                     Cancel
@@ -489,7 +488,7 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                     onClick={() => onEdit(rule)}
                     style={{
                         padding: '8px 12px',
-                        background: THEME.glassLight,
+                        background: THEME.surfaceLight,
                         color: THEME.textMain,
                         border: `1px solid ${THEME.border}`,
                         borderRadius: '8px',
@@ -508,7 +507,7 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                     }}
                     onMouseLeave={(e) => {
                         e.target.style.borderColor = THEME.border;
-                        e.target.style.background = THEME.glassLight;
+                        e.target.style.background = THEME.surfaceLight;
                     }}
                 >
                     <Edit3 size={13} />
@@ -753,7 +752,6 @@ export default function AlertRuleEditor() {
                                 background: `linear-gradient(135deg, ${THEME.surface}80, ${THEME.elevated}80)`,
                                 border: `1px solid ${THEME.grid}`,
                                 borderRadius: '12px',
-                                backdropFilter: 'blur(8px)',
                             }}
                         >
                             <Bell size={40} color={THEME.textMuted} style={{ marginBottom: '12px', opacity: 0.5 }} />

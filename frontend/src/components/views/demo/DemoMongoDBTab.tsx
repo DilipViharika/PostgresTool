@@ -1889,9 +1889,9 @@ function DemoMongoDBTab({ tabId }) {
                                         style={{
                                             marginTop: 16,
                                             padding: 12,
-                                            background: THEME.glass,
+                                            background: THEME.surface,
                                             borderRadius: 8,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             fontFamily: THEME.fontMono,
                                             fontSize: 11,
                                             color: THEME.textMuted,
@@ -2615,7 +2615,7 @@ function DemoMongoDBTab({ tabId }) {
                                     style={{
                                         marginTop: 16,
                                         padding: 12,
-                                        background: THEME.glass,
+                                        background: THEME.surface,
                                         borderRadius: 8,
                                         borderLeft: `3px solid ${THEME.success}`,
                                     }}
@@ -2971,8 +2971,8 @@ function DemoMongoDBTab({ tabId }) {
                                                 key={i}
                                                 style={{
                                                     padding: 12,
-                                                    background: THEME.glass,
-                                                    border: `1px solid ${THEME.glassBorder}`,
+                                                    background: THEME.surface,
+                                                    border: `1px solid ${THEME.surfaceBorder}`,
                                                     borderRadius: 6,
                                                     borderLeft: `3px solid ${b.status === 'SUCCESS' ? THEME.success : THEME.danger}`,
                                                 }}
@@ -3362,9 +3362,9 @@ function DemoMongoDBTab({ tabId }) {
                                         style={{
                                             marginTop: 16,
                                             padding: 12,
-                                            background: THEME.glass,
+                                            background: THEME.surface,
                                             borderRadius: 8,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             fontFamily: THEME.fontMono,
                                             fontSize: 10,
                                             color: THEME.textMuted,
@@ -3523,9 +3523,9 @@ function DemoMongoDBTab({ tabId }) {
                                                 key={i}
                                                 style={{
                                                     padding: 12,
-                                                    background: THEME.glass,
+                                                    background: THEME.surface,
                                                     borderRadius: 8,
-                                                    border: `1px solid ${THEME.glassBorder}`,
+                                                    border: `1px solid ${THEME.surfaceBorder}`,
                                                 }}
                                             >
                                                 <div
@@ -3556,7 +3556,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         fontSize: 10,
                                                         fontFamily: THEME.fontMono,
                                                         color: THEME.textMuted,
-                                                        background: THEME.glass,
+                                                        background: THEME.surface,
                                                         padding: 8,
                                                         borderRadius: 4,
                                                         wordBreak: 'break-word',
@@ -3669,9 +3669,9 @@ function DemoMongoDBTab({ tabId }) {
                                                 key={i}
                                                 style={{
                                                     padding: 12,
-                                                    background: THEME.glass,
+                                                    background: THEME.surface,
                                                     borderRadius: 8,
-                                                    border: `1px solid ${THEME.glassBorder}`,
+                                                    border: `1px solid ${THEME.surfaceBorder}`,
                                                 }}
                                             >
                                                 <div
@@ -3689,7 +3689,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         fontSize: 10,
                                                         fontFamily: THEME.fontMono,
                                                         color: THEME.textMuted,
-                                                        background: THEME.glass,
+                                                        background: THEME.surface,
                                                         padding: 8,
                                                         borderRadius: 4,
                                                         marginBottom: 10,
@@ -3713,7 +3713,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         fontSize: 10,
                                                         fontFamily: THEME.fontMono,
                                                         color: THEME.success,
-                                                        background: THEME.glass,
+                                                        background: THEME.surface,
                                                         padding: 8,
                                                         borderRadius: 4,
                                                         wordBreak: 'break-word',
@@ -4171,9 +4171,9 @@ function DemoMongoDBTab({ tabId }) {
                                                 key={i}
                                                 style={{
                                                     padding: 12,
-                                                    background: THEME.glass,
+                                                    background: THEME.surface,
                                                     borderRadius: 6,
-                                                    border: `1px solid ${THEME.glassBorder}`,
+                                                    border: `1px solid ${THEME.surfaceBorder}`,
                                                     borderLeft: `3px solid ${i === 0 ? THEME.danger : i === 1 ? THEME.warning : THEME.info || THEME.primary}`,
                                                 }}
                                             >
@@ -4299,9 +4299,9 @@ function DemoMongoDBTab({ tabId }) {
                                                 key={i}
                                                 style={{
                                                     padding: 12,
-                                                    background: THEME.glass,
+                                                    background: THEME.surface,
                                                     borderRadius: 6,
-                                                    border: `1px solid ${THEME.glassBorder}`,
+                                                    border: `1px solid ${THEME.surfaceBorder}`,
                                                 }}
                                             >
                                                 <div
@@ -4396,9 +4396,9 @@ function DemoMongoDBTab({ tabId }) {
                                                 key={i}
                                                 style={{
                                                     padding: 12,
-                                                    background: THEME.glass,
+                                                    background: THEME.surface,
                                                     borderRadius: 6,
-                                                    border: `1px solid ${THEME.glassBorder}`,
+                                                    border: `1px solid ${THEME.surfaceBorder}`,
                                                     borderLeft: `3px solid ${replica.role === 'PRIMARY' ? THEME.success : THEME.info || THEME.primary}`,
                                                 }}
                                             >

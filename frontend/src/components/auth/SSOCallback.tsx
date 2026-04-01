@@ -75,7 +75,7 @@ const SSOCallback = () => {
         }}>
             <div style={{
                 padding: '40px', borderRadius: '24px', background: THEME.surface,
-                border: `1px solid ${error ? 'rgba(239,68,68,.3)' : THEME.glassBorder}`,
+                border: `1px solid ${error ? 'rgba(239,68,68,.3)' : THEME.surfaceBorder}`,
                 boxShadow: THEME.shadowMd, textAlign: 'center', maxWidth: '400px', width: '90%'
             }}>
                 {error ? (

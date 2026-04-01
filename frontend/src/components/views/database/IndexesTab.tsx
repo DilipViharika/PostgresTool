@@ -10,9 +10,9 @@ const C = {
     get bg()          { return THEME.surface; },
     get bgAlt()       { return THEME.surfaceRaised || THEME.surface; },
     get surface()     { return THEME.surfaceHover; },
-    get surfaceHi()   { return THEME.glass; },
+    get surfaceHi()   { return THEME.surface; },
     get border()      { return THEME.grid; },
-    get borderSub()   { return THEME.glassBorder; },
+    get borderSub()   { return THEME.surfaceBorder; },
 
     get accent()      { return THEME.primary; },
     get accentDim()   { return THEME.primaryFaint; },

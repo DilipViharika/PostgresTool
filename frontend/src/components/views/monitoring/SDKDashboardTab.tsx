@@ -123,7 +123,6 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
     const accent = THEME.primary || '#6366f1';
 
     return (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, backdropFilter:'blur(4px)' }}>
             <div style={{ background:bg, border:`1px solid ${border}`, borderRadius:12, padding:24, maxWidth:480, width:'90%' }}>
                 <h3 style={{ margin:'0 0 16px', fontSize:18, fontWeight:700, color:txt }}>Register New SDK Application</h3>
 
@@ -179,7 +178,6 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
                     </div>
                 )}
             </div>
-        </div>
     );
 }
 

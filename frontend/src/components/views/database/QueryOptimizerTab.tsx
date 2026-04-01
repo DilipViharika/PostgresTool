@@ -41,9 +41,9 @@ const OptimizerStyles = () => (
         @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
         .opt-card {
-            background: ${THEME.glass};
+            background: ${THEME.surface};
             backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid ${THEME.glassBorder};
+            border: 1px solid ${THEME.surfaceBorder};
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .opt-card:hover {
@@ -1893,7 +1893,7 @@ const QueryOptimizerTab = () => {
             <OptimizerStyles />
 
             {/* HEADER */}
-            <div style={{ height: 52, padding: '0 20px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: THEME.glass, flexShrink: 0 }}>
+            <div style={{ height: 52, padding: '0 20px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: THEME.surface, flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ padding: 7, borderRadius: 8, background: `linear-gradient(135deg, ${THEME.primary}25, ${THEME.secondary || THEME.primary}25)`, border: `1px solid ${THEME.primary}30` }}>
                         <Zap size={15} color={THEME.primary} />

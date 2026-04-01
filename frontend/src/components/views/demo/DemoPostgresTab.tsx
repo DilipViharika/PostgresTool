@@ -371,7 +371,7 @@ function DemoPostgresTab({ tabId }) {
                                             <stop offset="95%" stopColor={THEME.ai} stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                     <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                     <YAxis stroke={THEME.textDim} fontSize={10} />
                                     <Tooltip content={<ChartTip />} />
@@ -390,7 +390,7 @@ function DemoPostgresTab({ tabId }) {
                         <Panel title="Connections" icon={Network} accentColor={THEME.primary}>
                             <ResponsiveContainer width="100%" height={220}>
                                 <LineChart data={demoData.connectionTrends}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                     <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                     <YAxis stroke={THEME.textDim} fontSize={10} />
                                     <Tooltip content={<ChartTip />} />
@@ -426,8 +426,8 @@ function DemoPostgresTab({ tabId }) {
                                     key={name}
                                     style={{
                                         padding: '12px 14px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 10,
                                         fontSize: 11,
                                     }}
@@ -456,8 +456,8 @@ function DemoPostgresTab({ tabId }) {
                                     key={r.region}
                                     style={{
                                         padding: '12px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 10,
                                     }}
                                 >
@@ -601,7 +601,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             height: 4,
                                             borderRadius: 2,
-                                            background: THEME.glassBorder,
+                                            background: THEME.surfaceBorder,
                                             overflow: 'hidden',
                                         }}
                                     >
@@ -619,7 +619,7 @@ function DemoPostgresTab({ tabId }) {
                                         fontSize: 9.5,
                                         color: THEME.textDim,
                                         paddingTop: 6,
-                                        borderTop: `1px solid ${THEME.glassBorder}`,
+                                        borderTop: `1px solid ${THEME.surfaceBorder}`,
                                     }}
                                 >
                                     <div style={{ fontWeight: 700, marginBottom: 4 }}>PID 54188</div>
@@ -676,7 +676,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="100%" stopColor={THEME.success} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -874,7 +874,7 @@ function DemoPostgresTab({ tabId }) {
                             <Panel title="SESSION TRAFFIC" icon={Network} accentColor={THEME.primary}>
                                 <ResponsiveContainer width="100%" height={240}>
                                     <LineChart data={demoData.connectionTrends}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                         <YAxis stroke={THEME.textDim} fontSize={10} />
                                         <Tooltip content={<ChartTip />} />
@@ -1004,7 +1004,7 @@ function DemoPostgresTab({ tabId }) {
                                                         </defs>
                                                         <CartesianGrid
                                                             strokeDasharray="3 3"
-                                                            stroke={THEME.glassBorder}
+                                                            stroke={THEME.surfaceBorder}
                                                         />
                                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                                         <YAxis stroke={THEME.textDim} fontSize={10} />
@@ -1128,7 +1128,7 @@ function DemoPostgresTab({ tabId }) {
                                                     <LineChart data={demoData.clusterVelocity.slice(0, 12)}>
                                                         <CartesianGrid
                                                             strokeDasharray="3 3"
-                                                            stroke={THEME.glassBorder}
+                                                            stroke={THEME.surfaceBorder}
                                                         />
                                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                                         <YAxis stroke={THEME.textDim} fontSize={10} />
@@ -1248,7 +1248,7 @@ function DemoPostgresTab({ tabId }) {
                                                     >
                                                         <CartesianGrid
                                                             strokeDasharray="3 3"
-                                                            stroke={THEME.glassBorder}
+                                                            stroke={THEME.surfaceBorder}
                                                         />
                                                         <XAxis dataKey="hour" stroke={THEME.textDim} fontSize={10} />
                                                         <YAxis stroke={THEME.textDim} fontSize={10} />
@@ -1381,7 +1381,7 @@ function DemoPostgresTab({ tabId }) {
                                                         </defs>
                                                         <CartesianGrid
                                                             strokeDasharray="3 3"
-                                                            stroke={THEME.glassBorder}
+                                                            stroke={THEME.surfaceBorder}
                                                         />
                                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                                         <YAxis stroke={THEME.textDim} fontSize={10} />
@@ -1688,7 +1688,7 @@ function DemoPostgresTab({ tabId }) {
                                                         </defs>
                                                         <CartesianGrid
                                                             strokeDasharray="3 3"
-                                                            stroke={THEME.glassBorder}
+                                                            stroke={THEME.surfaceBorder}
                                                         />
                                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                                         <YAxis
@@ -1766,7 +1766,7 @@ function DemoPostgresTab({ tabId }) {
                                                     >
                                                         <CartesianGrid
                                                             strokeDasharray="3 3"
-                                                            stroke={THEME.glassBorder}
+                                                            stroke={THEME.surfaceBorder}
                                                         />
                                                         <XAxis dataKey="hour" stroke={THEME.textDim} fontSize={10} />
                                                         <YAxis stroke={THEME.textDim} fontSize={10} />
@@ -1873,7 +1873,7 @@ function DemoPostgresTab({ tabId }) {
                             <Panel title="TRANSACTION LATENCY PERCENTILES" icon={Clock} accentColor={THEME.ai}>
                                 <ResponsiveContainer width="100%" height={240}>
                                     <LineChart data={demoData.iopsLatency}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                         <YAxis stroke={THEME.textDim} fontSize={10} />
                                         <Tooltip content={<ChartTip />} />
@@ -2101,7 +2101,7 @@ function DemoPostgresTab({ tabId }) {
                             <Panel title="Table Growth Trends" icon={TrendingUp} accentColor={THEME.primary}>
                                 <ResponsiveContainer width="100%" height={240}>
                                     <AreaChart data={demoData.cpuMemory}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                         <YAxis stroke={THEME.textDim} fontSize={10} />
                                         <Tooltip content={<ChartTip />} />
@@ -2278,7 +2278,7 @@ function DemoPostgresTab({ tabId }) {
                             <Panel title="IOPS & Latency" icon={BarChart2} accentColor={THEME.ai}>
                                 <ResponsiveContainer width="100%" height={240}>
                                     <LineChart data={demoData.iopsLatency}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                         <YAxis stroke={THEME.textDim} fontSize={10} />
                                         <Tooltip content={<ChartTip />} />
@@ -2481,8 +2481,8 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         style={{
                                             padding: '6px 10px',
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 6,
                                             color: THEME.primary,
                                             fontWeight: 600,
@@ -2494,8 +2494,8 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         style={{
                                             padding: '6px 10px',
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 6,
                                             color: THEME.success,
                                         }}
@@ -2506,8 +2506,8 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         style={{
                                             padding: '6px 10px',
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 6,
                                             color: THEME.success,
                                         }}
@@ -2517,7 +2517,7 @@ function DemoPostgresTab({ tabId }) {
                                 </div>
                             </div>
 
-                            <div style={{ paddingTop: 8, borderTop: `1px solid ${THEME.glassBorder}` }}>
+                            <div style={{ paddingTop: 8, borderTop: `1px solid ${THEME.surfaceBorder}` }}>
                                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                                     <StatusBadge label="BLOCKED QUERIES 3" color={THEME.warning} />
                                     <StatusBadge label="Lock contention • Elevated" color={THEME.warning} />
@@ -2542,7 +2542,7 @@ function DemoPostgresTab({ tabId }) {
                                             alignItems: 'center',
                                             fontSize: 10,
                                             padding: '6px 0',
-                                            borderBottom: i < 2 ? `1px solid ${THEME.glassBorder}` : 'none',
+                                            borderBottom: i < 2 ? `1px solid ${THEME.surfaceBorder}` : 'none',
                                         }}
                                     >
                                         <div>
@@ -2570,7 +2570,7 @@ function DemoPostgresTab({ tabId }) {
                                     <div style={{ fontSize: 16, fontWeight: 700, color: THEME.primary }}>15 min</div>
                                     <div style={{ fontSize: 9, color: THEME.textDim }}>Est. downtime</div>
                                 </div>
-                                <div style={{ paddingTop: 6, borderTop: `1px solid ${THEME.glassBorder}` }}>
+                                <div style={{ paddingTop: 6, borderTop: `1px solid ${THEME.surfaceBorder}` }}>
                                     <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 6 }}>
                                         RPO (Data Loss)
                                     </div>
@@ -2599,8 +2599,8 @@ function DemoPostgresTab({ tabId }) {
                                     key={i}
                                     style={{
                                         padding: '10px 12px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 8,
                                     }}
                                 >
@@ -2676,7 +2676,7 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         fontSize: 9,
                                         color: THEME.textDim,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 10,
                                         padding: '2px 6px',
                                         letterSpacing: '0.1em',
@@ -2735,8 +2735,8 @@ function DemoPostgresTab({ tabId }) {
                             style={{
                                 padding: '6px 14px',
                                 borderRadius: 6,
-                                background: THEME.glass,
-                                border: `1px solid ${THEME.glassBorder}`,
+                                background: THEME.surface,
+                                border: `1px solid ${THEME.surfaceBorder}`,
                                 fontSize: 11,
                                 color: THEME.textMuted,
                                 display: 'flex',
@@ -2767,8 +2767,8 @@ function DemoPostgresTab({ tabId }) {
                                 key={i}
                                 style={{
                                     padding: '14px 16px',
-                                    background: THEME.glass,
-                                    border: `1px solid ${THEME.glassBorder}`,
+                                    background: THEME.surface,
+                                    border: `1px solid ${THEME.surfaceBorder}`,
                                     borderRadius: 8,
                                     position: 'relative',
                                     overflow: 'hidden',
@@ -2879,8 +2879,8 @@ function DemoPostgresTab({ tabId }) {
                             <div
                                 style={{
                                     padding: '10px 14px',
-                                    background: THEME.glass,
-                                    border: `1px solid ${THEME.glassBorder}`,
+                                    background: THEME.surface,
+                                    border: `1px solid ${THEME.surfaceBorder}`,
                                     borderRadius: 8,
                                     display: 'flex',
                                     gap: 10,
@@ -2903,8 +2903,8 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             paddingLeft: 30,
                                             padding: '7px 10px 7px 30px',
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 5,
                                             fontSize: 12,
                                             color: THEME.textDim,
@@ -2918,8 +2918,8 @@ function DemoPostgresTab({ tabId }) {
                                         key={i}
                                         style={{
                                             padding: '7px 12px',
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 5,
                                             fontSize: 11,
                                             color: THEME.textMuted,
@@ -2937,7 +2937,7 @@ function DemoPostgresTab({ tabId }) {
                                         marginLeft: 'auto',
                                         padding: '6px 12px',
                                         borderRadius: 5,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         fontSize: 11,
                                         color: THEME.textDim,
                                         display: 'flex',
@@ -3028,7 +3028,7 @@ function DemoPostgresTab({ tabId }) {
                                         width: 14,
                                         height: 14,
                                         borderRadius: 3,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         display: 'inline-block',
                                     }}
                                 />
@@ -3106,7 +3106,7 @@ function DemoPostgresTab({ tabId }) {
                                         key={i}
                                         style={{
                                             padding: '12px 16px',
-                                            borderBottom: `1px solid ${THEME.glassBorder}`,
+                                            borderBottom: `1px solid ${THEME.surfaceBorder}`,
                                             display: 'flex',
                                             gap: 12,
                                             alignItems: 'flex-start',
@@ -3118,7 +3118,7 @@ function DemoPostgresTab({ tabId }) {
                                                 width: 14,
                                                 height: 14,
                                                 borderRadius: 3,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 display: 'inline-block',
                                                 flexShrink: 0,
                                                 marginTop: 2,
@@ -3217,8 +3217,8 @@ function DemoPostgresTab({ tabId }) {
                                             >
                                                 <span
                                                     style={{
-                                                        background: THEME.glass,
-                                                        border: `1px solid ${THEME.glassBorder}`,
+                                                        background: THEME.surface,
+                                                        border: `1px solid ${THEME.surfaceBorder}`,
                                                         borderRadius: 10,
                                                         padding: '1px 7px',
                                                         color: THEME.textMuted,
@@ -3270,7 +3270,7 @@ function DemoPostgresTab({ tabId }) {
                             <div
                                 style={{
                                     padding: 16,
-                                    background: THEME.glass,
+                                    background: THEME.surface,
                                     border: `1px solid ${THEME.ai}20`,
                                     borderRadius: 8,
                                 }}
@@ -3326,8 +3326,8 @@ function DemoPostgresTab({ tabId }) {
                                         <div
                                             style={{
                                                 padding: '8px 12px',
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 5,
                                                 fontSize: 12,
                                                 color: THEME.textMuted,
@@ -3513,7 +3513,7 @@ function DemoPostgresTab({ tabId }) {
                             <Panel title="RESOLUTION TIME TREND" icon={TrendingUp} accentColor={THEME.primary}>
                                 <ResponsiveContainer width="100%" height={200}>
                                     <LineChart data={demoData.cpuMemory}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                         <YAxis stroke={THEME.textDim} fontSize={10} />
                                         <Tooltip content={<ChartTip />} />
@@ -3545,8 +3545,8 @@ function DemoPostgresTab({ tabId }) {
                                             key={i}
                                             style={{
                                                 padding: '10px 12px',
-                                                background: THEME.glass,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                background: THEME.surface,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         >
@@ -3636,8 +3636,8 @@ function DemoPostgresTab({ tabId }) {
                                     key={i}
                                     style={{
                                         padding: '12px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 8,
                                         fontSize: 12,
                                         color: THEME.textMain,
@@ -3710,7 +3710,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="100%" stopColor={THEME.ai} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -3798,7 +3798,7 @@ function DemoPostgresTab({ tabId }) {
                                                           ? `${THEME.danger}20`
                                                           : val > 30
                                                             ? `${THEME.warning}15`
-                                                            : THEME.glass,
+                                                            : THEME.surface,
                                                 color: val > 60 ? THEME.textMain : THEME.textDim,
                                                 fontWeight: val > 60 ? 600 : 400,
                                             }}
@@ -3920,8 +3920,8 @@ function DemoPostgresTab({ tabId }) {
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 8,
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 6,
                                         padding: '6px 10px',
                                     }}
@@ -3936,8 +3936,8 @@ function DemoPostgresTab({ tabId }) {
                                         key={i}
                                         style={{
                                             padding: '5px 10px',
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 6,
                                             fontSize: 10,
                                             color: THEME.textMuted,
@@ -4024,7 +4024,7 @@ function DemoPostgresTab({ tabId }) {
                                                 <stop offset="100%" stopColor={THEME.success} stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                         <YAxis stroke={THEME.textDim} fontSize={10} />
                                         <Tooltip content={<ChartTip />} />
@@ -4071,8 +4071,8 @@ function DemoPostgresTab({ tabId }) {
                                         key={i}
                                         style={{
                                             padding: '14px 16px',
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                             display: 'flex',
                                             flexDirection: 'column',
@@ -4139,8 +4139,8 @@ function DemoPostgresTab({ tabId }) {
                                             <span
                                                 style={{
                                                     padding: '3px 10px',
-                                                    background: THEME.glass,
-                                                    border: `1px solid ${THEME.glassBorder}`,
+                                                    background: THEME.surface,
+                                                    border: `1px solid ${THEME.surfaceBorder}`,
                                                     borderRadius: 4,
                                                     fontSize: 9,
                                                     color: THEME.textMuted,
@@ -4402,7 +4402,7 @@ function DemoPostgresTab({ tabId }) {
                     <Panel title="Plan Changes Over Time" icon={TrendingUp} accentColor={THEME.danger}>
                         <ResponsiveContainer width="100%" height={240}>
                             <LineChart data={demoData.clusterVelocity.slice(0, 12)}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -4511,8 +4511,8 @@ function DemoPostgresTab({ tabId }) {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 8,
-                                background: THEME.glass,
-                                border: `1px solid ${THEME.glassBorder}`,
+                                background: THEME.surface,
+                                border: `1px solid ${THEME.surfaceBorder}`,
                                 borderRadius: 6,
                                 padding: '6px 10px',
                             }}
@@ -4537,8 +4537,8 @@ function DemoPostgresTab({ tabId }) {
                         <div
                             style={{
                                 padding: '5px 10px',
-                                background: THEME.glass,
-                                border: `1px solid ${THEME.glassBorder}`,
+                                background: THEME.surface,
+                                border: `1px solid ${THEME.surfaceBorder}`,
                                 borderRadius: 6,
                                 fontSize: 10,
                                 color: THEME.textMuted,
@@ -4617,7 +4617,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -4702,8 +4702,8 @@ function DemoPostgresTab({ tabId }) {
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 8,
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 6,
                                         padding: '6px 10px',
                                     }}
@@ -4728,8 +4728,8 @@ function DemoPostgresTab({ tabId }) {
                                 <div
                                     style={{
                                         padding: '5px 10px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 6,
                                         fontSize: 10,
                                         color: THEME.textMuted,
@@ -4819,7 +4819,7 @@ function DemoPostgresTab({ tabId }) {
                                                 <stop offset="95%" stopColor={THEME.primary} stopOpacity={0.1} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                         <YAxis stroke={THEME.textDim} fontSize={10} />
                                         <Tooltip content={<ChartTip />} />
@@ -4978,8 +4978,8 @@ function DemoPostgresTab({ tabId }) {
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 8,
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 6,
                                         padding: '6px 10px',
                                     }}
@@ -4994,8 +4994,8 @@ function DemoPostgresTab({ tabId }) {
                                         key={i}
                                         style={{
                                             padding: '5px 10px',
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 6,
                                             fontSize: 10,
                                             color: THEME.textMuted,
@@ -5108,7 +5108,7 @@ function DemoPostgresTab({ tabId }) {
                                                     <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
                                                 </linearGradient>
                                             </defs>
-                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                            <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                             <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
                                             <YAxis stroke={THEME.textDim} fontSize={9} />
                                             <Tooltip content={<ChartTip />} />
@@ -5164,7 +5164,7 @@ function DemoPostgresTab({ tabId }) {
                                                 gap: 8,
                                                 padding: '4px 8px',
                                                 borderRadius: 4,
-                                                background: i % 2 === 0 ? `${THEME.glass}` : 'transparent',
+                                                background: i % 2 === 0 ? `${THEME.surface}` : 'transparent',
                                             }}
                                         >
                                             <div
@@ -5193,7 +5193,7 @@ function DemoPostgresTab({ tabId }) {
                                             { type: 'jsonb', count: 8 },
                                         ]}
                                     >
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                         <XAxis dataKey="type" stroke={THEME.textDim} fontSize={9} />
                                         <YAxis stroke={THEME.textDim} fontSize={9} />
                                         <Tooltip content={<ChartTip />} />
@@ -5238,7 +5238,7 @@ function DemoPostgresTab({ tabId }) {
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 8,
-                                        background: THEME.glass,
+                                        background: THEME.surface,
                                         border: `1px solid ${THEME.ai}30`,
                                         borderRadius: 8,
                                         padding: '8px 12px',
@@ -5285,7 +5285,7 @@ function DemoPostgresTab({ tabId }) {
                                             key={i}
                                             style={{
                                                 padding: '12px',
-                                                background: THEME.glass,
+                                                background: THEME.surface,
                                                 borderRadius: 6,
                                                 borderLeft: `3px solid ${item.color}`,
                                             }}
@@ -5336,8 +5336,8 @@ function DemoPostgresTab({ tabId }) {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 8,
-                                background: THEME.glass,
-                                border: `1px solid ${THEME.glassBorder}`,
+                                background: THEME.surface,
+                                border: `1px solid ${THEME.surfaceBorder}`,
                                 borderRadius: 6,
                                 padding: '6px 10px',
                             }}
@@ -5350,8 +5350,8 @@ function DemoPostgresTab({ tabId }) {
                                 key={i}
                                 style={{
                                     padding: '5px 10px',
-                                    background: i === 1 ? `${THEME.primary}20` : THEME.glass,
-                                    border: `1px solid ${i === 1 ? THEME.primary + '40' : THEME.glassBorder}`,
+                                    background: i === 1 ? `${THEME.primary}20` : THEME.surface,
+                                    border: `1px solid ${i === 1 ? THEME.primary + '40' : THEME.surfaceBorder}`,
                                     borderRadius: 6,
                                     fontSize: 10,
                                     color: i === 1 ? THEME.primary : THEME.textMuted,
@@ -5605,7 +5605,7 @@ function DemoPostgresTab({ tabId }) {
                                     { month: 'Mar', applied: 2, failed: 0 },
                                 ]}
                             >
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -5641,8 +5641,8 @@ function DemoPostgresTab({ tabId }) {
                                 key={filter}
                                 style={{
                                     padding: '6px 12px',
-                                    background: THEME.glass,
-                                    border: `1px solid ${THEME.glassBorder}`,
+                                    background: THEME.surface,
+                                    border: `1px solid ${THEME.surfaceBorder}`,
                                     borderRadius: 4,
                                     fontSize: 11,
                                     fontWeight: 600,
@@ -5677,7 +5677,7 @@ function DemoPostgresTab({ tabId }) {
                                     key={table.name}
                                     style={{
                                         padding: '16px',
-                                        background: THEME.glass,
+                                        background: THEME.surface,
                                         border: `2px solid ${THEME.primary}30`,
                                         borderRadius: 8,
                                         textAlign: 'center',
@@ -5700,7 +5700,7 @@ function DemoPostgresTab({ tabId }) {
                         <div
                             style={{
                                 height: '2px',
-                                background: `linear-gradient(90deg, ${THEME.glassBorder}, transparent)`,
+                                background: `linear-gradient(90deg, ${THEME.surfaceBorder}, transparent)`,
                                 marginTop: '16px',
                             }}
                         ></div>
@@ -5885,7 +5885,7 @@ function DemoPostgresTab({ tabId }) {
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
                                     padding: '8px',
-                                    background: THEME.glass,
+                                    background: THEME.surface,
                                     borderRadius: 4,
                                 }}
                             >
@@ -5900,7 +5900,7 @@ function DemoPostgresTab({ tabId }) {
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
                                     padding: '8px',
-                                    background: THEME.glass,
+                                    background: THEME.surface,
                                     borderRadius: 4,
                                 }}
                             >
@@ -5915,7 +5915,7 @@ function DemoPostgresTab({ tabId }) {
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
                                     padding: '8px',
-                                    background: THEME.glass,
+                                    background: THEME.surface,
                                     borderRadius: 4,
                                 }}
                             >
@@ -5964,8 +5964,8 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         width: '100%',
                                         padding: '6px 8px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 4,
                                         color: THEME.textMain,
                                         fontSize: 11,
@@ -5985,8 +5985,8 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         width: '100%',
                                         padding: '6px 8px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 4,
                                         color: THEME.textMain,
                                         fontSize: 11,
@@ -6006,8 +6006,8 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         width: '100%',
                                         padding: '6px 8px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 4,
                                         color: THEME.textMain,
                                         fontSize: 11,
@@ -6027,8 +6027,8 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         width: '100%',
                                         padding: '6px 8px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 4,
                                         color: THEME.textMain,
                                         fontSize: 11,
@@ -6046,7 +6046,7 @@ function DemoPostgresTab({ tabId }) {
                     <Panel title="Preview" icon={Eye} accentColor={THEME.primary}>
                         <ResponsiveContainer width="100%" height={240}>
                             <BarChart data={demoData.clusterVelocity.slice(0, 8)}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -6119,8 +6119,8 @@ function DemoPostgresTab({ tabId }) {
                                     key={option}
                                     style={{
                                         padding: '12px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 4,
                                         fontSize: 11,
                                         fontWeight: 600,
@@ -6208,7 +6208,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="100%" stopColor={THEME.textMuted} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -6325,7 +6325,7 @@ function DemoPostgresTab({ tabId }) {
                     <Panel title="Pool Utilization" icon={Network} accentColor={THEME.success}>
                         <ResponsiveContainer width="100%" height={220}>
                             <AreaChart data={demoData.connectionTrends}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -6349,7 +6349,7 @@ function DemoPostgresTab({ tabId }) {
                     <Panel title="Wait Times Distribution" icon={Clock} accentColor={THEME.warning}>
                         <ResponsiveContainer width="100%" height={200}>
                             <LineChart data={demoData.clusterVelocity.slice(0, 12)}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -6461,8 +6461,8 @@ function DemoPostgresTab({ tabId }) {
                                 <div
                                     style={{
                                         padding: '12px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 6,
                                         fontSize: 11,
                                         color: THEME.textMain,
@@ -6474,8 +6474,8 @@ function DemoPostgresTab({ tabId }) {
                                 <div
                                     style={{
                                         padding: '12px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 6,
                                         fontSize: 11,
                                         color: THEME.textMain,
@@ -6490,7 +6490,7 @@ function DemoPostgresTab({ tabId }) {
                     <Panel title="WAL Lag" icon={Droplets} accentColor={THEME.ai}>
                         <ResponsiveContainer width="100%" height={200}>
                             <LineChart data={demoData.clusterVelocity.slice(0, 12)}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -6544,7 +6544,7 @@ function DemoPostgresTab({ tabId }) {
                                     buffers: Math.floor(5000 + Math.random() * 5000),
                                 }))}
                             >
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -6796,7 +6796,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="100%" stopColor={THEME.danger} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -6864,7 +6864,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="100%" stopColor={THEME.success} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -6905,7 +6905,7 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         style={{
                                             height: '8px',
-                                            background: THEME.glass,
+                                            background: THEME.surface,
                                             borderRadius: 4,
                                             overflow: 'hidden',
                                         }}
@@ -7089,7 +7089,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="100%" stopColor={THEME.warning} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -7278,7 +7278,7 @@ function DemoPostgresTab({ tabId }) {
                                         alignItems: 'center',
                                         gap: 10,
                                         padding: '8px 12px',
-                                        background: THEME.glass,
+                                        background: THEME.surface,
                                         borderRadius: 6,
                                         borderLeft: `3px solid ${e.color}`,
                                     }}
@@ -7366,8 +7366,8 @@ function DemoPostgresTab({ tabId }) {
                                     key={i}
                                     style={{
                                         padding: '12px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 8,
                                         fontSize: 11,
                                         color: THEME.textMain,
@@ -7388,7 +7388,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="100%" stopColor={THEME.ai} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -7490,7 +7490,7 @@ function DemoPostgresTab({ tabId }) {
                     <Panel title="CloudWatch Metrics" icon={Cloud} accentColor={THEME.warning}>
                         <ResponsiveContainer width="100%" height={220}>
                             <LineChart data={demoData.clusterVelocity}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -7593,8 +7593,8 @@ function DemoPostgresTab({ tabId }) {
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 8,
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 6,
                                         padding: '6px 10px',
                                     }}
@@ -7609,8 +7609,8 @@ function DemoPostgresTab({ tabId }) {
                                         key={i}
                                         style={{
                                             padding: '5px 10px',
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 6,
                                             fontSize: 10,
                                             color: THEME.textMuted,
@@ -7780,7 +7780,7 @@ function DemoPostgresTab({ tabId }) {
                             <Panel title="Database Activity Patterns" icon={Activity} accentColor={THEME.primary}>
                                 <ResponsiveContainer width="100%" height={240}>
                                     <LineChart data={demoData.connectionTrends}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                         <YAxis stroke={THEME.textDim} fontSize={10} />
                                         <Tooltip content={<ChartTip />} />
@@ -7888,7 +7888,7 @@ function DemoPostgresTab({ tabId }) {
                     <Panel title="Service Latency (p50)" icon={BarChart3} accentColor={THEME.primary}>
                         <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={serviceLatencyChartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
                                 <YAxis stroke={THEME.textDim} fontSize={9} />
                                 <Tooltip content={<ChartTip />} />
@@ -7981,7 +7981,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="95%" stopColor={THEME.warning} stopOpacity={0.1} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
                                 <YAxis stroke={THEME.textDim} fontSize={9} />
                                 <Tooltip content={<ChartTip />} />
@@ -8016,7 +8016,7 @@ function DemoPostgresTab({ tabId }) {
                                     key={i}
                                     style={{
                                         padding: '12px',
-                                        background: THEME.glass,
+                                        background: THEME.surface,
                                         borderRadius: 8,
                                         textAlign: 'center',
                                     }}
@@ -8099,7 +8099,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="95%" stopColor={THEME.success} stopOpacity={0.1} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
                                 <YAxis
                                     stroke={THEME.textDim}
@@ -8134,7 +8134,7 @@ function DemoPostgresTab({ tabId }) {
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
                                         padding: '10px',
-                                        background: THEME.glass,
+                                        background: THEME.surface,
                                         borderRadius: 6,
                                     }}
                                 >
@@ -8236,7 +8236,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="95%" stopColor={THEME.danger} stopOpacity={0.1} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
                                 <YAxis stroke={THEME.textDim} fontSize={9} />
                                 <Tooltip content={<ChartTip />} />
@@ -8266,7 +8266,7 @@ function DemoPostgresTab({ tabId }) {
                                 { anomaly: 'Connection spike detected', score: 0.76, timestamp: '4h ago' },
                                 { anomaly: 'Memory usage trend change', score: 0.62, timestamp: '6h ago' },
                             ].map((a, i) => (
-                                <div key={i} style={{ padding: '12px', background: THEME.glass, borderRadius: 6 }}>
+                                <div key={i} style={{ padding: '12px', background: THEME.surface, borderRadius: 6 }}>
                                     <div
                                         style={{
                                             fontSize: 11,
@@ -8339,9 +8339,9 @@ function DemoPostgresTab({ tabId }) {
                                         fontSize: 10,
                                         fontWeight: 600,
                                         cursor: 'pointer',
-                                        background: i === 0 ? THEME.ai : THEME.glass,
+                                        background: i === 0 ? THEME.ai : THEME.surface,
                                         color: i === 0 ? '#fff' : THEME.textMuted,
-                                        border: `1px solid ${i === 0 ? THEME.ai : THEME.glassBorder}`,
+                                        border: `1px solid ${i === 0 ? THEME.ai : THEME.surfaceBorder}`,
                                     }}
                                 >
                                     {btn}
@@ -8351,7 +8351,7 @@ function DemoPostgresTab({ tabId }) {
                         <div
                             style={{
                                 background: '#ffffff',
-                                border: `1px solid ${THEME.glassBorder}`,
+                                border: `1px solid ${THEME.surfaceBorder}`,
                                 borderRadius: 6,
                                 padding: '14px',
                                 fontFamily: THEME.fontMono,
@@ -8479,8 +8479,8 @@ function DemoPostgresTab({ tabId }) {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 8,
-                                background: THEME.glass,
-                                border: `1px solid ${THEME.glassBorder}`,
+                                background: THEME.surface,
+                                border: `1px solid ${THEME.surfaceBorder}`,
                                 borderRadius: 8,
                                 padding: '8px 12px',
                             }}
@@ -8495,8 +8495,8 @@ function DemoPostgresTab({ tabId }) {
                                 key={i}
                                 style={{
                                     padding: '8px 12px',
-                                    background: THEME.glass,
-                                    border: `1px solid ${THEME.glassBorder}`,
+                                    background: THEME.surface,
+                                    border: `1px solid ${THEME.surfaceBorder}`,
                                     borderRadius: 8,
                                     fontSize: 10,
                                     color: THEME.textMuted,
@@ -8516,7 +8516,7 @@ function DemoPostgresTab({ tabId }) {
                                         <stop offset="100%" stopColor={THEME.primary} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                 <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} />
                                 <YAxis stroke={THEME.textDim} fontSize={10} />
                                 <Tooltip content={<ChartTip />} />
@@ -8769,7 +8769,7 @@ function DemoPostgresTab({ tabId }) {
                             <Panel title="Build History" icon={BarChart3} accentColor={THEME.success}>
                                 <ResponsiveContainer width="100%" height={200}>
                                     <BarChart data={generateChartData(10)}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.surfaceBorder} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={9} />
                                         <YAxis stroke={THEME.textDim} fontSize={9} />
                                         <Bar dataKey="value" fill={THEME.success} name="Build Time (s)" />
@@ -8890,8 +8890,8 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     flex: 1,
                                     padding: '10px 14px',
-                                    background: THEME.glass,
-                                    border: `1px solid ${THEME.glassBorder}`,
+                                    background: THEME.surface,
+                                    border: `1px solid ${THEME.surfaceBorder}`,
                                     borderRadius: 8,
                                     fontSize: 11,
                                     color: THEME.textDim,
@@ -8975,8 +8975,8 @@ function DemoPostgresTab({ tabId }) {
                                     key={i}
                                     style={{
                                         padding: '12px',
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 8,
                                         display: 'flex',
                                         justifyContent: 'space-between',
@@ -9043,9 +9043,9 @@ function DemoPostgresTab({ tabId }) {
                                                 borderRadius: 6,
                                                 fontSize: 9,
                                                 fontWeight: 600,
-                                                background: THEME.glass,
+                                                background: THEME.surface,
                                                 color: THEME.textMuted,
-                                                border: `1px solid ${THEME.glassBorder}`,
+                                                border: `1px solid ${THEME.surfaceBorder}`,
                                                 cursor: 'pointer',
                                             }}
                                         >
@@ -9149,8 +9149,8 @@ function DemoPostgresTab({ tabId }) {
                                     <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                     <Tooltip
                                         contentStyle={{
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -9571,8 +9571,8 @@ function DemoPostgresTab({ tabId }) {
                                 <YAxis stroke={THEME.textDim} style={{ fontSize: 10 }} />
                                 <Tooltip
                                     contentStyle={{
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 8,
                                     }}
                                 />
@@ -9624,8 +9624,8 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             padding: '8px 12px',
                                             borderRadius: 6,
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             fontSize: 12,
                                             color: THEME.textMain,
                                         }}
@@ -9649,8 +9649,8 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             padding: '8px 12px',
                                             borderRadius: 6,
-                                            background: THEME.glass,
-                                            border: `1px solid ${THEME.glassBorder}`,
+                                            background: THEME.surface,
+                                            border: `1px solid ${THEME.surfaceBorder}`,
                                             fontSize: 12,
                                             color: THEME.textMain,
                                         }}
@@ -9686,8 +9686,8 @@ function DemoPostgresTab({ tabId }) {
                                                 style={{
                                                     padding: '10px 12px',
                                                     borderRadius: 6,
-                                                    background: t.active ? `${THEME.primary}15` : THEME.glass,
-                                                    border: `1px solid ${t.active ? THEME.primary : THEME.glassBorder}`,
+                                                    background: t.active ? `${THEME.primary}15` : THEME.surface,
+                                                    border: `1px solid ${t.active ? THEME.primary : THEME.surfaceBorder}`,
                                                     cursor: 'pointer',
                                                 }}
                                             >
@@ -9778,8 +9778,8 @@ function DemoPostgresTab({ tabId }) {
                     <Panel title="TERRAFORM CONFIGURATION" icon={Code} accentColor={THEME.primary}>
                         <div
                             style={{
-                                background: THEME.glass,
-                                border: `1px solid ${THEME.glassBorder}`,
+                                background: THEME.surface,
+                                border: `1px solid ${THEME.surfaceBorder}`,
                                 borderRadius: 6,
                                 padding: 12,
                                 fontFamily: THEME.fontMono,
@@ -9857,7 +9857,7 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         padding: 14,
                                         borderRadius: 10,
-                                        background: THEME.glass,
+                                        background: THEME.surface,
                                         border: `1px solid ${d.color}18`,
                                         position: 'relative',
                                         overflow: 'hidden',
@@ -9914,8 +9914,8 @@ function DemoPostgresTab({ tabId }) {
                                 />
                                 <Tooltip
                                     contentStyle={{
-                                        background: THEME.glass,
-                                        border: `1px solid ${THEME.glassBorder}`,
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.surfaceBorder}`,
                                         borderRadius: 8,
                                     }}
                                 />

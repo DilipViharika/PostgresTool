@@ -194,7 +194,7 @@ const PoolConfigSection = ({ config, onUpdate }) => {
                         onClick={() => setLocalConfig(config || { min: 0, max: 0, idleTimeout: 0 })}
                         style={{
                             padding: '8px 16px',
-                            background: THEME.glassLight,
+                            background: THEME.surfaceLight,
                             color: THEME.textMain,
                             border: `1px solid ${THEME.border}`,
                             borderRadius: '8px',

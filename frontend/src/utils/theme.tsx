@@ -12,18 +12,18 @@ import { useTheme } from '../context/ThemeContext';
 
 // ── Internal token sets (not exported) ───────────────────────────────────────
 const _DARK = {
-    // ── Backgrounds — VaultDB dark teal ─────────────────────────────────────────
-    bg:            '#0b1a24',
-    bgAlt:         '#0b1e2c',
-    surface:       '#0e2a3e',
-    surfaceHover:  '#133348',
-    surfaceRaised: '#163d55',
+    // ── Backgrounds — Deep navy (clean modern dark) ────────────────────────────
+    bg:            '#0f1923',
+    bgAlt:         '#131f2e',
+    surface:       '#1a2736',
+    surfaceHover:  '#1f2f40',
+    surfaceRaised: '#243848',
 
     // ── Glass ─────────────────────────────────────────────────────────────────
-    glass:             'rgba(14, 42, 62, 0.65)',
-    glassHeavy:        'rgba(11, 26, 36, 0.92)',
-    glassBorder:       'rgba(0, 184, 116, 0.12)',
-    glassBorderHover:  'rgba(0, 184, 116, 0.32)',
+    glass:             'rgba(26, 39, 54, 0.75)',
+    glassHeavy:        'rgba(15, 25, 35, 0.95)',
+    glassBorder:       'rgba(255, 255, 255, 0.08)',
+    glassBorderHover:  'rgba(255, 255, 255, 0.15)',
 
     // ── Typography ────────────────────────────────────────────────────────────
     textMain:    '#f0f4ff',
@@ -78,17 +78,17 @@ const _DARK = {
     biolume:   '#00b874',    // secondary alias for glow animations (green)
     mariana:   '#091620',
 
-    // ── Shadows ───────────────────────────────────────────────────────────────
-    shadowSm:     '0 1px 3px rgba(0,0,0,0.85)',
-    shadowMd:     '0 4px 12px rgba(0,0,0,0.75), 0 1px 4px rgba(0,0,0,0.65)',
-    shadowLg:     '0 12px 30px rgba(0,0,0,0.75), 0 4px 10px rgba(0,0,0,0.55)',
-    shadowXl:     '0 24px 50px rgba(0,0,0,0.85), 0 8px 20px rgba(0,0,0,0.65)',
-    shadowInner:  'inset 0 2px 8px rgba(0,0,0,0.55)',
-    shadowNeon:       (color) => `0 0 6px ${color}50, 0 0 20px ${color}28, 0 0 50px ${color}12`,
-    shadowNeonStrong: (color) => `0 0 6px ${color}90, 0 0 24px ${color}55, 0 0 70px ${color}25`,
-    shadowGold:   '0 0 8px rgba(0,184,116,0.35), 0 0 25px rgba(0,184,116,0.15)',
-    shadowTeal:   '0 0 8px rgba(0,184,116,0.45), 0 0 28px rgba(0,184,116,0.18)',
-    shadowDeep:   '0 30px 80px rgba(0,0,0,0.95), 0 8px 24px rgba(0,0,0,0.75)',
+    // ── Shadows — subtle elevation (modern clean) ──────────────────────────────
+    shadowSm:     '0 1px 2px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.15)',
+    shadowMd:     '0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2)',
+    shadowLg:     '0 8px 24px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2)',
+    shadowXl:     '0 16px 40px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.25)',
+    shadowInner:  'inset 0 1px 4px rgba(0,0,0,0.3)',
+    shadowNeon:       (color) => `0 0 4px ${color}30, 0 0 12px ${color}15`,
+    shadowNeonStrong: (color) => `0 0 6px ${color}50, 0 0 18px ${color}25`,
+    shadowGold:   '0 2px 8px rgba(0,184,116,0.2), 0 0 16px rgba(0,184,116,0.1)',
+    shadowTeal:   '0 2px 8px rgba(0,184,116,0.25), 0 0 16px rgba(0,184,116,0.12)',
+    shadowDeep:   '0 16px 48px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3)',
 
     // ── Border Radius ─────────────────────────────────────────────────────────
     radiusXs:   '4px',
@@ -118,18 +118,18 @@ const _DARK = {
 
 // ── Internal light-mode token set ────────────────────────────────────────────
 const _LIGHT = {
-    // ── Backgrounds — VaultDB light ─────────────────────────────────────────────
-    bg:            '#eceef4',
-    bgAlt:         '#e4e7ef',
+    // ── Backgrounds — Clean white/gray ──────────────────────────────────────────
+    bg:            '#f0f2f5',
+    bgAlt:         '#e8eaef',
     surface:       '#ffffff',
-    surfaceHover:  '#f3f4f8',
-    surfaceRaised: '#f3f4f8',
+    surfaceHover:  '#f7f8fa',
+    surfaceRaised: '#ffffff',
 
     // ── Glass ─────────────────────────────────────────────────────────────────
-    glass:             'rgba(255, 255, 255, 0.88)',
-    glassHeavy:        'rgba(255, 255, 255, 0.95)',
-    glassBorder:       'rgba(0, 184, 116, 0.12)',
-    glassBorderHover:  'rgba(0, 184, 116, 0.30)',
+    glass:             'rgba(255, 255, 255, 0.92)',
+    glassHeavy:        'rgba(255, 255, 255, 0.98)',
+    glassBorder:       'rgba(0, 0, 0, 0.06)',
+    glassBorderHover:  'rgba(0, 0, 0, 0.12)',
 
     // ── Typography ────────────────────────────────────────────────────────────
     textMain:    '#1a1e2e',
@@ -184,17 +184,17 @@ const _LIGHT = {
     biolume:   '#00b874',
     mariana:   '#f3f4f8',
 
-    // ── Shadows — softer ──────────────────────────────────────────────────────
-    shadowSm:     '0 1px 3px rgba(0,0,0,0.10)',
-    shadowMd:     '0 4px 12px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
-    shadowLg:     '0 12px 30px rgba(0,0,0,0.10), 0 4px 10px rgba(0,0,0,0.06)',
-    shadowXl:     '0 24px 50px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.08)',
-    shadowInner:  'inset 0 2px 8px rgba(0,0,0,0.06)',
-    shadowNeon:       (color) => `0 0 4px ${color}30, 0 0 12px ${color}15, 0 0 30px ${color}08`,
-    shadowNeonStrong: (color) => `0 0 5px ${color}55, 0 0 16px ${color}30, 0 0 45px ${color}15`,
-    shadowGold:   '0 0 6px rgba(0,184,116,0.25), 0 0 18px rgba(0,184,116,0.12)',
-    shadowTeal:   '0 0 6px rgba(0,184,116,0.30), 0 0 18px rgba(0,184,116,0.14)',
-    shadowDeep:   '0 30px 80px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.06)',
+    // ── Shadows — soft modern elevation ─────────────────────────────────────────
+    shadowSm:     '0 1px 2px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.03)',
+    shadowMd:     '0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
+    shadowLg:     '0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)',
+    shadowXl:     '0 16px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06)',
+    shadowInner:  'inset 0 1px 3px rgba(0,0,0,0.04)',
+    shadowNeon:       (color) => `0 0 3px ${color}20, 0 0 8px ${color}10`,
+    shadowNeonStrong: (color) => `0 0 4px ${color}30, 0 0 12px ${color}15`,
+    shadowGold:   '0 2px 8px rgba(0,184,116,0.12), 0 0 12px rgba(0,184,116,0.06)',
+    shadowTeal:   '0 2px 8px rgba(0,184,116,0.15), 0 0 12px rgba(0,184,116,0.08)',
+    shadowDeep:   '0 16px 48px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)',
 
     // ── Border Radius (same) ──────────────────────────────────────────────────
     radiusXs:   '4px',

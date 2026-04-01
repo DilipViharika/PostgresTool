@@ -350,7 +350,6 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                 position: 'fixed',
                 inset: 0,
                 background: 'rgba(0,0,0,0.7)',
-                backdropFilter: 'blur(6px)',
                 zIndex: 1000,
                 display: 'flex',
                 alignItems: 'center',
@@ -795,7 +794,6 @@ const MetricCard = ({ def, datapoints, metricsLoading, T }) => {
                         color: valueColor,
                         marginBottom: 14,
                         lineHeight: 1,
-                        textShadow: `0 0 20px ${valueColor}40`,
                     }}
                 >
                     {current !== null ? (

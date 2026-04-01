@@ -116,14 +116,11 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
             <div style={{
                 position: 'fixed', inset: 0,
                 background: 'rgba(0,0,0,.7)',
-                backdropFilter: 'blur(12px)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 zIndex: 2000,
             }}>
                 <div style={{
                     background: 'rgba(255,255,255,.06)',
-                    backdropFilter: 'blur(24px) saturate(1.3)',
-                    WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
                     borderRadius: 20, padding: 32,
                     maxWidth: 400, width: '90%',
                     border: '1px solid rgba(255,255,255,.08)',
@@ -153,14 +150,11 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
         <div style={{
             position: 'fixed', inset: 0,
             background: 'rgba(0,0,0,.7)',
-            backdropFilter: 'blur(12px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 2000,
         }}>
             <div style={{
                 background: 'rgba(255,255,255,.06)',
-                backdropFilter: 'blur(24px) saturate(1.3)',
-                WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
                 borderRadius: 20, padding: 32,
                 maxWidth: 420, width: '90%',
                 border: '1px solid rgba(255,255,255,.08)',

@@ -572,8 +572,6 @@ const DemoLayout = ({
                         style={{
                             height: 56,
                             background: LT.headerBg,
-                            backdropFilter: 'blur(12px)',
-                            WebkitBackdropFilter: 'blur(12px)',
                             borderBottom: `1px solid ${LT.border}`,
                             display: 'flex',
                             alignItems: 'center',
@@ -766,8 +764,6 @@ const DemoLayout = ({
                         right: 0,
                         height: 24,
                         background: LT.footerBg,
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
                         borderTop: `1px solid ${LT.border}`,
                         display: 'flex',
                         alignItems: 'center',
@@ -818,8 +814,6 @@ const DemoStyles = () => (
         .dpg-table-row { border-bottom: 1px solid #e2e8f0; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
         .dpg-table-row:last-child { border-bottom: none; }
         .demo-nav-item::-webkit-scrollbar { display: none; }
-        .dpg-glow { animation: dpgGlowPulse 3.5s ease-in-out infinite; }
-        .dpg-glow-warn { animation: dpgGlowPulseWarn 2.8s ease-in-out infinite; }
         @keyframes dpgGlowPulse { 0%,100%{box-shadow:0 1px 3px rgba(0,0,0,0.08)} 50%{box-shadow:0 2px 8px rgba(139,92,246,0.12)} }
         @keyframes dpgGlowPulseWarn { 0%,100%{box-shadow:0 1px 3px rgba(0,0,0,0.08)} 50%{box-shadow:0 2px 8px rgba(217,119,6,0.12)} }
     `}</style>

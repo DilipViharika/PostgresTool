@@ -147,15 +147,15 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
-            background: THEME.glass,
-            border: `1px solid ${THEME.glassBorder}`,
+            background: THEME.surface,
+            border: `1px solid ${THEME.surfaceBorder}`,
             borderRadius: THEME.radiusMd,
             overflow: 'hidden',
             fontFamily: THEME.fontBody,
         },
         header: {
             padding: '16px',
-            borderBottom: `1px solid ${THEME.glassBorder}`,
+            borderBottom: `1px solid ${THEME.surfaceBorder}`,
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -187,12 +187,12 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
         buttonSecondary: {
             background: THEME.surface,
             color: THEME.textMain,
-            border: `1px solid ${THEME.glassBorder}`,
+            border: `1px solid ${THEME.surfaceBorder}`,
         },
         controls: {
             padding: '12px 16px',
             background: THEME.surface,
-            borderBottom: `1px solid ${THEME.glassBorder}`,
+            borderBottom: `1px solid ${THEME.surfaceBorder}`,
             display: 'flex',
             gap: '12px',
             flexWrap: 'wrap',
@@ -211,7 +211,7 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
         select: {
             padding: '6px 10px',
             background: THEME.bgAlt,
-            border: `1px solid ${THEME.glassBorder}`,
+            border: `1px solid ${THEME.surfaceBorder}`,
             borderRadius: THEME.radiusSm,
             color: THEME.textMain,
             fontFamily: THEME.fontBody,
@@ -244,7 +244,7 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
         },
         tableHeader: {
             background: THEME.surface,
-            borderBottom: `1px solid ${THEME.glassBorder}`,
+            borderBottom: `1px solid ${THEME.surfaceBorder}`,
             position: 'sticky',
             top: 0,
             zIndex: 10,
@@ -311,7 +311,7 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
                             <Tooltip
                                 contentStyle={{
                                     background: THEME.surface,
-                                    border: `1px solid ${THEME.glassBorder}`,
+                                    border: `1px solid ${THEME.surfaceBorder}`,
                                     borderRadius: THEME.radiusSm,
                                     color: THEME.textMain,
                                 }}
@@ -342,7 +342,7 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
                             <Tooltip
                                 contentStyle={{
                                     background: THEME.surface,
-                                    border: `1px solid ${THEME.glassBorder}`,
+                                    border: `1px solid ${THEME.surfaceBorder}`,
                                     borderRadius: THEME.radiusSm,
                                     color: THEME.textMain,
                                 }}
@@ -373,7 +373,7 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
                             <Tooltip
                                 contentStyle={{
                                     background: THEME.surface,
-                                    border: `1px solid ${THEME.glassBorder}`,
+                                    border: `1px solid ${THEME.surfaceBorder}`,
                                     borderRadius: THEME.radiusSm,
                                     color: THEME.textMain,
                                 }}
@@ -409,7 +409,7 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
                             <Tooltip
                                 contentStyle={{
                                     background: THEME.surface,
-                                    border: `1px solid ${THEME.glassBorder}`,
+                                    border: `1px solid ${THEME.surfaceBorder}`,
                                     borderRadius: THEME.radiusSm,
                                     color: THEME.textMain,
                                 }}
@@ -434,7 +434,7 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
                             <Tooltip
                                 contentStyle={{
                                     background: THEME.surface,
-                                    border: `1px solid ${THEME.glassBorder}`,
+                                    border: `1px solid ${THEME.surfaceBorder}`,
                                     borderRadius: THEME.radiusSm,
                                     color: THEME.textMain,
                                 }}

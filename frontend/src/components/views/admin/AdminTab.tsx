@@ -44,8 +44,8 @@ const T = {
     get danger()      { return THEME.danger      || '#ef4444'; },
     get info()        { return THEME.info        || '#00b874'; },
     get teal()        { return THEME.primary     || '#14b8a6'; },
-    get glass()       { return THEME.glass       || 'rgba(255,255,255,0.04)'; },
-    get glassBorder() { return THEME.glassBorder || 'rgba(255,255,255,0.08)'; },
+    get glass()       { return THEME.surface       || 'rgba(255,255,255,0.04)'; },
+    get glassBorder() { return THEME.surfaceBorder || 'rgba(255,255,255,0.08)'; },
     get surface()     { return THEME.surface     || 'rgba(255,255,255,0.06)'; },
     get grid()        { return THEME.grid        || 'rgba(255,255,255,0.08)'; },
     get textMain()    { return THEME.textMain    || '#f1f5f9'; },
@@ -152,7 +152,6 @@ const AdminStyles = () => (
             animation:admScanline 4s linear infinite; pointer-events:none;
         }
 
-        .adm-glow-pulse { animation:admGlowPulse 2s ease-in-out infinite; }
 
         .adm-segment-bar { position:relative; overflow:hidden; border-radius:4px; }
         .adm-segment-bar::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%); }
@@ -398,7 +397,6 @@ const StatCard = ({ label, value, icon: Icon, color, sub, spark, trend }) => {
 /* ── Panel ── */
 const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, accent, className = '' }) => (
     <div className={`panel-glow ${className}`} style={{
-        background: T.glass, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
         border: `1px solid ${accent ? `${accent}20` : T.glassBorder}`, borderRadius: 16,
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
         boxShadow: accent ? `0 0 0 1px ${accent}08, inset 0 1px 0 rgba(255,255,255,0.04)` : 'none',
@@ -842,7 +840,7 @@ const ChangeLogModal = ({ onClose }) => (
                 ))}
             </div>
         </div>
-    </div>
+        </div>
 );
 
 /* ═══════════════════════════════════════════════════════════════════════════

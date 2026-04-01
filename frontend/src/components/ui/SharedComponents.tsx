@@ -271,16 +271,16 @@ const KEYFRAMES = `
 @keyframes numberFlip   { 0%{transform:rotateX(-90deg);opacity:0} 100%{transform:rotateX(0deg);opacity:1} }
 
 /* Scrollbar styling */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
-::-webkit-scrollbar-thumb { background: rgba(0,245,255,0.2); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,245,255,0.4); }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,0.4); }
 
 /* Selection */
-::selection { background: rgba(0,245,255,0.2); color: #fff; }
+::selection { background: rgba(0,184,116,0.2); color: inherit; }
 
 /* Focus ring override */
-:focus-visible { outline: 1px solid rgba(0,245,255,0.5); outline-offset: 2px; }
+:focus-visible { outline: 1px solid rgba(0,184,116,0.4); outline-offset: 2px; }
 `;
 
 let _injected = false;
@@ -427,126 +427,17 @@ export function usePrevious(value) {
 
 export const CornerBrackets = () => null;
 
-export const ScanlineOverlay = ({ opacity = 0.025 }) => (
-    <div
-        style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            zIndex: 10,
-            overflow: 'hidden',
-            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,245,255,${opacity}) 2px, rgba(0,245,255,${opacity}) 4px)`,
-        }}
-    >
-        <div
-            style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                height: '18%',
-                background: `linear-gradient(transparent, rgba(0,245,255,0.05) 50%, transparent)`,
-                animation: 'scanline 8s linear infinite',
-            }}
-        />
-    </div>
-);
+export const ScanlineOverlay = () => null;
 
-export const HexPattern = ({ color = _AT.primary, opacity = 0.03, scale = 1 }) => (
-    <div
-        style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            zIndex: 0,
-            overflow: 'hidden',
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${56 * scale}' height='${100 * scale}'%3E%3Cpath d='M${28 * scale} ${66 * scale}L0 ${50 * scale}V${17 * scale}L${28 * scale} 0l${28 * scale} ${17 * scale}v${33 * scale}z' fill='none' stroke='${encodeURIComponent(color)}' stroke-opacity='${opacity}' stroke-width='1'/%3E%3Cpath d='M${28 * scale} ${100 * scale}L0 ${84 * scale}V${51 * scale}l${28 * scale}-${17 * scale} ${28 * scale} ${17 * scale}v${33 * scale}z' fill='none' stroke='${encodeURIComponent(color)}' stroke-opacity='${opacity}' stroke-width='1'/%3E%3C/svg%3E")`,
-            backgroundSize: `${56 * scale}px ${100 * scale}px`,
-        }}
-    />
-);
+export const HexPattern = () => null;
 
-export const GridPattern = ({ color = _AT.primary, opacity = 0.04, size = 40 }) => (
-    <div
-        style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            zIndex: 0,
-            backgroundImage: `linear-gradient(${color}${Math.round(opacity * 255)
-                .toString(16)
-                .padStart(2, '0')} 1px, transparent 1px), linear-gradient(90deg, ${color}${Math.round(opacity * 255)
-                .toString(16)
-                .padStart(2, '0')} 1px, transparent 1px)`,
-            backgroundSize: `${size}px ${size}px`,
-        }}
-    />
-);
+export const GridPattern = () => null;
 
 export const GlowOrb = () => null;
 
-export const NoiseTexture = ({ opacity = 0.025 }) => (
-    <div
-        style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            zIndex: 1,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
-            opacity,
-            mixBlendMode: 'overlay',
-        }}
-    />
-);
+export const NoiseTexture = () => null;
 
-export const CircuitLines = ({ color = _AT.primary, opacity = 0.06 }) => (
-    <svg
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
-        xmlns="http://www.w3.org/2000/svg"
-    >
-        <defs>
-            <filter id="circuit-glow">
-                <feGaussianBlur stdDeviation="1" result="blur" />
-                <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                </feMerge>
-            </filter>
-        </defs>
-        {[
-            'M 0 30 L 60 30 L 80 50 L 200 50',
-            'M 100 0 L 100 40 L 120 60 L 120 100',
-            'M 60 100% L 60 80 L 90 50',
-            'M 80% 0 L 80% 60 L 70% 60 L 70% 100%',
-        ].map((d, i) => (
-            <path
-                key={i}
-                d={d}
-                stroke={color}
-                strokeOpacity={opacity}
-                strokeWidth="1"
-                fill="none"
-                filter="url(#circuit-glow)"
-                style={{ animation: `dashDraw 3s ease ${i * 0.5}s both`, strokeDasharray: 300, strokeDashoffset: 300 }}
-            />
-        ))}
-        {[
-            [60, 30],
-            [80, 50],
-            [100, 60],
-            [80 * 0.01 * 100, 60],
-        ].map((p, i) => (
-            <circle
-                key={i}
-                cx={`${p[0]}%`}
-                cy={p[1]}
-                r="2"
-                fill={color}
-                opacity={opacity * 2}
-                style={{ animation: `ping 2s ${i * 0.6}s ease-out infinite` }}
-            />
-        ))}
-    </svg>
-);
+export const CircuitLines = () => null;
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  CHIP BADGE & TREND CHIP
@@ -554,23 +445,18 @@ export const CircuitLines = ({ color = _AT.primary, opacity = 0.06 }) => (
 export const ChipBadge = ({ label, color = _AT.primary, micro = false, animated = false, dot = false }) => (
     <span
         style={{
-            fontSize: micro ? 8 : 9,
-            fontWeight: 800,
+            fontSize: micro ? 9 : 10,
+            fontWeight: 600,
             textTransform: 'uppercase',
-            letterSpacing: micro ? '0.5px' : '1.2px',
-            padding: micro ? '2px 7px' : '3px 10px',
+            letterSpacing: '0.04em',
+            padding: micro ? '2px 6px' : '3px 8px',
             borderRadius: 6,
-            background: `linear-gradient(135deg, ${color}18, ${color}0a)`,
+            background: `${color}12`,
             color,
-            border: `1px solid ${color}30`,
-            fontFamily: _AT.fontDisplay,
             whiteSpace: 'nowrap',
             display: 'inline-flex',
             alignItems: 'center',
             gap: 4,
-            animation: animated ? 'plasmaGlow 2s ease-in-out infinite' : 'none',
-            boxShadow: animated ? `0 0 12px ${color}40, 0 0 4px ${color}20` : `0 1px 4px ${color}10`,
-            backdropFilter: 'blur(8px)',
         }}
     >
         {dot && (
@@ -673,41 +559,24 @@ export const GlassCard = ({
     return (
         <div
             {...hoverProps}
-            className="glass-card transition-all duration-300 ease-in-out hover:shadow-xl"
+            className="glass-card"
             style={{
-                background: v.bg,
-                backdropFilter: 'blur(24px) saturate(180%)',
+                background: _AT.surface,
                 borderRadius: 16,
-                border: `1px solid ${hovered ? accent + '40' : v.border}`,
-                boxShadow: hovered
-                    ? `0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px ${accent}25, 0 0 30px ${accent}10`
-                    : '0 4px 24px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2)',
+                border: `1px solid ${_AT.glassBorder}`,
+                boxShadow: hovered ? _AT.shadowMd : _AT.shadowSm,
                 display: 'flex',
                 flexDirection: 'column',
                 position: maximized ? 'fixed' : 'relative',
                 inset: maximized ? 0 : undefined,
                 zIndex: maximized ? 1000 : undefined,
                 overflow: 'hidden',
-                animation: glitching ? 'glitchShift 0.2s ease' : 'scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards',
-                transition: 'border-color 0.35s, box-shadow 0.35s, transform 0.35s',
-                transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+                animation: 'fadeInUp 0.3s ease-out backwards',
+                transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+                transform: hovered ? 'translateY(-1px)' : 'translateY(0)',
                 ...style,
             }}
         >
-            {/* ── Gradient top accent bar ── */}
-            <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-                background: `linear-gradient(90deg, ${accent}, ${accent}80, transparent)`,
-                opacity: hovered ? 1 : 0.5,
-                transition: 'opacity 0.3s ease',
-                zIndex: 5,
-            }} />
-            {showScanlines && <ScanlineOverlay />}
-            {showHex && <HexPattern color={accent} opacity={0.04} />}
-            {showGrid && <GridPattern color={accent} opacity={0.03} />}
-            {corners && <CornerBrackets color={accent} animated={hovered} glowing={variant === 'elevated'} />}
-            <GlowOrb color={accent} opacity={hovered ? 0.1 : 0.05} />
-            <NoiseTexture opacity={0.015} />
 
             {/* Header */}
             {(title || rightNode || onClose || maximizable) && (
@@ -746,14 +615,11 @@ export const GlassCard = ({
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <h3
                                     style={{
-                                        fontSize: 11,
-                                        fontWeight: 700,
-                                        color: hovered ? _AT.textMain : _AT.textMuted,
-                                        fontFamily: _AT.fontDisplay,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '1.8px',
+                                        fontSize: 13,
+                                        fontWeight: 600,
+                                        color: _AT.textMain,
+                                        letterSpacing: '0.01em',
                                         margin: 0,
-                                        transition: 'color 0.3s',
                                     }}
                                 >
                                     {title}
@@ -856,15 +722,11 @@ export const MetricCard = ({
         <div
             {...hoverProps}
             onClick={onClick}
-            className="metric-value transition-all duration-300 ease-in-out hover:shadow-lg"
+            className="metric-value"
             style={{
-                background: active
-                    ? `linear-gradient(145deg, ${color}22 0%, ${color}0a 100%)`
-                    : hovered
-                        ? `linear-gradient(145deg, ${color}0c 0%, ${_AT.surface} 100%)`
-                        : _AT.surface,
-                borderRadius: 16,
-                border: `1px solid ${active || hovered ? color + '50' : _AT.glassBorder}`,
+                background: _AT.surface,
+                borderRadius: 14,
+                border: `1px solid ${active ? color + '40' : _AT.glassBorder}`,
                 padding: isCompact ? 14 : 20,
                 position: 'relative',
                 overflow: 'hidden',
@@ -872,46 +734,27 @@ export const MetricCard = ({
                 flexDirection: 'column',
                 gap: isCompact ? 8 : 12,
                 cursor: onClick ? 'pointer' : 'default',
-                transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-                transform: hovered && onClick ? 'translateY(-3px) scale(1.02)' : 'none',
+                transition: 'box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease',
+                transform: hovered && onClick ? 'translateY(-1px)' : 'none',
                 boxShadow: hovered
-                    ? `0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px ${color}20, 0 0 30px ${color}15`
+                    ? _AT.shadowMd
                     : active
-                        ? `0 4px 20px ${color}20, 0 0 0 1px ${color}15`
-                        : '0 2px 12px rgba(0,0,0,0.2)',
-                backdropFilter: 'blur(16px) saturate(150%)',
+                        ? `0 2px 8px ${color}15`
+                        : _AT.shadowSm || '0 1px 3px rgba(0,0,0,0.08)',
             }}
         >
-            {/* ── Gradient top accent line ── */}
-            <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-                background: `linear-gradient(90deg, ${color}, ${color}60, transparent)`,
-                opacity: hovered || active ? 1 : 0.4,
-                transition: 'opacity 0.35s ease',
-                zIndex: 5,
-            }} />
-            {/* ── Corner glow orb ── */}
-            <div style={{
-                position: 'absolute', top: -30, right: -30,
-                width: 80, height: 80, borderRadius: '50%',
-                background: `radial-gradient(circle, ${color}${hovered ? '18' : '08'} 0%, transparent 70%)`,
-                transition: 'background 0.35s ease',
-                pointerEvents: 'none',
-            }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div
                     style={{
-                        width: isCompact ? 36 : 44,
-                        height: isCompact ? 36 : 44,
+                        width: isCompact ? 36 : 42,
+                        height: isCompact ? 36 : 42,
                         borderRadius: 12,
-                        background: `linear-gradient(135deg, ${color}18, ${color}08)`,
+                        background: `${color}12`,
                         color,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        border: `1px solid ${color}30`,
                         flexShrink: 0,
-                        boxShadow: `0 0 16px ${color}15`,
                     }}
                 >
                     <Icon size={isCompact ? 17 : 21} />
@@ -957,13 +800,11 @@ export const MetricCard = ({
             <div>
                 <div
                     style={{
-                        fontSize: 9,
-                        color: _AT.textMuted,
-                        fontWeight: 700,
-                        fontFamily: _AT.fontDisplay,
-                        textTransform: 'uppercase',
-                        letterSpacing: '1.8px',
-                        marginBottom: 5,
+                        fontSize: 11,
+                        color: _AT.textSub,
+                        fontWeight: 500,
+                        letterSpacing: '0.02em',
+                        marginBottom: 4,
                     }}
                 >
                     {title}
@@ -985,20 +826,12 @@ export const MetricCard = ({
                         <>
                             <span
                                 style={{
-                                    fontSize: isCompact ? 24 : 30,
-                                    fontWeight: 800,
+                                    fontSize: isCompact ? 24 : 28,
+                                    fontWeight: 700,
                                     fontFamily: _AT.fontMono,
-                                    letterSpacing: '-0.04em',
+                                    letterSpacing: '-0.03em',
                                     lineHeight: 1,
-                                    animation: 'countUp 0.6s ease backwards',
-                                    background: hovered
-                                        ? `linear-gradient(135deg, ${color}, ${_AT.textMain})`
-                                        : 'none',
-                                    WebkitBackgroundClip: hovered ? 'text' : 'unset',
-                                    WebkitTextFillColor: hovered ? 'transparent' : _AT.textMain,
                                     color: _AT.textMain,
-                                    textShadow: hovered ? `0 0 24px ${color}40` : 'none',
-                                    transition: 'text-shadow 0.3s ease',
                                 }}
                             >
                                 {value}
@@ -1241,11 +1074,10 @@ export const LiveStatusBadge = ({ connected = true, label, count, showLatency, l
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
-                background: `${qColor}07`,
+                background: `${qColor}08`,
                 padding: '5px 12px',
-                borderRadius: 2,
-                border: `1px solid ${qColor}22`,
-                boxShadow: connected ? `0 0 14px ${qColor}14, inset 0 0 8px ${qColor}05` : 'none',
+                borderRadius: 6,
+                border: `1px solid ${qColor}18`,
             }}
         >
             <div style={{ position: 'relative', width: 8, height: 8 }}>
@@ -1255,7 +1087,6 @@ export const LiveStatusBadge = ({ connected = true, label, count, showLatency, l
                         inset: 0,
                         borderRadius: '50%',
                         background: qColor,
-                        boxShadow: `0 0 6px ${qColor}`,
                     }}
                 />
                 {connected && (
@@ -1322,15 +1153,12 @@ export const CustomTooltip = ({ active, payload, label, formatter, unit }) => {
     return (
         <div
             style={{
-                backgroundColor: 'rgba(1, 5, 16, 0.98)',
-                border: `1px solid ${_AT.glassBorderHot}`,
-                borderRadius: 14,
-                padding: '12px 16px',
-                boxShadow: `0 4px 24px rgba(0,0,0,0.6)`,
-                backdropFilter: 'blur(24px)',
+                backgroundColor: _AT.surface,
+                border: `1px solid ${_AT.glassBorder}`,
+                borderRadius: 10,
+                padding: '10px 14px',
+                boxShadow: _AT.shadowMd,
                 maxWidth: 260,
-                position: 'relative',
-                overflow: 'hidden',
             }}
         >
             {label && (
@@ -1494,7 +1322,6 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                     bottom: 0,
                     width: 2,
                     background: config.color,
-                    boxShadow: `0 0 10px ${config.color}80`,
                 }}
             />
             <div
@@ -1706,22 +1533,22 @@ export const NanoButton = ({
 
     const variants_styles = {
         default: {
-            bg: active || hovered ? 'rgba(0,245,255,0.08)' : 'rgba(255,255,255,0.02)',
-            border: active || hovered ? _AT.glassBorderHot : _AT.glassBorder,
+            bg: active || hovered ? `${_AT.primary}10` : 'transparent',
+            border: active || hovered ? `${_AT.primary}30` : _AT.glassBorder,
             color: active || hovered ? _AT.primary : color,
         },
         danger: {
-            bg: hovered ? 'rgba(255,45,120,0.12)' : 'rgba(255,45,120,0.04)',
-            border: hovered ? 'rgba(255,45,120,0.4)' : 'rgba(255,45,120,0.2)',
+            bg: hovered ? `${_AT.danger}10` : `${_AT.danger}05`,
+            border: hovered ? `${_AT.danger}30` : `${_AT.danger}18`,
             color: _AT.danger,
         },
         success: {
-            bg: hovered ? 'rgba(0,255,136,0.12)' : 'rgba(0,255,136,0.04)',
-            border: hovered ? 'rgba(0,255,136,0.4)' : 'rgba(0,255,136,0.2)',
+            bg: hovered ? `${_AT.success}10` : `${_AT.success}05`,
+            border: hovered ? `${_AT.success}30` : `${_AT.success}18`,
             color: _AT.success,
         },
         ghost: {
-            bg: hovered ? 'rgba(255,255,255,0.06)' : 'transparent',
+            bg: hovered ? _AT.surfaceHover : 'transparent',
             border: 'transparent',
             color: hovered ? _AT.textMain : _AT.textMuted,
         },
@@ -1746,11 +1573,9 @@ export const NanoButton = ({
                 gap: sm ? 4 : 5,
                 transition: 'all 0.15s',
                 fontSize: sm ? 9 : lg ? 12 : 10,
-                fontFamily: _AT.fontDisplay,
-                fontWeight: 700,
-                letterSpacing: '0.5px',
+                fontWeight: 600,
+                letterSpacing: '0.02em',
                 opacity: disabled ? 0.4 : 1,
-                boxShadow: (active || hovered) && !disabled ? `0 0 12px ${vs.color}20` : 'none',
             }}
         >
             {Icon && (
@@ -1965,17 +1790,13 @@ export const DataTable = ({
                                     style={{
                                         textAlign: col.align || 'left',
                                         padding: compact ? '7px 10px' : '10px 14px',
-                                        fontSize: 9,
-                                        fontWeight: 800,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '1.5px',
-                                        color: sort.key === col.key ? accentColor : _AT.textMuted,
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        color: sort.key === col.key ? _AT.textMain : _AT.textSub,
                                         borderBottom: `1px solid ${_AT.glassBorder}`,
                                         cursor: sortable && col.sortable !== false ? 'pointer' : 'default',
                                         whiteSpace: 'nowrap',
                                         userSelect: 'none',
-                                        fontFamily: _AT.fontDisplay,
-                                        background: sort.key === col.key ? `${accentColor}05` : 'none',
                                         transition: 'color 0.2s',
                                     }}
                                 >
@@ -2021,7 +1842,7 @@ export const DataTable = ({
                                         background: selected.has(row[rowKey])
                                             ? `${accentColor}08`
                                             : hoveredRow === ri
-                                              ? `${_AT.primary}08`
+                                              ? _AT.surfaceHover
                                               : striped && ri % 2 === 0
                                                 ? _AT.surfaceHover
                                                 : 'transparent',
@@ -2210,12 +2031,9 @@ export const EmptyState = ({ icon: Icon, title, text, action, onAction, color = 
         {title && (
             <div
                 style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: _AT.textMuted,
-                    fontFamily: _AT.fontDisplay,
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: _AT.textSub,
                 }}
             >
                 {title}
@@ -2223,12 +2041,11 @@ export const EmptyState = ({ icon: Icon, title, text, action, onAction, color = 
         )}
         <div
             style={{
-                fontSize: 11,
+                fontSize: 12,
                 textAlign: 'center',
-                maxWidth: 240,
-                color: _AT.textDim,
-                fontFamily: _AT.fontMono,
-                lineHeight: 1.8,
+                maxWidth: 260,
+                color: _AT.textMuted,
+                lineHeight: 1.6,
             }}
         >
             {text}
@@ -2314,58 +2131,24 @@ export const LoadingOverlay = ({ message }) => {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'rgba(0,2,12,0.8)',
+                background: `${_AT.bg}cc`,
                 zIndex: 20,
                 borderRadius: 14,
-                backdropFilter: 'blur(6px)',
                 gap: 12,
             }}
         >
-            <div style={{ position: 'relative', width: 40, height: 40 }}>
-                <div
-                    style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        border: `2px solid ${_AT.glassBorder}`,
-                        borderTop: `2px solid ${_AT.primary}`,
-                        animation: 'spin 0.8s linear infinite',
-                        boxShadow: `0 0 14px ${_AT.primary}40`,
-                    }}
-                />
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: 6,
-                        borderRadius: '50%',
-                        border: `1px solid ${_AT.glassBorder}`,
-                        borderBottom: `1px solid ${_AT.secondary}`,
-                        animation: 'spinReverse 1.4s linear infinite',
-                    }}
-                />
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: '50%',
-                            background: _AT.primary,
-                            animation: 'pulse 1s infinite',
-                            boxShadow: `0 0 8px ${_AT.primary}`,
-                        }}
-                    />
-                </div>
-            </div>
+            <div
+                style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    border: `2px solid ${_AT.glassBorder}`,
+                    borderTop: `2px solid ${_AT.primary}`,
+                    animation: 'spin 0.8s linear infinite',
+                }}
+            />
             {message && (
-                <span style={{ fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono, letterSpacing: '1px' }}>
+                <span style={{ fontSize: 11, color: _AT.textMuted }}>
                     {message}
                 </span>
             )}
@@ -4940,49 +4723,23 @@ export const BentoMetric = ({
             {...hoverProps}
             onClick={onClick}
             style={{
-                background: hovered
-                    ? `linear-gradient(145deg, rgba(7,15,36,0.9) 0%, ${color}08 50%, rgba(2,6,20,0.97) 100%)`
-                    : 'linear-gradient(145deg, rgba(7,15,36,0.82) 0%, rgba(2,6,20,0.97) 100%)',
-                borderRadius: 16,
-                padding: 22,
-                border: `1px solid ${hovered ? color + '50' : _AT.glassBorder}`,
+                background: _AT.surface,
+                borderRadius: 14,
+                padding: 20,
+                border: `1px solid ${_AT.glassBorder}`,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                animation: `fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s backwards`,
+                animation: `fadeUp 0.4s ease ${delay}s backwards`,
                 position: 'relative',
                 overflow: 'hidden',
-                transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-                transform: hovered ? 'translateY(-4px) scale(1.01)' : 'none',
-                boxShadow: hovered
-                    ? `0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px ${color}20, 0 0 40px ${color}12`
-                    : '0 4px 16px rgba(0,0,0,0.3)',
+                transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+                transform: hovered ? 'translateY(-1px)' : 'none',
+                boxShadow: hovered ? _AT.shadowMd : (_AT.shadowSm || '0 1px 3px rgba(0,0,0,0.08)'),
                 minHeight: 140,
                 cursor: onClick ? 'pointer' : 'default',
-                backdropFilter: 'blur(20px) saturate(160%)',
             }}
         >
-            {/* ── Gradient top accent line ── */}
-            <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-                background: `linear-gradient(90deg, ${color}, ${color}60, transparent)`,
-                opacity: hovered ? 1 : 0.35,
-                transition: 'opacity 0.35s ease',
-                zIndex: 5,
-            }} />
-            <GlowOrb color={color} x="100%" y="0%" size={180} opacity={hovered ? 0.15 : 0.06} />
-            <div
-                style={{
-                    position: 'absolute',
-                    bottom: -12,
-                    right: -12,
-                    opacity: hovered ? 0.18 : 0.06,
-                    transition: 'opacity 0.35s ease',
-                    filter: hovered ? `drop-shadow(0 0 20px ${color}40)` : 'none',
-                }}
-            >
-                <Icon size={90} color={color} />
-            </div>
             {chartData && chartData.length > 0 && (
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 55, opacity: 0.1 }}>
                     <ResponsiveContainer width="100%" height="100%">
@@ -5005,22 +4762,17 @@ export const BentoMetric = ({
                     style={{
                         padding: 8,
                         borderRadius: 10,
-                        background: `linear-gradient(135deg, ${color}20, ${color}0a)`,
+                        background: `${color}12`,
                         color,
-                        border: `1px solid ${color}35`,
-                        boxShadow: `0 0 16px ${color}15`,
                     }}
                 >
                     <Icon size={15} />
                 </div>
                 <span
                     style={{
-                        fontSize: 9,
-                        color: _AT.textMuted,
-                        fontWeight: 700,
-                        fontFamily: _AT.fontDisplay,
-                        textTransform: 'uppercase',
-                        letterSpacing: '1.5px',
+                        fontSize: 11,
+                        color: _AT.textSub,
+                        fontWeight: 500,
                     }}
                 >
                     {label}
@@ -5030,19 +4782,12 @@ export const BentoMetric = ({
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
                     <span
                         style={{
-                            fontSize: 34,
-                            fontWeight: 800,
+                            fontSize: 30,
+                            fontWeight: 700,
                             lineHeight: 1,
                             fontFamily: _AT.fontMono,
-                            background: hovered
-                                ? `linear-gradient(135deg, #fff, ${color})`
-                                : 'none',
-                            WebkitBackgroundClip: hovered ? 'text' : 'unset',
-                            WebkitTextFillColor: hovered ? 'transparent' : '#fff',
-                            color: '#fff',
-                            textShadow: hovered ? `0 0 32px ${color}80` : `0 0 12px ${color}20`,
-                            transition: 'text-shadow 0.35s ease',
-                            filter: hovered ? `drop-shadow(0 0 8px ${color}50)` : 'none',
+                            color: _AT.textMain,
+                            letterSpacing: '-0.03em',
                         }}
                     >
                         {value}

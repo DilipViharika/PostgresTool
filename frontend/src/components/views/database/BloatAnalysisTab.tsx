@@ -82,8 +82,8 @@ function ensureBaStyles() {
         `.ba-mono { font-family: ${THEME.fontMono} !important; }`,
         '',
         `.ba-card {`,
-        `    background: ${THEME.glass};`,
-        `    border: 1px solid ${THEME.glassBorder};`,
+        `    background: ${THEME.surface};`,
+        `    border: 1px solid ${THEME.surfaceBorder};`,
         `    border-radius: 14px;`,
         `    padding: 20px;`,
         `    animation: baFadeUp .4s ease both;`,
@@ -96,13 +96,13 @@ function ensureBaStyles() {
         `    position: absolute;`,
         `    inset: 0;`,
         `    border-radius: 14px;`,
-        `    background: ${THEME.glass};`,
+        `    background: ${THEME.surface};`,
         `    pointer-events: none;`,
         `}`,
         '',
         `.ba-metric-card {`,
-        `    background: ${THEME.glass};`,
-        `    border: 1px solid ${THEME.glassBorder};`,
+        `    background: ${THEME.surface};`,
+        `    border: 1px solid ${THEME.surfaceBorder};`,
         `    border-radius: 16px;`,
         `    padding: 20px 24px;`,
         `    display: flex; flex-direction: column; gap: 10px;`,
@@ -111,7 +111,7 @@ function ensureBaStyles() {
         `    cursor: default;`,
         `    animation: baFadeUp .4s ease both;`,
         `}`,
-        `.ba-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.glassBorderHover}; }`,
+        `.ba-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.surfaceBorderHover}; }`,
         `.ba-metric-card::after {`,
         `    content: '';`,
         `    position: absolute;`,
@@ -179,7 +179,7 @@ function ensureBaStyles() {
         `    color: ${THEME.primary}DD;`,
         `    box-shadow: 0 0 16px ${THEME.primary}33;`,
         `}`,
-        `.ba-tab:hover:not(.active) { border-color: ${THEME.glassBorderHover}; color: ${THEME.textMain}; }`,
+        `.ba-tab:hover:not(.active) { border-color: ${THEME.surfaceBorderHover}; color: ${THEME.textMain}; }`,
         '',
         `.ba-badge {`,
         `    display: inline-flex; align-items: center; gap: 4px;`,
@@ -214,7 +214,6 @@ function ensureBaStyles() {
         '',
         `.ba-health-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; }`,
         '',
-        `.critical-glow { animation: baGlow 2s ease-in-out infinite; }`,
         '',
         `.ba-sort-btn {`,
         `    background: none; border: none; cursor: pointer;`,
@@ -236,7 +235,7 @@ function ensureBaStyles() {
         `::-webkit-scrollbar { width: 4px; height: 4px; }`,
         `::-webkit-scrollbar-track { background: transparent; }`,
         `::-webkit-scrollbar-thumb { background: ${THEME.grid}; border-radius: 2px; }`,
-        `::-webkit-scrollbar-thumb:hover { background: ${THEME.glassBorderHover}; }`,
+        `::-webkit-scrollbar-thumb:hover { background: ${THEME.surfaceBorderHover}; }`,
     ].join('\n');
 }
 
@@ -319,7 +318,7 @@ const IneffBar = ({ pct }) => {
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: '1px solid ' + THEME.glassBorder, borderRadius: 10, padding: '10px 14px', fontSize: 12, backdropFilter: 'blur(8px)' }}>
+        <div style={{ background: THEME.surface, border: '1px solid ' + THEME.glassBorder, borderRadius: 10, padding: '10px 14px', fontSize: 12 }}>
             <div style={{ color: THEME.textDim, marginBottom: 6, fontSize: 11 }}>{label}</div>
             {payload.map(p => (
                 <div key={p.name} style={{ color: p.fill || THEME.primaryFaint, fontWeight: 700, display: 'flex', gap: 8 }}>
@@ -333,7 +332,7 @@ const ChartTip = ({ active, payload, label }) => {
 
 // ─── Metric Card ───────────────────────────────────────────────────────────
 const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, warn, critical, delay = 0 }) => {
-    const borderColor = critical ? THEME.danger + '59' : warn ? THEME.warning + '4D' : THEME.glassBorder;
+    const borderColor = critical ? THEME.danger + '59' : warn ? THEME.warning + '4D' : THEME.surfaceBorder;
     const glowClass = critical ? 'critical-glow' : '';
     return (
         <div
@@ -504,7 +503,7 @@ export default function BloatAnalysisTab() {
             <Styles />
 
             {/* ── Toolbar ──────────────────────────────────────────────────── */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', background: THEME.glass, borderRadius: 14, border: '1px solid ' + THEME.glassBorder, backdropFilter: 'blur(8px)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', background: THEME.surface, borderRadius: 14, border: '1px solid ' + THEME.glassBorder }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: THEME.primary + '26', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.primary}4D` }}>
                         <Layers size={18} color={THEME.primaryFaint} />

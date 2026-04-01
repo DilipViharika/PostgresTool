@@ -92,7 +92,6 @@ function ensureVmStyles() {
             opacity: .06;
         }`,
         `.vm-metric-card.warn  { border-color: ${THEME.warning}4D; }`,
-        `.vm-metric-card.crit  { border-color: ${THEME.danger}59; animation: vmGlow 2s ease-in-out infinite; }`,
 
         /* ── Table rows ── */
         `.vm-row {
@@ -545,7 +544,6 @@ export default function VacuumMaintenanceTab() {
                     background: `linear-gradient(135deg, ${THEME.surfaceHover}, ${THEME.surface})`,
                     borderRadius: 14,
                     border: `1px solid ${THEME.grid}`,
-                    backdropFilter: 'blur(8px)',
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
