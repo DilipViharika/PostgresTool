@@ -45,7 +45,7 @@ const T = {
     get info()        { return THEME.info        || '#00b874'; },
     get teal()        { return THEME.primary     || '#14b8a6'; },
     get glass()       { return THEME.surface       || 'rgba(255,255,255,0.04)'; },
-    get glassBorder() { return THEME.surfaceBorder || 'rgba(255,255,255,0.08)'; },
+    get glassBorder() { return THEME.glassBorder || 'rgba(255,255,255,0.08)'; },
     get surface()     { return THEME.surface     || 'rgba(255,255,255,0.06)'; },
     get grid()        { return THEME.grid        || 'rgba(255,255,255,0.08)'; },
     get textMain()    { return THEME.textMain    || '#f1f5f9'; },

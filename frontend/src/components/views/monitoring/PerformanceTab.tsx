@@ -174,7 +174,7 @@ const StatChip = ({ label, value, color = THEME.textMain, icon: Icon, small }) =
 const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 8, padding: '8px 12px' }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px' }}>
             <div style={{ fontSize: 11, color: THEME.textMuted, marginBottom: 2 }}>t = {label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ fontSize: 13, fontWeight: 700, color: p.color || THEME.primary }}>
@@ -493,7 +493,7 @@ const SlowQueryTrend24h = ({ slowQueries }) => {
                     <Tooltip content={({ active, payload, label }) => {
                         if (!active || !payload?.length) return null;
                         return (
-                            <div style={{ background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 8, padding: '8px 12px' }}>
+                            <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px' }}>
                                 <div style={{ fontSize: 11, color: THEME.textMuted, marginBottom: 4 }}>{label}</div>
                                 {payload.map((p, i) => <div key={i} style={{ fontSize: 12, fontWeight: 700, color: p.color }}>{p.name}: {Number(p.value).toFixed(p.name === 'P99 ms' ? 0 : 0)}{p.name === 'P99 ms' ? 'ms' : ''}</div>)}
                             </div>
@@ -1114,7 +1114,7 @@ const KillQueryModal = ({ query, onConfirm, onClose }) => {
     return (
         <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }}>
             <div onClick={e => e.stopPropagation()} style={{ width: 480, background: THEME.surface, border: `1px solid ${THEME.danger}30`, borderRadius: 16, overflow: 'hidden' }}>
-                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.surfaceBorder}`, background: THEME.surface, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.glassBorder}`, background: THEME.surface, display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 8, background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <XCircle size={18} color={THEME.danger} />
                     </div>
@@ -1142,7 +1142,7 @@ const KillQueryModal = ({ query, onConfirm, onClose }) => {
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={onClose} style={{ flex: 1, padding: '10px', borderRadius: 8, border: `1px solid ${THEME.surfaceBorder}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>Cancel</button>
+                        <button onClick={onClose} style={{ flex: 1, padding: '10px', borderRadius: 8, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>Cancel</button>
                         <button disabled={!reason || killing} onClick={() => { setKilling(true); setTimeout(() => { onConfirm(query, reason); onClose(); }, 1000); }} style={{ flex: 1, padding: '10px', borderRadius: 8, border: 'none', background: killing ? `${THEME.danger}50` : `${THEME.danger}`, color: '#fff', cursor: reason ? 'pointer' : 'not-allowed', fontWeight: 700, fontSize: 12, opacity: !reason ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                             {killing ? <RotateCcw size={13} className="perf-spin" /> : <XCircle size={13} />}
                             {killing ? 'Terminating…' : 'Terminate Query'}
@@ -1185,9 +1185,9 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
     return (
         <>
             <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                <div onClick={e => e.stopPropagation()} style={{ width: '94%', maxWidth: 1100, maxHeight: '90vh', background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div onClick={e => e.stopPropagation()} style={{ width: '94%', maxWidth: 1100, maxHeight: '90vh', background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     {/* Header */}
-                    <div style={{ padding: '16px 24px', borderBottom: `1px solid ${THEME.surfaceBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
+                    <div style={{ padding: '16px 24px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                             <div style={{ width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25`, '--glow-color': THEME.danger }}>
                                 <AlertTriangle size={18} color={THEME.danger} />
@@ -1230,8 +1230,8 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
 
                     <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1.6fr 1fr', overflow: 'hidden' }}>
                         {/* Left */}
-                        <div style={{ display: 'flex', flexDirection: 'column', borderRight: `1px solid ${THEME.surfaceBorder}`, overflow: 'hidden' }}>
-                            <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', borderRight: `1px solid ${THEME.glassBorder}`, overflow: 'hidden' }}>
+                            <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${THEME.glassBorder}` }}>
                                 {panels.map(t => (
                                     <button key={t.id} onClick={() => setActivePanel(t.id)} style={{ flex: 1, padding: '10px 12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 11, fontWeight: 600, background: activePanel === t.id ? `${THEME.primary}10` : 'transparent', color: activePanel === t.id ? THEME.primary : THEME.textDim, borderBottom: `2px solid ${activePanel === t.id ? THEME.primary : 'transparent'}` }}>
                                         <t.icon size={12} /> {t.label}
@@ -1252,7 +1252,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <ArrowDown size={13} color={THEME.textDim} />
                                             </div>
                                         </div>
@@ -1350,16 +1350,16 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                     </div>
                                 </div>
                             </div>
-                            <div style={{ padding: '16px 20px', borderTop: `1px solid ${THEME.surfaceBorder}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ padding: '16px 20px', borderTop: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {applied ? (
                                     <div style={{ padding: 14, borderRadius: 8, background: `${THEME.success}15`, border: `1px solid ${THEME.success}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: THEME.success, fontWeight: 700, fontSize: 13 }}>
                                         <CheckCircle size={16} /> Optimization Applied
                                     </div>
                                 ) : (
                                     <>
-                                        <button style={{ padding: 11, borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, background: 'transparent', border: `1px solid ${THEME.surfaceBorder}`, color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                                        <button style={{ padding: 11, borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, background: 'transparent', border: `1px solid ${THEME.glassBorder}`, color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                                                 onMouseEnter={e => { e.currentTarget.style.borderColor = THEME.primary; e.currentTarget.style.color = THEME.primary; }}
-                                                onMouseLeave={e => { e.currentTarget.style.borderColor = THEME.surfaceBorder; e.currentTarget.style.color = THEME.textMuted; }}
+                                                onMouseLeave={e => { e.currentTarget.style.borderColor = THEME.glassBorder; e.currentTarget.style.color = THEME.textMuted; }}
                                         ><Play size={13} /> Test in Sandbox</button>
                                         <button onClick={handleApply} disabled={isApplying} style={{ padding: 11, borderRadius: 8, border: 'none', cursor: isApplying ? 'wait' : 'pointer', fontWeight: 700, fontSize: 12, color: '#fff', background: THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: isApplying ? 0.8 : 1 }}>
                                             {isApplying ? <RotateCcw size={13} className="perf-spin" /> : <Sparkles size={13} />}
@@ -1702,7 +1702,7 @@ const PerformanceTab = () => {
                                    </div>
                                }
                     >
-                        <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.surfaceBorder}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', gap: 6, flex: 1, flexWrap: 'wrap' }}>
                                 <SubViewTab id="queries" label="Slow Queries" icon={List} stateKey={activitySubView} setState={setActivitySubView} />
                                 <SubViewTab id="gantt" label="Timeline" icon={Calendar} stateKey={activitySubView} setState={setActivitySubView} />
@@ -1726,7 +1726,7 @@ const PerformanceTab = () => {
                         </div>
 
                         {showFilterPanel && activitySubView === 'queries' && (
-                            <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.surfaceBorder}`, display: 'flex', gap: 12, background: `${THEME.primary}04`, flexWrap: 'wrap', alignItems: 'center' }}>
+                            <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 12, background: `${THEME.primary}04`, flexWrap: 'wrap', alignItems: 'center' }}>
                                 <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600 }}>FILTER BY:</span>
                                 <select value={filterApp} onChange={e => setFilterApp(e.target.value)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${THEME.grid}50`, background: THEME.surface, color: filterApp ? THEME.primary : THEME.textDim, fontSize: 11, cursor: 'pointer', outline: 'none' }}>
                                     <option value="">All Apps</option>
@@ -1751,7 +1751,7 @@ const PerformanceTab = () => {
 
                             {activitySubView === 'queries' && queryGroupMode && (
                                 <div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 0, padding: '8px 16px', borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 0, padding: '8px 16px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
                                         {['Query Fingerprint', 'Variants', 'Total Calls', 'Avg Time', ''].map((h, i) => (
                                             <div key={i} style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: i > 0 ? 'right' : 'left', padding: '0 8px' }}>{h}</div>
                                         ))}
@@ -2063,7 +2063,7 @@ const PerformanceTab = () => {
                                 </GlassCard>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, borderRadius: 12, background: THEME.surface, overflow: 'hidden', border: `1px solid ${THEME.surfaceBorder}` }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, borderRadius: 12, background: THEME.surface, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
                                 {[
                                     { label: 'Cache Hit', value: `${cacheHitPct}%`, color: THEME.success, icon: CheckCircle },
                                     { label: 'Commits', value: Number(deepDbStats?.xact_commit || 0).toLocaleString(), color: THEME.primary, icon: Zap },
@@ -2071,7 +2071,7 @@ const PerformanceTab = () => {
                                     { label: 'Temp Files', value: dbTempFiles > 0 ? dbTempFiles.toLocaleString() : '0', color: dbTempFiles > 0 ? THEME.warning : THEME.textDim, icon: HardDrive },
                                     { label: 'Uptime', value: uptime, color: THEME.textMain, icon: Radio },
                                 ].map((s, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', height: 58, borderRight: i < 4 ? `1px solid ${THEME.surfaceBorder}` : 'none' }}>
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', height: 58, borderRight: i < 4 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
                                         <div style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
                                             <s.icon size={14} color={s.color} />
                                         </div>

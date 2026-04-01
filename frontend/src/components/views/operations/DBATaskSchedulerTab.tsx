@@ -903,7 +903,7 @@ const styles = {
     gap: 16,
     padding: 16,
     backgroundColor: THEME.surface,
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     borderRadius: 8,
     transition: 'all 0.2s ease',
     cursor: 'default',
@@ -953,7 +953,7 @@ const styles = {
   filterTab: {
     padding: '8px 16px',
     backgroundColor: 'transparent',
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMuted,
     borderRadius: 6,
     cursor: 'pointer',
@@ -973,7 +973,7 @@ const styles = {
   searchInput: {
     padding: '8px 12px',
     backgroundColor: THEME.surface,
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
     borderRadius: 6,
     fontSize: 13,
@@ -1013,7 +1013,7 @@ const styles = {
   formContainer: {
     padding: 20,
     backgroundColor: THEME.surface,
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     borderRadius: 8,
     marginBottom: 32,
     animation: 'slideIn 0.3s ease-out',
@@ -1036,7 +1036,7 @@ const styles = {
   formInput: {
     padding: '8px 12px',
     backgroundColor: THEME.surfaceHover,
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
     borderRadius: 6,
     fontSize: 13,
@@ -1047,7 +1047,7 @@ const styles = {
   formSelect: {
     padding: '8px 12px',
     backgroundColor: THEME.surfaceHover,
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
     borderRadius: 6,
     fontSize: 13,
@@ -1159,7 +1159,7 @@ const styles = {
     flexDirection: 'column',
     padding: 12,
     backgroundColor: THEME.surface,
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     borderRadius: 6,
     transition: 'all 0.2s ease',
   },
@@ -1237,7 +1237,7 @@ const styles = {
   notesButton: {
     padding: 6,
     backgroundColor: 'transparent',
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMuted,
     borderRadius: 14,
     cursor: 'pointer',
@@ -1250,7 +1250,7 @@ const styles = {
   editButton: {
     padding: 6,
     backgroundColor: 'transparent',
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMuted,
     borderRadius: 14,
     cursor: 'pointer',
@@ -1263,7 +1263,7 @@ const styles = {
   deleteButton: {
     padding: 6,
     backgroundColor: 'transparent',
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     color: THEME.danger,
     borderRadius: 14,
     cursor: 'pointer',
@@ -1276,7 +1276,7 @@ const styles = {
   notesExpandedContainer: {
     marginTop: 12,
     paddingTop: 12,
-    borderTop: `1px solid ${THEME.surfaceBorder}`,
+    borderTop: `1px solid ${THEME.glassBorder}`,
   },
 
   notesExpanded: {
@@ -1306,7 +1306,7 @@ const styles = {
   editInput: {
     padding: '8px 10px',
     backgroundColor: THEME.surfaceHover,
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
     borderRadius: 14,
     fontSize: 12,
@@ -1316,7 +1316,7 @@ const styles = {
   editSelect: {
     padding: '8px 10px',
     backgroundColor: THEME.surfaceHover,
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
     borderRadius: 14,
     fontSize: 12,
@@ -1361,7 +1361,7 @@ const styles = {
     display: 'flex',
     gap: 12,
     marginTop: 16,
-    borderBottom: `1px solid ${THEME.surfaceBorder}`,
+    borderBottom: `1px solid ${THEME.glassBorder}`,
     paddingBottom: 12,
   },
 
@@ -1442,7 +1442,7 @@ const styles = {
 
   approvalCard: {
     backgroundColor: THEME.surface,
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     borderRadius: 8,
     overflow: 'hidden',
   },
@@ -1532,7 +1532,7 @@ const styles = {
 
   historyTable: {
     backgroundColor: THEME.surface,
-    border: `1px solid ${THEME.surfaceBorder}`,
+    border: `1px solid ${THEME.glassBorder}`,
     borderRadius: 8,
     overflow: 'hidden',
   },
@@ -1543,7 +1543,7 @@ const styles = {
     gap: 0,
     padding: '12px 16px',
     backgroundColor: THEME.surfaceHover,
-    borderBottom: `1px solid ${THEME.surfaceBorder}`,
+    borderBottom: `1px solid ${THEME.glassBorder}`,
     fontWeight: 600,
     fontSize: 13,
     color: THEME.textMuted,
@@ -1556,7 +1556,7 @@ const styles = {
     gridTemplateColumns: '2fr 1.5fr 1fr 1fr',
     gap: 0,
     padding: '12px 16px',
-    borderBottom: `1px solid ${THEME.surfaceBorder}`,
+    borderBottom: `1px solid ${THEME.glassBorder}`,
     alignItems: 'center',
     fontSize: 13,
     color: THEME.textMain,

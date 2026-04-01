@@ -284,7 +284,7 @@ const ConnectionWizard = () => {
       padding: '32px',
       borderRadius: '16px',
       background: THEME.surface,
-      border: `1px solid ${THEME.surfaceBorder}`,
+      border: `1px solid ${THEME.glassBorder}`,
       boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04)',
     },
     stepIndicator: {
@@ -313,7 +313,7 @@ const ConnectionWizard = () => {
     },
     stepDotInactive: {
       background: THEME.surfaceHover,
-      border: `1px solid ${THEME.surfaceBorder}`,
+      border: `1px solid ${THEME.glassBorder}`,
       color: THEME.textDim,
     },
     stepDotCompleted: {
@@ -326,7 +326,7 @@ const ConnectionWizard = () => {
       left: '0',
       right: '0',
       height: '2px',
-      background: THEME.surfaceBorder,
+      background: THEME.glassBorder,
       zIndex: 1,
     },
     title: {
@@ -351,7 +351,7 @@ const ConnectionWizard = () => {
     typeCard: {
       padding: '20px 16px',
       borderRadius: '12px',
-      border: `1.5px solid ${THEME.surfaceBorder}`,
+      border: `1.5px solid ${THEME.glassBorder}`,
       background: THEME.surface,
       cursor: 'pointer',
       transition: 'all 0.2s',
@@ -396,7 +396,7 @@ const ConnectionWizard = () => {
       width: '100%',
       padding: '11px 14px',
       borderRadius: '10px',
-      border: `1.5px solid ${THEME.surfaceBorder}`,
+      border: `1.5px solid ${THEME.glassBorder}`,
       background: THEME.surfaceHover,
       color: THEME.textMain,
       fontSize: '13px',
@@ -423,7 +423,7 @@ const ConnectionWizard = () => {
       padding: '14px',
       borderRadius: '10px',
       background: THEME.surfaceHover,
-      border: `1px solid ${THEME.surfaceBorder}`,
+      border: `1px solid ${THEME.glassBorder}`,
       marginBottom: '16px',
     },
     toggleLabel: {
@@ -440,7 +440,7 @@ const ConnectionWizard = () => {
       width: '40px',
       height: '24px',
       borderRadius: '12px',
-      background: THEME.surfaceBorder,
+      background: THEME.glassBorder,
       border: 'none',
       cursor: 'pointer',
       position: 'relative',
@@ -515,7 +515,7 @@ const ConnectionWizard = () => {
     },
     buttonSecondary: {
       background: THEME.surfaceHover,
-      border: `1.5px solid ${THEME.surfaceBorder}`,
+      border: `1.5px solid ${THEME.glassBorder}`,
       color: THEME.textMuted,
     },
     buttonSecondaryHover: {
@@ -591,7 +591,7 @@ const ConnectionWizard = () => {
                     display: 'flex', alignItems: 'center', gap: 12,
                     padding: '12px 14px', borderRadius: 10,
                     background: isActive ? `${dbColor(conn.dbType)}10` : 'transparent',
-                    border: `1.5px solid ${isActive ? dbColor(conn.dbType) + '50' : THEME.surfaceBorder}`,
+                    border: `1.5px solid ${isActive ? dbColor(conn.dbType) + '50' : THEME.glassBorder}`,
                     transition: 'all 0.2s',
                     cursor: 'pointer',
                   }}

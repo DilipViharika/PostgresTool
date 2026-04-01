@@ -801,7 +801,7 @@ export const MetricCard = ({
                 <div
                     style={{
                         fontSize: 11,
-                        color: _AT.textSub,
+                        color: _AT.textMuted,
                         fontWeight: 500,
                         letterSpacing: '0.02em',
                         marginBottom: 4,
@@ -1792,7 +1792,7 @@ export const DataTable = ({
                                         padding: compact ? '7px 10px' : '10px 14px',
                                         fontSize: 11,
                                         fontWeight: 600,
-                                        color: sort.key === col.key ? _AT.textMain : _AT.textSub,
+                                        color: sort.key === col.key ? _AT.textMain : _AT.textMuted,
                                         borderBottom: `1px solid ${_AT.glassBorder}`,
                                         cursor: sortable && col.sortable !== false ? 'pointer' : 'default',
                                         whiteSpace: 'nowrap',
@@ -2033,7 +2033,7 @@ export const EmptyState = ({ icon: Icon, title, text, action, onAction, color = 
                 style={{
                     fontSize: 14,
                     fontWeight: 600,
-                    color: _AT.textSub,
+                    color: _AT.textMuted,
                 }}
             >
                 {title}
@@ -2253,7 +2253,7 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
     return (
         <div
             style={{
-                background: _AT.bgTeal,
+                background: _AT.deepTeal,
                 borderRadius: 14,
                 border: `1px solid ${_AT.glassBorder}`,
                 overflow: 'hidden',
@@ -2847,7 +2847,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                     maxWidth: 580,
                     background: 'rgba(4,9,28,0.98)',
                     borderRadius: 8,
-                    border: `1px solid ${_AT.glassBorderHot}`,
+                    border: `1px solid ${_AT.glassBorderHover}`,
                     boxShadow: `0 0 0 1px ${_AT.primary}20, 0 32px 80px rgba(0,0,0,0.9)`,
                     overflow: 'hidden',
                     animation: 'scaleUp 0.2s cubic-bezier(0.16,1,0.3,1)',
@@ -3338,7 +3338,7 @@ export const PillInput = ({ value = [], onChange, placeholder = 'Add tag...', co
                 padding: '8px 12px',
                 background: 'rgba(0,0,0,0.2)',
                 borderRadius: 14,
-                border: `1px solid ${focused ? _AT.glassBorderHot : _AT.glassBorder}`,
+                border: `1px solid ${focused ? _AT.glassBorderHover : _AT.glassBorder}`,
                 minHeight: 40,
                 alignItems: 'center',
                 cursor: 'text',
@@ -3620,7 +3620,7 @@ export const NeuralSelect = ({ value, options, onChange, label, color = _AT.prim
                         zIndex: 100,
                         background: 'rgba(2,6,20,0.98)',
                         borderRadius: 10,
-                        border: `1px solid ${_AT.glassBorderHot}`,
+                        border: `1px solid ${_AT.glassBorderHover}`,
                         boxShadow: `0 8px 32px rgba(0,0,0,0.8), 0 0 20px ${color}10`,
                         backdropFilter: 'blur(20px)',
                         overflow: 'hidden',
@@ -4108,7 +4108,7 @@ export const ExtensionCard = ({ name, version, schema, description, enabled }) =
             style={{
                 background: hovered ? 'rgba(10,20,40,0.8)' : 'rgba(4,9,28,0.6)',
                 borderRadius: 10,
-                border: `1px solid ${hovered ? _AT.glassBorderHot : _AT.glassBorder}`,
+                border: `1px solid ${hovered ? _AT.glassBorderHover : _AT.glassBorder}`,
                 padding: 14,
                 display: 'flex',
                 alignItems: 'center',
@@ -4331,7 +4331,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
             <div
                 style={{
                     flex: 1,
-                    background: _AT.bgTeal,
+                    background: _AT.deepTeal,
                     borderRadius: 14,
                     border: `1px solid ${_AT.glassBorder}`,
                     overflow: 'hidden',
@@ -4433,7 +4433,7 @@ export const QueryHistoryItem = ({ entry, onFavourite, onTag, onReplay, onCopy }
             style={{
                 background: hovered ? 'rgba(7,15,36,0.9)' : 'rgba(4,9,28,0.7)',
                 borderRadius: 10,
-                border: `1px solid ${hovered ? _AT.glassBorderHot : _AT.glassBorder}`,
+                border: `1px solid ${hovered ? _AT.glassBorderHover : _AT.glassBorder}`,
                 overflow: 'hidden',
                 transition: 'all 0.2s',
                 animation: 'fadeUp 0.3s ease backwards',
@@ -4518,7 +4518,7 @@ export const QueryHistoryItem = ({ entry, onFavourite, onTag, onReplay, onCopy }
                             fontSize: 11,
                             color: '#93c5fd',
                             fontFamily: _AT.fontMono,
-                            background: _AT.bgTeal,
+                            background: _AT.deepTeal,
                             padding: 12,
                             borderRadius: 10,
                             margin: '10px 0',
@@ -4771,7 +4771,7 @@ export const BentoMetric = ({
                 <span
                     style={{
                         fontSize: 11,
-                        color: _AT.textSub,
+                        color: _AT.textMuted,
                         fontWeight: 500,
                     }}
                 >

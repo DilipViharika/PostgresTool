@@ -105,7 +105,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                 {/* Name */}
                 <div>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
                         Rule Name
                     </label>
                     <input
@@ -132,7 +132,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
 
                 {/* Metric */}
                 <div>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
                         Metric
                     </label>
                     <select
@@ -159,7 +159,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
 
                 {/* Condition */}
                 <div>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
                         Condition
                     </label>
                     <select
@@ -186,7 +186,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
 
                 {/* Threshold */}
                 <div>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
                         Threshold {unit && `(${unit})`}
                     </label>
                     <input
@@ -213,7 +213,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
 
                 {/* Duration */}
                 <div>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
                         Duration
                     </label>
                     <select
@@ -240,7 +240,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
 
                 {/* Severity */}
                 <div>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
                         Severity
                     </label>
                     <select
@@ -268,7 +268,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
 
             {/* Notification Channels */}
             <div style={{ marginBottom: '20px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', display: 'block' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px', display: 'block' }}>
                     Notification Channels
                 </label>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -285,7 +285,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                                     background: isActive ? `${THEME.primary}20` : THEME.surface,
                                     border: `1px solid ${isActive ? THEME.borderHot : THEME.border}`,
                                     borderRadius: '8px',
-                                    color: isActive ? THEME.primary : THEME.textSub,
+                                    color: isActive ? THEME.primary : THEME.textMuted,
                                     fontSize: '12px',
                                     fontWeight: 600,
                                     cursor: 'pointer',

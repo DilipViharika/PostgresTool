@@ -337,13 +337,13 @@ const SchemaVisualizerTab = () => {
             flexDirection: 'column',
             flex: 1,
             background: THEME.surface,
-            border: `1px solid ${THEME.surfaceBorder}`,
+            border: `1px solid ${THEME.glassBorder}`,
             borderRadius: THEME.radiusMd,
             overflow: 'hidden',
         },
         toolbar: {
             padding: '16px',
-            borderBottom: `1px solid ${THEME.surfaceBorder}`,
+            borderBottom: `1px solid ${THEME.glassBorder}`,
             display: 'flex',
             gap: '12px',
             alignItems: 'center',
@@ -352,7 +352,7 @@ const SchemaVisualizerTab = () => {
         input: {
             padding: '8px 12px',
             background: THEME.surface,
-            border: `1px solid ${THEME.surfaceBorder}`,
+            border: `1px solid ${THEME.glassBorder}`,
             borderRadius: THEME.radiusSm,
             color: THEME.textMain,
             fontFamily: THEME.fontBody,
@@ -363,7 +363,7 @@ const SchemaVisualizerTab = () => {
         select: {
             padding: '8px 12px',
             background: THEME.surface,
-            border: `1px solid ${THEME.surfaceBorder}`,
+            border: `1px solid ${THEME.glassBorder}`,
             borderRadius: THEME.radiusSm,
             color: THEME.textMain,
             fontFamily: THEME.fontBody,
@@ -390,7 +390,7 @@ const SchemaVisualizerTab = () => {
         },
         sidePanel: {
             width: '280px',
-            borderLeft: `1px solid ${THEME.surfaceBorder}`,
+            borderLeft: `1px solid ${THEME.glassBorder}`,
             padding: '16px',
             overflowY: 'auto',
             background: THEME.surface,

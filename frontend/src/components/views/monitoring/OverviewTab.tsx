@@ -219,7 +219,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
     <div
         style={{
             background: THEME.surface,
-            border: `1px solid ${THEME.surfaceBorder}`,
+            border: `1px solid ${THEME.glassBorder}`,
             borderRadius: 14,
             display: 'flex',
             flexDirection: 'column',
@@ -233,7 +233,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
             <div
                 style={{
                     padding: '12px 18px',
-                    borderBottom: `1px solid ${THEME.surfaceBorder}`,
+                    borderBottom: `1px solid ${THEME.glassBorder}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -490,9 +490,9 @@ const ChartTooltip = ({ active, payload, label }) => {
     return (
         <div
             style={{
-                background: THEME.surfaceHeavy,
+                background: THEME.surfaceRaised,
                 
-                border: `1px solid ${THEME.surfaceBorder}`,
+                border: `1px solid ${THEME.glassBorder}`,
                 borderRadius: 12,
                 padding: '12px 16px',
                 fontSize: 12,
@@ -524,7 +524,7 @@ const Divider = ({ style = {} }) => (
     <div
         style={{
             height: 1,
-            background: `linear-gradient(90deg, transparent, ${THEME.surfaceBorder}, transparent)`,
+            background: `linear-gradient(90deg, transparent, ${THEME.glassBorder}, transparent)`,
             ...style,
         }}
     />
@@ -604,16 +604,16 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                         top: 'calc(100% + 8px)',
                         left: 0,
                         zIndex: 200,
-                        background: THEME.surfaceHeavy,
+                        background: THEME.surfaceRaised,
                         
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderRadius: 12,
                         overflow: 'hidden',
                         minWidth: 240,
                         boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
                     }}
                 >
-                    <div style={{ padding: '8px 12px 6px', borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
+                    <div style={{ padding: '8px 12px 6px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
                         <span
                             style={{
                                 fontSize: 9.5,
@@ -641,7 +641,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                                 padding: '11px 14px',
                                 background: e.id === currentEnv ? `${e.color}10` : 'transparent',
                                 border: 'none',
-                                borderBottom: `1px solid ${THEME.surfaceBorder}20`,
+                                borderBottom: `1px solid ${THEME.glassBorder}20`,
                                 cursor: 'pointer',
                                 transition: 'background 0.15s',
                             }}
@@ -749,7 +749,7 @@ const NotificationBell = () => {
                     height: 36,
                     borderRadius: 12,
                     background: open ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${unread > 0 ? `${SEVERITY_COLOR.critical}40` : THEME.surfaceBorder}`,
+                    border: `1px solid ${unread > 0 ? `${SEVERITY_COLOR.critical}40` : THEME.glassBorder}`,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -798,9 +798,9 @@ const NotificationBell = () => {
                         top: 'calc(100% + 8px)',
                         right: 0,
                         zIndex: 200,
-                        background: THEME.surfaceHeavy,
+                        background: THEME.surfaceRaised,
                         
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderRadius: 12,
                         overflow: 'hidden',
                         width: 320,
@@ -810,7 +810,7 @@ const NotificationBell = () => {
                     <div
                         style={{
                             padding: '10px 14px',
-                            borderBottom: `1px solid ${THEME.surfaceBorder}`,
+                            borderBottom: `1px solid ${THEME.glassBorder}`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
@@ -861,7 +861,7 @@ const NotificationBell = () => {
                                         gap: 10,
                                         padding: '11px 14px',
                                         background: a.read ? 'transparent' : `${sc}06`,
-                                        borderBottom: `1px solid ${THEME.surfaceBorder}20`,
+                                        borderBottom: `1px solid ${THEME.glassBorder}20`,
                                         borderLeft: a.read ? '2px solid transparent' : `2px solid ${sc}`,
                                     }}
                                 >
@@ -904,7 +904,7 @@ const NotificationBell = () => {
                     <div
                         style={{
                             padding: '8px 14px',
-                            borderTop: `1px solid ${THEME.surfaceBorder}`,
+                            borderTop: `1px solid ${THEME.glassBorder}`,
                             display: 'flex',
                             justifyContent: 'center',
                         }}
@@ -956,7 +956,7 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                     height: 32,
                     borderRadius: 8,
                     background: 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     cursor: loading ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -985,7 +985,7 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                     borderRadius: 10,
                     height: 32,
                     background: interval === 0 ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${interval === 0 ? '#ef444440' : THEME.surfaceBorder}`,
+                    border: `1px solid ${interval === 0 ? '#ef444440' : THEME.glassBorder}`,
                     cursor: 'pointer',
                     color: interval === 0 ? '#ef4444' : THEME.textMuted,
                     transition: 'all 0.15s',
@@ -1010,16 +1010,16 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                         top: 'calc(100% + 6px)',
                         right: 0,
                         zIndex: 200,
-                        background: THEME.surfaceHeavy,
+                        background: THEME.surfaceRaised,
                         
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderRadius: 12,
                         overflow: 'hidden',
                         minWidth: 140,
                         boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
                     }}
                 >
-                    <div style={{ padding: '7px 11px 5px', borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
+                    <div style={{ padding: '7px 11px 5px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
                         <span
                             style={{
                                 fontSize: 9,
@@ -1047,7 +1047,7 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                                 padding: '9px 12px',
                                 background: opt.value === interval ? `${THEME.primary}12` : 'transparent',
                                 border: 'none',
-                                borderBottom: `1px solid ${THEME.surfaceBorder}15`,
+                                borderBottom: `1px solid ${THEME.glassBorder}15`,
                                 cursor: 'pointer',
                                 transition: 'background 0.12s',
                             }}
@@ -1152,12 +1152,12 @@ const BackupStatusCard = ({ lastBackup }) => {
                 borderRadius: 12,
                 background: THEME.surface,
                 
-                border: `1px solid ${isOld ? `${THEME.warning}30` : THEME.surfaceBorder}`,
+                border: `1px solid ${isOld ? `${THEME.warning}30` : THEME.glassBorder}`,
                 position: 'relative',
                 overflow: 'hidden',
                 boxShadow: isOld
                     ? `0 0 0 1px ${THEME.warning}12, 0 4px 12px rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.06)`
-                    : `0 0 0 1px ${THEME.surfaceBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
+                    : `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
             }}
             className={isOld ? 'ov-glow-warn' : ''}
         >
@@ -1232,7 +1232,7 @@ const BackupStatusCard = ({ lastBackup }) => {
                     alignItems: 'center',
                     gap: 5,
                     paddingTop: 8,
-                    borderTop: `1px solid ${THEME.surfaceBorder}`,
+                    borderTop: `1px solid ${THEME.glassBorder}`,
                 }}
             >
                 <Clock size={9} color={THEME.textDim} />
@@ -1273,7 +1273,7 @@ const LongTxnCard = ({ data, onNavigate }) => {
                     borderRadius: 12,
                     background: THEME.surface,
                     
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     position: 'relative',
                     overflow: 'hidden',
                     boxShadow:
@@ -1365,7 +1365,7 @@ const LongTxnCard = ({ data, onNavigate }) => {
                 borderRadius: 12,
                 background: THEME.surface,
                 
-                border: `1px solid ${THEME.surfaceBorder}`,
+                border: `1px solid ${THEME.glassBorder}`,
                 position: 'relative',
                 overflow: 'hidden',
                 boxShadow:
@@ -1536,7 +1536,7 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                 borderRadius: 12,
                 background: THEME.surface,
                 
-                border: `1px solid ${vacuum.urgentCount > 3 ? `${THEME.danger}28` : THEME.surfaceBorder}`,
+                border: `1px solid ${vacuum.urgentCount > 3 ? `${THEME.danger}28` : THEME.glassBorder}`,
                 position: 'relative',
                 overflow: 'hidden',
                 boxShadow:
@@ -2191,7 +2191,7 @@ const OverviewTab = () => {
                                 height: 110,
                                 borderRadius: 14,
                                 background: THEME.surface,
-                                border: `1px solid ${THEME.surfaceBorder}`,
+                                border: `1px solid ${THEME.glassBorder}`,
                                 opacity: 0.4,
                                 animation: `ovPulse 1.5s ease-in-out infinite`,
                                 animationDelay: `${i * 0.1}s`,
@@ -2205,7 +2205,7 @@ const OverviewTab = () => {
                             height: 320,
                             borderRadius: 16,
                             background: THEME.surface,
-                            border: `1px solid ${THEME.surfaceBorder}`,
+                            border: `1px solid ${THEME.glassBorder}`,
                             opacity: 0.2,
                             animation: 'ovPulse 1.5s ease-in-out infinite 0.5s',
                         }}
@@ -2215,7 +2215,7 @@ const OverviewTab = () => {
                             height: 320,
                             borderRadius: 16,
                             background: THEME.surface,
-                            border: `1px solid ${THEME.surfaceBorder}`,
+                            border: `1px solid ${THEME.glassBorder}`,
                             opacity: 0.2,
                             animation: 'ovPulse 1.5s ease-in-out infinite 0.65s',
                         }}
@@ -2238,7 +2238,7 @@ const OverviewTab = () => {
                     style={{
                         padding: '8px 20px',
                         borderRadius: 8,
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         background: THEME.surface,
                         color: THEME.text,
                         cursor: 'pointer',
@@ -2381,7 +2381,7 @@ const OverviewTab = () => {
                             padding: '16px 18px',
                             borderRadius: 14,
                             background: THEME.surface,
-                            border: `1px solid ${THEME.surfaceBorder}`,
+                            border: `1px solid ${THEME.glassBorder}`,
                             position: 'relative',
                             overflow: 'hidden',
                             boxShadow: THEME.shadowSm,
@@ -2407,7 +2407,7 @@ const OverviewTab = () => {
                             <div
                                 style={{
                                     fontSize: 11,
-                                    color: THEME.textSub,
+                                    color: THEME.textMuted,
                                     fontWeight: 500,
                                     lineHeight: 1,
                                     marginBottom: 5,
@@ -2539,7 +2539,7 @@ const OverviewTab = () => {
                             gap: 16,
                             marginTop: 12,
                             paddingTop: 12,
-                            borderTop: `1px solid ${THEME.surfaceBorder}`,
+                            borderTop: `1px solid ${THEME.glassBorder}`,
                         }}
                     >
                         {[
@@ -2792,7 +2792,7 @@ const OverviewTab = () => {
                         gap: 0,
                         marginTop: 10,
                         paddingTop: 10,
-                        borderTop: `1px solid ${THEME.surfaceBorder}`,
+                        borderTop: `1px solid ${THEME.glassBorder}`,
                     }}
                 >
                     {[
@@ -2807,7 +2807,7 @@ const OverviewTab = () => {
                             style={{
                                 flex: 1,
                                 paddingRight: 12,
-                                borderRight: i < 4 ? `1px solid ${THEME.surfaceBorder}` : 'none',
+                                borderRight: i < 4 ? `1px solid ${THEME.glassBorder}` : 'none',
                                 paddingLeft: i > 0 ? 12 : 0,
                             }}
                         >
@@ -3009,7 +3009,7 @@ const OverviewTab = () => {
                             alignItems: 'center',
                             gap: 8,
                             padding: '11px 18px',
-                            borderTop: `1px solid ${THEME.surfaceBorder}`,
+                            borderTop: `1px solid ${THEME.glassBorder}`,
                         }}
                     >
                         <Layers size={11} color={THEME.textDim} />

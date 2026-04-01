@@ -43,7 +43,7 @@ const OptimizerStyles = () => (
         .opt-card {
             background: ${THEME.surface};
             backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid ${THEME.surfaceBorder};
+            border: 1px solid ${THEME.glassBorder};
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .opt-card:hover {

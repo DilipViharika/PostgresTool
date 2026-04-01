@@ -409,7 +409,7 @@ function Panel({ title, icon: TIcon, accentColor, rightNode, noPad, children, st
     <div
       style={{
         background: THEME.surface,
-        border: `1px solid ${accentColor ? `${accentColor}22` : THEME.surfaceBorder}`,
+        border: `1px solid ${accentColor ? `${accentColor}22` : THEME.glassBorder}`,
         borderRadius: 16,
         display: 'flex',
         flexDirection: 'column',
@@ -426,7 +426,7 @@ function Panel({ title, icon: TIcon, accentColor, rightNode, noPad, children, st
         <div
           style={{
             padding: '12px 18px',
-            borderBottom: `1px solid ${THEME.surfaceBorder}`,
+            borderBottom: `1px solid ${THEME.glassBorder}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -510,7 +510,7 @@ function RingGauge({ value, color, size = 80, strokeWidth = 6, label }) {
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={THEME.surfaceBorder} strokeWidth={strokeWidth} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={THEME.glassBorder} strokeWidth={strokeWidth} />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -663,7 +663,7 @@ function HorizontalBarList({ items, color }) {
             <span style={{ fontSize: 11, color: THEME.textMuted }}>{item.label}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color, fontFamily: "'JetBrains Mono',monospace" }}>{item.display}</span>
           </div>
-          <div style={{ height: 6, borderRadius: 10, background: THEME.surfaceBorder, overflow: 'hidden' }}>
+          <div style={{ height: 6, borderRadius: 10, background: THEME.glassBorder, overflow: 'hidden' }}>
             <div style={{
               height: '100%', borderRadius: 10, width: `${(item.value / maxVal) * 100}%`,
               background: `linear-gradient(90deg, ${color}, ${color}88)`,
@@ -686,11 +686,11 @@ function ResourceGaugeRow({ resources, color }) {
         const statusColor = res.value > 80 ? THEME.danger : res.value > 60 ? THEME.warning : THEME.success;
         return (
           <div key={i} style={{
-            background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 14,
+            background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 14,
             padding: '14px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
           }}>
             <svg width={76} height={46} viewBox="0 0 76 46">
-              <path d={`M ${38 - r} 40 A ${r} ${r} 0 0 1 ${38 + r} 40`} fill="none" stroke={`${THEME.surfaceBorder}`} strokeWidth={sw} strokeLinecap="round" />
+              <path d={`M ${38 - r} 40 A ${r} ${r} 0 0 1 ${38 + r} 40`} fill="none" stroke={`${THEME.glassBorder}`} strokeWidth={sw} strokeLinecap="round" />
               <path d={`M ${38 - r} 40 A ${r} ${r} 0 0 1 ${38 + r} 40`} fill="none" stroke={statusColor} strokeWidth={sw} strokeLinecap="round"
                 strokeDasharray={`${filled} ${circ - filled}`}
                 style={{ filter: `drop-shadow(0 0 4px ${statusColor}50)`, transition: 'stroke-dasharray 1s ease' }} />
@@ -740,10 +740,10 @@ function MultiLineChartWidget({ data, lines, color }) {
     <div style={{ height: 160 }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-          <CartesianGrid stroke={THEME.surfaceBorder} strokeDasharray="3 3" vertical={false} />
+          <CartesianGrid stroke={THEME.glassBorder} strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
-          <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 10, fontSize: 11 }} />
+          <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, fontSize: 11 }} />
           {lines.map((line, i) => (
             <Line key={i} type="monotone" dataKey={line.key} stroke={line.color} strokeWidth={2} dot={false} strokeDasharray={line.dashed ? '5 3' : undefined} />
           ))}
@@ -758,10 +758,10 @@ function MiniBarChart({ data, color }) {
     <div style={{ height: 140 }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-          <CartesianGrid stroke={THEME.surfaceBorder} strokeDasharray="3 3" vertical={false} />
+          <CartesianGrid stroke={THEME.glassBorder} strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
-          <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 10, fontSize: 11 }} />
+          <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, fontSize: 11 }} />
           <Bar dataKey="reads" fill={color} radius={[3, 3, 0, 0]} opacity={0.8} />
           <Bar dataKey="writes" fill={`${color}60`} radius={[3, 3, 0, 0]} />
         </BarChart>
@@ -1212,7 +1212,7 @@ function DemoTable({ columns, rows, color }) {
     <div style={{ overflowX: 'auto', maxHeight: 300, overflowY: 'auto' }}>
       <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
         <thead>
-          <tr style={{ borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
+          <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
             {columns.map((col, idx) => (
               <th key={idx} style={{
                 padding: '8px 12px',
@@ -1231,12 +1231,12 @@ function DemoTable({ columns, rows, color }) {
         </thead>
         <tbody>
           {rows.map((row, rIdx) => (
-            <tr key={rIdx} style={{ borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
+            <tr key={rIdx} style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
               {columns.map((col, cIdx) => (
                 <td key={cIdx} style={{
                   padding: '8px 12px',
                   color: THEME.textMain,
-                  borderBottom: `1px solid ${THEME.surfaceBorder}`,
+                  borderBottom: `1px solid ${THEME.glassBorder}`,
                 }}>
                   {row[col.key]}
                 </td>
@@ -1255,7 +1255,7 @@ function CodeBlock({ code, color }) {
   return (
     <div style={{
       background: THEME.surface,
-      border: `1px solid ${THEME.surfaceBorder}`,
+      border: `1px solid ${THEME.glassBorder}`,
       borderRadius: 8,
       padding: '12px 0',
       fontFamily: "'JetBrains Mono', monospace",
@@ -1488,7 +1488,7 @@ function SectionContent({ section, db }) {
                 <div style={{ fontSize: 10, color: THEME.textMuted, marginTop: 4 }}>Overall Compliance</div>
               </div>
             </div>
-            <div style={{ height: 4, background: THEME.surfaceBorder, borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: 4, background: THEME.glassBorder, borderRadius: 2, overflow: 'hidden' }}>
               <div style={{ height: '100%', background: THEME.success, width: '88%' }} />
             </div>
           </div>
@@ -1615,7 +1615,7 @@ function SectionContent({ section, db }) {
               { pattern: 'query slow', count: 156, trend: [120, 128, 135, 142, 150, 153, 156] },
               { pattern: 'index scan full table', count: 89, trend: [45, 52, 61, 70, 78, 84, 89] },
             ].map((entry, idx) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, borderBottom: `1px solid ${THEME.glassBorder}` }}>
                 <div>
                   <div style={{ fontSize: 11, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{entry.pattern}</div>
                   <div style={{ fontSize: 9, color: THEME.textMuted, marginTop: 2 }}>Count: {entry.count}</div>
@@ -1785,7 +1785,7 @@ function SectionContent({ section, db }) {
             key={idx}
             style={{
               background: THEME.surface,
-              border: `1px solid ${THEME.surfaceBorder}`,
+              border: `1px solid ${THEME.glassBorder}`,
               borderRadius: 14,
               padding: '14px 16px',
               position: 'relative',
@@ -1800,7 +1800,7 @@ function SectionContent({ section, db }) {
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.borderColor = THEME.surfaceBorder;
+              e.currentTarget.style.borderColor = THEME.glassBorder;
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
@@ -1836,7 +1836,7 @@ function SectionContent({ section, db }) {
                     <stop offset="100%" stopColor={db.color} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke={THEME.surfaceBorder} strokeDasharray="3 3" vertical={false} />
+                <CartesianGrid stroke={THEME.glassBorder} strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="time" tick={{ fontSize: 9.5, fill: THEME.textDim }} axisLine={false} tickLine={false} interval={4} />
                 <YAxis tick={{ fontSize: 9.5, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
                 <Tooltip />
@@ -1876,7 +1876,7 @@ function OverviewPanels({ widgets, db }) {
               <span style={{ fontSize: 11, color: THEME.success, fontWeight: 600 }}>Yes</span>
             </div>
           </div>
-          <div style={{ borderTop: `1px solid ${THEME.surfaceBorder}`, paddingTop: 8, marginTop: 8 }}>
+          <div style={{ borderTop: `1px solid ${THEME.glassBorder}`, paddingTop: 8, marginTop: 8 }}>
             <div style={{ fontSize: 10, color: THEME.textDim }}>Next: {widgets.backup.next}</div>
           </div>
         </div>
@@ -1892,7 +1892,7 @@ function OverviewPanels({ widgets, db }) {
               </div>
               <div style={{ fontSize: 9, color: THEME.textDim, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{txn.query}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ flex: 1, height: 4, borderRadius: 2, background: THEME.surfaceBorder, overflow: 'hidden' }}>
+                <div style={{ flex: 1, height: 4, borderRadius: 2, background: THEME.glassBorder, overflow: 'hidden' }}>
                   <div style={{ height: '100%', background: THEME.warning, width: `${txn.pct}%` }} />
                 </div>
                 <span style={{ fontSize: 9, color: THEME.textDim, minWidth: 30 }}>{txn.wait}</span>
@@ -1923,7 +1923,7 @@ function OverviewPanels({ widgets, db }) {
               <div style={{ fontSize: 13, fontWeight: 700, color: THEME.success }}>{widgets.vacuum.healthy}</div>
             </div>
           </div>
-          <div style={{ borderTop: `1px solid ${THEME.surfaceBorder}`, paddingTop: 8, marginTop: 4 }}>
+          <div style={{ borderTop: `1px solid ${THEME.glassBorder}`, paddingTop: 8, marginTop: 4 }}>
             <div style={{ fontSize: 9.5, color: THEME.textMuted, marginBottom: 4 }}>Dead Tuples</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{widgets.vacuum.deadTuples}</div>
           </div>
@@ -1940,7 +1940,7 @@ function OverviewPanels({ widgets, db }) {
    ══════════════════════════════════════════════════════════════════════ */
 
 /** Reusable tooltip style */
-const TT_STYLE = { background: THEME.tooltipBg, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain };
+const TT_STYLE = { background: THEME.tooltipBg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 10, color: THEME.textMain };
 
 /** Generate 24-hour time-series data with two metrics */
 function gen24h(seed, m1Base, m1Var, m2Base, m2Var) {
@@ -2091,19 +2091,19 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </Panel>
             <Panel title="Connection Pool" icon={Network} accentColor={db.color}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 10 }}>
-                <div style={{ textAlign: 'center', padding: 8, background: THEME.surfaceBorder, borderRadius: 4 }}>
+                <div style={{ textAlign: 'center', padding: 8, background: THEME.glassBorder, borderRadius: 4 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: db.color }}>{Math.floor(hashNorm(`${seed}-cpactive`) * 20 + 5)}</div>
                   <div style={{ fontSize: 9, color: THEME.textDim }}>Active</div>
                 </div>
-                <div style={{ textAlign: 'center', padding: 8, background: THEME.surfaceBorder, borderRadius: 4 }}>
+                <div style={{ textAlign: 'center', padding: 8, background: THEME.glassBorder, borderRadius: 4 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: THEME.success }}>{Math.floor(hashNorm(`${seed}-cpidle`) * 15 + 3)}</div>
                   <div style={{ fontSize: 9, color: THEME.textDim }}>Idle</div>
                 </div>
-                <div style={{ textAlign: 'center', padding: 8, background: THEME.surfaceBorder, borderRadius: 4 }}>
+                <div style={{ textAlign: 'center', padding: 8, background: THEME.glassBorder, borderRadius: 4 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: THEME.warning }}>{Math.floor(hashNorm(`${seed}-cpwait`) * 3)}</div>
                   <div style={{ fontSize: 9, color: THEME.textDim }}>Waiting</div>
                 </div>
-                <div style={{ textAlign: 'center', padding: 8, background: THEME.surfaceBorder, borderRadius: 4 }}>
+                <div style={{ textAlign: 'center', padding: 8, background: THEME.glassBorder, borderRadius: 4 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: THEME.textDim }}>32</div>
                   <div style={{ fontSize: 9, color: THEME.textDim }}>Max</div>
                 </div>
@@ -2548,7 +2548,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
               {['All', 'High', 'Medium', 'Low'].map(level => (
                 <button key={level} style={{
                   padding: '6px 12px', fontSize: 10, fontWeight: 600, border: 'none',
-                  background: level === 'All' ? db.color : THEME.surfaceBorder, color: THEME.textMain,
+                  background: level === 'All' ? db.color : THEME.glassBorder, color: THEME.textMain,
                   borderRadius: 14, cursor: 'pointer', transition: 'all 0.2s',
                 }}>
                   {level}
@@ -4582,7 +4582,7 @@ export default function DemoDataTab({ dbKey = 'postgresql', sectionId, subTabId 
               <div key={i} className="demo-card-shine" style={{
                 display: 'flex', flexDirection: 'column', gap: 10,
                 padding: '14px 16px', borderRadius: 14,
-                border: `1px solid ${THEME.surfaceBorder}`,
+                border: `1px solid ${THEME.glassBorder}`,
                 position: 'relative', overflow: 'hidden',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -4624,7 +4624,7 @@ export default function DemoDataTab({ dbKey = 'postgresql', sectionId, subTabId 
               <div key={i} className="demo-card-shine" style={{
                 display: 'flex', flexDirection: 'column', gap: 10,
                 padding: '14px 16px', borderRadius: 14,
-                border: `1px solid ${THEME.surfaceBorder}`,
+                border: `1px solid ${THEME.glassBorder}`,
                 position: 'relative', overflow: 'hidden',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

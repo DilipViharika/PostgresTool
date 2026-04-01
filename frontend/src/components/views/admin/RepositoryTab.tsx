@@ -192,13 +192,13 @@ const RepoStyles = () => (
         }
         .r8-input:focus { border-color:${THEME.primary} !important; box-shadow:0 0 0 3px ${THEME.primary}18 !important; }
         .r8-input-local:focus { border-color:${THEME.info} !important; box-shadow:0 0 0 3px ${THEME.info}18 !important; }
-        .r8-shimmer { background:linear-gradient(90deg, ${THEME.surface} 25%, ${THEME.surfaceBorder} 50%, ${THEME.surface} 75%); background-size:200% 100%; animation:rShimmer 1.5s infinite; border-radius:8px; }
+        .r8-shimmer { background:linear-gradient(90deg, ${THEME.surface} 25%, ${THEME.glassBorder} 50%, ${THEME.surface} 75%); background-size:200% 100%; animation:rShimmer 1.5s infinite; border-radius:8px; }
 
         .r8-btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:9px; border:none; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .16s; white-space:nowrap; }
         .r8-btn-p  { background:linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary}); color:${THEME.textMain}; box-shadow:0 4px 14px ${THEME.primary}28; }
         .r8-btn-p:hover:not(:disabled)  { filter:brightness(1.1); transform:translateY(-1px); }
         .r8-btn-p:disabled { opacity: 0.5; cursor: not-allowed; }
-        .r8-btn-g  { background:transparent; color:${THEME.textDim}; border:1px solid ${THEME.surfaceBorder}; }
+        .r8-btn-g  { background:transparent; color:${THEME.textDim}; border:1px solid ${THEME.glassBorder}; }
         .r8-btn-g:hover  { background:${THEME.surface}; color:${THEME.textMain}; }
         .r8-btn-c  { background:${THEME.info}15; color:${THEME.info}; border:1px solid ${THEME.info}30; }
         .r8-btn-c:hover  { background:${THEME.info}25; }
@@ -248,7 +248,7 @@ const RiskBadge = ({ risk }) => {
     return <StatusBadge label={r.toUpperCase()} color={map[r]||THEME.textMuted} size="sm"/>;
 };
 
-const Divider = () => <div style={{ height:1, background:`${THEME.surfaceBorder}`, margin:'14px 0' }}/>;
+const Divider = () => <div style={{ height:1, background:`${THEME.glassBorder}`, margin:'14px 0' }}/>;
 
 const SectionTitle = ({ children, icon:Icon }) => (
     <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:12 }}>
@@ -268,7 +268,7 @@ const MetricCard = ({ label, value, icon:Icon, color }) => (
 );
 
 const ProgressBar = ({ value, color=THEME.primary, height=6 }) => (
-    <div style={{ height, borderRadius:height/2, background:`${THEME.surfaceBorder}`, overflow:'hidden' }}>
+    <div style={{ height, borderRadius:height/2, background:`${THEME.glassBorder}`, overflow:'hidden' }}>
         <div className="r8-bar-fill" style={{ height:'100%', borderRadius:height/2, width:`${value}%`, background:`linear-gradient(90deg, ${color}, ${color}cc)`, '--w':`${value}%` }}/>
     </div>
 );
@@ -449,8 +449,8 @@ const CodeView = ({ activeRepo }) => {
         <div style={{ display:'grid', gridTemplateColumns:'260px 1fr', gap:16, height:'100%', minHeight:0 }}>
 
             {/* SIDEBAR: REAL FILE SYSTEM */}
-            <div style={{ background:THEME.surface, border:`1px solid ${THEME.surfaceBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
-                <div style={{ padding:'14px 20px', borderBottom:`1px solid ${THEME.surfaceBorder}`, background:`${THEME.primary}06`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+                <div style={{ padding:'14px 20px', borderBottom:`1px solid ${THEME.glassBorder}`, background:`${THEME.primary}06`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <span style={{ fontSize:11, fontWeight:800, color:THEME.textMain, textTransform:'uppercase', letterSpacing:'0.1em' }}>Local Files</span>
                     {fsTree && <button onClick={authorizeLocalFolder} style={{ background:'none', border:'none', color:THEME.primary, fontSize:10, cursor:'pointer', fontWeight:700 }}>CHANGE</button>}
                 </div>
@@ -481,10 +481,10 @@ const CodeView = ({ activeRepo }) => {
             <div style={{ display:'grid', gridTemplateColumns: (aiEngine.loading || aiResult || aiEngine.error) ? '1fr 420px' : '1fr', gap:16, minHeight:0 }}>
 
                 {/* CODE EDITOR */}
-                <div style={{ background:THEME.surface, border:`1px solid ${THEME.surfaceBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+                <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
 
                     {/* Editor header */}
-                    <div style={{ padding:'10px 16px', borderBottom:`1px solid ${THEME.surfaceBorder}`, display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+                    <div style={{ padding:'10px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
                         <Code size={14} color={THEME.primary}/>
                         <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain, fontFamily:'monospace', flex:1 }}>{selNode ? selNode.name : 'No file selected'}</span>
                         {aiResult?.issues?.length > 0 && (
@@ -495,7 +495,7 @@ const CodeView = ({ activeRepo }) => {
                         {selNode && fileContent && (
                             <button
                                 onClick={() => copyToClipboard(fileContent, 'editor')}
-                                style={{ background:'none', border:`1px solid ${THEME.surfaceBorder}`, borderRadius:5, color:THEME.textDim, fontSize:10, padding:'2px 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
+                                style={{ background:'none', border:`1px solid ${THEME.glassBorder}`, borderRadius:5, color:THEME.textDim, fontSize:10, padding:'2px 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
                             >
                                 {copiedFix==='editor' ? <><Check size={10} color={THEME.success}/> Copied!</> : <><Copy size={10}/> Copy</>}
                             </button>
@@ -580,7 +580,7 @@ const CodeView = ({ activeRepo }) => {
                                                     ><X size={11}/></button>
                                                 </div>
                                                 {/* Description */}
-                                                <div style={{ padding:'6px 12px', fontSize:11, color:THEME.textDim, lineHeight:1.5, borderBottom: iss.fix ? `1px solid ${THEME.surfaceBorder}` : 'none' }}>
+                                                <div style={{ padding:'6px 12px', fontSize:11, color:THEME.textDim, lineHeight:1.5, borderBottom: iss.fix ? `1px solid ${THEME.glassBorder}` : 'none' }}>
                                                     {iss.description}
                                                 </div>
                                                 {/* Fix */}
@@ -594,7 +594,7 @@ const CodeView = ({ activeRepo }) => {
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); copyToClipboard(iss.fix, `fix-${iss.idx}`); }}
                                                                     title="Copy fix"
-                                                                    style={{ background:`${THEME.surface}`, border:`1px solid ${THEME.surfaceBorder}`, borderRadius:4, cursor:'pointer', color:copiedFix===`fix-${iss.idx}` ? THEME.success : THEME.textDim, padding:'2px 6px', fontSize:9, display:'flex', alignItems:'center', gap:3 }}
+                                                                    style={{ background:`${THEME.surface}`, border:`1px solid ${THEME.glassBorder}`, borderRadius:4, cursor:'pointer', color:copiedFix===`fix-${iss.idx}` ? THEME.success : THEME.textDim, padding:'2px 6px', fontSize:9, display:'flex', alignItems:'center', gap:3 }}
                                                                 >
                                                                     {copiedFix===`fix-${iss.idx}` ? <Check size={9}/> : <Copy size={9}/>}
                                                                 </button>
@@ -623,8 +623,8 @@ const CodeView = ({ activeRepo }) => {
 
                 {/* DETAILED AI ANALYSIS PANEL */}
                 {(aiEngine.loading || aiResult || aiEngine.error) && (
-                    <div style={{ background:THEME.surface, border:`1px solid ${THEME.surfaceBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
-                        <div style={{ padding:'14px 20px', borderBottom:`1px solid ${THEME.surfaceBorder}`, background:`${THEME.primary}06`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+                        <div style={{ padding:'14px 20px', borderBottom:`1px solid ${THEME.glassBorder}`, background:`${THEME.primary}06`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                                 <Sparkles size={14} color={THEME.primary}/>
                                 <span style={{ fontSize:11, fontWeight:800, color:THEME.textMain, textTransform:'uppercase', letterSpacing:'0.1em' }}>Deep Analysis</span>
@@ -657,7 +657,7 @@ const CodeView = ({ activeRepo }) => {
                             {aiResult && !aiEngine.loading && (
                                 <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
                                     {/* Health Overview */}
-                                    <div style={{ padding:16, borderRadius:12, background:`${THEME.surface}`, border:`1px solid ${THEME.surfaceBorder}`, display:'flex', gap:16 }}>
+                                    <div style={{ padding:16, borderRadius:12, background:`${THEME.surface}`, border:`1px solid ${THEME.glassBorder}`, display:'flex', gap:16 }}>
                                         <div style={{ fontSize:48, fontWeight:900, color: aiResult.healthScore > 75 ? THEME.success : THEME.warning, lineHeight:1 }}>
                                             {aiResult.healthScore}
                                         </div>
@@ -750,7 +750,7 @@ const CodeView = ({ activeRepo }) => {
                                                 <Shield size={12}/> Security Vectors
                                             </div>
                                             {aiResult.securityFlags.map((sec, i) => (
-                                                <div key={i} style={{ marginBottom:8, padding:12, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.surfaceBorder}` }}>
+                                                <div key={i} style={{ marginBottom:8, padding:12, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
                                                     <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
                                                         <span style={{ fontSize:12, fontWeight:700, color:THEME.warning }}>{sec.title}</span>
                                                         <RiskBadge risk={sec.severity}/>
@@ -852,7 +852,7 @@ const InsightsView = ({ activeRepo }) => {
                 )}
 
                 {!ai.loading && !ai.result && !ai.error && (
-                    <div style={{ padding:'60px 20px', textAlign:'center', border:`2px dashed ${THEME.surfaceBorder}`, borderRadius:16, display:'flex', flexDirection:'column', alignItems:'center', gap:16 }}>
+                    <div style={{ padding:'60px 20px', textAlign:'center', border:`2px dashed ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', alignItems:'center', gap:16 }}>
                         <div style={{ width:60, height:60, borderRadius:14, background:`${THEME.primary}10`, display:'flex', alignItems:'center', justifyContent:'center' }}><Activity size={26} color={THEME.primary}/></div>
                         <div style={{ fontSize:16, fontWeight:800, color:THEME.textMuted }}>No Analysis Run Yet</div>
                         <div style={{ fontSize:12.5, color:THEME.textDim, maxWidth:360, lineHeight:1.7 }}>Click <b>Run Full Audit</b> to evaluate this repository's tech debt, overall health, and hidden vulnerabilities.</div>
@@ -900,7 +900,7 @@ const InsightsView = ({ activeRepo }) => {
                                 <Panel title="Deep Insights" icon={Lightbulb}>
                                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                                         {r.insights.map((ins, i) => (
-                                            <div key={i} style={{ padding:'12px 14px', borderRadius:10, background:THEME.surface, border:`1px solid ${THEME.surfaceBorder}` }}>
+                                            <div key={i} style={{ padding:'12px 14px', borderRadius:10, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
                                                 <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
                                                     <span style={{ fontSize:10, fontWeight:800, padding:'2px 8px', borderRadius:4, background:`${THEME.primary}15`, color:THEME.primary }}>{ins.category}</span>
                                                 </div>
@@ -953,7 +953,7 @@ const LocalRepoForm = ({ onConnect, onClose }) => {
 
             <div>
                 <label style={{ fontSize:10.5, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.08em', display:'block', marginBottom:8 }}>Absolute Path</label>
-                <input value={path} onChange={e=>setPath(e.target.value)} placeholder="/path/to/project or C:\Projects\app" className="r8-input r8-input-local" style={{ width:'100%', background:THEME.surface, border:`1px solid ${THEME.surfaceBorder}`, borderRadius:10, padding:'12px', color:THEME.textMain, fontFamily:THEME.fontMono, fontSize:12.5, boxSizing:'border-box', outline:'none' }}/>
+                <input value={path} onChange={e=>setPath(e.target.value)} placeholder="/path/to/project or C:\Projects\app" className="r8-input r8-input-local" style={{ width:'100%', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, padding:'12px', color:THEME.textMain, fontFamily:THEME.fontMono, fontSize:12.5, boxSizing:'border-box', outline:'none' }}/>
             </div>
 
             <div style={{ padding:'10px 14px', borderRadius:8, background:`${THEME.info}08`, border:`1px solid ${THEME.info}20`, fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>
@@ -983,15 +983,15 @@ const AddRepoModal = ({ onAdd, onClose }) => {
     };
 
     return (
-        <div style={{ background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.surfaceBorder}`, display: 'flex', flexDirection: 'column', maxWidth: 560, animation: 'fadeIn 0.2s ease' }}>
-            <div style={{ padding:'18px 22px', borderBottom:`1px solid ${THEME.surfaceBorder}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+        <div style={{ background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', maxWidth: 560, animation: 'fadeIn 0.2s ease' }}>
+            <div style={{ padding:'18px 22px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <div style={{ fontSize:15, fontWeight:800, color:THEME.textMain }}>Connect Repository</div>
                 <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim }}><X size={16}/></button>
             </div>
 
                 <div style={{ display:'flex', gap:5, padding:'14px 22px 0' }}>
                     {Object.entries(PROV).map(([key, p]) => (
-                        <button key={key} onClick={()=>setProvider(key)} style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 13px', borderRadius:9, border:`1px solid ${provider===key?p.color+'40':THEME.surfaceBorder}`, background:provider===key?`${p.color}14`:'transparent', color:provider===key?p.color:THEME.textDim, fontSize:12, fontWeight:700, cursor:'pointer' }}>
+                        <button key={key} onClick={()=>setProvider(key)} style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 13px', borderRadius:9, border:`1px solid ${provider===key?p.color+'40':THEME.glassBorder}`, background:provider===key?`${p.color}14`:'transparent', color:provider===key?p.color:THEME.textDim, fontSize:12, fontWeight:700, cursor:'pointer' }}>
                             <p.Icon size={13}/>{p.label}
                         </button>
                     ))}
@@ -1001,7 +1001,7 @@ const AddRepoModal = ({ onAdd, onClose }) => {
                     <div style={{ padding:22, display:'flex', flexDirection:'column', gap:16 }}>
                         <div>
                             <label style={{ fontSize:10.5, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', marginBottom:8, display:'block' }}>Repository URL</label>
-                            <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://github.com/user/repo" style={{ width:'100%', padding:'11px 12px', background:THEME.surface, border:`1px solid ${THEME.surfaceBorder}`, borderRadius:9, color:THEME.textMain, outline:'none', fontSize:13, boxSizing:'border-box' }}/>
+                            <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://github.com/user/repo" style={{ width:'100%', padding:'11px 12px', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:9, color:THEME.textMain, outline:'none', fontSize:13, boxSizing:'border-box' }}/>
                         </div>
                         <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
                             <button onClick={onClose} className="r8-btn r8-btn-g">Cancel</button>
@@ -1022,7 +1022,7 @@ const RepoCard = ({ repo, onOpen, onDelete }) => {
     const accent = isLocal ? THEME.info : THEME.primary;
 
     return (
-        <div className={`r8-card r8-card-${isLocal?'local':'remote'}`} onClick={()=>onOpen(repo)} style={{ padding:22, borderRadius:14, background:THEME.surface, border:`1px solid ${THEME.surfaceBorder}` }}>
+        <div className={`r8-card r8-card-${isLocal?'local':'remote'}`} onClick={()=>onOpen(repo)} style={{ padding:22, borderRadius:14, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:14 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                     <div style={{ width:40, height:40, borderRadius:11, background:`${accent}14`, border:`1px solid ${accent}25`, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -1039,7 +1039,7 @@ const RepoCard = ({ repo, onOpen, onDelete }) => {
                 <StatusBadge label={prov.label} color={accent} size="sm"/>
                 <StatusBadge label={isLocal?'LOCAL':'REMOTE'} color={isLocal?THEME.info:THEME.success} size="sm"/>
             </div>
-            <div style={{ height:1, background:THEME.surfaceBorder, marginBottom:12 }}/>
+            <div style={{ height:1, background:THEME.glassBorder, marginBottom:12 }}/>
             <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:THEME.textDim }}>
                 <span>{repo.lastCommit}</span>
                 <div style={{ color:accent, fontWeight:600 }}>Open →</div>
@@ -1086,7 +1086,7 @@ const RepositoryTab = () => {
                         <div style={{ fontSize:12.5, color:THEME.textDim, marginTop:5 }}>Manage your connected codebases</div>
                     </div>
                     <div style={{ display:'flex', gap:10 }}>
-                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{ padding:'9px 12px', background:THEME.surface, border:`1px solid ${THEME.surfaceBorder}`, borderRadius:9, color:THEME.textMain, outline:'none' }}/>
+                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{ padding:'9px 12px', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:9, color:THEME.textMain, outline:'none' }}/>
                         <button onClick={()=>setShowAdd(true)} className="r8-btn r8-btn-p"><Plus size={14}/> Add Repository</button>
                     </div>
                 </div>
@@ -1096,7 +1096,7 @@ const RepositoryTab = () => {
                         {filtered.map(repo => <RepoCard key={repo.id} repo={repo} onOpen={openRepo} onDelete={handleDelete}/>)}
                     </div>
                 ) : (
-                    <div style={{ padding:'72px 20px', textAlign:'center', border:`2px dashed ${THEME.surfaceBorder}`, borderRadius:16, display:'flex', flexDirection:'column', alignItems:'center' }}>
+                    <div style={{ padding:'72px 20px', textAlign:'center', border:`2px dashed ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', alignItems:'center' }}>
                         <GitBranch size={26} color={`${THEME.primary}50`} style={{ marginBottom: 16 }}/>
                         <div style={{ fontSize:15.5, fontWeight:700, color:THEME.textMuted }}>No repositories connected</div>
                     </div>
@@ -1114,7 +1114,7 @@ const RepositoryTab = () => {
                 <span style={{ fontWeight:800, color:THEME.textMain, fontSize:14 }}>{activeRepo?.name}</span>
             </div>
 
-            <div style={{ display:'flex', gap:4, padding:4, background:THEME.surface, border:`1px solid ${THEME.surfaceBorder}`, borderRadius:10, marginBottom:14, width:'fit-content' }}>
+            <div style={{ display:'flex', gap:4, padding:4, background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, marginBottom:14, width:'fit-content' }}>
                 {NAV_TABS.map(tab=>(
                     <button key={tab.id} onClick={()=>setSubView(tab.id)} className={`r8-tab${subView===tab.id?' r8-tab-on':''}`} style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 15px', borderRadius:8, border:'none', cursor:'pointer', background:subView===tab.id?`linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`:'transparent', color:subView===tab.id?THEME.textMain:THEME.textDim, fontSize:12, fontWeight:700 }}>
                         <tab.icon size={12}/> {tab.label}

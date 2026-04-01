@@ -12,7 +12,7 @@ const C = {
     get surface()     { return THEME.surfaceHover; },
     get surfaceHi()   { return THEME.surface; },
     get border()      { return THEME.grid; },
-    get borderSub()   { return THEME.surfaceBorder; },
+    get borderSub()   { return THEME.glassBorder; },
 
     get accent()      { return THEME.primary; },
     get accentDim()   { return THEME.primaryFaint; },

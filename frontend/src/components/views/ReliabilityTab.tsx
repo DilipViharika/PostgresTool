@@ -78,13 +78,13 @@ const REFRESH_INTERVALS = [
 /* ─── Panel ─────────────────────────────────────────────────────────────── */
 const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, refreshing, accent }) => (
     <div style={{
-        border: `1px solid ${accent ? `${accent}25` : refreshing ? `${THEME.primary}35` : THEME.surfaceBorder}`,
+        border: `1px solid ${accent ? `${accent}25` : refreshing ? `${THEME.primary}35` : THEME.glassBorder}`,
         borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden',
         transition: 'border-color 0.3s', ...style,
     }}>
         {title && (
             <div style={{
-                padding: '13px 20px', borderBottom: `1px solid ${THEME.surfaceBorder}`,
+                padding: '13px 20px', borderBottom: `1px solid ${THEME.glassBorder}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 flexShrink: 0, minHeight: 46,
             }}>
@@ -124,7 +124,7 @@ const LiveDot = ({ color = THEME.success, size = 7 }) => (
 const ChartTooltip = ({ active, payload, label, unit = '' }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surfaceHeavy, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '10px 14px', fontSize: 11 }}>
+        <div style={{ background: THEME.surfaceRaised, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '10px 14px', fontSize: 11 }}>
             <div style={{ fontWeight: 800, color: THEME.textMain, marginBottom: 6, fontFamily: THEME.fontMono }}>{label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
@@ -269,7 +269,7 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
         <div style={{
             display: 'flex', alignItems: 'center', gap: 12,
             padding: '9px 16px', borderRadius: 10,
-            border: `1px solid ${error ? `${THEME.danger}30` : THEME.surfaceBorder}`,
+            border: `1px solid ${error ? `${THEME.danger}30` : THEME.glassBorder}`,
             fontSize: 11, flexWrap: 'wrap',
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1028,7 +1028,7 @@ const ReliabilityTab = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 24px 40px' }}>
                 <RelStyles />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-                    {[0, 1, 2, 3].map(i => <div key={i} style={{ height: 96, borderRadius: 14, background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, opacity: 0.4, animation: 'relPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />)}
+                    {[0, 1, 2, 3].map(i => <div key={i} style={{ height: 96, borderRadius: 14, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.4, animation: 'relPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />)}
                 </div>
             </div>
         );
@@ -1072,7 +1072,7 @@ const ReliabilityTab = () => {
                 {metricCards.map((m, i) => (
                     <div key={i} className={isRefreshing ? 'rel-metric-flash' : ''} style={{
                         display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRadius: 14,
-                        border: `1px solid ${isRefreshing ? `${THEME.primary}22` : THEME.surfaceBorder}`, transition: 'border-color 0.3s',
+                        border: `1px solid ${isRefreshing ? `${THEME.primary}22` : THEME.glassBorder}`, transition: 'border-color 0.3s',
                     }}>
                         <div style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
                             <m.icon size={16} color={m.color} />

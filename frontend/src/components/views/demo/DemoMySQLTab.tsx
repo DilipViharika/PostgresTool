@@ -701,7 +701,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -1151,7 +1151,7 @@ function DemoMySQLTab({ tabId }) {
                                         <Tooltip
                                             contentStyle={{
                                                 background: THEME.surface,
-                                                border: `1px solid ${THEME.surfaceBorder}`,
+                                                border: `1px solid ${THEME.glassBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1181,7 +1181,7 @@ function DemoMySQLTab({ tabId }) {
                                         <Tooltip
                                             contentStyle={{
                                                 background: THEME.surface,
-                                                border: `1px solid ${THEME.surfaceBorder}`,
+                                                border: `1px solid ${THEME.glassBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1208,7 +1208,7 @@ function DemoMySQLTab({ tabId }) {
                                         <Tooltip
                                             contentStyle={{
                                                 background: THEME.surface,
-                                                border: `1px solid ${THEME.surfaceBorder}`,
+                                                border: `1px solid ${THEME.glassBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1325,7 +1325,7 @@ function DemoMySQLTab({ tabId }) {
                                         <Tooltip
                                             contentStyle={{
                                                 background: THEME.surface,
-                                                border: `1px solid ${THEME.surfaceBorder}`,
+                                                border: `1px solid ${THEME.glassBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1622,7 +1622,7 @@ function DemoMySQLTab({ tabId }) {
                                         <Tooltip
                                             contentStyle={{
                                                 background: THEME.surface,
-                                                border: `1px solid ${THEME.surfaceBorder}`,
+                                                border: `1px solid ${THEME.glassBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1654,7 +1654,7 @@ function DemoMySQLTab({ tabId }) {
                                         <Tooltip
                                             contentStyle={{
                                                 background: THEME.surface,
-                                                border: `1px solid ${THEME.surfaceBorder}`,
+                                                border: `1px solid ${THEME.glassBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1687,7 +1687,7 @@ function DemoMySQLTab({ tabId }) {
                                         <Tooltip
                                             contentStyle={{
                                                 background: THEME.surface,
-                                                border: `1px solid ${THEME.surfaceBorder}`,
+                                                border: `1px solid ${THEME.glassBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1725,7 +1725,7 @@ function DemoMySQLTab({ tabId }) {
                                         <Tooltip
                                             contentStyle={{
                                                 background: THEME.surface,
-                                                border: `1px solid ${THEME.surfaceBorder}`,
+                                                border: `1px solid ${THEME.glassBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -1957,7 +1957,7 @@ function DemoMySQLTab({ tabId }) {
                                         <Tooltip
                                             contentStyle={{
                                                 background: THEME.surface,
-                                                border: `1px solid ${THEME.surfaceBorder}`,
+                                                border: `1px solid ${THEME.glassBorder}`,
                                                 borderRadius: 8,
                                             }}
                                         />
@@ -2372,7 +2372,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -2509,7 +2509,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -2587,7 +2587,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -2646,7 +2646,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -2855,7 +2855,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3065,7 +3065,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3168,7 +3168,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3236,7 +3236,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3266,7 +3266,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3381,7 +3381,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3449,7 +3449,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3534,7 +3534,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3602,7 +3602,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3863,7 +3863,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -3913,7 +3913,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -4125,7 +4125,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -4238,7 +4238,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -4398,7 +4398,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />
@@ -4524,7 +4524,7 @@ function DemoMySQLTab({ tabId }) {
                                     <Tooltip
                                         contentStyle={{
                                             background: THEME.surface,
-                                            border: `1px solid ${THEME.surfaceBorder}`,
+                                            border: `1px solid ${THEME.glassBorder}`,
                                             borderRadius: 8,
                                         }}
                                     />

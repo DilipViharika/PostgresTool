@@ -756,7 +756,7 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
             <AnimCSS/>
 
             {/* Header */}
-            <div style={{padding:'13px 16px',borderBottom:`1px solid ${THEME.surfaceBorder}`,display:'flex',alignItems:'center',gap:11}}>
+            <div style={{padding:'13px 16px',borderBottom:`1px solid ${THEME.glassBorder}`,display:'flex',alignItems:'center',gap:11}}>
                 <HealthGauge score={healthScore} size={54}/>
                 <div style={{flex:1}}>
                     <div style={{fontSize:10.5,fontWeight:800,color:THEME.textMain,textTransform:'uppercase',letterSpacing:'.06em'}}>Deep Analysis: <span style={{color:THEME.primary}}>{tableName}</span></div>

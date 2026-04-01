@@ -190,7 +190,7 @@ class SectionErrorBoundary extends React.Component {
                         <div
                             style={{
                                 fontSize: '12px',
-                                color: THEME.textSub,
+                                color: THEME.textMuted,
                                 lineHeight: '1.4',
                                 textAlign: 'left',
                                 fontFamily: THEME.fontBody,

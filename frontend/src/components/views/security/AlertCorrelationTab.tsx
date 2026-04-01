@@ -241,7 +241,7 @@ export default function AlertCorrelationTab() {
         <div
             style={{
                 padding: '24px',
-                borderBottom: `1px solid ${THEME.surfaceBorder}`,
+                borderBottom: `1px solid ${THEME.glassBorder}`,
                 marginBottom: '24px',
             }}
         >
@@ -312,7 +312,7 @@ export default function AlertCorrelationTab() {
                             padding: '4px 8px',
                             background: THEME.surface,
                             color: THEME.textMain,
-                            border: `1px solid ${THEME.surfaceBorder}`,
+                            border: `1px solid ${THEME.glassBorder}`,
                             borderRadius: '4px',
                             fontSize: '12px',
                             cursor: 'pointer',
@@ -345,7 +345,7 @@ export default function AlertCorrelationTab() {
                 style={{
                     padding: '16px',
                     background: THEME.surface,
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: '8px',
                     color: THEME.textMain,
                 }}
@@ -363,7 +363,7 @@ export default function AlertCorrelationTab() {
                 style={{
                     padding: '16px',
                     background: THEME.surface,
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: '8px',
                     color: THEME.textMain,
                 }}
@@ -381,7 +381,7 @@ export default function AlertCorrelationTab() {
                 style={{
                     padding: '16px',
                     background: THEME.surface,
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: '8px',
                     color: THEME.textMain,
                 }}
@@ -399,7 +399,7 @@ export default function AlertCorrelationTab() {
                 style={{
                     padding: '16px',
                     background: THEME.surface,
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: '8px',
                     color: THEME.textMain,
                 }}
@@ -513,7 +513,7 @@ export default function AlertCorrelationTab() {
                             style={{
                                 padding: '16px',
                                 background: THEME.surface,
-                                border: `1px solid ${THEME.surfaceBorder}`,
+                                border: `1px solid ${THEME.glassBorder}`,
                                 borderRadius: '8px',
                                 cursor: 'pointer',
                             }}
@@ -554,7 +554,7 @@ export default function AlertCorrelationTab() {
                                                 style={{
                                                     padding: '4px 8px',
                                                     background: THEME.surface,
-                                                    border: `1px solid ${THEME.surfaceBorder}`,
+                                                    border: `1px solid ${THEME.glassBorder}`,
                                                     borderRadius: '4px',
                                                     fontSize: '11px',
                                                     display: 'flex',
@@ -626,7 +626,7 @@ export default function AlertCorrelationTab() {
                                     style={{
                                         marginTop: '16px',
                                         paddingTop: '16px',
-                                        borderTop: `1px solid ${THEME.surfaceBorder}`,
+                                        borderTop: `1px solid ${THEME.glassBorder}`,
                                     }}
                                 >
                                     <div style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '12px' }}>
@@ -685,7 +685,7 @@ export default function AlertCorrelationTab() {
                             width: '100%',
                             padding: '8px 12px',
                             background: THEME.surface,
-                            border: `1px solid ${THEME.surfaceBorder}`,
+                            border: `1px solid ${THEME.glassBorder}`,
                             borderRadius: '4px',
                             color: THEME.textMain,
                             fontSize: '12px',
@@ -699,7 +699,7 @@ export default function AlertCorrelationTab() {
                 <div
                     style={{
                         overflowX: 'auto',
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderRadius: '6px',
                     }}
                 >
@@ -715,7 +715,7 @@ export default function AlertCorrelationTab() {
                         <tr
                             style={{
                                 background: THEME.surface,
-                                borderBottom: `1px solid ${THEME.surfaceBorder}`,
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
                             }}
                         >
                             <th style={{ padding: '8px', textAlign: 'left', color: THEME.textMuted, fontWeight: '600' }}>PID</th>
@@ -872,7 +872,7 @@ export default function AlertCorrelationTab() {
                             background: THEME.surface,
                             borderRadius: 10,
                             padding: 16,
-                            border: `1px solid ${THEME.surfaceBorder}`,
+                            border: `1px solid ${THEME.glassBorder}`,
                         }}
                     >
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -912,7 +912,7 @@ export default function AlertCorrelationTab() {
                         background: THEME.surface,
                         borderRadius: 10,
                         padding: 16,
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
@@ -932,7 +932,7 @@ export default function AlertCorrelationTab() {
                             width: 44,
                             height: 24,
                             borderRadius: 12,
-                            background: sensitivity.autoCorrelate ? '#00b874' : THEME.surfaceBorder,
+                            background: sensitivity.autoCorrelate ? '#00b874' : THEME.glassBorder,
                             cursor: 'pointer',
                             position: 'relative',
                             transition: 'background .2s',
@@ -967,7 +967,7 @@ export default function AlertCorrelationTab() {
                             flex: 1,
                             padding: '10px 0',
                             borderRadius: 8,
-                            border: `1px solid ${THEME.surfaceBorder}`,
+                            border: `1px solid ${THEME.glassBorder}`,
                             background: 'transparent',
                             color: THEME.textDim,
                             cursor: 'pointer',
@@ -1027,7 +1027,7 @@ export default function AlertCorrelationTab() {
                                     background: THEME.surface,
                                     borderRadius: 10,
                                     padding: 16,
-                                    border: `1px solid ${THEME.surfaceBorder}`,
+                                    border: `1px solid ${THEME.glassBorder}`,
                                 }}
                             >
                                 <div
@@ -1071,7 +1071,7 @@ export default function AlertCorrelationTab() {
                                                         position: 'absolute',
                                                         width: 2,
                                                         height: 8,
-                                                        background: THEME.surfaceBorder,
+                                                        background: THEME.glassBorder,
                                                         marginLeft: 4,
                                                         marginTop: -16,
                                                     }}
@@ -1126,7 +1126,7 @@ export default function AlertCorrelationTab() {
                     style={{
                         padding: '16px',
                         background: THEME.surface,
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderRadius: '8px',
                     }}
                 >
@@ -1181,7 +1181,7 @@ export default function AlertCorrelationTab() {
                     style={{
                         padding: '16px',
                         background: THEME.surface,
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderRadius: '8px',
                     }}
                 >
@@ -1202,10 +1202,10 @@ export default function AlertCorrelationTab() {
                             >
                                 <thead>
                                 <tr>
-                                    <th style={{ padding: '4px', textAlign: 'left', color: THEME.textMuted, fontWeight: '600', borderBottom: `1px solid ${THEME.surfaceBorder}` }}>Type</th>
-                                    <th style={{ padding: '4px', textAlign: 'left', color: THEME.textMuted, fontWeight: '600', borderBottom: `1px solid ${THEME.surfaceBorder}` }}>Mode</th>
-                                    <th style={{ padding: '4px', textAlign: 'left', color: THEME.textMuted, fontWeight: '600', borderBottom: `1px solid ${THEME.surfaceBorder}` }}>Granted</th>
-                                    <th style={{ padding: '4px', textAlign: 'left', color: THEME.textMuted, fontWeight: '600', borderBottom: `1px solid ${THEME.surfaceBorder}` }}>Count</th>
+                                    <th style={{ padding: '4px', textAlign: 'left', color: THEME.textMuted, fontWeight: '600', borderBottom: `1px solid ${THEME.glassBorder}` }}>Type</th>
+                                    <th style={{ padding: '4px', textAlign: 'left', color: THEME.textMuted, fontWeight: '600', borderBottom: `1px solid ${THEME.glassBorder}` }}>Mode</th>
+                                    <th style={{ padding: '4px', textAlign: 'left', color: THEME.textMuted, fontWeight: '600', borderBottom: `1px solid ${THEME.glassBorder}` }}>Granted</th>
+                                    <th style={{ padding: '4px', textAlign: 'left', color: THEME.textMuted, fontWeight: '600', borderBottom: `1px solid ${THEME.glassBorder}` }}>Count</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -1236,7 +1236,7 @@ export default function AlertCorrelationTab() {
                     style={{
                         padding: '16px',
                         background: THEME.surface,
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderRadius: '8px',
                     }}
                 >
@@ -1307,7 +1307,7 @@ export default function AlertCorrelationTab() {
                     style={{
                         padding: '16px',
                         background: THEME.surface,
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderRadius: '8px',
                     }}
                 >
@@ -1455,7 +1455,7 @@ export default function AlertCorrelationTab() {
                             style={{
                                 display: 'flex',
                                 gap: '0',
-                                borderBottom: `1px solid ${THEME.surfaceBorder}`,
+                                borderBottom: `1px solid ${THEME.glassBorder}`,
                                 marginBottom: '24px',
                             }}
                         >

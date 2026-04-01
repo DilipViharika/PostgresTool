@@ -83,7 +83,7 @@ function ensureBaStyles() {
         '',
         `.ba-card {`,
         `    background: ${THEME.surface};`,
-        `    border: 1px solid ${THEME.surfaceBorder};`,
+        `    border: 1px solid ${THEME.glassBorder};`,
         `    border-radius: 14px;`,
         `    padding: 20px;`,
         `    animation: baFadeUp .4s ease both;`,
@@ -102,7 +102,7 @@ function ensureBaStyles() {
         '',
         `.ba-metric-card {`,
         `    background: ${THEME.surface};`,
-        `    border: 1px solid ${THEME.surfaceBorder};`,
+        `    border: 1px solid ${THEME.glassBorder};`,
         `    border-radius: 16px;`,
         `    padding: 20px 24px;`,
         `    display: flex; flex-direction: column; gap: 10px;`,
@@ -111,7 +111,7 @@ function ensureBaStyles() {
         `    cursor: default;`,
         `    animation: baFadeUp .4s ease both;`,
         `}`,
-        `.ba-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.surfaceBorderHover}; }`,
+        `.ba-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.glassBorderHover}; }`,
         `.ba-metric-card::after {`,
         `    content: '';`,
         `    position: absolute;`,
@@ -179,7 +179,7 @@ function ensureBaStyles() {
         `    color: ${THEME.primary}DD;`,
         `    box-shadow: 0 0 16px ${THEME.primary}33;`,
         `}`,
-        `.ba-tab:hover:not(.active) { border-color: ${THEME.surfaceBorderHover}; color: ${THEME.textMain}; }`,
+        `.ba-tab:hover:not(.active) { border-color: ${THEME.glassBorderHover}; color: ${THEME.textMain}; }`,
         '',
         `.ba-badge {`,
         `    display: inline-flex; align-items: center; gap: 4px;`,
@@ -235,7 +235,7 @@ function ensureBaStyles() {
         `::-webkit-scrollbar { width: 4px; height: 4px; }`,
         `::-webkit-scrollbar-track { background: transparent; }`,
         `::-webkit-scrollbar-thumb { background: ${THEME.grid}; border-radius: 2px; }`,
-        `::-webkit-scrollbar-thumb:hover { background: ${THEME.surfaceBorderHover}; }`,
+        `::-webkit-scrollbar-thumb:hover { background: ${THEME.glassBorderHover}; }`,
     ].join('\n');
 }
 
@@ -332,7 +332,7 @@ const ChartTip = ({ active, payload, label }) => {
 
 // ─── Metric Card ───────────────────────────────────────────────────────────
 const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, warn, critical, delay = 0 }) => {
-    const borderColor = critical ? THEME.danger + '59' : warn ? THEME.warning + '4D' : THEME.surfaceBorder;
+    const borderColor = critical ? THEME.danger + '59' : warn ? THEME.warning + '4D' : THEME.glassBorder;
     const glowClass = critical ? 'critical-glow' : '';
     return (
         <div

@@ -49,7 +49,7 @@ const SummaryCard = ({ label, value, subtext, color = THEME.primary, isLoading }
             <div
                 style={{
                     background: THEME.surface,
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: '12px',
                     padding: '20px',
                 }}
@@ -74,7 +74,7 @@ const SummaryCard = ({ label, value, subtext, color = THEME.primary, isLoading }
             className="slide-up"
             style={{
                 background: THEME.surface,
-                border: `1px solid ${THEME.surfaceBorder}`,
+                border: `1px solid ${THEME.glassBorder}`,
                 borderRadius: '12px',
                 padding: '20px',
                 cursor: 'pointer',
@@ -86,7 +86,7 @@ const SummaryCard = ({ label, value, subtext, color = THEME.primary, isLoading }
             }}
             onMouseLeave={(e) => {
                 e.currentTarget.style.background = THEME.surface;
-                e.currentTarget.style.borderColor = THEME.surfaceBorder;
+                e.currentTarget.style.borderColor = THEME.glassBorder;
             }}
         >
             <div style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '8px' }}>
@@ -113,7 +113,7 @@ const LockWaitsTable = ({ lockWaits }) => {
             <div
                 style={{
                     background: THEME.surface,
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: '12px',
                     padding: '32px',
                     textAlign: 'center',
@@ -129,7 +129,7 @@ const LockWaitsTable = ({ lockWaits }) => {
         <div
             style={{
                 background: THEME.surface,
-                border: `1px solid ${THEME.surfaceBorder}`,
+                border: `1px solid ${THEME.glassBorder}`,
                 borderRadius: '12px',
                 overflow: 'hidden',
             }}
@@ -234,7 +234,7 @@ const WaitEventBreakdown = ({ waitEvents }) => {
         <div
             style={{
                 background: THEME.surface,
-                border: `1px solid ${THEME.surfaceBorder}`,
+                border: `1px solid ${THEME.glassBorder}`,
                 borderRadius: '12px',
                 padding: '20px',
                 marginTop: '16px',
@@ -305,7 +305,7 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
                     alignItems: 'center',
                     marginBottom: '16px',
                     background: THEME.surface,
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: '8px',
                     padding: '8px 12px',
                 }}
@@ -331,7 +331,7 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
                 <div
                     style={{
                         background: THEME.surface,
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderRadius: '12px',
                         padding: '32px',
                         textAlign: 'center',
@@ -344,7 +344,7 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
                 <div
                     style={{
                         background: THEME.surface,
-                        border: `1px solid ${THEME.surfaceBorder}`,
+                        border: `1px solid ${THEME.glassBorder}`,
                         borderRadius: '12px',
                         overflow: 'hidden',
                     }}
@@ -462,7 +462,7 @@ const DBActivitySection = ({ dbActivity }) => {
             <div
                 style={{
                     background: THEME.surface,
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: '12px',
                     padding: '32px',
                     textAlign: 'center',
@@ -512,7 +512,7 @@ const DBActivitySection = ({ dbActivity }) => {
                             className="slide-up"
                             style={{
                                 background: THEME.surface,
-                                border: `1px solid ${THEME.surfaceBorder}`,
+                                border: `1px solid ${THEME.glassBorder}`,
                                 borderRadius: '12px',
                                 padding: '16px',
                             }}
@@ -584,7 +584,7 @@ const DBActivitySection = ({ dbActivity }) => {
             <div
                 style={{
                     background: THEME.surface,
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: '12px',
                     padding: '20px',
                 }}
@@ -599,7 +599,7 @@ const DBActivitySection = ({ dbActivity }) => {
                         <Tooltip
                             contentStyle={{
                                 background: THEME.surface,
-                                border: `1px solid ${THEME.surfaceBorder}`,
+                                border: `1px solid ${THEME.glassBorder}`,
                                 borderRadius: '8px',
                                 color: THEME.textMain,
                             }}
@@ -670,7 +670,7 @@ const HealthInsights = ({ data }) => {
         <div
             style={{
                 background: THEME.surface,
-                border: `1px solid ${THEME.surfaceBorder}`,
+                border: `1px solid ${THEME.glassBorder}`,
                 borderRadius: '12px',
                 padding: '20px',
                 marginTop: '24px',
@@ -837,7 +837,7 @@ export default function LogPatternAnalysisTab() {
                         onChange={(e) => setAutoRefresh(e.target.value)}
                         style={{
                             background: THEME.surface,
-                            border: `1px solid ${THEME.surfaceBorder}`,
+                            border: `1px solid ${THEME.glassBorder}`,
                             color: THEME.textMain,
                             padding: '8px 12px',
                             borderRadius: '8px',

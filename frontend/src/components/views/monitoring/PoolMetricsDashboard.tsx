@@ -140,7 +140,7 @@ const PoolConfigSection = ({ config, onUpdate }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                 {/* Min Size */}
                 <div>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, marginBottom: '8px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, marginBottom: '8px', display: 'block' }}>
                         Min Connections: <span style={{ color: THEME.primary, fontWeight: 700 }}>{localConfig.min}</span>
                     </label>
                     <input
@@ -156,7 +156,7 @@ const PoolConfigSection = ({ config, onUpdate }) => {
 
                 {/* Max Size */}
                 <div>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, marginBottom: '8px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, marginBottom: '8px', display: 'block' }}>
                         Max Connections: <span style={{ color: THEME.primary, fontWeight: 700 }}>{localConfig.max}</span>
                     </label>
                     <input
@@ -172,7 +172,7 @@ const PoolConfigSection = ({ config, onUpdate }) => {
 
                 {/* Idle Timeout */}
                 <div>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, marginBottom: '8px', display: 'block' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, marginBottom: '8px', display: 'block' }}>
                         Idle Timeout (sec): <span style={{ color: THEME.primary, fontWeight: 700 }}>{localConfig.idleTimeout}</span>
                     </label>
                     <input
@@ -323,7 +323,7 @@ export default function PoolMetricsDashboard() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div>
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textSub, marginRight: '8px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, marginRight: '8px' }}>
                             Auto-refresh:
                         </label>
                         <select

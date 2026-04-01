@@ -117,7 +117,7 @@ function ensureSvStyles() {
             background: linear-gradient(135deg, ${THEME.surface} 0%, transparent 60%);
             pointer-events: none;
         }`,
-        `.sv-card:hover { border-color: ${THEME.surfaceBorder}; }`,
+        `.sv-card:hover { border-color: ${THEME.glassBorder}; }`,
 
         '/* ── Metric card ── */',
         `.sv-metric-card {
@@ -131,7 +131,7 @@ function ensureSvStyles() {
             cursor: default;
             animation: svFadeUp .4s ease both;
         }`,
-        `.sv-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.surfaceBorder}; }`,
+        `.sv-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.glassBorder}; }`,
         `.sv-metric-card::after {
             content: '';
             position: absolute;
@@ -193,7 +193,7 @@ function ensureSvStyles() {
             color: #a5b4fc;
             box-shadow: 0 0 16px rgba(99,102,241,.2);
         }`,
-        `.sv-tab:hover:not(.active) { border-color: ${THEME.surfaceBorder}; color: ${THEME.textMain}; }`,
+        `.sv-tab:hover:not(.active) { border-color: ${THEME.glassBorder}; color: ${THEME.textMain}; }`,
 
         '/* ── Badge ── */',
         `.sv-badge {
@@ -293,7 +293,7 @@ function ensureSvStyles() {
 
         `.sv-btn-secondary {
             background: transparent; color: ${THEME.textMuted};
-            border: 1px solid ${THEME.surfaceBorder};
+            border: 1px solid ${THEME.glassBorder};
             padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 12px;
             cursor: pointer; transition: all .2s;
             display: inline-flex; align-items: center; gap: 6px;
@@ -341,7 +341,7 @@ function ensureSvStyles() {
         '::-webkit-scrollbar { width: 4px; height: 4px; }',
         '::-webkit-scrollbar-track { background: transparent; }',
         `.sv-scrollbar-thumb { background: ${THEME.grid}; border-radius: 2px; }`,
-        `::-webkit-scrollbar-thumb:hover { background: ${THEME.surfaceBorder}; }`
+        `::-webkit-scrollbar-thumb:hover { background: ${THEME.glassBorder}; }`
     ].join('\n');
 }
 const Styles = () => { useAdaptiveTheme(); ensureSvStyles(); return null; };

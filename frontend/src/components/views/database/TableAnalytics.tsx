@@ -104,7 +104,7 @@ const fmtMs = ms => ms >= 1000 ? `${(ms/1000).toFixed(2)}s` : `${ms}ms`;
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 8, padding: '8px 12px', fontSize: 12, fontFamily: THEME.fontMono, color: THEME.textMain }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px', fontSize: 12, fontFamily: THEME.fontMono, color: THEME.textMain }}>
             {label && <div style={{ color: THEME.textDim, marginBottom: 4 }}>{label}</div>}
             {payload.map((p, i) => (
                 <div key={i} style={{ color: p.color, fontWeight: 600 }}>{p.name}: {typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</div>
@@ -123,7 +123,7 @@ const Bar2 = ({ v, max, color, h = 5 }) => {
 };
 
 const StackBar = ({ segs, h = 9 }) => (
-    <div style={{ display: 'flex', height: h, borderRadius: h, overflow: 'hidden', background: `${THEME.surfaceBorder}60` }}>
+    <div style={{ display: 'flex', height: h, borderRadius: h, overflow: 'hidden', background: `${THEME.glassBorder}60` }}>
         {segs.map((s, i) => <div key={i} style={{ width: `${s.pct}%`, background: s.color, flexShrink: 0, transition: 'width .6s' }} />)}
     </div>
 );
@@ -156,7 +156,7 @@ const Chip = ({ children, color, size = 'md' }) => (
 const Card = ({ children, accent, style = {}, className = '' }) => (
     <div className={`ud-card ${className}`} style={{
         background: THEME.surface,
-        border: `1px solid ${THEME.surfaceBorder}`,
+        border: `1px solid ${THEME.glassBorder}`,
         borderRadius: 12,
         overflow: 'hidden',
         ...(accent ? { borderTop: `2px solid ${accent}` } : {}),
@@ -183,13 +183,13 @@ const SecHead = ({ Icon, title, sub, accent, right }) => {
 };
 
 const THead = ({ cols, labels }) => (
-    <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '9px 18px', gap: 12, borderBottom: `1px solid ${THEME.surfaceBorder}`, fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.08em', fontFamily: THEME.fontMono, background: `${THEME.primary}06` }}>
+    <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '9px 18px', gap: 12, borderBottom: `1px solid ${THEME.glassBorder}`, fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.08em', fontFamily: THEME.fontMono, background: `${THEME.primary}06` }}>
         {labels.map(l => <span key={l}>{l}</span>)}
     </div>
 );
 
 const TRow = ({ cols, children, i = 0 }) => (
-    <div className="ud-row" style={{ display: 'grid', gridTemplateColumns: cols, padding: '12px 18px', gap: 12, borderBottom: `1px solid ${THEME.surfaceBorder}50`, alignItems: 'center', background: i % 2 !== 0 ? `${THEME.surfaceBorder}30` : 'transparent' }}>
+    <div className="ud-row" style={{ display: 'grid', gridTemplateColumns: cols, padding: '12px 18px', gap: 12, borderBottom: `1px solid ${THEME.glassBorder}50`, alignItems: 'center', background: i % 2 !== 0 ? `${THEME.glassBorder}30` : 'transparent' }}>
         {children}
     </div>
 );
@@ -229,7 +229,7 @@ const FilterSelect = React.memo(function FilterSelect({ label, filterKey, val, o
                     disabled={opts.length === 0}
                     style={{
                         width: '100%', padding: '9px 32px 9px 12px', borderRadius: 8,
-                        border: `1px solid ${active ? THEME.primary + '55' : THEME.surfaceBorder}`,
+                        border: `1px solid ${active ? THEME.primary + '55' : THEME.glassBorder}`,
                         background: active ? `${THEME.primary}0c` : THEME.surface,
                         color: active ? THEME.textMain : THEME.textMuted,
                         fontSize: 13, fontWeight: active ? 600 : 400,
@@ -268,7 +268,7 @@ const FilterBar = React.memo(function FilterBar({ filter, setFilter, allTables, 
     }, [setFilter]);
     const hasFilter = filter.db || filter.schema || filter.table;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 12, padding: '16px 20px', display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, padding: '16px 20px', display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, paddingBottom: 2 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8, background: `${THEME.cyan}12`, border: `1px solid ${THEME.cyan}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Filter size={15} color={THEME.cyan} />
@@ -289,7 +289,7 @@ const FilterBar = React.memo(function FilterBar({ filter, setFilter, allTables, 
                         {[filter.db, filter.schema, filter.table].filter(Boolean).join(' › ')}
                     </div>
                     <button className="ud-btn" onClick={() => setFilter({ db: '', schema: '', table: '' })}
-                            style={{ padding: '8px 12px', borderRadius: 8, border: `1px solid ${THEME.surfaceBorder}`, background: 'transparent', color: THEME.textDim, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+                            style={{ padding: '8px 12px', borderRadius: 8, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textDim, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
                         ✕ Clear
                     </button>
                 </div>
@@ -318,7 +318,7 @@ function S_Health() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Dead Tuple % Overview</div>
                 <ResponsiveContainer width="100%" height={110}>
                     <BarChart data={chartData} barCategoryGap="28%">
-                        <CartesianGrid vertical={false} stroke={`${THEME.surfaceBorder}60`} />
+                        <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
                         <XAxis dataKey="name" tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={28} />
                         <Tooltip content={<ChartTip />} />
@@ -379,7 +379,7 @@ function S_Activity() {
             <Card style={{ padding: '18px 18px 10px' }}>
                 <ResponsiveContainer width="100%" height={160}>
                     <BarChart data={chartData} barCategoryGap="30%">
-                        <CartesianGrid vertical={false} stroke={`${THEME.surfaceBorder}60`} />
+                        <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
                         <XAxis dataKey="name" tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={32} />
                         <Tooltip content={<ChartTip />} />
@@ -436,7 +436,7 @@ function S_Forecast() {
             <Card style={{ padding: '18px 18px 10px' }}>
                 <ResponsiveContainer width="100%" height={130}>
                     <BarChart data={chartData} barCategoryGap="32%">
-                        <CartesianGrid vertical={false} stroke={`${THEME.surfaceBorder}60`} />
+                        <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
                         <XAxis dataKey="name" tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={28} />
                         <Tooltip content={<ChartTip />} />
@@ -468,7 +468,7 @@ function S_Forecast() {
                                 <span style={{ color: THEME.warning }}>20% threshold</span>
                                 <span>50%</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, padding: '10px 14px', borderRadius: 8, background: `${THEME.surfaceBorder}40` }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, padding: '10px 14px', borderRadius: 8, background: `${THEME.glassBorder}40` }}>
                                 <div>
                                     <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, textTransform: 'uppercase', letterSpacing: '.05em' }}>Current</div>
                                     <div style={{ fontSize: 18, fontWeight: 700, color: c, fontFamily: THEME.fontMono, marginTop: 2 }}>{dead}%</div>
@@ -501,7 +501,7 @@ function S_RowCounts() {
             <Card style={{ padding: '18px 18px 10px' }}>
                 <ResponsiveContainer width="100%" height={130}>
                     <BarChart data={chartData} barCategoryGap="30%">
-                        <CartesianGrid vertical={false} stroke={`${THEME.surfaceBorder}60`} />
+                        <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
                         <XAxis dataKey="name" tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={36} />
                         <Tooltip content={<ChartTip />} />
@@ -1012,7 +1012,7 @@ function S_Deps() {
             <g>
                 {/* Decorative guide ring */}
                 <circle cx={cx} cy={cy} r={R + 38} fill="none"
-                        stroke={THEME.surfaceBorder} strokeWidth={0.5}
+                        stroke={THEME.glassBorder} strokeWidth={0.5}
                         strokeDasharray="5 7" strokeOpacity={0.3} />
 
                 {displayRows.map((t, i) => {
@@ -1188,7 +1188,7 @@ function S_Deps() {
                                     padding: '5px 12px', borderRadius: 7, fontSize: 11, fontWeight: 600,
                                     fontFamily: THEME.fontMono, cursor: 'pointer',
                                     background: viewMode === m ? `${THEME.cyan}20` : 'transparent',
-                                    border: `1px solid ${viewMode === m ? THEME.cyan : THEME.surfaceBorder}`,
+                                    border: `1px solid ${viewMode === m ? THEME.cyan : THEME.glassBorder}`,
                                     color: viewMode === m ? THEME.cyan : THEME.textDim,
                                 }}>
                             {m === 'map' ? '✦ Mind Map' : '☰ Table'}
@@ -1207,7 +1207,7 @@ function S_Deps() {
             </div>
 
             {/* Legend */}
-            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', padding: '7px 14px', borderRadius: 8, background: `${THEME.surfaceBorder}22` }}>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', padding: '7px 14px', borderRadius: 8, background: `${THEME.glassBorder}22` }}>
                 {[
                     { color: CHART_COLORS[0], label: 'Depends On (outgoing FK)' },
                     { color: CHART_COLORS[1], label: 'Referenced By (incoming FK)' },
@@ -1227,7 +1227,7 @@ function S_Deps() {
             {viewMode === 'map' ? (
                 <div style={{
                     borderRadius: 14, overflow: 'hidden',
-                    border: `1px solid ${THEME.surfaceBorder}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                     background: `radial-gradient(ellipse at 50% 50%, ${THEME.cyan}05 0%, ${THEME.deepTeal} 70%)`,
                 }}>
                     <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
@@ -1310,7 +1310,7 @@ function S_Write() {
             <Card style={{ padding: '18px 18px 10px' }}>
                 <ResponsiveContainer width="100%" height={130}>
                     <BarChart data={chartData} barCategoryGap="30%">
-                        <CartesianGrid vertical={false} stroke={`${THEME.surfaceBorder}60`} />
+                        <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
                         <XAxis dataKey="name" tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={36} />
                         <Tooltip content={<ChartTip />} />
@@ -1370,7 +1370,7 @@ function S_Indexes() {
             <Card style={{ padding: '18px 18px 10px' }}>
                 <ResponsiveContainer width="100%" height={110}>
                     <BarChart data={chartData} barCategoryGap="28%">
-                        <CartesianGrid vertical={false} stroke={`${THEME.surfaceBorder}60`} />
+                        <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
                         <XAxis dataKey="name" tick={{ fill: THEME.textDim, fontSize: 9, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={28} />
                         <Tooltip content={<ChartTip />} />
@@ -1427,7 +1427,7 @@ function S_Sizes() {
             <Card style={{ padding: '18px 18px 10px' }}>
                 <ResponsiveContainer width="100%" height={130}>
                     <BarChart data={chartData} barCategoryGap="28%">
-                        <CartesianGrid vertical={false} stroke={`${THEME.surfaceBorder}60`} />
+                        <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
                         <XAxis dataKey="name" tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={32} />
                         <Tooltip content={<ChartTip />} />
@@ -1528,7 +1528,7 @@ function S_QueryPerf() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Call Frequency vs. Mean Exec Time (ms)</div>
                 <ResponsiveContainer width="100%" height={130}>
                     <BarChart data={chartData} barCategoryGap="28%">
-                        <CartesianGrid vertical={false} stroke={`${THEME.surfaceBorder}60`} />
+                        <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
                         <XAxis dataKey="name" tick={{ fill: THEME.textDim, fontSize: 9, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} />
                         <YAxis yAxisId="left"  tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={30} />
                         <YAxis yAxisId="right" orientation="right" tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={36} />
@@ -1683,7 +1683,7 @@ function S_Autovacuum() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Vacuum & Analyze Run Counts</div>
                 <ResponsiveContainer width="100%" height={110}>
                     <BarChart data={chartData} barCategoryGap="28%">
-                        <CartesianGrid vertical={false} stroke={`${THEME.surfaceBorder}60`} />
+                        <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
                         <XAxis dataKey="name" tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: THEME.textDim, fontSize: 10, fontFamily: THEME.fontMono }} axisLine={false} tickLine={false} width={28} />
                         <Tooltip content={<ChartTip />} />
@@ -1837,7 +1837,7 @@ const FindingCard = ({ finding, delay = 0 }) => {
                 </div>
             </button>
             {open && (
-                <div style={{ padding: '0 18px 16px', borderTop: `1px solid ${THEME.surfaceBorder}` }}>
+                <div style={{ padding: '0 18px 16px', borderTop: `1px solid ${THEME.glassBorder}` }}>
                     <p style={{ fontSize: 13, color: THEME.textMuted, lineHeight: 1.7, marginTop: 12 }}>{finding.description}</p>
                     {finding.impact && (
                         <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 8, background: `${THEME.warning}0d`, border: `1px solid ${THEME.warning}20` }}>
@@ -1852,7 +1852,7 @@ const FindingCard = ({ finding, delay = 0 }) => {
                         </div>
                     )}
                     {finding.sql && (
-                        <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 8, background: `${THEME.surfaceBorder}60`, border: `1px solid ${THEME.surfaceBorder}` }}>
+                        <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 8, background: `${THEME.glassBorder}60`, border: `1px solid ${THEME.glassBorder}` }}>
                             <div style={{ fontSize: 10, fontWeight: 700, color: THEME.cyan, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>SQL Fix</div>
                             <pre style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>{finding.sql}</pre>
                         </div>
@@ -1891,12 +1891,12 @@ const AskBox = ({ onAsk, disabled }) => {
                     disabled={disabled}
                     style={{
                         flex: 1, padding: '10px 14px', borderRadius: 8,
-                        border: `1px solid ${THEME.surfaceBorder}`, background: THEME.surface,
+                        border: `1px solid ${THEME.glassBorder}`, background: THEME.surface,
                         color: THEME.textMain, fontSize: 13, fontFamily: THEME.fontMono,
                         outline: 'none', transition: 'border-color .2s',
                     }}
                     onFocus={e => e.target.style.borderColor = `${THEME.purple}55`}
-                    onBlur={e => e.target.style.borderColor = THEME.surfaceBorder}
+                    onBlur={e => e.target.style.borderColor = THEME.glassBorder}
                 />
                 <button onClick={() => { if (val.trim()) { onAsk(val.trim()); setVal(''); } }}
                         disabled={disabled || !val.trim()} className="ud-btn"
@@ -2169,7 +2169,7 @@ Rules:
                         </Card>
                     )}
 
-                    <div style={{ display: 'flex', gap: 4, padding: 3, borderRadius: 10, background: `${THEME.surfaceBorder}60`, width: 'fit-content' }}>
+                    <div style={{ display: 'flex', gap: 4, padding: 3, borderRadius: 10, background: `${THEME.glassBorder}60`, width: 'fit-content' }}>
                         {[
                             { id: 'findings', label: `Findings (${findings.length})`, Icon: AlertCircle },
                             { id: 'chat',     label: 'Ask Claude',                    Icon: MessageSquare },
@@ -2364,8 +2364,8 @@ export default function UnifiedDashboard() {
             <div style={{ display: 'flex', height: '100%', width: '100%', background: THEME.bg, fontFamily: "'Plus Jakarta Sans', 'Outfit', system-ui, sans-serif", color: THEME.textMain, overflow: 'hidden' }}>
 
                 {/* ── SIDEBAR ─────────────────────────────────── */}
-                <aside style={{ width: 244, flexShrink: 0, background: THEME.surface, borderRight: `1px solid ${THEME.surfaceBorder}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <div style={{ padding: '18px 16px 14px', borderBottom: `1px solid ${THEME.surfaceBorder}` }}>
+                <aside style={{ width: 244, flexShrink: 0, background: THEME.surface, borderRight: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    <div style={{ padding: '18px 16px 14px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <div style={{ width: 34, height: 34, borderRadius: 9, background: `${THEME.primary}20`, border: `1px solid ${THEME.primary}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17 }}>🐘</div>
                             <div>
@@ -2375,7 +2375,7 @@ export default function UnifiedDashboard() {
                         </div>
                     </div>
 
-                    <div style={{ padding: '9px 14px', borderBottom: `1px solid ${THEME.surfaceBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ padding: '9px 14px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                             <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success, boxShadow: `0 0 5px ${THEME.success}`, animation: 'ud-pulse 2s infinite' }} />
                             <span style={{ fontSize: 11, color: THEME.textMuted }}>Live data</span>
@@ -2438,7 +2438,7 @@ export default function UnifiedDashboard() {
                         })}
                     </nav>
 
-                    <div style={{ padding: '10px 14px', borderTop: `1px solid ${THEME.surfaceBorder}`, fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ padding: '10px 14px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, display: 'flex', justifyContent: 'space-between' }}>
                         <span>TableScope v3</span>
                         <span>{allItems.length} sections</span>
                     </div>
@@ -2446,7 +2446,7 @@ export default function UnifiedDashboard() {
 
                 {/* ── MAIN CONTENT ──────────────────────────── */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <header style={{ padding: '0 26px', height: 54, borderBottom: `1px solid ${THEME.surfaceBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: THEME.surface, flexShrink: 0 }}>
+                    <header style={{ padding: '0 26px', height: 54, borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: THEME.surface, flexShrink: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             {activeItem && (
                                 <>
@@ -2467,7 +2467,7 @@ export default function UnifiedDashboard() {
                             {filter.schema && <Chip color={THEME.primary} size="sm">schema: {filter.schema}</Chip>}
                             {filter.table  && <Chip color={THEME.success} size="sm">table: {filter.table}</Chip>}
                             <button className="ud-btn" onClick={() => activeItem?.reload?.()}
-                                    style={{ width: 30, height: 30, borderRadius: 7, border: `1px solid ${THEME.surfaceBorder}`, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    style={{ width: 30, height: 30, borderRadius: 7, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <RefreshCw size={13} color={THEME.textDim} />
                             </button>
                         </div>
@@ -2477,11 +2477,11 @@ export default function UnifiedDashboard() {
                         <FilterBar filter={filter} setFilter={handleFilter} allTables={allTables} dbRaw={dbRaw} />
 
                         <div key={`${activeItem?.id}-${filter.db}-${filter.schema}-${filter.table}`} className="ud-rise"
-                             style={{ background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 14, padding: 24, minHeight: 280 }}>
+                             style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 14, padding: 24, minHeight: 280 }}>
                             {Preview && <Preview />}
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 2px', borderTop: `1px solid ${THEME.surfaceBorder}` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 2px', borderTop: `1px solid ${THEME.glassBorder}` }}>
                             <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>TableScope v3 · Unified Dashboard</span>
                             <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{filter.table ? `Scoped: ${filter.table}` : 'Global view'} · {allItems.length} sections</span>
                         </div>

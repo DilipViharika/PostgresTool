@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIGIL Visual Redesign — Before & After</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: #e0e0e0; }
+
+  .header {
+    text-align: center;
+    padding: 48px 24px 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .header h1 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .header p { font-size: 14px; color: #888; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+  .section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .section-desc {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 24px;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+  .compare-col { position: relative; }
+  .compare-label {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 6px;
+    z-index: 10;
+  }
+  .label-before { background: #ff2d7822; color: #ff6b8a; border: 1px solid #ff2d7840; }
+  .label-after { background: #00b87422; color: #00e5a0; border: 1px solid #00b87440; }
+
+  .demo-frame {
+    border-radius: 14px;
+    padding: 24px;
+    min-height: 200px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ═══ BEFORE styles (cyberpunk) ═══ */
+  .before-dark { background: #04091c; border: 1px solid rgba(0,245,255,0.12); }
+  .before-card {
+    background: rgba(4,9,28,0.88);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(0,245,255,0.12);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0,245,255,0.08), 0 0 60px rgba(0,245,255,0.04), inset 0 1px 0 rgba(0,245,255,0.06);
+  }
+  .before-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #00f5ff, #7b2fff, transparent);
+  }
+  .before-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,245,255,0.015) 2px, rgba(0,245,255,0.015) 4px);
+    pointer-events: none;
+  }
+  .before-title {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #4a6080;
+    font-family: 'Orbitron', sans-serif;
+    margin-bottom: 4px;
+  }
+  .before-value {
+    font-size: 30px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: #eef4ff;
+    text-shadow: 0 0 24px rgba(0,245,255,0.4);
+    letter-spacing: -0.04em;
+  }
+  .before-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0,245,255,0.09), rgba(0,245,255,0.03));
+    border: 1px solid rgba(0,245,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 16px rgba(0,245,255,0.15);
+    color: #00f5ff;
+  }
+  .before-glow-orb {
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,245,255,0.12) 0%, transparent 70%);
+  }
+  .before-badge {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(0,255,136,0.09), rgba(0,255,136,0.03));
+    color: #00ff88;
+    border: 1px solid rgba(0,255,136,0.2);
+    box-shadow: 0 0 12px rgba(0,255,136,0.25), 0 0 4px rgba(0,255,136,0.15);
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%,100% { box-shadow: 0 0 8px rgba(0,255,136,0.2); }
+    50% { box-shadow: 0 0 24px rgba(0,255,136,0.5); }
+  }
+  .before-sidebar {
+    background: linear-gradient(180deg, rgba(4,9,28,0.95), rgba(2,6,26,0.98));
+    border-right: 1px solid rgba(0,245,255,0.08);
+    backdrop-filter: blur(20px);
+    padding: 16px 12px;
+    border-radius: 12px;
+    box-shadow: 4px 0 30px rgba(0,0,0,0.3), inset -1px 0 0 rgba(0,245,255,0.04);
+  }
+  .before-nav-item {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    color: #4a6080;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .before-nav-active {
+    background: rgba(0,245,255,0.06);
+    color: #00f5ff;
+    border: 1px solid rgba(0,245,255,0.15);
+    box-shadow: 0 0 12px rgba(0,245,255,0.1), inset 0 0 8px rgba(0,245,255,0.04);
+  }
+  .before-header {
+    background: rgba(4,9,28,0.92);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(0,245,255,0.08);
+    padding: 12px 20px;
+    border-radius: 10px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .before-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #00f5ff, #7b2fff, transparent);
+    animation: borderFlow 3s linear infinite;
+  }
+  @keyframes borderFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  .before-table th {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #4a6080;
+    font-family: 'Orbitron', sans-serif;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(0,245,255,0.08);
+    text-align: left;
+  }
+  .before-table td {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #8aa3c8;
+    border-bottom: 1px solid rgba(0,245,255,0.04);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .before-table tr:hover td {
+    background: rgba(0,245,255,0.04);
+  }
+  .before-progress-track {
+    height: 6px;
+    background: rgba(0,245,255,0.04);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(0,245,255,0.06);
+  }
+  .before-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #00f5ff, #7b2fff);
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,245,255,0.5);
+  }
+
+  /* ═══ AFTER styles (clean modern) ═══ */
+  .after-dark { background: #0f1923; border: 1px solid rgba(255,255,255,0.06); }
+  .after-card {
+    background: #1a2736;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .after-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+  }
+  .after-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: #8aa3c8;
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+  .after-value {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: #eef4ff;
+    letter-spacing: -0.03em;
+  }
+  .after-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .after-icon-green { background: rgba(0,184,116,0.1); color: #00b874; }
+  .after-icon-blue { background: rgba(59,130,246,0.1); color: #3b82f6; }
+  .after-icon-amber { background: rgba(245,158,11,0.1); color: #f59e0b; }
+  .after-icon-purple { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+
+  .after-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(0,184,116,0.08);
+    color: #00b874;
+  }
+  .after-sidebar {
+    background: #131f2e;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+  .after-nav-item {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #6b7f99;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .after-nav-active {
+    background: rgba(0,184,116,0.08);
+    color: #00b874;
+  }
+  .after-header {
+    background: #131f2e;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 12px 20px;
+    border-radius: 10px;
+  }
+  .after-table th {
+    font-size: 11px;
+    font-weight: 600;
+    color: #eef4ff;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    text-align: left;
+  }
+  .after-table td {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #8aa3c8;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .after-table tr:hover td {
+    background: #1f2f40;
+  }
+  .after-progress-track {
+    height: 6px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .after-progress-bar {
+    height: 100%;
+    border-radius: 10px;
+  }
+
+  /* ═══ LIGHT THEME ═══ */
+  .before-light { background: #eceef4; border: 1px solid rgba(0,184,116,0.12); }
+  .before-light .before-card {
+    background: rgba(255,255,255,0.85);
+    border-color: rgba(0,184,116,0.12);
+    box-shadow: 0 0 20px rgba(0,184,116,0.06), 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .before-light .before-title { color: #667788; }
+  .before-light .before-value { color: #1a2a3a; text-shadow: none; }
+
+  .after-light { background: #f0f2f5; border: 1px solid rgba(0,0,0,0.06); }
+  .after-light .after-card {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  }
+  .after-light .after-title { color: #667788; }
+  .after-light .after-value { color: #1a2a3a; }
+  .after-light .after-table th { color: #1a2a3a; border-color: rgba(0,0,0,0.06); }
+  .after-light .after-table td { color: #556677; border-color: rgba(0,0,0,0.04); }
+  .after-light .after-table tr:hover td { background: #f7f8fa; }
+
+  /* ═══ SVG icons ═══ */
+  .icon { width: 20px; height: 20px; }
+
+  /* ═══ Sparkline ═══ */
+  .sparkline { height: 36px; width: 100%; margin: 8px 0 4px; }
+  .sparkline svg { width: 100%; height: 100%; }
+
+  /* ═══ Change list ═══ */
+  .changes {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .change-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .change-item {
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: #111827;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .change-item h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .change-item p {
+    font-size: 12px;
+    color: #888;
+    line-height: 1.6;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .dot-red { background: #ff6b8a; }
+  .dot-green { background: #00e5a0; }
+
+  .divider {
+    max-width: 1200px;
+    margin: 0 auto;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>VIGIL Visual Redesign</h1>
+  <p>Complete before/after comparison of the UI modernization. Every component has been updated from the heavy cyberpunk aesthetic to a clean, minimal design across both dark and light themes.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION 1: METRIC CARDS (DARK)
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">1. Metric Cards — Dark Theme</div>
+  <div class="section-desc">The primary data display component used across every dashboard tab</div>
+
+  <div class="compare">
+    <div class="compare-col">
+      <span class="compare-label label-before">Before</span>
+      <div class="demo-frame before-dark" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; padding-top:40px;">
+        <div class="before-card">
+          <div class="before-glow-orb"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div class="before-icon-box">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <span class="before-badge">ACTIVE</span>
+          </div>
+          <div class="sparkline"><svg viewBox="0 0 120 36"><path d="M0,28 L15,22 L30,25 L45,18 L60,20 L75,12 L90,15 L105,8 L120,10" fill="none" stroke="rgba(0,245,255,0.6)" stroke-width="1.5"/><path d="M0,28 L15,22 L30,25 L45,18 L60,20 L75,12 L90,15 L105,8 L120,10 L120,36 L0,36Z" fill="url(#grad-cyan-b)" opacity="0.3"/><defs><linearGradient id="grad-cyan-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00f5ff" stop-opacity="0.5"/><stop offset="100%" stop-color="#00f5ff" stop-opacity="0"/></linearGradient></defs></svg></div>
+          <div class="before-title">ACTIVE CONNECTIONS</div>
+          <div class="before-value">247</div>
+        </div>
+        <div class="before-card">
+          <div class="before-glow-orb" style="background:radial-gradient(circle, rgba(0,255,136,0.12) 0%, transparent 70%);"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div class="before-icon-box" style="background:linear-gradient(135deg,rgba(0,255,136,0.09),rgba(0,255,136,0.03));border-color:rgba(0,255,136,0.2);box-shadow:0 0 16px rgba(0,255,136,0.15);color:#00ff88;">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+          </div>
+          <div class="sparkline"><svg viewBox="0 0 120 36"><path d="M0,20 L15,18 L30,22 L45,15 L60,12 L75,14 L90,10 L105,8 L120,6" fill="none" stroke="rgba(0,255,136,0.6)" stroke-width="1.5"/><path d="M0,20 L15,18 L30,22 L45,15 L60,12 L75,14 L90,10 L105,8 L120,6 L120,36 L0,36Z" fill="url(#grad-green-b)" opacity="0.3"/><defs><linearGradient id="grad-green-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00ff88" stop-opacity="0.5"/><stop offset="100%" stop-color="#00ff88" stop-opacity="0"/></linearGradient></defs></svg></div>
+          <div class="before-title">AVG QUERY TIME</div>
+          <div class="before-value" style="text-shadow:0 0 24px rgba(0,255,136,0.4);">4.2<span style="font-size:12px;color:#4a6080;"> ms</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-col">
+      <span class="compare-label label-after">After</span>
+      <div class="demo-frame after-dark" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; padding-top:40px;">
+        <div class="after-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div class="after-icon-box after-icon-blue">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <span class="after-badge">Active</span>
+          </div>
+          <div class="sparkline"><svg viewBox="0 0 120 36"><path d="M0,28 L15,22 L30,25 L45,18 L60,20 L75,12 L90,15 L105,8 L120,10" fill="none" stroke="rgba(59,130,246,0.5)" stroke-width="1.5"/><path d="M0,28 L15,22 L30,25 L45,18 L60,20 L75,12 L90,15 L105,8 L120,10 L120,36 L0,36Z" fill="url(#grad-blue-a)" opacity="0.2"/><defs><linearGradient id="grad-blue-a" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3b82f6" stop-opacity="0.4"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/></linearGradient></defs></svg></div>
+          <div class="after-title">Active Connections</div>
+          <div class="after-value">247</div>
+        </div>
+        <div class="after-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div class="after-icon-box after-icon-green">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+          </div>
+          <div class="sparkline"><svg viewBox="0 0 120 36"><path d="M0,20 L15,18 L30,22 L45,15 L60,12 L75,14 L90,10 L105,8 L120,6" fill="none" stroke="rgba(0,184,116,0.5)" stroke-width="1.5"/><path d="M0,20 L15,18 L30,22 L45,15 L60,12 L75,14 L90,10 L105,8 L120,6 L120,36 L0,36Z" fill="url(#grad-green-a)" opacity="0.2"/><defs><linearGradient id="grad-green-a" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00b874" stop-opacity="0.4"/><stop offset="100%" stop-color="#00b874" stop-opacity="0"/></linearGradient></defs></svg></div>
+          <div class="after-title">Avg Query Time</div>
+          <div class="after-value">4.2<span style="font-size:12px;color:#8aa3c8;"> ms</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION 2: SIDEBAR + HEADER
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">2. Sidebar & Header</div>
+  <div class="section-desc">Navigation chrome — sidebar and top header bar</div>
+
+  <div class="compare">
+    <div class="compare-col">
+      <span class="compare-label label-before">Before</span>
+      <div class="demo-frame before-dark" style="display:flex;gap:12px;flex-direction:column;padding-top:40px;">
+        <div class="before-header" style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:14px;font-weight:700;color:#00f5ff;font-family:'Orbitron',sans-serif;letter-spacing:2px;">VIGIL</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:9px;color:#4a6080;font-family:'JetBrains Mono',monospace;">v3.0.0</span>
+            <div style="width:8px;height:8px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;"></div>
+          </div>
+        </div>
+        <div class="before-sidebar">
+          <div class="before-nav-item before-nav-active">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1.5px;font-weight:700;">OVERVIEW</span>
+          </div>
+          <div class="before-nav-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1.5px;font-weight:700;">PERFORMANCE</span>
+          </div>
+          <div class="before-nav-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            <span style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1.5px;font-weight:700;">DATABASE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-col">
+      <span class="compare-label label-after">After</span>
+      <div class="demo-frame after-dark" style="display:flex;gap:12px;flex-direction:column;padding-top:40px;">
+        <div class="after-header" style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:15px;font-weight:700;color:#fff;">VIGIL</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:11px;color:#6b7f99;">v3.0.0</span>
+            <div style="width:7px;height:7px;border-radius:50%;background:#00b874;"></div>
+          </div>
+        </div>
+        <div class="after-sidebar">
+          <div class="after-nav-item after-nav-active">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Overview
+          </div>
+          <div class="after-nav-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Performance
+          </div>
+          <div class="after-nav-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            Database
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION 3: DATA TABLE
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">3. Data Tables</div>
+  <div class="section-desc">Table headers, rows, and hover states</div>
+
+  <div class="compare">
+    <div class="compare-col">
+      <span class="compare-label label-before">Before</span>
+      <div class="demo-frame before-dark" style="padding-top:40px;">
+        <div class="before-card" style="padding:0;overflow:hidden;">
+          <table class="before-table" style="width:100%;border-collapse:collapse;">
+            <thead><tr>
+              <th>DATABASE</th>
+              <th>SIZE</th>
+              <th>CONNECTIONS</th>
+              <th>STATUS</th>
+            </tr></thead>
+            <tbody>
+              <tr><td>production_db</td><td>2.4 GB</td><td>142</td><td><span style="color:#00ff88;font-size:10px;">● ONLINE</span></td></tr>
+              <tr><td>analytics_db</td><td>890 MB</td><td>38</td><td><span style="color:#00ff88;font-size:10px;">● ONLINE</span></td></tr>
+              <tr><td>staging_db</td><td>1.1 GB</td><td>12</td><td><span style="color:#ffaa00;font-size:10px;">● IDLE</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-col">
+      <span class="compare-label label-after">After</span>
+      <div class="demo-frame after-dark" style="padding-top:40px;">
+        <div class="after-card" style="padding:0;overflow:hidden;">
+          <table class="after-table" style="width:100%;border-collapse:collapse;">
+            <thead><tr>
+              <th>Database</th>
+              <th>Size</th>
+              <th>Connections</th>
+              <th>Status</th>
+            </tr></thead>
+            <tbody>
+              <tr><td>production_db</td><td>2.4 GB</td><td>142</td><td><span style="color:#00b874;font-size:11px;">Online</span></td></tr>
+              <tr><td>analytics_db</td><td>890 MB</td><td>38</td><td><span style="color:#00b874;font-size:11px;">Online</span></td></tr>
+              <tr><td>staging_db</td><td>1.1 GB</td><td>12</td><td><span style="color:#f59e0b;font-size:11px;">Idle</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION 4: LIGHT THEME
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">4. Light Theme</div>
+  <div class="section-desc">Clean white surfaces replacing glass-morphism in light mode</div>
+
+  <div class="compare">
+    <div class="compare-col">
+      <span class="compare-label label-before">Before</span>
+      <div class="demo-frame before-light" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; padding-top:40px;">
+        <div class="before-card" style="background:rgba(255,255,255,0.85);border-color:rgba(0,184,116,0.12);box-shadow:0 0 20px rgba(0,184,116,0.06),0 4px 12px rgba(0,0,0,0.08);">
+          <div style="margin-bottom:12px;">
+            <div class="before-icon-box" style="background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(59,130,246,0.04));border-color:rgba(59,130,246,0.2);box-shadow:0 0 12px rgba(59,130,246,0.1);color:#3b82f6;">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            </div>
+          </div>
+          <div class="before-title" style="color:#667788;">CPU USAGE</div>
+          <div class="before-value" style="color:#1a2a3a;text-shadow:none;">34<span style="font-size:14px;color:#889;">%</span></div>
+          <div class="before-progress-track" style="margin-top:10px;">
+            <div class="before-progress-bar" style="width:34%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);box-shadow:0 0 6px rgba(59,130,246,0.4);"></div>
+          </div>
+        </div>
+        <div class="before-card" style="background:rgba(255,255,255,0.85);border-color:rgba(0,184,116,0.12);box-shadow:0 0 20px rgba(0,184,116,0.06),0 4px 12px rgba(0,0,0,0.08);">
+          <div style="margin-bottom:12px;">
+            <div class="before-icon-box" style="background:linear-gradient(135deg,rgba(0,184,116,0.12),rgba(0,184,116,0.04));border-color:rgba(0,184,116,0.2);box-shadow:0 0 12px rgba(0,184,116,0.1);color:#00b874;">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+          </div>
+          <div class="before-title" style="color:#667788;">MEMORY</div>
+          <div class="before-value" style="color:#1a2a3a;text-shadow:none;">6.2<span style="font-size:14px;color:#889;"> GB</span></div>
+          <div class="before-progress-track" style="margin-top:10px;">
+            <div class="before-progress-bar" style="width:62%;background:linear-gradient(90deg,#00b874,#00e5a0);box-shadow:0 0 6px rgba(0,184,116,0.4);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-col">
+      <span class="compare-label label-after">After</span>
+      <div class="demo-frame after-light" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; padding-top:40px;">
+        <div class="after-card" style="background:#fff;border-color:rgba(0,0,0,0.06);box-shadow:0 1px 3px rgba(0,0,0,0.04),0 1px 2px rgba(0,0,0,0.02);">
+          <div style="margin-bottom:12px;">
+            <div class="after-icon-box after-icon-blue">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            </div>
+          </div>
+          <div class="after-title" style="color:#667788;">CPU Usage</div>
+          <div class="after-value" style="color:#1a2a3a;">34<span style="font-size:14px;color:#889;">%</span></div>
+          <div class="after-progress-track" style="margin-top:10px;background:rgba(0,0,0,0.04);">
+            <div class="after-progress-bar" style="width:34%;background:#3b82f6;"></div>
+          </div>
+        </div>
+        <div class="after-card" style="background:#fff;border-color:rgba(0,0,0,0.06);box-shadow:0 1px 3px rgba(0,0,0,0.04),0 1px 2px rgba(0,0,0,0.02);">
+          <div style="margin-bottom:12px;">
+            <div class="after-icon-box after-icon-green">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+          </div>
+          <div class="after-title" style="color:#667788;">Memory</div>
+          <div class="after-value" style="color:#1a2a3a;">6.2<span style="font-size:14px;color:#889;"> GB</span></div>
+          <div class="after-progress-track" style="margin-top:10px;background:rgba(0,0,0,0.04);">
+            <div class="after-progress-bar" style="width:62%;background:#00b874;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION 5: GLASS CARD PANELS
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">5. GlassCard Panels</div>
+  <div class="section-desc">The primary container component — removed scanlines, hex patterns, corner brackets, glow orbs, noise textures</div>
+
+  <div class="compare">
+    <div class="compare-col">
+      <span class="compare-label label-before">Before</span>
+      <div class="demo-frame before-dark" style="padding-top:40px;">
+        <div class="before-card" style="position:relative;">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,245,255,0.02) 2px,rgba(0,245,255,0.02) 4px);pointer-events:none;z-index:1;border-radius:inherit;"></div>
+          <div style="position:absolute;top:-20px;left:-20px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,rgba(0,245,255,0.1),transparent);pointer-events:none;"></div>
+          <div style="position:absolute;bottom:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(123,47,255,0.08),transparent);pointer-events:none;"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid rgba(0,245,255,0.08);margin-bottom:14px;position:relative;z-index:2;">
+            <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#4a6080;font-family:'Orbitron',sans-serif;">CONNECTION POOL</span>
+            <span style="font-size:9px;color:#243040;font-family:'JetBrains Mono',monospace;">Last 5m</span>
+          </div>
+          <div style="position:relative;z-index:2;color:#8aa3c8;font-size:12px;line-height:1.8;">
+            Active: <span style="color:#00f5ff;font-weight:700;">42</span> / 100<br>
+            Idle: <span style="color:#00ff88;font-weight:700;">38</span><br>
+            Waiting: <span style="color:#ffaa00;font-weight:700;">3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-col">
+      <span class="compare-label label-after">After</span>
+      <div class="demo-frame after-dark" style="padding-top:40px;">
+        <div class="after-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:14px;">
+            <span style="font-size:13px;font-weight:600;color:#eef4ff;">Connection Pool</span>
+            <span style="font-size:11px;color:#6b7f99;">Last 5m</span>
+          </div>
+          <div style="color:#8aa3c8;font-size:12px;line-height:1.8;">
+            Active: <span style="color:#3b82f6;font-weight:600;">42</span> / 100<br>
+            Idle: <span style="color:#00b874;font-weight:600;">38</span><br>
+            Waiting: <span style="color:#f59e0b;font-weight:600;">3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION 6: BUTTONS & BADGES
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">6. Buttons & Badges</div>
+  <div class="section-desc">Interactive elements — buttons, status badges, chip badges</div>
+
+  <div class="compare">
+    <div class="compare-col">
+      <span class="compare-label label-before">Before</span>
+      <div class="demo-frame before-dark" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-top:40px;">
+        <button style="background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.28);color:#00f5ff;border-radius:10px;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:0.5px;font-family:'Orbitron',sans-serif;box-shadow:0 0 12px rgba(0,245,255,0.2);cursor:pointer;">REFRESH</button>
+        <button style="background:rgba(255,45,120,0.08);border:1px solid rgba(255,45,120,0.3);color:#ff2d78;border-radius:10px;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:0.5px;font-family:'Orbitron',sans-serif;box-shadow:0 0 12px rgba(255,45,120,0.15);cursor:pointer;">DELETE</button>
+        <span class="before-badge">HIT</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:700;padding:4px 11px;border-radius:12px;background:rgba(0,255,136,0.07);color:#00ff88;border:1px solid rgba(0,255,136,0.2);font-family:'JetBrains Mono',monospace;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;"></span>
+          LIVE
+        </span>
+      </div>
+    </div>
+
+    <div class="compare-col">
+      <span class="compare-label label-after">After</span>
+      <div class="demo-frame after-dark" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-top:40px;">
+        <button style="background:rgba(0,184,116,0.08);border:1px solid rgba(0,184,116,0.2);color:#00b874;border-radius:10px;padding:5px 12px;font-size:11px;font-weight:600;letter-spacing:0.02em;cursor:pointer;">Refresh</button>
+        <button style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.18);color:#ef4444;border-radius:10px;padding:5px 12px;font-size:11px;font-weight:600;letter-spacing:0.02em;cursor:pointer;">Delete</button>
+        <span class="after-badge">Hit</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;padding:4px 10px;border-radius:6px;background:rgba(0,184,116,0.06);color:#00b874;border:1px solid rgba(0,184,116,0.12);">
+          <span style="width:6px;height:6px;border-radius:50%;background:#00b874;"></span>
+          Live
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     CHANGE SUMMARY
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="changes">
+  <div class="section-title" style="margin-bottom:20px;">Complete Change Summary</div>
+
+  <div class="change-grid">
+    <div class="change-item">
+      <h4><span class="dot dot-red"></span> Removed: Glass Morphism</h4>
+      <p>backdrop-filter: blur(), semi-transparent backgrounds, glass-like overlays replaced with solid surface colors.</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-green"></span> Added: Clean Surfaces</h4>
+      <p>Solid background colors (#1a2736 dark, #ffffff light) with subtle 1px borders and minimal shadows.</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-red"></span> Removed: Neon Glow Effects</h4>
+      <p>box-shadow glows (0 0 30px cyan), text-shadow glows, pulsing glow animations on cards and badges.</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-green"></span> Added: Subtle Elevation</h4>
+      <p>Minimal box-shadows for depth. Cards lift 1px on hover with slightly deeper shadow. No color bleeding.</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-red"></span> Removed: Decorative Overlays</h4>
+      <p>Scanline patterns, hex grid backgrounds, circuit line SVGs, noise textures, corner brackets, glow orbs — all nulled out.</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-green"></span> Added: Clean Typography</h4>
+      <p>Normal case labels (not UPPERCASE), readable font sizes (11-13px), moderate weight (500-600), standard letter-spacing.</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-red"></span> Removed: Cyberpunk Fonts</h4>
+      <p>Orbitron display font for headers/labels replaced with system font inheritance. JetBrains Mono kept for data values only.</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-green"></span> Added: Colored Icon Badges</h4>
+      <p>Clean rounded icon containers with subtle tinted backgrounds (no borders, no glow shadows).</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-red"></span> Removed: Ambient Orbs</h4>
+      <p>Background gradient orbs on #root, corner glow orbs on cards, animated accent underlines on header.</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-green"></span> Added: Neutral Hover States</h4>
+      <p>Sidebar/table hover uses surfaceHover instead of colored tint. Clean, professional interaction feedback.</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-red"></span> Removed: Heavy Animations</h4>
+      <p>plasmaGlow, neonGlow, auroraPulse, glitch, hologram, rgbShift, matrixRain — all removed from active use.</p>
+    </div>
+    <div class="change-item">
+      <h4><span class="dot dot-green"></span> Added: Minimal Scrollbars</h4>
+      <p>5px width, transparent track, subtle gray thumb. Firefox support via scrollbar-width: thin.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:32px;padding:20px;border-radius:12px;background:#111827;border:1px solid rgba(255,255,255,0.06);">
+    <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:8px;">Files Modified</div>
+    <div style="font-size:12px;color:#888;line-height:1.8;">
+      <strong style="color:#aaa;">Core:</strong> theme.tsx, designTokens.ts, App.tsx, SharedComponents.tsx (5500 lines)<br>
+      <strong style="color:#aaa;">New:</strong> typography.ts, spacing.ts, animations.ts, shared/ui/index.tsx<br>
+      <strong style="color:#aaa;">Views:</strong> ~70 tab components across admin, analytics, database, demo, monitoring, operations, security, auth directories<br>
+      <strong style="color:#aaa;">Build:</strong> Zero syntax errors. All pre-existing type errors unchanged.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

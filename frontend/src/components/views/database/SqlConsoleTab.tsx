@@ -94,7 +94,7 @@ const SqlStyles = () => (
         .sql-icon-btn { transition:all 0.15s; cursor:pointer; }
         .sql-icon-btn:hover:not(:disabled) { background:${THEME.primary}12 !important; color:${THEME.textMain} !important; }
         .sql-history-item { transition:all 0.12s; cursor:pointer; border:1px solid ${THEME.grid}30; }
-        .sql-history-item:hover { background:${THEME.primary}06 !important; border-color:${THEME.surfaceBorderHover} !important; }
+        .sql-history-item:hover { background:${THEME.primary}06 !important; border-color:${THEME.glassBorderHover} !important; }
         .sql-snippet-card { transition:all 0.15s; }
         .sql-snippet-card:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,0.25); }
         .sql-diff-add { background:${THEME.success}10; border-left:2px solid ${THEME.success}; }
@@ -340,7 +340,7 @@ const CostMeter = ({ sql }) => {
     if (!sql.trim() || warnings.length === 0) return null;
     const color = score > 60 ? THEME.danger : score > 30 ? THEME.warning : THEME.success;
     return (
-        <div style={{ padding:'6px 14px', borderTop:`1px solid ${THEME.surfaceBorder}`, background:THEME.surface, animation:'sqlSlideDown 0.2s ease' }}>
+        <div style={{ padding:'6px 14px', borderTop:`1px solid ${THEME.glassBorder}`, background:THEME.surface, animation:'sqlSlideDown 0.2s ease' }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
                 <FlameKindling size={10} color={color}/>
                 <span style={{ fontSize:9, fontWeight:700, color:color, textTransform:'uppercase', letterSpacing:'0.06em' }}>Query Cost Estimate</span>
@@ -662,7 +662,7 @@ const ParamEditor = ({ sql, params, onChange }) => {
     }, [sql]);
     if (paramMatches.length === 0) return null;
     return (
-        <div style={{ padding:'8px 14px', borderTop:`1px solid ${THEME.surfaceBorder}`, background:THEME.surface, display:'flex', flexWrap:'wrap', gap:8, alignItems:'center', animation:'sqlSlideDown 0.2s ease' }}>
+        <div style={{ padding:'8px 14px', borderTop:`1px solid ${THEME.glassBorder}`, background:THEME.surface, display:'flex', flexWrap:'wrap', gap:8, alignItems:'center', animation:'sqlSlideDown 0.2s ease' }}>
             <Variable size={11} color={THEME.warning}/>
             <span style={{ fontSize:10, fontWeight:700, color:THEME.warning }}>Parameters</span>
             <Divider vertical/>
@@ -705,7 +705,7 @@ const SchemaBrowser = ({ onInsert, schema = {} }) => {
     }, [search, schema]);
     return (
         <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
-            <div style={{ padding:'8px 10px', borderBottom:`1px solid ${THEME.surfaceBorder}` }}>
+            <div style={{ padding:'8px 10px', borderBottom:`1px solid ${THEME.glassBorder}` }}>
                 <div style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 9px', borderRadius:7, background:THEME.surface, border:`1px solid ${THEME.grid}50` }}>
                     <Search size={11} color={THEME.textDim}/>
                     <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search tables, columns…" style={{ border:'none', background:'transparent', color:THEME.textMain, outline:'none', flex:1, fontSize:11, fontFamily:'inherit' }}/>
@@ -1378,7 +1378,7 @@ const SqlConsoleTab = () => {
                     <Panel icon={Terminal} title="SQL Editor" noPad style={{ flexShrink:0 }}>
 
                         {/* Tab bar */}
-                        <div style={{ display:'flex', alignItems:'center', gap:0, borderBottom:`1px solid ${THEME.surfaceBorder}`, padding:'0 8px', overflowX:'auto', flexShrink:0 }} className="sql-scrollbar">
+                        <div style={{ display:'flex', alignItems:'center', gap:0, borderBottom:`1px solid ${THEME.glassBorder}`, padding:'0 8px', overflowX:'auto', flexShrink:0 }} className="sql-scrollbar">
                             {tabs.map(t => (
                                 <div key={t.id} onClick={()=>setActiveTab(t.id)}
                                      style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 11px', cursor:'pointer', borderBottom:`2px solid ${t.id===activeTab?THEME.primary:'transparent'}`, color:t.id===activeTab?THEME.primary:THEME.textDim, fontSize:11, fontWeight:t.id===activeTab?700:500, whiteSpace:'nowrap', transition:'all 0.15s', flexShrink:0, position:'relative' }}>
@@ -1410,7 +1410,7 @@ const SqlConsoleTab = () => {
 
                         {/* Shortcut hints */}
                         {showShortcuts && (
-                            <div style={{ padding:'7px 16px', borderBottom:`1px solid ${THEME.surfaceBorder}`, background:THEME.surface, display:'flex', flexWrap:'wrap', gap:10, animation:'sqlFadeIn 0.15s ease' }}>
+                            <div style={{ padding:'7px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, background:THEME.surface, display:'flex', flexWrap:'wrap', gap:10, animation:'sqlFadeIn 0.15s ease' }}>
                                 {[['Ctrl+Enter','Execute'],['Ctrl+Shift+Enter','Explain'],['Ctrl+Shift+F','Format SQL'],['Ctrl+S','Save'],['Tab','Indent / Accept autocomplete'],['Esc','Dismiss suggestions']].map(([k,a])=>(
                                     <span key={k} style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:10, color:THEME.textDim }}>
                                         <kbd className="sql-kbd">{k}</kbd> {a}
@@ -1421,7 +1421,7 @@ const SqlConsoleTab = () => {
 
                         {/* Template picker */}
                         {showTemplates && (
-                            <div style={{ borderBottom:`1px solid ${THEME.surfaceBorder}`, background:THEME.surface, animation:'sqlFadeIn 0.15s ease', maxHeight:200, overflowY:'auto' }} className="sql-scrollbar">
+                            <div style={{ borderBottom:`1px solid ${THEME.glassBorder}`, background:THEME.surface, animation:'sqlFadeIn 0.15s ease', maxHeight:200, overflowY:'auto' }} className="sql-scrollbar">
                                 {['Monitoring','Performance','Storage','Maintenance','Replication','Schema'].map(group => {
                                     const items = DATA_TEMPLATES.filter(t=>t.group===group);
                                     if (!items.length) return null;
@@ -1447,7 +1447,7 @@ const SqlConsoleTab = () => {
 
                         {/* Settings panel */}
                         {showSettings && (
-                            <div style={{ padding:'10px 16px', borderBottom:`1px solid ${THEME.surfaceBorder}`, background:THEME.surface, display:'flex', flexWrap:'wrap', gap:16, alignItems:'center', animation:'sqlFadeIn 0.15s ease' }}>
+                            <div style={{ padding:'10px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, background:THEME.surface, display:'flex', flexWrap:'wrap', gap:16, alignItems:'center', animation:'sqlFadeIn 0.15s ease' }}>
                                 <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                                     <Timer size={11} color={THEME.textDim}/>
                                     <span style={{ fontSize:10, color:THEME.textDim }}>Timeout</span>
@@ -1520,7 +1520,7 @@ const SqlConsoleTab = () => {
 
                         {/* Save dialog */}
                         {showSaveDialog && (
-                            <div style={{ padding:'8px 16px', borderBottom:`1px solid ${THEME.surfaceBorder}`, background:THEME.surface, display:'flex', alignItems:'center', gap:8, animation:'sqlSlideDown 0.15s ease' }}>
+                            <div style={{ padding:'8px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, background:THEME.surface, display:'flex', alignItems:'center', gap:8, animation:'sqlSlideDown 0.15s ease' }}>
                                 <Bookmark size={11} color={THEME.secondary}/>
                                 <input value={saveLabel} onChange={e=>setSaveLabel(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveQuery()} placeholder="Query name…"
                                        style={{ flex:1, padding:'4px 10px', borderRadius:6, border:`1px solid ${THEME.secondary}30`, background:THEME.surface, color:THEME.textMain, fontSize:11, outline:'none' }} autoFocus/>
@@ -1562,7 +1562,7 @@ const SqlConsoleTab = () => {
                         <ParamEditor sql={currentTab.sql} params={params} onChange={setParams}/>
 
                         {/* Action bar */}
-                        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 12px', borderTop:`1px solid ${THEME.surfaceBorder}`, background:'rgba(8,15,30,0.6)', flexWrap:'wrap', gap:5 }}>
+                        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 12px', borderTop:`1px solid ${THEME.glassBorder}`, background:'rgba(8,15,30,0.6)', flexWrap:'wrap', gap:5 }}>
                             <div style={{ display:'flex', alignItems:'center', gap:5, flexWrap:'wrap' }}>
                                 {/* Execute */}
                                 <button onClick={()=>handleExecute()} disabled={loading||!currentTab.sql.trim()}
@@ -1611,7 +1611,7 @@ const SqlConsoleTab = () => {
                     {/* ── Results Panel ── */}
                     <Panel noPad style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minHeight:0 }}>
                         {/* Result tab bar + actions */}
-                        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'5px 12px', borderBottom:`1px solid ${THEME.surfaceBorder}`, flexShrink:0, gap:6, flexWrap:'wrap' }}>
+                        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'5px 12px', borderBottom:`1px solid ${THEME.glassBorder}`, flexShrink:0, gap:6, flexWrap:'wrap' }}>
                             <div style={{ display:'flex', gap:1 }}>
                                 <ResultTabBtn id="results" label="Results" icon={Table2} count={result?.rowCount}/>
                                 <ResultTabBtn id="chart" label="Chart" icon={BarChart3}/>
@@ -2043,7 +2043,7 @@ const SqlConsoleTab = () => {
 
                                     {history.length > 0 && (
                                         <>
-                                            <div style={{ paddingTop:8, borderTop:`1px solid ${THEME.surfaceBorder}`, display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:5, fontSize:9, flexShrink:0, marginTop:6 }}>
+                                            <div style={{ paddingTop:8, borderTop:`1px solid ${THEME.glassBorder}`, display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:5, fontSize:9, flexShrink:0, marginTop:6 }}>
                                                 {[{label:'Total',value:history.length,color:THEME.textMuted},{label:'OK',value:history.filter(h=>h.success).length,color:THEME.success},{label:'Err',value:history.filter(h=>!h.success).length,color:THEME.danger}].map((s,i)=>(
                                                     <div key={i} style={{ textAlign:'center', padding:'5px', borderRadius:7, background:THEME.surface }}>
                                                         <div style={{ color:THEME.textDim, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:2 }}>{s.label}</div>

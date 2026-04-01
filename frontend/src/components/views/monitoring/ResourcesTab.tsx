@@ -108,7 +108,7 @@ const REFRESH_INTERVALS = [
 const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, refreshing }) => (
     <div style={{
         background: THEME.surface,
-        border: `1px solid ${refreshing ? `${THEME.primary}40` : THEME.surfaceBorder}`,
+        border: `1px solid ${refreshing ? `${THEME.primary}40` : THEME.glassBorder}`,
         borderRadius: 16,
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
@@ -118,7 +118,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
         {title && (
             <div style={{
                 padding: '13px 20px',
-                borderBottom: `1px solid ${THEME.surfaceBorder}`,
+                borderBottom: `1px solid ${THEME.glassBorder}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 flexShrink: 0, minHeight: 46,
             }}>
@@ -199,7 +199,7 @@ const RingGauge = ({ value, color, size = 44, strokeWidth = 4 }) => {
 const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, borderRadius: 8, padding: '8px 12px', fontSize: 11, backdropFilter: 'blur(8px)' }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px', fontSize: 11, backdropFilter: 'blur(8px)' }}>
             <div style={{ fontWeight: 700, color: THEME.textMain, marginBottom: 6 }}>{label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
@@ -285,7 +285,7 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
         <div style={{
             display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8,
             padding: '9px 16px', borderRadius: 10,
-            border: `1px solid ${error ? `${THEME.danger}30` : THEME.surfaceBorder}`,
+            border: `1px solid ${error ? `${THEME.danger}30` : THEME.glassBorder}`,
             fontSize: 11,
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -346,8 +346,8 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
         { key: 'perf',  label: 'No errors or lock timeouts were reported during execution' },
     ];
     return (
-        <div style={{ background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.surfaceBorder}`, overflow: 'hidden' }}>
-            <div style={{ padding: '13px 18px', borderBottom: `1px solid ${THEME.surfaceBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.glassBorder}`, overflow: 'hidden' }}>
+            <div style={{ padding: '13px 18px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ width: 26, height: 26, borderRadius: 7, background: `${THEME.warning}15`, border: `1px solid ${THEME.warning}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <ShieldAlert size={13} color={THEME.warning} />
@@ -510,7 +510,7 @@ const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
                 })}
 
                 {/* Summary row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, paddingTop: 12, borderTop: `1px solid ${THEME.surfaceBorder}`, marginTop: 2 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, paddingTop: 12, borderTop: `1px solid ${THEME.glassBorder}`, marginTop: 2 }}>
                     {[
                         { label: 'Total Read',  value: `${tablespaceData.reduce((s, t) => s + t.readsMB, 0)} MB/s`, color: THEME.primary },
                         { label: 'Total Write', value: `${tablespaceData.reduce((s, t) => s + t.writesMB, 0)} MB/s`, color: THEME.success },
@@ -625,7 +625,7 @@ const FreezeUrgencyPanel = ({ data, refreshing }) => {
                         </div>
                     );
                 })}
-                <div style={{ paddingTop: 8, borderTop: `1px solid ${THEME.surfaceBorder}`, fontSize: 10, color: THEME.textDim, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ paddingTop: 8, borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim, display: 'flex', alignItems: 'center', gap: 5 }}>
                     <AlertTriangle size={9} />
                     Freeze threshold: 2B transactions. VACUUM FREEZE recommended when &gt;75%.
                 </div>
@@ -842,7 +842,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
             </div>
 
             {/* Footer */}
-            <div style={{ paddingTop: 12, marginTop: 4, borderTop: `1px solid ${THEME.surfaceBorder}`, display: 'flex', gap: 16, fontSize: 10.5, color: THEME.textDim }}>
+            <div style={{ paddingTop: 12, marginTop: 4, borderTop: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 16, fontSize: 10.5, color: THEME.textDim }}>
                 <span><strong style={{ color: THEME.success }}>{policies.filter(p => p.enabled).length}</strong> active</span>
                 <span><strong style={{ color: THEME.textMuted }}>{policies.filter(p => !p.enabled).length}</strong> disabled</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -1102,12 +1102,12 @@ const ResourcesTab = () => {
                 <ResStyles />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
                     {[0, 1, 2, 3].map(i => (
-                        <div key={i} style={{ height: 96, borderRadius: 14, background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, opacity: 0.4, animation: 'resPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />
+                        <div key={i} style={{ height: 96, borderRadius: 14, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.4, animation: 'resPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />
                     ))}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 20 }}>
                     {[0, 1].map(i => (
-                        <div key={i} style={{ height: 340, borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, opacity: 0.25, animation: 'resPulse 1.5s ease-in-out infinite', animationDelay: `${0.5 + i * 0.15}s` }} />
+                        <div key={i} style={{ height: 340, borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.25, animation: 'resPulse 1.5s ease-in-out infinite', animationDelay: `${0.5 + i * 0.15}s` }} />
                     ))}
                 </div>
             </div>
@@ -1161,7 +1161,7 @@ const ResourcesTab = () => {
             {/* ── Quick metric strip ── */}
             <div className="res-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
                 {metricCards.map((m, i) => (
-                    <div key={i} style={{ padding: '12px', borderRadius: 12, background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <div key={i} style={{ padding: '12px', borderRadius: 12, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                         <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
                             <m.icon size={18} color={m.color} />
                         </div>
@@ -1251,7 +1251,7 @@ const ResourcesTab = () => {
                                 </div>
                             )}
                             {/* ── NEW: Legend for composition column ── */}
-                            <div style={{ display: 'flex', gap: 14, padding: '8px 16px', borderTop: `1px solid ${THEME.surfaceBorder}`, fontSize: 9.5, color: THEME.textDim }}>
+                            <div style={{ display: 'flex', gap: 14, padding: '8px 16px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 9.5, color: THEME.textDim }}>
                                 {[{ l: 'Data', c: THEME.primary }, { l: 'Indexes', c: THEME.secondary }, { l: 'TOAST', c: THEME.warning }].map(x => (
                                     <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                         <span style={{ width: 8, height: 4, borderRadius: 1, background: x.c }} /> {x.l}
@@ -1464,7 +1464,7 @@ const ResourcesTab = () => {
                                 );
                             })}
                         </div>
-                        <div style={{ paddingTop: 10, marginTop: 6, borderTop: `1px solid ${THEME.surfaceBorder}`, fontSize: 10, color: THEME.textDim, display: 'flex', gap: 20 }}>
+                        <div style={{ paddingTop: 10, marginTop: 6, borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim, display: 'flex', gap: 20 }}>
                             <span style={{ color: THEME.success }}>●  &lt;0.8× normal</span>
                             <span style={{ color: THEME.warning }}>●  0.8–1.5× review</span>
                             <span style={{ color: THEME.danger }}>●  &gt;1.5× over-indexed</span>
@@ -1613,7 +1613,7 @@ const ResourcesTab = () => {
                                 );
                             })}
                         </div>
-                        <div style={{ display: 'flex', gap: 20, padding: '10px 20px', borderTop: `1px solid ${THEME.surfaceBorder}`, fontSize: 10, color: THEME.textDim }}>
+                        <div style={{ display: 'flex', gap: 20, padding: '10px 20px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.primary }} /> Data</span>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.secondary }} /> Indexes</span>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.warning }} /> TOAST</span>
@@ -1636,7 +1636,7 @@ const ResourcesTab = () => {
                             { label: 'Unused Columns',    value: deadCode.columns.length, sub: 'potential dead fields',  color: THEME.warning,  icon: Eye },
                             { label: 'Space Reclaimable', value: fmtSize(deadCode.tables.reduce((s, t) => s + t.size_gb, 0)), sub: 'if all unused tables dropped', color: THEME.success, icon: HardDrive },
                         ].map((m, i) => (
-                            <div key={i} style={{ padding: '14px', borderRadius: 12, background: THEME.surface, border: `1px solid ${THEME.surfaceBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                            <div key={i} style={{ padding: '14px', borderRadius: 12, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                                 <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
                                     <m.icon size={18} color={m.color} />
                                 </div>
@@ -1756,14 +1756,14 @@ const ResourcesTab = () => {
                         </table>
 
                         {/* Summary footer */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, borderTop: `1px solid ${THEME.surfaceBorder}` }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, borderTop: `1px solid ${THEME.glassBorder}` }}>
                             {[
                                 { label: 'Total Saved',  value: '4.12 GB',  color: THEME.success,   icon: TrendingUp },
                                 { label: 'Operations',   value: String(logs.length), color: THEME.primary, icon: Zap },
                                 { label: 'Success Rate', value: `${logs.length ? Math.round(logs.filter(l => l.status === 'Success').length / logs.length * 100) : 0}%`, color: logs.some(l => l.status === 'Failed') ? THEME.warning : THEME.success, icon: CheckCircle },
                                 { label: 'Avg Duration', value: '2m 40s',   color: THEME.warning,   icon: Timer },
                             ].map((s, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 20px', borderRight: i < 3 ? `1px solid ${THEME.surfaceBorder}` : 'none' }}>
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 20px', borderRight: i < 3 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
                                     <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
                                         <s.icon size={13} color={s.color} />
                                     </div>
