@@ -3935,10 +3935,11 @@ const DashboardInner = ({ onLogout }) => {
         // Don't redirect while connections are still loading from the backend
         if (!connectionsInitialized.current) return;
 
-        // No connection → only demo tabs and connections are allowed
+        // No connection → only demo tabs, connections, and user management are allowed
         if (!activeConnection) {
             if (activeTab?.startsWith('demo-')) return;
             if (activeTab === 'connections') return;
+            if (activeTab === 'UserManagement' || activeTab === 'user-audit') return;
             setActiveTab('connections');
             try {
                 localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, 'connections');
