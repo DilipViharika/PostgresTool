@@ -120,6 +120,99 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
     const router = Router();
     const guard  = [authenticate, requireRole('super_admin'), requireScreen('UserManagement')];
 
+    /* ── GET /api/user/profile ─────────────────────────────────────────────
+       Self-service: returns the authenticated user's own profile.            */
+    router.get('/user/profile', authenticate, async (req, res) => {
+        try {
+            const user = await getUserById(pool, req.user.id);
+            if (!user) return res.status(404).json({ error: 'User not found' });
+            res.json({
+                id:        user.id,
+                username:  user.username,
+                fullName:  user.name,
+                email:     user.email,
+                role:      user.role,
+                status:    user.status,
+                createdAt: user.createdAt,
+                lastLogin: user.lastLoginAt,
+                preferences: {
+                    theme: 'dark',
+                    refreshInterval: 30,
+                    emailNotifications: true,
+                    slackNotifications: false,
+                },
+            });
+        } catch (err) {
+            log('ERROR', 'Failed to fetch own profile', { error: err.message });
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    /* ── PUT /api/user/profile ─────────────────────────────────────────────
+       Self-service: update the authenticated user's own name & email.       */
+    router.put('/user/profile', authenticate, async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const { fullName, email } = req.body;
+
+            // Validate email format if provided
+            if (email) {
+                const validation = validateUserInput({ email });
+                if (!validation.valid) {
+                    return res.status(400).json({ error: validation.error });
+                }
+                // Check email uniqueness (exclude current user)
+                if (await emailExists(pool, email, userId)) {
+                    return res.status(409).json({ error: 'Email already in use by another account' });
+                }
+            }
+
+            const updated = await updateUser(pool, userId, {
+                name:  fullName || undefined,
+                email: email || undefined,
+            });
+            if (!updated) return res.status(404).json({ error: 'User not found' });
+
+            await writeAudit(pool, {
+                actorId:       userId,
+                actorUsername: req.user.username,
+                action:        'PROFILE_UPDATED',
+                resourceType:  'user',
+                resourceId:    userId,
+                level:         'info',
+                detail:        `User updated own profile: ${[fullName && 'name', email && 'email'].filter(Boolean).join(', ')}`,
+                ip:            req.ip,
+            });
+
+            log('INFO', 'Profile self-update', { userId, fields: Object.keys(req.body) });
+            res.json({ success: true, user: updated });
+        } catch (err) {
+            log('ERROR', 'Failed to update own profile', { error: err.message });
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    /* ── GET /api/user/activity-log ────────────────────────────────────────
+       Self-service: returns the authenticated user's recent activity.       */
+    router.get('/user/activity-log', authenticate, async (req, res) => {
+        try {
+            const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+            const { rows } = await pool.query(
+                `SELECT action, detail, ip, created_at as "createdAt"
+                 FROM vigil.audit_logs
+                 WHERE actor_id = $1
+                 ORDER BY created_at DESC
+                 LIMIT $2`,
+                [req.user.id, limit]
+            );
+            res.json({ activities: rows });
+        } catch (err) {
+            // If audit table doesn't exist, return empty
+            log('WARN', 'Activity log query failed', { error: err.message });
+            res.json({ activities: [] });
+        }
+    });
+
     /* ── GET /api/users ─────────────────────────────────────────────────────
        Returns all active users enriched with login activity + risk score.    */
     router.get('/users', ...guard, async (req, res) => {

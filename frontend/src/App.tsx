@@ -2679,6 +2679,7 @@ const Sidebar = ({
 
     // Sections shown per database type
     const PG_SECTIONS = [
+        'Connections',
         'Overview',
         'Alerts & Rules',
         'Query Analysis',
@@ -2690,6 +2691,7 @@ const Sidebar = ({
         'Admin',
     ];
     const MYSQL_SECTIONS = [
+        'Connections',
         'MySQL',
         'Overview',
         'Alerts & Rules',
@@ -2698,7 +2700,7 @@ const Sidebar = ({
         'Developer Tools',
         'Admin',
     ];
-    const MONGO_SECTIONS = ['MongoDB', 'Overview', 'Alerts & Rules', 'Security', 'Observability', 'Admin'];
+    const MONGO_SECTIONS = ['Connections', 'MongoDB', 'Overview', 'Alerts & Rules', 'Security', 'Observability', 'Admin'];
 
     const visibleGroups = useMemo(
         () =>
