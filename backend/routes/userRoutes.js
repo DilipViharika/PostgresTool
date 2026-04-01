@@ -348,6 +348,10 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
     router.put('/users/:id', ...guard, async (req, res) => {
         try {
             const id = parseInt(req.params.id);
+            if (isNaN(id)) {
+                log('ERROR', 'PUT /users/:id — invalid ID', { raw: req.params.id });
+                return res.status(400).json({ error: 'Invalid user ID', received: req.params.id });
+            }
 
             log('INFO', '=== PUT /users/:id START ===', { userId: id, bodyKeys: Object.keys(req.body), email: req.body.email, name: req.body.name });
 

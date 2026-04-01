@@ -357,11 +357,12 @@ const UserManagementTab = ({ initialUsers = [] }) => {
     const contextValue = useMemo(() => ({ state, dispatch, users, toast, setUsers }), [state, users, toast, setUsers]);
 
     const handleSaveUser = useCallback(async (formData) => {
+        console.log('[handleSaveUser] called', { id: formData.id, idType: typeof formData.id, email: formData.email, keys: Object.keys(formData) });
         try {
             if (formData.id) { await updateUser(formData.id, formData); toast(`${formData.name} updated successfully`); }
             else { const created = await createUser(formData); toast(`${created?.name ?? formData.name} created successfully`); }
             dispatch({ type: 'CLOSE_MODAL' });
-        } catch (err) { toast(err.message || 'Save failed', 'error'); }
+        } catch (err) { console.error('[handleSaveUser] error', err); toast(err.message || 'Save failed', 'error'); }
     }, [updateUser, createUser, toast]);
 
     const handleDeleteUsers = useCallback(async (ids) => {

@@ -221,10 +221,11 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
 
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
+    console.log('[UserFormModal] handleSubmit', { formId: form.id, formIdType: typeof form.id, userId: user?.id, email: form.email });
     if (validateForm()) {
       onSave(form);
     }
-  }, [form, validateForm, onSave]);
+  }, [form, validateForm, onSave, user]);
 
   const countScreensInCategory = useCallback((categoryIndex) => {
     return SCREEN_CATEGORIES[categoryIndex].screens.filter(s => form.allowedScreens.includes(s.id)).length;
