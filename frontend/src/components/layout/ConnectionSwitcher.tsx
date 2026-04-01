@@ -20,7 +20,7 @@ import { useNavigation } from '../../context/NavigationContext';
 
 import {
     Database, ChevronDown, Search, Check, Loader2,
-    Server, AlertCircle, CheckCircle, AlertTriangle, Settings
+    Server, AlertCircle, CheckCircle, AlertTriangle, Settings, Plus
 } from 'lucide-react';
 
 const ConnectionSwitcher = () => {
@@ -120,19 +120,35 @@ const ConnectionSwitcher = () => {
         // to prevent the flash of "No connection" on every page refresh
         const isLoading = loading;
         return (
-            <button
-                onClick={() => !isLoading && goToTab('connections')}
-                style={{
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{
                     ...styles.emptyState,
-                    cursor: isLoading ? 'default' : 'pointer',
-                    border: 'none', background: 'none',
-                    fontFamily: 'inherit',
-                }}
-                title={isLoading ? 'Connecting...' : 'Manage Connections'}
-            >
-                <Database size={14} color={isLoading ? THEME.primary : THEME.textMuted} />
-                <span>{isLoading ? 'Connecting...' : 'No connection'}</span>
-            </button>
+                    cursor: 'default',
+                }}>
+                    <Database size={14} color={isLoading ? THEME.primary : THEME.textMuted} />
+                    <span>{isLoading ? 'Connecting...' : 'No connection'}</span>
+                </div>
+                {!isLoading && (
+                    <button
+                        onClick={() => goToTab('connections')}
+                        title="Add new connection"
+                        style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            width: 30, height: 30, borderRadius: 8,
+                            border: `1px solid ${THEME.primary}44`,
+                            background: `${THEME.primary}15`,
+                            color: THEME.primary,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s',
+                            flexShrink: 0,
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = `${THEME.primary}30`; e.currentTarget.style.borderColor = `${THEME.primary}66`; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = `${THEME.primary}15`; e.currentTarget.style.borderColor = `${THEME.primary}44`; }}
+                    >
+                        <Plus size={16} />
+                    </button>
+                )}
+            </div>
         );
     }
 
