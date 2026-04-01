@@ -387,7 +387,7 @@ const ConnectionWizard = () => {
       fontWeight: '600',
       color: THEME.textMuted,
       marginBottom: '8px',
-      textTransform: 'uppercase',
+      
       letterSpacing: '0.5px',
       fontFamily: THEME.fontMono,
       display: 'block',
@@ -605,7 +605,7 @@ const ConnectionWizard = () => {
                       </span>
                       {isActive && (
                         <span style={{
-                          fontSize: 9, fontWeight: 700, textTransform: 'uppercase',
+                          fontSize: 9, fontWeight: 700, 
                           padding: '2px 7px', borderRadius: 6,
                           background: '#00b87420', color: '#00b874',
                         }}>Active</span>

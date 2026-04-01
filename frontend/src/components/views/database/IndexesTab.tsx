@@ -234,7 +234,7 @@ const M = ({c,sz=11,w=400,children,style={}}) =>
     <span style={{fontFamily:THEME.fontMono,fontSize:sz,color:c||C.textSub,fontWeight:w,...style}}>{children}</span>;
 
 const Lbl = ({c,children}) =>
-    <span style={{fontFamily:THEME.fontMono,fontSize:9,letterSpacing:'.1em',textTransform:'uppercase',color:c||C.textDim,fontWeight:500}}>{children}</span>;
+    <span style={{fontFamily:THEME.fontMono,fontSize:9,letterSpacing:'0.02em',color:c||C.textDim,fontWeight:500}}>{children}</span>;
 
 const Sev = ({level}) => {
     const m={critical:{l:'Critical',c:C.err,bg:C.errBg},high:{l:'High',c:C.warn,bg:C.warnBg},
@@ -343,7 +343,7 @@ const CmdPalette = ({onClose,data,onSelect}) => {
         ...data.unused.map(d=>({...d,_g:'Unused',_c:C.textSub})),
     ],[data]);
     const hits=q?all.filter(i=>JSON.stringify(i).toLowerCase().includes(q.toLowerCase())):all.slice(0,8);
-    return <div style={{position:'fixed',inset:0,background:'rgba(13,15,20,.82)',backdropFilter:'blur(8px)',
+    return <div style={{position:'fixed',inset:0,background:'rgba(13,15,20,.82)',backdropFilter:'blur(4px)',
         display:'flex',alignItems:'flex-start',justifyContent:'center',zIndex:1001,paddingTop:'14vh'}} onClick={onClose}>
         <div onClick={e=>e.stopPropagation()} style={{width:560,background:C.bgAlt,
             border:`1px solid ${C.border}`,borderRadius:10,overflow:'hidden',
@@ -562,7 +562,7 @@ Index Scan using new_idx
 const ApplyModal = ({index,onClose}) => {
     const [step,setStep]=useState('ready');
     const sql=genSQL(index);
-    return <div style={{position:'fixed',inset:0,background:'rgba(13,15,20,.85)',backdropFilter:'blur(8px)',
+    return <div style={{position:'fixed',inset:0,background:'rgba(13,15,20,.85)',backdropFilter:'blur(4px)',
         display:'flex',alignItems:'center',justifyContent:'center',zIndex:1000}} onClick={onClose}>
         <div onClick={e=>e.stopPropagation()} style={{width:520,background:C.bgAlt,
             border:`1px solid ${C.border}`,borderRadius:10,overflow:'hidden',
@@ -682,7 +682,7 @@ const IndexTable = ({rows,view,onSelect}) => {
     const TH=({f,children,right})=><th onClick={()=>f&&tog(f)} style={{padding:'10px 16px',
         textAlign:right?'right':'left',fontSize:9.5,fontWeight:500,
         color:sort.field===f?C.accent:C.textDim,cursor:f?'pointer':'default',
-        fontFamily:THEME.fontMono,letterSpacing:'.08em',textTransform:'uppercase',
+        fontFamily:THEME.fontMono,letterSpacing:'0.02em',
         borderBottom:`1px solid ${C.border}`,background:C.bg,whiteSpace:'nowrap',userSelect:'none'}}>
         {children}{f&&sort.field===f&&<span style={{marginLeft:3,fontSize:9}}>{sort.dir==='asc'?'↑':'↓'}</span>}
     </th>;

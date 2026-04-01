@@ -537,7 +537,7 @@ export default function MongoPerformanceTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                        textTransform: 'uppercase',
+                                        
                                         marginBottom: 8,
                                     }}
                                 >
@@ -558,7 +558,7 @@ export default function MongoPerformanceTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                        textTransform: 'uppercase',
+                                        
                                         marginBottom: 8,
                                     }}
                                 >
@@ -579,7 +579,7 @@ export default function MongoPerformanceTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                        textTransform: 'uppercase',
+                                        
                                         marginBottom: 8,
                                     }}
                                 >
@@ -628,7 +628,7 @@ export default function MongoPerformanceTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                        textTransform: 'uppercase',
+                                        
                                         marginBottom: 8,
                                     }}
                                 >
@@ -643,7 +643,7 @@ export default function MongoPerformanceTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                        textTransform: 'uppercase',
+                                        
                                         marginBottom: 8,
                                     }}
                                 >
@@ -658,7 +658,7 @@ export default function MongoPerformanceTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                        textTransform: 'uppercase',
+                                        
                                         marginBottom: 8,
                                     }}
                                 >
@@ -673,7 +673,7 @@ export default function MongoPerformanceTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                        textTransform: 'uppercase',
+                                        
                                         marginBottom: 8,
                                     }}
                                 >

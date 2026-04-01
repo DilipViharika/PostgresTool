@@ -337,7 +337,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, war
                         color: THEME.textDim,
                         marginTop: 4,
                         fontWeight: 700,
-                        textTransform: 'uppercase',
+                        
                         letterSpacing: 0.8,
                     }}
                 >

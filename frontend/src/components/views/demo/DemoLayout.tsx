@@ -284,7 +284,7 @@ const DemoLayout = ({
                                 fontSize: '9px',
                                 fontWeight: 700,
                                 color: LT.textDim,
-                                textTransform: 'uppercase',
+                                
                                 letterSpacing: '0.12em',
                                 display: 'block',
                                 marginBottom: 6,
@@ -349,8 +349,8 @@ const DemoLayout = ({
                                             style={{
                                                 fontSize: '8.5px',
                                                 fontWeight: 700,
-                                                letterSpacing: '0.1em',
-                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.02em',
+                                                
                                                 fontFamily: THEME.fontMono,
                                                 color: LT.textDim,
                                                 display: 'flex',
@@ -445,14 +445,14 @@ const DemoLayout = ({
                                                                 style={{
                                                                     fontSize: '7.5px',
                                                                     fontWeight: 700,
-                                                                    textTransform: 'uppercase',
+                                                                    
                                                                     background: LT.badgeBg,
                                                                     color: LT.badgeColor,
                                                                     borderRadius: 4,
                                                                     padding: '1px 6px',
                                                                     flexShrink: 0,
                                                                     fontFamily: THEME.fontMono,
-                                                                    letterSpacing: '0.05em',
+                                                                    letterSpacing: '0.02em',
                                                                 }}
                                                             >
                                                                 {item.badge}
@@ -589,9 +589,9 @@ const DemoLayout = ({
                                     fontSize: 10,
                                     color: LT.textDim,
                                     fontFamily: THEME.fontMono,
-                                    letterSpacing: '0.05em',
+                                    letterSpacing: '0.02em',
                                     marginBottom: 2,
-                                    textTransform: 'uppercase',
+                                    
                                 }}
                             >
                                 {title}{' '}
@@ -649,8 +649,8 @@ const DemoLayout = ({
                                                     fontSize: 8,
                                                     color: LT.textDim,
                                                     fontWeight: 600,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.05em',
+                                                    
+                                                    letterSpacing: '0.02em',
                                                     marginTop: 1,
                                                 }}
                                             >
@@ -879,8 +879,8 @@ export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentCo
                             fontSize: 12,
                             fontWeight: 700,
                             color: LT.textMuted,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.1em',
+                            
+                            letterSpacing: '0.02em',
                             fontFamily: THEME.fontBody,
                         }}
                     >
@@ -910,7 +910,7 @@ export const StatusBadge = ({ label, color, pulse }) => (
             lineHeight: 1.3,
             whiteSpace: 'nowrap',
             fontFamily: THEME.fontMono,
-            letterSpacing: '0.05em',
+            letterSpacing: '0.02em',
         }}
     >
         <span
@@ -1017,8 +1017,8 @@ export const RingGauge = ({
                                 fontSize: 7.5,
                                 color: LT.textDim,
                                 fontWeight: 600,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em',
+                                
+                                letterSpacing: '0.02em',
                                 marginTop: 1,
                             }}
                         >
@@ -1097,8 +1097,8 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
                     fontSize: 10,
                     fontWeight: 700,
                     color: LT.textMuted,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
+                    
+                    letterSpacing: '0.02em',
                     marginBottom: 4,
                 }}
             >
@@ -1179,8 +1179,8 @@ export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spa
                         fontSize: 9.5,
                         color: LT.textDim,
                         fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
+                        
+                        letterSpacing: '0.02em',
                         lineHeight: 1,
                         marginBottom: 5,
                     }}
@@ -1268,8 +1268,8 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
                         fontSize: 9.5,
                         fontWeight: 700,
                         color: LT.textMuted,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.06em',
+                        
+                        letterSpacing: '0.02em',
                     }}
                 >
                     {label}
@@ -1412,8 +1412,8 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
                 borderRadius: 8,
                 background: `${color}12`,
                 color,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
+                
+                letterSpacing: '0.02em',
                 fontFamily: THEME.fontMono,
                 flexShrink: 0,
             }}
@@ -1436,8 +1436,8 @@ export const DataTable = ({ columns, rows, accentColor }) => (
                 borderBottom: `1px solid ${LT.border}`,
                 fontWeight: 700,
                 fontSize: '9.5px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
+                
+                letterSpacing: '0.02em',
                 color: LT.textDim,
             }}
         >
@@ -1633,8 +1633,8 @@ export const ExecStatCard = ({ value, label, subtitle, color }) => (
             style={{
                 fontSize: 11,
                 fontWeight: 700,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
+                letterSpacing: '0.02em',
+                
                 color: LT.textDim,
                 marginBottom: 4,
             }}

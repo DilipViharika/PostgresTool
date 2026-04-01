@@ -76,7 +76,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, color = THEME.primary }) =>
         </div>
         <div>
             <div style={{ fontSize: 22, fontWeight: 800, color: THEME.textMain, lineHeight: 1 }}>{value}</div>
-            <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5 }}>{label}</div>
+            <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 3, fontWeight: 600,  letterSpacing: .5 }}>{label}</div>
             {sub && <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 2 }}>{sub}</div>}
         </div>
     </div>
@@ -102,7 +102,7 @@ const PlanTree = ({ plan, title, accent }) => {
     };
     return (
         <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 8, textTransform: 'uppercase', letterSpacing: .5 }}>{title}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 8,  letterSpacing: .5 }}>{title}</div>
             <div style={{ background: THEME.bg, border: `1px solid ${THEME.grid}`, borderRadius: 8, padding: 12, maxHeight: 280, overflowY: 'auto' }}>
                 {renderNode(node)}
             </div>
@@ -326,7 +326,7 @@ const DeployEventManager = ({ deployEvents, setDeployEvents }) => {
     };
     return (
         <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${THEME.grid}30` }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted,  letterSpacing: .5, marginBottom: 10 }}>
                 Deployment Event Markers
             </div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>

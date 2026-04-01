@@ -125,7 +125,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, color, spark, trend, trendU
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Icon size={13} color={color} />
-                <span style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+                <span style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim,  letterSpacing: '0.04em' }}>{label}</span>
             </div>
             {spark && <MiniSparkline data={spark} color={color} />}
         </div>
@@ -172,7 +172,6 @@ const DatabaseCard = ({ connection, health, isActive, onSwitch }) => {
         <div className="fleet-card-hover" onClick={() => onSwitch(connection.id)} style={{
             padding: 20, borderRadius: 14, cursor: 'pointer', position: 'relative',
             border: `1px solid ${isActive ? THEME.primary : THEME.glassBorder}`,
-            boxShadow: isActive ? `0 0 20px ${THEME.primary}20` : 'none',
         }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, paddingBottom: 14, borderBottom: `1px solid ${THEME.glassBorder}` }}>
@@ -198,28 +197,28 @@ const DatabaseCard = ({ connection, health, isActive, onSwitch }) => {
             {/* Metrics Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
                 <div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 5 }}>Status</div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim,  letterSpacing: '0.04em', marginBottom: 5 }}>Status</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 600 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor, boxShadow: `0 0 6px ${statusColor}60` }} />
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor }} />
                         <span style={{ color: statusColor }}>{statusLabel}</span>
                     </div>
                 </div>
                 <div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 5 }}>Latency</div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim,  letterSpacing: '0.04em', marginBottom: 5 }}>Latency</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: THEME.textMain }}>
                         <Clock size={13} color={THEME.textDim} />
                         {health?.latencyMs != null ? `${health.latencyMs}ms` : 'N/A'}
                     </div>
                 </div>
                 <div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 5 }}>Database</div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim,  letterSpacing: '0.04em', marginBottom: 5 }}>Database</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 500, color: THEME.textMain }}>
                         <Database size={13} color={THEME.textDim} />
                         {connection.database}
                     </div>
                 </div>
                 <div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 5 }}>User</div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim,  letterSpacing: '0.04em', marginBottom: 5 }}>User</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 500, color: THEME.textMain }}>
                         <Users size={13} color={THEME.textDim} />
                         {connection.username}
@@ -487,7 +486,7 @@ const FleetOverviewTab = () => {
                             const region = host.includes('us-') ? 'US' : host.includes('eu-') ? 'EU' : host.includes('ap-') ? 'APAC' : host.includes('localhost') ? 'Local' : 'Cloud';
                             return (
                                 <div key={conn.id} style={{ padding: 14, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10 }}>
-                                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{region}</div>
+                                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMuted,  letterSpacing: '0.04em' }}>{region}</div>
                                     <div style={{ fontSize: 15, fontWeight: 700, color: THEME.primary, margin: '6px 0' }}>{conn.name}</div>
                                     <div style={{ fontSize: 10, color: THEME.textDim }}>
                                         Latency: {health?.latencyMs != null ? `${health.latencyMs}ms` : '—'}

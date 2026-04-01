@@ -216,19 +216,19 @@ export default function OpenTelemetryTab() {
                     </div>
                     <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:12 }}>
                         <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
-                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700, textTransform:'uppercase' }}>Average</div>
+                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700,  }}>Average</div>
                             <div style={{ fontSize:18, fontWeight:800, color:THEME.primary }}>{fmt(stats.avg)}</div>
                         </div>
                         <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
-                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700, textTransform:'uppercase' }}>Min</div>
+                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700,  }}>Min</div>
                             <div style={{ fontSize:18, fontWeight:800, color:THEME.success }}>{fmt(stats.min)}</div>
                         </div>
                         <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
-                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700, textTransform:'uppercase' }}>Max</div>
+                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700,  }}>Max</div>
                             <div style={{ fontSize:18, fontWeight:800, color:THEME.warning }}>{fmt(stats.max)}</div>
                         </div>
                         <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
-                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700, textTransform:'uppercase' }}>P95</div>
+                            <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700,  }}>P95</div>
                             <div style={{ fontSize:18, fontWeight:800, color:THEME.ai }}>{fmt(stats.p95)}</div>
                         </div>
                     </div>
@@ -243,11 +243,11 @@ export default function OpenTelemetryTab() {
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
                     <div style={{ background:THEME.grid, borderRadius:8, padding:16 }}>
-                        <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:6, fontWeight:700, textTransform:'uppercase' }}>Total Metrics</div>
+                        <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:6, fontWeight:700,  }}>Total Metrics</div>
                         <div style={{ fontSize:24, fontWeight:800, color:THEME.primary }}>{fmt(metricNames.length)}</div>
                     </div>
                     <div style={{ background:THEME.grid, borderRadius:8, padding:16 }}>
-                        <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:6, fontWeight:700, textTransform:'uppercase' }}>Last Ingested</div>
+                        <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:6, fontWeight:700,  }}>Last Ingested</div>
                         <div style={{ fontSize:13, color:THEME.textMain, fontWeight:600 }}>{fmtDate(stats?.lastIngested)}</div>
                     </div>
                 </div>

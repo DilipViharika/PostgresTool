@@ -65,7 +65,7 @@ const CodeBlock = ({code, lang='sql', maxH=350}) => {
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:THEME.surfaceRaised,padding:'5px 10px',borderBottom:`1px solid ${THEME.grid}`}}>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
                     {['#ff5f56','#ffbd2e','#27c93f'].map(c=><span key={c} style={{width:7,height:7,borderRadius:'50%',background:c,display:'inline-block'}}/>)}
-                    <span style={{fontSize:8.5,color:THEME.textDim,fontWeight:600,marginLeft:5,textTransform:'uppercase',letterSpacing:'.04em'}}>{lang} · {lines.length}L</span>
+                    <span style={{fontSize:8.5,color:THEME.textDim,fontWeight:600,marginLeft:5,,letterSpacing:'0.02em'}}>{lang} · {lines.length}L</span>
                 </div>
                 <div style={{display:'flex',gap:3}}>
                     {need && <button onClick={()=>setExp(e=>!e)} style={{background:THEME.surfaceHover,border:`1px solid ${THEME.grid}`,borderRadius:4,padding:'2px 6px',cursor:'pointer',fontSize:8.5,fontWeight:600,color:THEME.textMuted,display:'flex',alignItems:'center',gap:2}}>{exp?<Minimize2 size={7}/>:<Maximize2 size={7}/>}{exp?'Less':`${lines.length}L`}</button>}
@@ -84,7 +84,7 @@ const CodeBlock = ({code, lang='sql', maxH=350}) => {
 };
 
 /* ═══════════ BADGES / TINY COMPONENTS ═══════════ */
-const SevBadge = ({sev}) => { const c=sevColor(sev); const labels={critical:'CRITICAL',high:'HIGH',medium:'MEDIUM',low:'LOW',info:'INFO'}; return <span style={{fontSize:8,fontWeight:800,padding:'2px 5px',borderRadius:3,background:`${c}10`,color:c,border:`1px solid ${c}20`,animation:sev==='critical'?'vp 2s ease-in-out infinite':'none',letterSpacing:'.04em'}}>{labels[sev]||'INFO'}</span>; };
+const SevBadge = ({sev}) => { const c=sevColor(sev); const labels={critical:'CRITICAL',high:'HIGH',medium:'MEDIUM',low:'LOW',info:'INFO'}; return <span style={{fontSize:8,fontWeight:800,padding:'2px 5px',borderRadius:3,background:`${c}10`,color:c,border:`1px solid ${c}20`,animation:sev==='critical'?'vp 2s ease-in-out infinite':'none',letterSpacing:'0.02em'}}>{labels[sev]||'INFO'}</span>; };
 const ImpactDots = ({impact=5}) => <div style={{display:'flex',gap:1.5}} title={`Impact: ${impact}/10`}>{Array.from({length:10},(_,i)=><div key={i} style={{width:4,height:4,borderRadius:2,background:i<impact?sevColor(impact>=8?'high':impact>=5?'medium':'low'):`${THEME.grid}25`}}/>)}</div>;
 const Sparkline = ({data=[],color=THEME.primary,w=64,h=22})=>{ if(!data.length) return null; const mn=Math.min(...data),mx=Math.max(...data)||1,rng=mx-mn||1; const pts=data.map((v,i)=>`${(i/Math.max(data.length-1,1))*w},${h-((v-mn)/rng)*(h-4)-2}`); const id=`s${color.replace(/[^a-z0-9]/gi,'')}`; return <svg width={w} height={h} style={{display:'block'}}><defs><linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity=".22"/><stop offset="100%" stopColor={color} stopOpacity=".02"/></linearGradient></defs><polygon points={`0,${h} ${pts.join(' ')} ${w},${h}`} fill={`url(#${id})`}/><polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>; };
 
@@ -98,7 +98,7 @@ const AreaChart = ({data=[],color=THEME.primary,width=280,height=80,label,yFmt=v
     const area=`${path} L${pts[pts.length-1].x},${p.t+ch} L${p.l},${p.t+ch} Z`;
     const gid=`a${color.replace(/[^a-z0-9]/gi,'')}`;
     return (<div style={{borderRadius:8,background:THEME.surface,border:`1px solid ${THEME.grid}30`,padding:8}}>
-        {label&&<div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',marginBottom:3}}>{label}</div>}
+        {label&&<div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em',marginBottom:3}}>{label}</div>}
         <svg width={width} height={height} style={{display:'block',width:'100%'}} viewBox={`0 0 ${width} ${height}`}>
             <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity=".18"/><stop offset="100%" stopColor={color} stopOpacity=".01"/></linearGradient></defs>
             {showGrid&&[0,.25,.5,.75,1].map(f=>{const y=p.t+ch-f*ch;return <g key={f}><line x1={p.l} y1={y} x2={width-p.r} y2={y} stroke={`${THEME.grid}18`} strokeWidth=".5" strokeDasharray="2,3"/><text x={p.l-3} y={y+3} textAnchor="end" style={{fontSize:6.5,fill:THEME.textDim,fontFamily:'inherit'}}>{yFmt(mn+rng*f)}</text></g>;})}
@@ -121,7 +121,7 @@ const HealthGauge = ({score,size=72,sw=6})=>{
         </svg>
         <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
             <span style={{fontSize:19,fontWeight:900,color:c,lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{Math.round(an)}</span>
-            <span style={{fontSize:7,fontWeight:800,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.06em',marginTop:1}}>Grade {g}</span>
+            <span style={{fontSize:7,fontWeight:800,color:THEME.textDim,,letterSpacing:'0.02em',marginTop:1}}>Grade {g}</span>
         </div>
     </div>);
 };
@@ -140,12 +140,12 @@ const HealthRadar = ({metrics,size=150})=>{
 };
 
 /* ═══════════ PROGRESS BAR ═══════════ */
-const PBar = ({value,max=100,color,label,h=5})=>{const pct=clamp((value/max)*100,0,100);return<div>{label&&<div style={{display:'flex',justifyContent:'space-between',marginBottom:2}}><span style={{fontSize:9,color:THEME.textDim}}>{label}</span><span style={{fontSize:9,fontWeight:700,color,fontVariantNumeric:'tabular-nums'}}>{fmtPct(pct)}</span></div>}<div style={{height:h,borderRadius:h,background:`${THEME.grid}18`,overflow:'hidden'}}><div style={{height:'100%',borderRadius:h,width:`${pct}%`,background:color,transition:'width .5s cubic-bezier(.4,0,.2,1)',boxShadow:`0 0 6px ${color}30`}}/></div></div>;};
+const PBar = ({value,max=100,color,label,h=5})=>{const pct=clamp((value/max)*100,0,100);return<div>{label&&<div style={{display:'flex',justifyContent:'space-between',marginBottom:2}}><span style={{fontSize:9,color:THEME.textDim}}>{label}</span><span style={{fontSize:9,fontWeight:700,color,fontVariantNumeric:'tabular-nums'}}>{fmtPct(pct)}</span></div>}<div style={{height:h,borderRadius:h,background:`${THEME.grid}18`,overflow:'hidden'}}><div style={{height:'100%',borderRadius:h,width:`${pct}%`,background:color,transition:'width .5s cubic-bezier(.4,0,.2,1)'}}/></div></div>;};
 
 /* ═══════════ STAT CELL (with sparkline, trend, icon) ═══════════ */
 const StatCell = ({label,value,sub,color,warn,sparkData,icon:Ic,trend,badge})=>(<div style={{flex:1,padding:'9px 11px',borderRadius:9,minWidth:0,background:warn?`${color}05`:THEME.surface,border:`1px solid ${warn?color+'1e':THEME.grid+'2a'}`,position:'relative',overflow:'hidden',transition:'all .15s'}}>
     {sparkData&&<div style={{position:'absolute',bottom:0,right:0,opacity:.35}}><Sparkline data={sparkData} color={warn?color:THEME.grid} w={60} h={22}/></div>}
-    <div style={{display:'flex',alignItems:'center',gap:3,marginBottom:2}}>{Ic&&<Ic size={8} color={THEME.textDim}/>}<span style={{fontSize:8,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em'}}>{label}</span>{badge&&<span style={{fontSize:7,fontWeight:800,padding:'0 3px',borderRadius:2,background:`${color}15`,color}}>{badge}</span>}</div>
+    <div style={{display:'flex',alignItems:'center',gap:3,marginBottom:2}}>{Ic&&<Ic size={8} color={THEME.textDim}/>}<span style={{fontSize:8,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em'}}>{label}</span>{badge&&<span style={{fontSize:7,fontWeight:800,padding:'0 3px',borderRadius:2,background:`${color}15`,color}}>{badge}</span>}</div>
     <div style={{display:'flex',alignItems:'baseline',gap:3}}><span style={{fontSize:18,fontWeight:800,color:warn?color:THEME.textMain,lineHeight:1,fontVariantNumeric:'tabular-nums',letterSpacing:'-.02em'}}>{value}</span>{trend!=null&&<span style={{fontSize:8,fontWeight:700,color:trend>0?THEME.danger:THEME.success,display:'flex',alignItems:'center',gap:1}}>{trend>0?<TrendingUp size={7}/>:<TrendingDown size={7}/>}{Math.abs(trend)}%</span>}</div>
     {sub&&<div style={{fontSize:8.5,color:THEME.textDim,marginTop:2,lineHeight:1.3,position:'relative'}}>{sub}</div>}
 </div>);
@@ -156,7 +156,7 @@ const RiskMatrix = ({suggestions})=>{
     const il=['Low','Med','High'],rl=['High','Med','Low'];
     const hc=(cnt,ri,ci)=>{if(!cnt)return`${THEME.grid}08`;if(ri===0&&ci===2)return`${THEME.danger}22`;if(ri===0||ci===2)return`${THEME.warning}18`;return`${THEME.info}12`;};
     return (<div style={{borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
-        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Crosshair size={9} color={THEME.textDim}/>Risk × Impact</div>
+        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Crosshair size={9} color={THEME.textDim}/>Risk × Impact</div>
         <div style={{display:'grid',gridTemplateColumns:'auto 1fr 1fr 1fr',gap:2}}>
             <div/>{il.map(l=><div key={l} style={{textAlign:'center',fontSize:7.5,fontWeight:700,color:THEME.textDim,padding:'1px 0'}}>{l}</div>)}
             {cells.map((row,ri)=><React.Fragment key={ri}><div style={{fontSize:7.5,fontWeight:700,color:THEME.textDim,display:'flex',alignItems:'center',paddingRight:3,whiteSpace:'nowrap'}}>{rl[ri]}</div>{row.map((items,ci)=><div key={ci} title={items.map(s=>s.title).join('\n')} style={{borderRadius:4,padding:5,minHeight:26,textAlign:'center',background:hc(items.length,ri,ci),border:`1px solid ${THEME.grid}12`,display:'flex',alignItems:'center',justifyContent:'center'}}>{items.length>0&&<span style={{fontSize:13,fontWeight:800,color:THEME.textMain}}>{items.length}</span>}</div>)}</React.Fragment>)}
@@ -170,7 +170,7 @@ const ExecTimeline = ({suggestions})=>{
     if(!items.length)return null;
     const total=items.reduce((a,i)=>Math.max(a,i.start+i.duration),0);
     return (<div style={{borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
-        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Calendar size={9} color={THEME.textDim}/>Execution Plan</div>
+        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Calendar size={9} color={THEME.textDim}/>Execution Plan</div>
         <div style={{display:'flex',flexDirection:'column',gap:3}}>
             {items.map((it,i)=>{const left=(it.start/total)*100,w=Math.max((it.duration/total)*100,6),col=sevColor(it.severity);return(<div key={it.id} style={{display:'flex',alignItems:'center',gap:7}}>
                 <span style={{fontSize:8,fontWeight:600,color:THEME.textDim,width:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0}}>{it.title.split(' ').slice(0,3).join(' ')}</span>
@@ -193,12 +193,12 @@ const BeforeAfterSim = ({sizeGb,bloatPct,deadTuples,cacheHit,idxRatio,suggestion
         return{size:sz,bloat:bl,dead:dt,cache:ch,idx:ir};},[applied,sizeGb,bloatPct,deadTuples,cacheHit,idxRatio]);
     const ms=[{l:'Size',b:fmtSize(sizeGb),a:fmtSize(after.size),ok:after.size<sizeGb},{l:'Bloat',b:fmtPct(bloatPct,0),a:fmtPct(after.bloat,0),ok:after.bloat<bloatPct},{l:'Dead',b:fmtNum(deadTuples),a:fmtNum(after.dead),ok:after.dead<deadTuples},{l:'Cache',b:fmtPct(cacheHit),a:fmtPct(after.cache),ok:after.cache>cacheHit},{l:'Idx%',b:fmtPct(idxRatio,0),a:fmtPct(after.idx,0),ok:after.idx>idxRatio}];
     return (<div style={{borderRadius:9,padding:11,background:`${THEME.primary}03`,border:`1px solid ${THEME.primary}10`}}>
-        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Target size={9} color={THEME.primary}/>Impact Simulator</div>
+        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Target size={9} color={THEME.primary}/>Impact Simulator</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:3,marginBottom:8}}>
             {suggestions.filter(s=>s.savings||s.severity==='critical'||s.severity==='high').map(s=><button key={s.id} onClick={()=>toggle(s.id)} style={{fontSize:8.5,padding:'2px 7px',borderRadius:3,fontWeight:600,cursor:'pointer',background:applied.has(s.id)?`${THEME.primary}10`:'transparent',color:applied.has(s.id)?THEME.primary:THEME.textDim,border:`1px solid ${applied.has(s.id)?THEME.primary+'22':THEME.grid+'30'}`,transition:'all .12s'}}>{applied.has(s.id)?'✓':'○'} {s.title.split(' ').slice(0,3).join(' ')}</button>)}
         </div>
         <div style={{display:'grid',gridTemplateColumns:'auto 1fr 1fr auto',gap:'3px 8px',alignItems:'center'}}>
-            <div/><div style={{fontSize:7.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase'}}>Current</div><div style={{fontSize:7.5,fontWeight:700,color:THEME.primary,textTransform:'uppercase'}}>Projected</div><div/>
+            <div/><div style={{fontSize:7.5,fontWeight:700,color:THEME.textDim,}}>Current</div><div style={{fontSize:7.5,fontWeight:700,color:THEME.primary,}}>Projected</div><div/>
             {ms.map(m=><React.Fragment key={m.l}><div style={{fontSize:9.5,fontWeight:700,color:THEME.textDim}}>{m.l}</div><div style={{fontSize:10.5,fontWeight:600,color:THEME.textMuted,fontVariantNumeric:'tabular-nums'}}>{m.b}</div><div style={{fontSize:10.5,fontWeight:700,color:m.ok?THEME.success:THEME.textMain,fontVariantNumeric:'tabular-nums'}}>{m.a}</div><div style={{fontSize:9,fontWeight:700,color:m.ok?THEME.success:THEME.textDim}}>{m.ok?'✓ better':'—'}</div></React.Fragment>)}
         </div>
     </div>);
@@ -210,7 +210,7 @@ const BloatForecast = ({bloatPct,deadTuples})=>{
     const dw=fc.findIndex(v=>v>50);
     return (<div style={{borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:5}}>
-            <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',display:'flex',alignItems:'center',gap:4}}><Flame size={9} color={THEME.warning}/>Bloat Forecast (12w)</div>
+            <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em',display:'flex',alignItems:'center',gap:4}}><Flame size={9} color={THEME.warning}/>Bloat Forecast (12w)</div>
             {dw>0&&dw<=12&&<span style={{fontSize:8,fontWeight:700,color:THEME.danger,display:'flex',alignItems:'center',gap:2}}><TriangleAlert size={8}/>Critical ~{dw}w</span>}
         </div>
         <AreaChart data={fc} color={THEME.warning} width={280} height={68} yFmt={v=>`${Math.round(v)}%`}/>
@@ -226,7 +226,7 @@ const QueryPlanInsight = ({tableName,seqScans,idxScans,rowCount,sizeGb})=>{
     const rowsPerSeqScan = seqScans > 0 ? Math.round(rowCount / seqScans) : 0;
     const costPerSeq = sizeGb > 0 ? (sizeGb * 1000 / Math.max(seqScans,1)).toFixed(2) : '—';
     return (<div style={{borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
-        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Scan size={9} color={THEME.textDim}/>Query Plan Intelligence</div>
+        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Scan size={9} color={THEME.textDim}/>Query Plan Intelligence</div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:8}}>
             <div style={{textAlign:'center'}}><div style={{fontSize:16,fontWeight:800,color:scanEfficiency>=80?THEME.success:THEME.warning}}>{fmtPct(scanEfficiency,0)}</div><div style={{fontSize:7.5,color:THEME.textDim,fontWeight:600}}>Index Hit Rate</div></div>
             <div style={{textAlign:'center'}}><div style={{fontSize:16,fontWeight:800,color:THEME.textMain}}>{fmtNum(rowsPerSeqScan)}</div><div style={{fontSize:7.5,color:THEME.textDim,fontWeight:600}}>Rows/Seq Scan</div></div>
@@ -244,7 +244,7 @@ const HealthTimeline = ({healthScore,bloatPct,cacheHit,deadTuples})=>{
     const data=useMemo(()=>{const pts=[];let h=healthScore,b=bloatPct,c=cacheHit,d=deadTuples;
         for(let i=11;i>=0;i--){pts.push({h:clamp(h+(0-0.5)*8,0,100),b:clamp(b+(0-0.3)*5,0,100),c:clamp(c+(0-0.5)*2,90,100),d:Math.max(0,d*(0.8+0*0.4))});h+=(0-0.55)*4;b+=(0-0.45)*2;d*=1.02+0*0.05;}return pts.reverse();},[healthScore,bloatPct,cacheHit,deadTuples]);
     return (<div style={{borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
-        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',marginBottom:5,display:'flex',alignItems:'center',gap:4}}><Waypoints size={9} color={THEME.textDim}/>Health Timeline (12 periods)</div>
+        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em',marginBottom:5,display:'flex',alignItems:'center',gap:4}}><Waypoints size={9} color={THEME.textDim}/>Health Timeline (12 periods)</div>
         <div style={{display:'flex',gap:2,alignItems:'flex-end',height:40}}>
             {data.map((d,i)=>{const c=d.h>=80?THEME.success:d.h>=50?THEME.warning:THEME.danger;return<div key={i} title={`Score: ${Math.round(d.h)}`} style={{flex:1,height:`${d.h}%`,borderRadius:2,background:`${c}30`,border:`1px solid ${c}40`,transition:'height .3s',minHeight:2}}/>;})}
         </div>
@@ -264,7 +264,7 @@ const WaitAnalysis = ({t})=>{
     ];
     const total=waits.reduce((a,w)=>a+w.pct,0);
     return (<div style={{borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
-        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Orbit size={9} color={THEME.textDim}/>Wait Event Breakdown</div>
+        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Orbit size={9} color={THEME.textDim}/>Wait Event Breakdown</div>
         <div style={{display:'flex',gap:1,height:10,borderRadius:5,overflow:'hidden',marginBottom:6}}>
             {waits.map(w=><div key={w.name} style={{flex:w.pct,background:w.color,transition:'flex .3s'}} title={`${w.name}: ${w.pct}%`}/>)}
         </div>
@@ -282,7 +282,7 @@ const IndexAdvisor = ({tableName,idxSizeGb,rowCount,seqScans,idxScans})=>{
     if(rowCount > 100000 && idxScans < 100) issues.push({type:'unused',msg:`Table has ${fmtNum(rowCount)} rows but very few idx scans — check for unused indexes`,sev:'medium'});
     if(!issues.length) issues.push({type:'ok',msg:'Index configuration looks healthy',sev:'info'});
     return (<div style={{borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
-        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Brain size={9} color={THEME.textDim}/>Index Advisor</div>
+        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em',marginBottom:7,display:'flex',alignItems:'center',gap:4}}><Brain size={9} color={THEME.textDim}/>Index Advisor</div>
         {issues.map((iss,i)=>{const c=sevColor(iss.sev);return<div key={i} style={{display:'flex',alignItems:'center',gap:6,padding:'4px 0',borderBottom:i<issues.length-1?`1px solid ${THEME.grid}12`:'none'}}><div style={{width:5,height:5,borderRadius:3,background:c,flexShrink:0}}/><span style={{fontSize:9.5,color:THEME.textMain,lineHeight:1.3}}>{iss.msg}</span></div>;})}
     </div>);
 };
@@ -416,12 +416,12 @@ const AIAnalysisResult = ({ result, tableName }) => {
             <div style={{ borderRadius: 9, padding: 13, background: `${THEME.primary}04`, border: `1px solid ${THEME.primary}12`, display: 'flex', gap: 13, alignItems: 'flex-start' }}>
                 <div style={{ flexShrink: 0, width: 54, height: 54, borderRadius: 12, background: `${gradeColor(result.healthGrade)}10`, border: `2px solid ${gradeColor(result.healthGrade)}30`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                     <span style={{ fontSize: 24, fontWeight: 900, color: gradeColor(result.healthGrade), lineHeight: 1 }}>{result.healthGrade}</span>
-                    <span style={{ fontSize: 7, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em' }}>Grade</span>
+                    <span style={{ fontSize: 7, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.05em' }}>Grade</span>
                 </div>
                 <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                         <span style={{ fontSize: 10.5, fontWeight: 800, color: THEME.textMain }}>AI Assessment</span>
-                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 10, background: `${riskColor(result.riskLevel)}10`, color: riskColor(result.riskLevel), border: `1px solid ${riskColor(result.riskLevel)}20`, textTransform: 'uppercase' }}>{result.riskLevel} risk</span>
+                        <span style={{ fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 10, background: `${riskColor(result.riskLevel)}10`, color: riskColor(result.riskLevel), border: `1px solid ${riskColor(result.riskLevel)}20` }}>{result.riskLevel} risk</span>
                         <span style={{ fontSize: 8, fontWeight: 600, padding: '2px 6px', borderRadius: 10, background: `${THEME.info}10`, color: THEME.info, border: `1px solid ${THEME.info}18` }}>{result.workloadProfile}</span>
                     </div>
                     <p style={{ fontSize: 10.5, color: THEME.textMuted, lineHeight: 1.55, margin: 0 }}>{result.overallAssessment}</p>
@@ -439,7 +439,7 @@ const AIAnalysisResult = ({ result, tableName }) => {
                 <div style={{ borderRadius: 9, padding: 11, background: `${THEME.danger}04`, border: `1px solid ${THEME.danger}14`, display: 'flex', gap: 9, alignItems: 'flex-start' }}>
                     <Crosshair size={13} color={THEME.danger} style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
-                        <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.danger, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 3 }}>Primary Bottleneck</div>
+                        <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.danger,  letterSpacing: '.05em', marginBottom: 3 }}>Primary Bottleneck</div>
                         <div style={{ fontSize: 10.5, color: THEME.textMain, lineHeight: 1.5 }}>{result.primaryBottleneck}</div>
                     </div>
                 </div>
@@ -448,7 +448,7 @@ const AIAnalysisResult = ({ result, tableName }) => {
             {/* Quick Wins */}
             {result.quickWins?.length > 0 && (
                 <div style={{ borderRadius: 9, padding: 11, background: THEME.surface, border: `1px solid ${THEME.grid}28` }}>
-                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 7, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim,  letterSpacing: '.05em', marginBottom: 7, display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Zap size={9} color={THEME.warning} />Quick Wins
                     </div>
                     {result.quickWins.map((w, i) => (
@@ -470,7 +470,7 @@ const AIAnalysisResult = ({ result, tableName }) => {
             {/* Root Causes */}
             {result.rootCauses?.length > 0 && (
                 <div style={{ borderRadius: 9, padding: 11, background: THEME.surface, border: `1px solid ${THEME.grid}28` }}>
-                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 7, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim,  letterSpacing: '.05em', marginBottom: 7, display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Brain size={9} color={THEME.primary} />Root Cause Analysis
                     </div>
                     {result.rootCauses.map((rc, i) => (
@@ -496,7 +496,7 @@ const AIAnalysisResult = ({ result, tableName }) => {
             <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
                 {result.vacuumStrategy && (
                     <div style={{ flex: 1, minWidth: 180, borderRadius: 9, padding: 11, background: THEME.surface, border: `1px solid ${THEME.grid}28` }}>
-                        <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim,  letterSpacing: '.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <Settings size={9} color={THEME.warning} />Vacuum Strategy
                         </div>
                         <p style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.5, margin: 0 }}>{result.vacuumStrategy}</p>
@@ -504,7 +504,7 @@ const AIAnalysisResult = ({ result, tableName }) => {
                 )}
                 {result.indexStrategy && (
                     <div style={{ flex: 1, minWidth: 180, borderRadius: 9, padding: 11, background: THEME.surface, border: `1px solid ${THEME.grid}28` }}>
-                        <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim,  letterSpacing: '.05em', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <Layers size={9} color={THEME.info} />Index Strategy
                         </div>
                         <p style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.5, margin: 0 }}>{result.indexStrategy}</p>
@@ -515,13 +515,13 @@ const AIAnalysisResult = ({ result, tableName }) => {
             {/* Tuning Recommendations */}
             {result.tuningRecommendations?.length > 0 && (
                 <div style={{ borderRadius: 9, padding: 11, background: THEME.surface, border: `1px solid ${THEME.grid}28` }}>
-                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 7, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim,  letterSpacing: '.05em', marginBottom: 7, display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Gauge size={9} color={THEME.primary} />Config Tuning
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: '3px 8px', marginBottom: 4 }}>
                             {['Parameter', 'Current est.', 'Suggested'].map(h => (
-                                <span key={h} style={{ fontSize: 7.5, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.04em' }}>{h}</span>
+                                <span key={h} style={{ fontSize: 7.5, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.04em' }}>{h}</span>
                             ))}
                         </div>
                         {result.tuningRecommendations.map((tr, i) => (
@@ -541,7 +541,7 @@ const AIAnalysisResult = ({ result, tableName }) => {
             {/* Long-term Risks */}
             {result.longTermRisks?.length > 0 && (
                 <div style={{ borderRadius: 9, padding: 11, background: `${THEME.warning}03`, border: `1px solid ${THEME.warning}12` }}>
-                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ fontSize: 8.5, fontWeight: 800, color: THEME.textDim,  letterSpacing: '.05em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
                         <TriangleAlert size={9} color={THEME.warning} />Long-term Risks
                     </div>
                     {result.longTermRisks.map((risk, i) => (
@@ -759,7 +759,7 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
             <div style={{padding:'13px 16px',borderBottom:`1px solid ${THEME.glassBorder}`,display:'flex',alignItems:'center',gap:11}}>
                 <HealthGauge score={healthScore} size={54}/>
                 <div style={{flex:1}}>
-                    <div style={{fontSize:10.5,fontWeight:800,color:THEME.textMain,textTransform:'uppercase',letterSpacing:'.06em'}}>Deep Analysis: <span style={{color:THEME.primary}}>{tableName}</span></div>
+                    <div style={{fontSize:10.5,fontWeight:800,color:THEME.textMain,,letterSpacing:'0.02em'}}>Deep Analysis: <span style={{color:THEME.primary}}>{tableName}</span></div>
                     <div style={{fontSize:9.5,color:THEME.textDim,marginTop:2}}>
                         {suggestions.length} optimizations{hiCnt>0&&<span style={{color:THEME.danger,fontWeight:700}}> · {hiCnt} critical/high</span>}{resCnt>0&&<span style={{color:THEME.success,fontWeight:700}}> · {resCnt} resolved</span>}
                     </div>
@@ -799,11 +799,11 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
                 {activeTab==='overview'&&<div className="vfade" style={{display:'flex',flexDirection:'column',gap:11}}>
                     <div style={{display:'flex',gap:11,alignItems:'stretch',flexWrap:'wrap'}}>
                         <div style={{borderRadius:9,padding:9,background:THEME.surface,border:`1px solid ${THEME.grid}28`,display:'flex',flexDirection:'column',alignItems:'center'}}>
-                            <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',marginBottom:2,letterSpacing:'.04em'}}>Health Radar</div>
+                            <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,marginBottom:2,letterSpacing:'0.02em'}}>Health Radar</div>
                             <HealthRadar metrics={radarMetrics} size={140}/>
                         </div>
                         <div style={{flex:1,minWidth:190,borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
-                            <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',marginBottom:7,letterSpacing:'.04em'}}>Table Profile</div>
+                            <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,marginBottom:7,letterSpacing:'0.02em'}}>Table Profile</div>
                             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'4px 12px'}}>
                                 {[['Size',fmtSize(sizeGb)],['Indexes',fmtSize(idxSizeGb)],['Rows',fmtNum(rowCount)],['Seq Scans',fmtNum(seqScans)],['Idx Scans',fmtNum(idxScans)],['Last Vacuum',lastVacuum?new Date(lastVacuum).toLocaleDateString():'Never'],
                                     ...(tupIns!=null?[['Inserts',fmtNum(tupIns)]]:[]),(tupUpd!=null?[['Updates',fmtNum(tupUpd)]]:[]),(tupDel!=null?[['Deletes',fmtNum(tupDel)]]:[]),(hotRatio!=null?[['HOT%',fmtPct(hotRatio)]]:[]),(avgQMs!=null?[['Avg Query',fmtMs(avgQMs)]]:[]),(txPerSec!=null?[['TPS',fmtNum(txPerSec)]]:[])]
@@ -823,7 +823,7 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
                     </div>
                     {/* Priority */}
                     <div style={{borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
-                        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',marginBottom:7,letterSpacing:'.04em',display:'flex',alignItems:'center',gap:4}}><Flame size={9} color={THEME.danger}/>Priority Actions</div>
+                        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,marginBottom:7,letterSpacing:'0.02em',display:'flex',alignItems:'center',gap:4}}><Flame size={9} color={THEME.danger}/>Priority Actions</div>
                         {suggestions.filter(s=>s.severity==='critical'||s.severity==='high').slice(0,6).map((s,i)=><div key={s.id} style={{display:'flex',alignItems:'center',gap:6,padding:'4px 0',borderBottom:i<5?`1px solid ${THEME.grid}12`:'none'}}>
                             <span style={{fontSize:8.5,fontWeight:800,color:THEME.textDim,width:13}}>{i+1}.</span>
                             <s.icon size={9} color={sevColor(s.severity)}/>
@@ -844,9 +844,9 @@ const AdvancedAnalysisPanel = ({table, resolvedOptimizations: rawResolved, onMar
                         <div style={{flex:1,minWidth:190}}><AreaChart data={spDead} color={deadTuples>1000?THEME.warning:THEME.success} label="Dead Tuples" yFmt={v=>fmtNum(Math.round(v))}/></div>
                     </div>
                     <div style={{borderRadius:9,padding:11,background:THEME.surface,border:`1px solid ${THEME.grid}28`}}>
-                        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',letterSpacing:'.04em',marginBottom:7}}><PieChart size={9} style={{display:'inline',marginRight:4}}/>Breakdown</div>
+                        <div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,,letterSpacing:'0.02em',marginBottom:7}}><PieChart size={9} style={{display:'inline',marginRight:4}}/>Breakdown</div>
                         {['critical','high','medium','low'].map(sv=>{const cnt=suggestions.filter(s=>s.severity===sv).length,res=suggestions.filter(s=>s.severity===sv&&resolvedOptimizations.has(s.id)).length;return cnt>0?<div key={sv} style={{marginBottom:5}}><div style={{display:'flex',justifyContent:'space-between',marginBottom:2}}><span style={{fontSize:9.5,fontWeight:600,color:sevColor(sv),textTransform:'capitalize'}}>{sv}</span><span style={{fontSize:8.5,color:THEME.textDim}}>{res}/{cnt}</span></div><PBar value={res} max={cnt} color={sevColor(sv)} h={4}/></div>:null;})}
-                        <div style={{marginTop:8,fontSize:8.5,fontWeight:700,color:THEME.textDim,textTransform:'uppercase',marginBottom:5}}>Categories</div>
+                        <div style={{marginTop:8,fontSize:8.5,fontWeight:700,color:THEME.textDim,,marginBottom:5}}>Categories</div>
                         <div style={{display:'flex',flexWrap:'wrap',gap:4}}>{[...new Set(suggestions.map(s=>s.category))].map(c=><span key={c} style={{fontSize:9,padding:'2px 7px',borderRadius:3,background:`${THEME.primary}08`,color:THEME.primary,fontWeight:600,border:`1px solid ${THEME.primary}12`}}>{c} ({suggestions.filter(s=>s.category===c).length})</span>)}</div>
                     </div>
                 </div>}

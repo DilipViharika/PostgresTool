@@ -369,8 +369,8 @@ const CostBreakdownChart = ({ plan }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
                 <div style={{ width: 140 }} />
-                <div style={{ flex: 1, fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase' }}>Cost</div>
-                <div style={{ flex: 1, fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase' }}>Time</div>
+                <div style={{ flex: 1, fontSize: 9, color: THEME.textDim, fontWeight: 700 }}>Cost</div>
+                <div style={{ flex: 1, fontSize: 9, color: THEME.textDim, fontWeight: 700 }}>Time</div>
             </div>
             {nodes.slice(0, 8).map((n, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -447,7 +447,7 @@ const InsightsPanel = ({ insights, rewrites, indexRecs }) => {
                                     {getSeverityIcon(item.type)}
                                     <div>
                                         <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMain }}>{item.title}</div>
-                                        <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 1, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.category} · {item.impact} IMPACT</div>
+                                        <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 1,  letterSpacing: '0.04em' }}>{item.category} · {item.impact} IMPACT</div>
                                     </div>
                                 </div>
                                 <div style={{ fontSize: 10, color: THEME.textMuted, lineHeight: 1.5, marginBottom: item.fix ? 8 : 0 }}>{item.desc}</div>
@@ -773,7 +773,7 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
                         {/* Changes list */}
                         {rewrite.changes && rewrite.changes.length > 0 && (
                             <div>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>What Changed</div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 8 }}>What Changed</div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                     {rewrite.changes.map((change, i) => (
                                         <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '8px 10px', borderRadius: 6, background: `${changeTypeColor(change.type)}08`, border: `1px solid ${changeTypeColor(change.type)}20` }}>
@@ -787,7 +787,7 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
 
                         {/* Side-by-side diff */}
                         <div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <GitCompare size={11} /> Before / After
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -797,7 +797,7 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
                                 ].map((side, idx) => (
                                     <div key={idx} style={{ borderRadius: 8, overflow: 'hidden', border: `1px solid ${side.color}25` }}>
                                         <div style={{ padding: '5px 10px', background: side.labelBg, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: 9, fontWeight: 700, color: side.color, textTransform: 'uppercase' }}>{side.label}</span>
+                                            <span style={{ fontSize: 9, fontWeight: 700, color: side.color }}>{side.label}</span>
                                             <button onClick={() => copy(side.code, `side-${idx}`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 2 }}>
                                                 {copiedSection === `side-${idx}` ? <Check size={9} color={THEME.success} /> : <Copy size={9} />}
                                             </button>
@@ -810,7 +810,7 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
 
                         {/* Optimized query standalone with apply button */}
                         <div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Optimized Query</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 8 }}>Optimized Query</div>
                             <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: `1px solid ${THEME.success}30` }}>
                                 <pre style={{ margin: 0, padding: '12px 14px', fontSize: 11, fontFamily: 'monospace', color: THEME.success, background: `${THEME.bg}95`, whiteSpace: 'pre-wrap' }}>{rewrite.optimized_query}</pre>
                                 <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 }}>
@@ -860,7 +860,7 @@ const ServiceAttributionPanel = ({ serviceAttribution = [] }) => {
                     { label: 'Top Offender', value: sorted[0]?.service || '—', color: THEME.warning },
                 ].map((k, i) => (
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7 }}>
-                        <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 2 }}>{k.label}</div>
+                        <div style={{ fontSize: 9, color: THEME.textDim,  marginBottom: 2 }}>{k.label}</div>
                         <div style={{ fontSize: i === 3 ? 12 : 18, fontWeight: 800, color: k.color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.value}</div>
                     </div>
                 ))}
@@ -868,7 +868,7 @@ const ServiceAttributionPanel = ({ serviceAttribution = [] }) => {
 
             {/* Toolbar */}
             <div style={{ padding: '8px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase' }}>Sort:</span>
+                <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 700 }}>Sort:</span>
                 {[
                     { key: 'cost_share', label: '% DB Cost' },
                     { key: 'total_time_ms', label: 'Total Time' },
@@ -889,7 +889,7 @@ const ServiceAttributionPanel = ({ serviceAttribution = [] }) => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {/* Stacked distribution bar */}
                         <div style={{ marginBottom: 16 }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.06em' }}>Database Time Distribution by Service</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  marginBottom: 8, letterSpacing: '0.02em' }}>Database Time Distribution by Service</div>
                             <div style={{ height: 32, borderRadius: 6, overflow: 'hidden', display: 'flex' }}>
                                 {sorted.map((svc, i) => {
                                     const colors = [THEME.primary, THEME.warning, '#00e5a0', '#34d399', THEME.danger, '#f472b6'];
@@ -954,7 +954,7 @@ const ServiceAttributionPanel = ({ serviceAttribution = [] }) => {
                                             { label: 'Total DB', value: formatDuration(svc.total_time_ms), color: THEME.textMuted },
                                         ].map((stat, j) => (
                                             <div key={j} style={{ textAlign: 'center', padding: '6px 8px', borderRadius: 6, background: `${THEME.grid}20` }}>
-                                                <div style={{ fontSize: 8, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 3 }}>{stat.label}</div>
+                                                <div style={{ fontSize: 8, color: THEME.textDim,  marginBottom: 3 }}>{stat.label}</div>
                                                 <div style={{ fontSize: 12, fontWeight: 700, color: stat.color }}>{stat.value}</div>
                                             </div>
                                         ))}
@@ -976,7 +976,7 @@ const ServiceAttributionPanel = ({ serviceAttribution = [] }) => {
                         <thead>
                         <tr style={{ borderBottom: `1px solid ${THEME.grid}` }}>
                             {['Service', 'Team', 'DB', 'Queries', 'Avg Time', 'P99 Time', 'Total DB Time', 'Cost Share', 'Hot Table'].map(h => (
-                                <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
+                                <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>{h}</th>
                             ))}
                         </tr>
                         </thead>
@@ -1041,7 +1041,7 @@ const ParameterizationAdvisorPanel = ({ paramIssues = [] }) => {
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 10 }}>
                         <k.icon size={16} color={k.color} />
                         <div>
-                            <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>{k.label}</div>
+                            <div style={{ fontSize: 9, color: THEME.textDim }}>{k.label}</div>
                             <div style={{ fontSize: 18, fontWeight: 800, color: k.color }}>{k.value}</div>
                         </div>
                     </div>
@@ -1108,7 +1108,7 @@ const ParameterizationAdvisorPanel = ({ paramIssues = [] }) => {
 
                             {/* Detected literals */}
                             <div style={{ marginBottom: 14 }}>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 6 }}>Detected Literals</div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  marginBottom: 6 }}>Detected Literals</div>
                                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                     {q.literals.map((lit, i) => (
                                         <span key={i} style={{ padding: '2px 8px', borderRadius: 14, background: `${THEME.danger}18`, border: `1px solid ${THEME.danger}30`, fontSize: 10, fontFamily: 'monospace', color: THEME.danger, fontWeight: 600 }}>{lit}</span>
@@ -1118,7 +1118,7 @@ const ParameterizationAdvisorPanel = ({ paramIssues = [] }) => {
 
                             {/* Before / After */}
                             <div style={{ marginBottom: 14 }}>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 6 }}>Before → After</div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  marginBottom: 6 }}>Before → After</div>
                                 {[
                                     { label: 'Unparameterized', code: q.query, color: THEME.danger, badge: '❌' },
                                     { label: 'Parameterized', code: q.parameterized, color: THEME.success, badge: '✓' },
@@ -1134,7 +1134,7 @@ const ParameterizationAdvisorPanel = ({ paramIssues = [] }) => {
 
                             {/* Fix */}
                             <div>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 6 }}>Recommended Fix</div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  marginBottom: 6 }}>Recommended Fix</div>
                                 <div style={{ position: 'relative' }}>
                                     <pre style={{ margin: 0, padding: '10px 32px 10px 10px', fontSize: 10, fontFamily: 'monospace', color: THEME.success, background: `${THEME.bg}95`, borderRadius: 6, border: `1px solid ${THEME.success}30`, whiteSpace: 'pre-wrap' }}>{q.fix}</pre>
                                     <button onClick={() => copy(q.fix, `param-fix-${q.id}`)} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 2 }}>
@@ -1150,7 +1150,7 @@ const ParameterizationAdvisorPanel = ({ paramIssues = [] }) => {
                                     { label: 'Plan Cache Waste', value: q.plan_cache_waste, color: THEME.danger },
                                 ].map((s, i) => (
                                     <div key={i} style={{ padding: '8px 10px', borderRadius: 6, background: `${THEME.grid}25`, textAlign: 'center' }}>
-                                        <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</div>
+                                        <div style={{ fontSize: 9, color: THEME.textDim,  marginBottom: 2 }}>{s.label}</div>
                                         <div style={{ fontSize: 15, fontWeight: 700, color: s.color }}>{s.value}</div>
                                     </div>
                                 ))}
@@ -1254,7 +1254,7 @@ const SlowQueryPanel = ({ onLoadQuery, slowQueries = [] }) => {
             {selected ? (
                 <div className="opt-scroll" style={{ width: 340, overflowY: 'auto', padding: 16, flexShrink: 0 }}>
                     <div style={{ marginBottom: 12 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.06em' }}>Query Text</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  marginBottom: 8, letterSpacing: '0.02em' }}>Query Text</div>
                         <pre style={{ fontSize: 10, fontFamily: 'monospace', color: THEME.textMain, background: `${THEME.bg}80`, borderRadius: 6, padding: 10, whiteSpace: 'pre-wrap', border: `1px solid ${THEME.grid}40`, margin: 0 }}>{selected?.query || '—'}</pre>
                         <button onClick={() => onLoadQuery(selected?.query || '')} className="opt-btn" style={{ marginTop: 8, width: '100%', padding: '6px', borderRadius: 5, border: `1px solid ${THEME.primary}40`, background: `${THEME.primary}15`, color: THEME.primary, fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>
                             Load into Editor & Analyze →
@@ -1271,14 +1271,14 @@ const SlowQueryPanel = ({ onLoadQuery, slowQueries = [] }) => {
                             { label: 'Avg Rows', value: formatRows(selected?.rows || 0), color: THEME.textMuted },
                         ].map((s, i) => (
                             <div key={i} style={{ padding: '8px 10px', borderRadius: 7, background: `${THEME.grid}25`, textAlign: 'center' }}>
-                                <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</div>
+                                <div style={{ fontSize: 9, color: THEME.textDim,  marginBottom: 2 }}>{s.label}</div>
                                 <div style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{s.value}</div>
                             </div>
                         ))}
                     </div>
 
                     <div style={{ marginBottom: 12 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 8 }}>Time Distribution</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  marginBottom: 8 }}>Time Distribution</div>
                         <div style={{ position: 'relative', height: 24, borderRadius: 14, overflow: 'hidden', background: `${THEME.grid}30` }}>
                             <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${((selected?.mean_time || 0) / (selected?.p99_time || 1)) * 100}%`, background: THEME.success, borderRadius: 4 }} />
                             <div style={{ position: 'absolute', left: `${((selected?.mean_time || 0) / (selected?.p99_time || 1)) * 100}%`, top: 0, bottom: 0, width: `${(((selected?.p95_time || 0) - (selected?.mean_time || 0)) / (selected?.p99_time || 1)) * 100}%`, background: THEME.warning }} />
@@ -1321,7 +1321,7 @@ const LockMonitorPanel = ({ locks = [] }) => {
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 10 }}>
                         <k.icon size={16} color={k.color} />
                         <div>
-                            <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase' }}>{k.label}</div>
+                            <div style={{ fontSize: 9, color: THEME.textDim }}>{k.label}</div>
                             <div style={{ fontSize: 18, fontWeight: 800, color: k.color }}>{k.value}</div>
                         </div>
                     </div>
@@ -1330,7 +1330,7 @@ const LockMonitorPanel = ({ locks = [] }) => {
 
             {blockedCount > 0 && (
                 <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.grid}`, background: `${THEME.danger}05`, flexShrink: 0 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: THEME.danger, textTransform: 'uppercase', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: THEME.danger,  marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                         <Siren size={12} /> Lock Chain Detected
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -1362,7 +1362,7 @@ const LockMonitorPanel = ({ locks = [] }) => {
                     <thead>
                     <tr style={{ borderBottom: `1px solid ${THEME.grid}` }}>
                         {['PID', 'State', 'Mode', 'Relation', 'Granted', 'Duration', 'Blocked By', 'Query'].map(h => (
-                            <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
+                            <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                     </tr>
                     </thead>
@@ -1418,7 +1418,7 @@ const MaintenancePanel = ({ maintenance = [] }) => {
                     { label: 'Total Dead Tuples', value: formatRows(safeMaintenance.reduce((s, t) => s + (t?.dead_tuples || 0), 0)), color: THEME.textMuted },
                 ].map((k, i) => (
                     <div key={i} className="opt-card" style={{ flex: 1, padding: '8px 12px', borderRadius: 7 }}>
-                        <div style={{ fontSize: 9, color: THEME.textDim, textTransform: 'uppercase', marginBottom: 2 }}>{k.label}</div>
+                        <div style={{ fontSize: 9, color: THEME.textDim,  marginBottom: 2 }}>{k.label}</div>
                         <div style={{ fontSize: 18, fontWeight: 800, color: k.color }}>{k.value}</div>
                     </div>
                 ))}
@@ -1429,7 +1429,7 @@ const MaintenancePanel = ({ maintenance = [] }) => {
                     <thead>
                     <tr style={{ borderBottom: `1px solid ${THEME.grid}` }}>
                         {['Table', 'Size', 'Live Tuples', 'Dead Tuples', 'Bloat %', 'Last Vacuum', 'Last Analyze', 'Vacuums', 'Status', 'Action'].map(h => (
-                            <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
+                            <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                     </tr>
                     </thead>
@@ -1459,7 +1459,7 @@ const MaintenancePanel = ({ maintenance = [] }) => {
                                 <td style={{ padding: '9px 12px', color: THEME.textMuted, fontSize: 10 }}>{t?.last_analyze || 'never'}</td>
                                 <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{t?.vacuum_count || 0}</td>
                                 <td style={{ padding: '9px 12px' }}>
-                                    <span style={{ padding: '2px 7px', borderRadius: 9, background: `${uc}18`, color: uc, fontSize: 9, fontWeight: 700, textTransform: 'uppercase' }}>{u}</span>
+                                    <span style={{ padding: '2px 7px', borderRadius: 9, background: `${uc}18`, color: uc, fontSize: 9, fontWeight: 700 }}>{u}</span>
                                 </td>
                                 <td style={{ padding: '9px 12px' }}>
                                     <div style={{ display: 'flex', gap: 4 }}>
@@ -1496,7 +1496,7 @@ const ConfigAdvisorPanel = ({ pgConfig = [] }) => {
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0, flexWrap: 'wrap' }}>
                 <SlidersHorizontal size={13} color={THEME.primary} />
-                <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginRight: 6, textTransform: 'uppercase' }}>Category:</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginRight: 6 }}>Category:</span>
                 {categories.map(c => (
                     <button key={c} onClick={() => setCategory(c)} style={{ padding: '3px 10px', borderRadius: 14, border: `1px solid ${category === c ? THEME.primary : THEME.grid}`, background: category === c ? `${THEME.primary}20` : 'transparent', color: category === c ? THEME.primary : THEME.textMuted, fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>{c}</button>
                 ))}
@@ -1579,7 +1579,7 @@ const IndexAdvisorPanel = ({ indexes = [] }) => {
                     <thead>
                     <tr style={{ borderBottom: `1px solid ${THEME.grid}` }}>
                         {['Table', 'Column', 'Type', 'Size', 'Scans/mo', 'Bloat', 'Status', 'Action'].map(h => (
-                            <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                            <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em' }}>{h}</th>
                         ))}
                     </tr>
                     </thead>
@@ -1592,7 +1592,7 @@ const IndexAdvisorPanel = ({ indexes = [] }) => {
                             <td style={{ padding: '9px 12px', color: THEME.textMuted }}>{idx?.size || '—'}</td>
                             <td style={{ padding: '9px 12px', color: (idx?.scans || 0) === 0 ? THEME.danger : THEME.textMuted }}>{((idx?.scans) || 0).toLocaleString()}</td>
                             <td style={{ padding: '9px 12px', color: parseFloat(idx?.bloat || '0') > 20 ? THEME.warning : THEME.textMuted }}>{idx?.bloat || '0'}</td>
-                            <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 7px', borderRadius: 9, background: `${statusColor(idx?.status)}18`, color: statusColor(idx?.status), fontSize: 9, fontWeight: 700, textTransform: 'uppercase' }}>{idx?.status || '?'}</span></td>
+                            <td style={{ padding: '9px 12px' }}><span style={{ padding: '2px 7px', borderRadius: 9, background: `${statusColor(idx?.status)}18`, color: statusColor(idx?.status), fontSize: 9, fontWeight: 700 }}>{idx?.status || '?'}</span></td>
                             <td style={{ padding: '9px 12px' }}>
                                 {idx?.status === 'unused' && <button style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}30`, cursor: 'pointer' }}>DROP</button>}
                                 {idx?.status === 'bloated' && <button style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: `${THEME.warning}15`, color: THEME.warning, border: `1px solid ${THEME.warning}30`, cursor: 'pointer' }}>REINDEX</button>}
@@ -1617,7 +1617,7 @@ const TableStatsPanel = ({ tableStats = [] }) => {
                     <thead>
                     <tr style={{ borderBottom: `1px solid ${THEME.grid}` }}>
                         {['Table', 'Rows', 'Size', 'Dead Tuples', 'Last Vacuum', 'Seq Scans', 'Idx Scans', 'Idx Hit %'].map(h => (
-                            <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
+                            <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                     </tr>
                     </thead>
@@ -1683,7 +1683,7 @@ const ComparePanel = () => {
         const diff = b - a, pct = ((diff / a) * 100).toFixed(1), better = diff < 0;
         return (
             <div style={{ textAlign: 'center', padding: '8px 12px', borderRadius: 6, background: better ? `${THEME.success}10` : `${THEME.danger}10`, border: `1px solid ${better ? THEME.success : THEME.danger}25` }}>
-                <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 2, textTransform: 'uppercase' }}>{label}</div>
+                <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 2 }}>{label}</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: better ? THEME.success : THEME.danger }}>{better ? '▼' : '▲'} {Math.abs(pct)}%</div>
                 <div style={{ fontSize: 9, color: THEME.textMuted }}>B vs A</div>
             </div>
@@ -1936,7 +1936,7 @@ const QueryOptimizerTab = () => {
                 {/* LEFT: Editor */}
                 <div style={{ width: 380, flexShrink: 0, borderRight: `1px solid ${THEME.grid}`, display: 'flex', flexDirection: 'column' }}>
                     <div style={{ padding: '8px 14px', borderBottom: `1px solid ${THEME.grid}`, background: THEME.surface, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>SQL Query</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em' }}>SQL Query</span>
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                             <span style={{ fontSize: 9, color: THEME.textMuted, display: 'flex', alignItems: 'center', gap: 3 }}><Database size={9} /> postgres</span>
                             <button onClick={copyQuery} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 2 }}>
@@ -1970,7 +1970,7 @@ const QueryOptimizerTab = () => {
 
                     {showHistory && history.length > 0 && (
                         <div style={{ height: 220, borderTop: `1px solid ${THEME.grid}`, background: THEME.surface, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-                            <div style={{ padding: '6px 14px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>RECENT RUNS</div>
+                            <div style={{ padding: '6px 14px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em' }}>RECENT RUNS</div>
                             <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
                                 {history.map(item => (
                                     <div key={item.id} onClick={() => setQuery(item.fullQuery)} className="opt-row-hover" style={{ padding: '7px 14px', borderBottom: `1px solid ${THEME.grid}30`, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -1998,7 +1998,7 @@ const QueryOptimizerTab = () => {
                             <button key={t.id} onClick={() => setActiveTab(t.id)} className="opt-tab-btn" style={{ padding: '11px 14px', border: 'none', borderBottom: activeTab === t.id ? `2px solid ${THEME.primary}` : '2px solid transparent', background: 'transparent', color: activeTab === t.id ? THEME.primary : THEME.textMuted, fontSize: 11, fontWeight: activeTab === t.id ? 700 : 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginBottom: -1, whiteSpace: 'nowrap', flexShrink: 0 }}>
                                 <t.icon size={12} />
                                 {t.label}
-                                {t.isNew && <span style={{ fontSize: 7, padding: '1px 4px', borderRadius: 10, background: `${THEME.primary}25`, color: THEME.primary, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>NEW</span>}
+                                {t.isNew && <span style={{ fontSize: 7, padding: '1px 4px', borderRadius: 10, background: `${THEME.primary}25`, color: THEME.primary, fontWeight: 800,  letterSpacing: '0.04em' }}>NEW</span>}
                                 {t.id === 'plan' && insights.length > 0 && (
                                     <span style={{ width: 14, height: 14, borderRadius: '50%', background: THEME.danger, color: '#fff', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{insights.length}</span>
                                 )}
@@ -2051,7 +2051,7 @@ const QueryOptimizerTab = () => {
                                             <div key={i} className="opt-card" style={{ padding: '8px 12px', borderRadius: 7 }}>
                                                 <div style={{ display: 'flex', gap: 5, alignItems: 'center', marginBottom: 3 }}>
                                                     <stat.icon size={10} color={stat.color} />
-                                                    <span style={{ fontSize: 9, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{stat.label}</span>
+                                                    <span style={{ fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.04em' }}>{stat.label}</span>
                                                 </div>
                                                 <div style={{ fontSize: 16, fontWeight: 800, color: stat.color }}>{stat.value}</div>
                                             </div>
@@ -2127,12 +2127,12 @@ const QueryOptimizerTab = () => {
                                 : (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                         <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
-                                            <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 16px', letterSpacing: '0.06em' }}>Node-by-Node Cost & Time</h3>
+                                            <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  margin: '0 0 16px', letterSpacing: '0.02em' }}>Node-by-Node Cost & Time</h3>
                                             <CostBreakdownChart plan={result} />
                                         </div>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                                             <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
-                                                <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 14px', letterSpacing: '0.06em' }}>Buffer Usage</h3>
+                                                <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  margin: '0 0 14px', letterSpacing: '0.02em' }}>Buffer Usage</h3>
                                                 {[
                                                     { label: 'Shared Hit Blocks', value: result.Plan["Shared Hit Blocks"] || 0, color: THEME.success, desc: 'From cache' },
                                                     { label: 'Shared Read Blocks', value: result.Plan["Shared Read Blocks"] || 0, color: THEME.danger, desc: 'From disk' },
@@ -2151,7 +2151,7 @@ const QueryOptimizerTab = () => {
                                                 ))}
                                             </div>
                                             <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
-                                                <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 14px', letterSpacing: '0.06em' }}>Timing Summary</h3>
+                                                <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  margin: '0 0 14px', letterSpacing: '0.02em' }}>Timing Summary</h3>
                                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                                     {[
                                                         { label: 'Planning', val: formatDuration(result["Planning Time"] || 1.2), color: THEME.textDim },
@@ -2160,7 +2160,7 @@ const QueryOptimizerTab = () => {
                                                         { label: 'Workers', val: `${result.Plan["Workers Launched"] || 0}`, color: THEME.textMuted },
                                                     ].map((s, i) => (
                                                         <div key={i} style={{ textAlign: 'center', padding: 12, borderRadius: 8, background: `${THEME.grid}30` }}>
-                                                            <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase' }}>{s.label}</div>
+                                                            <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4 }}>{s.label}</div>
                                                             <div style={{ fontSize: 20, fontWeight: 800, color: s.color }}>{s.val}</div>
                                                         </div>
                                                     ))}
@@ -2192,7 +2192,7 @@ const QueryOptimizerTab = () => {
                                             <FlameGraph plan={result} />
                                         </div>
                                         <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
-                                            <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', margin: '0 0 14px', letterSpacing: '0.06em' }}>Node-by-Node Cost & Time</h3>
+                                            <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  margin: '0 0 14px', letterSpacing: '0.02em' }}>Node-by-Node Cost & Time</h3>
                                             <CostBreakdownChart plan={result} />
                                         </div>
                                     </div>

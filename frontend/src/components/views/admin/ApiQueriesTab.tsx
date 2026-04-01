@@ -57,7 +57,6 @@ const GlobalStyles = () => (
 
         @keyframes fadeUp    { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         @keyframes pulse     { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-        @keyframes scanline  { 0% { transform:translateY(-100%); } 100% { transform:translateY(400%); } }
         @keyframes ripple    { 0% { transform:scale(0); opacity:0.6; } 100% { transform:scale(3); opacity:0; } }
         @keyframes shimmer   { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
         @keyframes barGrow   { from { transform:scaleX(0); } to { transform:scaleX(1); } }
@@ -240,7 +239,7 @@ const ErrorHeatmap = ({ errorRate }) => {
     const maxV = Math.max(...hours, 0.01);
     return (
         <div>
-            <div style={{ fontSize: 9, color: T.text3, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Error Rate / 24h</div>
+            <div style={{ fontSize: 9, color: T.text3, marginBottom: 6,  letterSpacing: '0.02em' }}>Error Rate / 24h</div>
             <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                 {hours.map((v, i) => {
                     const intensity = v / maxV;
@@ -292,7 +291,7 @@ const DependencyGraph = ({ spans }) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const ExplainPlan = ({ span }) => (
     <div style={{ marginTop: 10, padding: 12, background: T.bg, borderRadius: 6, border: `1px solid ${T.danger}30` }}>
-        <div style={{ fontSize: 9, fontWeight: 700, color: T.danger, marginBottom: 8, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 9, fontWeight: 700, color: T.danger, marginBottom: 8, letterSpacing: '0.02em' }}>
             ⚠ Slow Query — Execution Plan
         </div>
         <div style={{ fontSize: 10, color: T.text2, fontFamily: THEME.fontMono }}>
@@ -313,15 +312,15 @@ const SpanDetail = ({ span }) => (
     <div style={{ padding: '12px 16px', background: T.raised, borderLeft: `2px solid ${span.error ? T.danger : spanColor(span.type)}`, borderRadius: '0 8px 8px 0', margin: '2px 0 10px 0', animation: 'fadeUp 0.2s ease-out' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 10 }}>
             <div>
-                <div style={{ fontSize: 9, color: T.text3, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Layer</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: T.text1, textTransform: 'uppercase' }}>{span.type}</div>
+                <div style={{ fontSize: 9, color: T.text3, marginBottom: 3,  letterSpacing: '0.02em' }}>Layer</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{span.type}</div>
             </div>
             <div>
-                <div style={{ fontSize: 9, color: T.text3, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Duration</div>
+                <div style={{ fontSize: 9, color: T.text3, marginBottom: 3,  letterSpacing: '0.02em' }}>Duration</div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: spanColor(span.type) }}>{fmtMs(span.duration)}</div>
             </div>
             <div>
-                <div style={{ fontSize: 9, color: T.text3, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Status</div>
+                <div style={{ fontSize: 9, color: T.text3, marginBottom: 3,  letterSpacing: '0.02em' }}>Status</div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: span.error ? T.danger : T.success }}>{span.error ? 'ERROR' : 'OK'}</div>
             </div>
         </div>
@@ -411,7 +410,7 @@ const LogStream = ({ logs, live = false }) => {
             <div style={{ padding: '8px 14px', background: T.raised, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div className="glow-dot" style={{ width: 6, height: 6, background: live ? T.success : T.text3 }} />
-                    <span style={{ fontSize: 9, fontWeight: 700, color: T.text2, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: T.text2,  letterSpacing: '0.02em' }}>
                         {live ? 'Live Stream' : 'Trace Log'}
                     </span>
                 </div>
@@ -449,7 +448,7 @@ const JsonViewer = ({ data, label }) => {
     return (
         <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 8, overflow: 'hidden' }}>
             <div style={{ padding: '7px 12px', background: T.raised, borderBottom: `1px solid ${T.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em' }}>{label}</span>
                 <button onClick={copy} style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? T.success : T.text3, display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
                     {copied ? <><Check size={11}/> Copied</> : <><Copy size={11}/> Copy</>}
                 </button>
@@ -477,7 +476,7 @@ const CurlBlock = ({ method, url, headers, body }) => {
             <div style={{ padding: '7px 12px', background: T.raised, borderBottom: `1px solid ${T.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Terminal size={11} color={T.text3} />
-                    <span style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Reproduce in Terminal</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em' }}>Reproduce in Terminal</span>
                 </div>
                 <button onClick={copy} style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? T.success : T.text3, display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
                     {copied ? <><Check size={11}/> Copied</> : <><Copy size={11}/> Copy</>}
@@ -500,7 +499,7 @@ const AiPanel = ({ insight, anomaly }) => (
             <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 10 }}>
                     <BrainCircuit size={13} color={T.ai} />
-                    <span style={{ fontSize: 9, fontWeight: 700, color: T.ai, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Apex Intelligence</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: T.ai,  letterSpacing: '0.02em' }}>Apex Intelligence</span>
                     <span style={{ fontSize: 8, color: T.text3, border: `1px solid ${T.text3}30`, padding: '1px 5px', borderRadius: 3 }}>GPT-4o</span>
                 </div>
                 <p style={{ margin: 0, fontSize: 12, color: T.text1, lineHeight: 1.65 }}>{insight}</p>
@@ -508,7 +507,7 @@ const AiPanel = ({ insight, anomaly }) => (
             {anomaly && (
                 <div className="anomaly-ring" style={{ padding: '8px 12px', background: `${T.danger}10`, border: `1px solid ${T.danger}30`, borderRadius: 8, flexShrink: 0, textAlign: 'center' }}>
                     <AlertOctagon size={16} color={T.danger} style={{ display: 'block', margin: '0 auto 4px' }} />
-                    <div style={{ fontSize: 8, color: T.danger, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Anomaly</div>
+                    <div style={{ fontSize: 8, color: T.danger, fontWeight: 700,  letterSpacing: '0.02em' }}>Anomaly</div>
                 </div>
             )}
         </div>
@@ -522,7 +521,7 @@ const WebVital = ({ label, value, unit, threshold, color }) => {
     const ok = parseFloat(value) < threshold;
     return (
         <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${ok ? T.border : T.warning}30` }}>
-            <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{label}</div>
+            <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 6 }}>{label}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                 <span style={{ fontSize: 22, fontWeight: 800, color: ok ? T.success : T.warning, fontFamily: THEME.fontBody, lineHeight: 1 }}>{value}</span>
                 <span style={{ fontSize: 10, color: T.text3 }}>{unit}</span>
@@ -540,7 +539,7 @@ const InfraGauge = ({ label, value, max, unit, color }) => {
     return (
         <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</span>
+                <span style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em' }}>{label}</span>
                 <span style={{ fontSize: 11, fontWeight: 700, color }}>{value}{unit}</span>
             </div>
             <div className="infra-bar-track">
@@ -564,14 +563,14 @@ const SecurityPanel = ({ security, endpoint }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${tlColor}30` }}>
-                    <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Threat Level</div>
+                    <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 6 }}>Threat Level</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <Radar size={20} color={tlColor} />
                         <span style={{ fontSize: 18, fontWeight: 800, color: tlColor, fontFamily: THEME.fontBody }}>{threatLevel}</span>
                     </div>
                 </div>
                 <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
-                    <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>WAF Status</div>
+                    <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 6 }}>WAF Status</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <ShieldAlert size={14} color={security.blocked ? T.danger : T.success} />
                         <span style={{ fontSize: 11, fontWeight: 700, color: security.blocked ? T.danger : T.success }}>
@@ -581,7 +580,7 @@ const SecurityPanel = ({ security, endpoint }) => {
                 </div>
             </div>
             <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
-                <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Rules Triggered</div>
+                <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 8 }}>Rules Triggered</div>
                 {security.rules_triggered.length === 0 ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: T.success }}>
                         <CheckCircle size={12} /> No rules triggered
@@ -594,7 +593,7 @@ const SecurityPanel = ({ security, endpoint }) => {
                 ))}
             </div>
             <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
-                <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>TLS / Auth</div>
+                <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 8 }}>TLS / Auth</div>
                 <div style={{ display: 'flex', gap: 8 }}>
                     <span className="metric-chip" style={{ background: `${T.success}10`, color: T.success, borderColor: `${T.success}20` }}><Lock size={9}/> TLS 1.3</span>
                     <span className="metric-chip" style={{ background: `${T.primary}10`, color: T.primary, borderColor: `${T.primary}20` }}><Fingerprint size={9}/> JWT HS256</span>
@@ -612,7 +611,7 @@ const StatPill = ({ label, value, icon: Icon, color = T.primary, trend }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10, flexShrink: 0 }}>
         <Icon size={13} color={color} />
         <div>
-            <div style={{ fontSize: 8, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
+            <div style={{ fontSize: 8, color: T.text3,  letterSpacing: '0.02em' }}>{label}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: T.text1 }}>{value}</span>
                 {trend && (
@@ -640,7 +639,7 @@ const EndpointItem = ({ api, selected, onClick }) => {
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <span style={{ fontSize: 8, fontWeight: 800, color: mColor, background: `${mColor}15`, padding: '2px 6px', borderRadius: 10, letterSpacing: '0.05em' }}>
+                    <span style={{ fontSize: 8, fontWeight: 800, color: mColor, background: `${mColor}15`, padding: '2px 6px', borderRadius: 10, letterSpacing: '0.02em' }}>
                         {api.method}
                     </span>
                     <span style={{ fontSize: 9, fontWeight: 700, color: T.text3 }}>v{api.version}</span>
@@ -860,7 +859,7 @@ const ApiQueriesTab = () => {
                                     background: filterMethod===m ? `${methodColor(m)}15` : 'transparent',
                                     color: filterMethod===m ? methodColor(m) : T.text3,
                                     fontSize: 8, fontWeight: 700, cursor: 'pointer', fontFamily: THEME.fontMono,
-                                    textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'all 0.15s'
+                                     letterSpacing: '0.02em', transition: 'all 0.15s'
                                 }}>{m}</button>
                             ))}
                         </div>
@@ -893,7 +892,7 @@ const ApiQueriesTab = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 14 }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                                        <span style={{ fontSize: 8, fontWeight: 800, color: methodColor(selected.method), background: `${methodColor(selected.method)}15`, padding: '3px 8px', borderRadius: 14, letterSpacing: '0.06em', flexShrink: 0 }}>
+                                        <span style={{ fontSize: 8, fontWeight: 800, color: methodColor(selected.method), background: `${methodColor(selected.method)}15`, padding: '3px 8px', borderRadius: 14, letterSpacing: '0.02em', flexShrink: 0 }}>
                                             {selected.method}
                                         </span>
                                         <span style={{ fontSize: 14, fontWeight: 700, color: T.text1, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -924,7 +923,7 @@ const ApiQueriesTab = () => {
 
                                 {/* Percentile mini-chart */}
                                 <div style={{ padding: '12px 16px', background: T.raised, borderRadius: 10, border: `1px solid ${T.border}`, minWidth: 200, flexShrink: 0 }}>
-                                    <div style={{ fontSize: 9, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>Latency Percentiles</div>
+                                    <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 10 }}>Latency Percentiles</div>
                                     <PercentileBars p50={selected.p50} p95={selected.p95} p99={selected.p99} />
                                 </div>
 
@@ -954,13 +953,13 @@ const ApiQueriesTab = () => {
 
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 20 }}>
                                         <div>
-                                            <div style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
+                                            <div style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em', marginBottom: 12 }}>
                                                 Request Waterfall · {selected.spans.length} spans · {fmtMs(selected.spans.reduce((s,q)=>s+q.duration,0))} total
                                             </div>
                                             <TraceWaterfall spans={selected.spans} />
                                         </div>
                                         <div>
-                                            <div style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
+                                            <div style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em', marginBottom: 12 }}>
                                                 Service Graph
                                             </div>
                                             <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12 }}>
@@ -975,7 +974,7 @@ const ApiQueriesTab = () => {
                             {tab === 'logs' && (
                                 <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                        <span style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em' }}>
                                             Correlated Logs · Trace ID: <span style={{ color: T.primary }}>8a92-b4c2-f711</span>
                                         </span>
                                         <span className="metric-chip" style={{ background: `${T.primary}10`, color: T.primary, borderColor: `${T.primary}20` }}>
@@ -1007,7 +1006,7 @@ const ApiQueriesTab = () => {
                             {tab === 'rum' && (
                                 <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                     <div>
-                                        <div style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Core Web Vitals</div>
+                                        <div style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em', marginBottom: 12 }}>Core Web Vitals</div>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                                             <WebVital label="LCP" value={selected.rum.lcp}  unit="s"  threshold={2.5} />
                                             <WebVital label="FID" value={selected.rum.fid}  unit="ms" threshold={100} />
@@ -1015,7 +1014,7 @@ const ApiQueriesTab = () => {
                                         </div>
                                     </div>
                                     <div>
-                                        <div style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Container Resources</div>
+                                        <div style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em', marginBottom: 12 }}>Container Resources</div>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
                                             <InfraGauge label="CPU"     value={selected.infra.cpu}     max={100} unit="%" color={T.primary} />
                                             <InfraGauge label="Memory"  value={selected.infra.memory}  max={4}   unit="GB" color={T.secondary} />
@@ -1024,7 +1023,7 @@ const ApiQueriesTab = () => {
                                         </div>
                                     </div>
                                     <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
-                                        <div style={{ fontSize: 9, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>Client Context</div>
+                                        <div style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em', marginBottom: 10 }}>Client Context</div>
                                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                                             <span className="metric-chip" style={{ background: `${T.primary}10`, color: T.primary, borderColor: `${T.primary}20` }}>
                                                 <Monitor size={9}/> {selected.rum.browser}

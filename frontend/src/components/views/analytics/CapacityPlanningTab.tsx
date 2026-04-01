@@ -192,7 +192,7 @@ const StatTile = ({ label, value, sub, icon: Icon, color, gauge }) => {
     return (
         <div className="cap-card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase' }}>{label}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim }}>{label}</div>
                 <Icon size={16} color={color} />
             </div>
             <div style={{ fontSize: 24, fontWeight: 800, color: valueColor }}>{value}</div>
@@ -212,7 +212,7 @@ const RecommendationCard = ({ rec }) => {
         <div className="rec-item" style={{ borderLeft: `3px solid ${c}`, position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{rec.title}</div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: c, textTransform: 'uppercase' }}>{rec.urgency}</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: c }}>{rec.urgency}</div>
             </div>
             <div style={{ fontSize: 11, color: THEME.textDim, marginBottom: 8, lineHeight: 1.4 }}>{rec.desc}</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

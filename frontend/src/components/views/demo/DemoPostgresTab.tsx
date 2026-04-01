@@ -850,7 +850,7 @@ function DemoPostgresTab({ tabId }) {
                                                 style={{
                                                     fontSize: 9,
                                                     color: THEME.textDim,
-                                                    textTransform: 'uppercase',
+                                                    
                                                     marginBottom: 4,
                                                 }}
                                             >
@@ -2667,7 +2667,7 @@ function DemoPostgresTab({ tabId }) {
                                         fontSize: 16,
                                         fontWeight: 700,
                                         color: THEME.textMain,
-                                        letterSpacing: '0.06em',
+                                        letterSpacing: '0.02em',
                                     }}
                                 >
                                     VIGIL
@@ -2679,7 +2679,7 @@ function DemoPostgresTab({ tabId }) {
                                         border: `1px solid ${THEME.glassBorder}`,
                                         borderRadius: 10,
                                         padding: '2px 6px',
-                                        letterSpacing: '0.1em',
+                                        letterSpacing: '0.02em',
                                     }}
                                 >
                                     v3.0
@@ -2789,8 +2789,8 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         fontSize: 10,
                                         color: THEME.textDim,
-                                        letterSpacing: '0.08em',
-                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.02em',
+                                        
                                         marginBottom: 6,
                                         fontWeight: 600,
                                     }}
@@ -3016,7 +3016,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     fontSize: 10,
                                     color: THEME.textDim,
-                                    letterSpacing: '0.06em',
+                                    letterSpacing: '0.02em',
                                     fontWeight: 600,
                                     display: 'flex',
                                     alignItems: 'center',
@@ -3133,7 +3133,7 @@ function DemoPostgresTab({ tabId }) {
                                                     background: a.color,
                                                     flexShrink: 0,
                                                     marginTop: 5,
-                                                    boxShadow: `0 0 6px ${a.color}60`,
+                                                    
                                                 }}
                                             />
                                         )}
@@ -3230,7 +3230,7 @@ function DemoPostgresTab({ tabId }) {
                                                 <span
                                                     style={{
                                                         color: THEME.textDim,
-                                                        textTransform: 'uppercase',
+                                                        
                                                         letterSpacing: '0.04em',
                                                     }}
                                                 >
@@ -3302,7 +3302,7 @@ function DemoPostgresTab({ tabId }) {
                                             color: THEME.ai,
                                             borderRadius: 10,
                                             padding: '2px 8px',
-                                            letterSpacing: '0.08em',
+                                            letterSpacing: '0.02em',
                                             fontWeight: 600,
                                         }}
                                     >
@@ -3317,8 +3317,8 @@ function DemoPostgresTab({ tabId }) {
                                                 color: THEME.textDim,
                                                 marginBottom: 5,
                                                 fontWeight: 600,
-                                                letterSpacing: '0.08em',
-                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.02em',
+                                                
                                             }}
                                         >
                                             SELECT RULE TO TEST
@@ -3365,7 +3365,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     fontSize: 10,
                                     color: THEME.textDim,
-                                    letterSpacing: '0.06em',
+                                    letterSpacing: '0.02em',
                                     fontWeight: 600,
                                     display: 'flex',
                                     justifyContent: 'space-between',
@@ -9613,7 +9613,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             fontSize: 10,
                                             color: THEME.textDim,
-                                            textTransform: 'uppercase',
+                                            
                                             fontWeight: 600,
                                             marginBottom: 4,
                                         }}
@@ -9638,7 +9638,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             fontSize: 10,
                                             color: THEME.textDim,
-                                            textTransform: 'uppercase',
+                                            
                                             fontWeight: 600,
                                             marginBottom: 4,
                                         }}
@@ -9663,7 +9663,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             fontSize: 10,
                                             color: THEME.textDim,
-                                            textTransform: 'uppercase',
+                                            
                                             fontWeight: 600,
                                             marginBottom: 8,
                                         }}

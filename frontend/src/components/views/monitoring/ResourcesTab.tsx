@@ -124,7 +124,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {TIcon && <TIcon size={13} color={refreshing ? THEME.primary : THEME.textDim} style={{ transition: 'color 0.3s' }} />}
-                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted,  letterSpacing: '0.02em' }}>{title}</span>
                     {refreshing && (
                         <span style={{ fontSize: 9, color: THEME.primary, fontWeight: 700, animation: 'resPulse 1s ease-in-out infinite' }}>UPDATING</span>
                     )}
@@ -148,14 +148,14 @@ const StatusBadge = ({ label, color }) => (
         background: `${color}12`, color, border: `1px solid ${color}20`,
         lineHeight: 1.2, whiteSpace: 'nowrap',
     }}>
-        <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}60`, flexShrink: 0 }} />
+        <span style={{ width: 5, height: 5, borderRadius: '50%', background: color,  flexShrink: 0 }} />
         {label}
     </span>
 );
 
 const LiveDot = ({ color = THEME.success, size = 7 }) => (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}80` }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color }} />
         <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: `1px solid ${color}50`, animation: 'resPulseRing 2s ease-out infinite' }} />
     </div>
 );
@@ -480,7 +480,7 @@ const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
                         <div key={i}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, boxShadow: `0 0 4px ${statusColor}60` }} />
+                                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor }} />
                                     <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>{ts.name}</span>
                                     <span style={{ fontSize: 9.5, padding: '2px 6px', borderRadius: 14, background: `${THEME.primary}0a`, color: THEME.textDim, border: `1px solid ${THEME.grid}30` }}>{ts.tables} tables · {ts.sizePct}% capacity</span>
                                 </div>
@@ -663,7 +663,7 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 60px 70px 90px', gap: 8, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 6 }}>
                         {['Table', 'Size', 'Rows', 'Last Read', 'Risk'].map((h, i) => (
-                            <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: i > 0 ? 'right' : 'left' }}>{h}</div>
+                            <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.04em', textAlign: i > 0 ? 'right' : 'left' }}>{h}</div>
                         ))}
                     </div>
                     {deadCode.tables.map((t, i) => {
@@ -690,7 +690,7 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 80px', gap: 8, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 6 }}>
                         {['Table', 'Column', 'Type', 'Last Read'].map((h, i) => (
-                            <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</div>
+                            <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.04em' }}>{h}</div>
                         ))}
                     </div>
                     {deadCode.columns.map((c, i) => (
@@ -770,22 +770,22 @@ const RetentionPolicyManager = ({ refreshing }) => {
                     <div style={{ fontSize: 11.5, fontWeight: 700, color: THEME.textMain, marginBottom: 10 }}>New Retention Rule</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 1fr', gap: 8, marginBottom: 10 }}>
                         <div>
-                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Table Name</div>
+                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4,  letterSpacing: '0.04em' }}>Table Name</div>
                             <input style={inputStyle} placeholder="e.g. events_log" value={newPolicy.table} onChange={e => setNewPolicy(p => ({ ...p, table: e.target.value }))} />
                         </div>
                         <div>
-                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Action</div>
+                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4,  letterSpacing: '0.04em' }}>Action</div>
                             <select style={{ ...inputStyle }} value={newPolicy.action} onChange={e => setNewPolicy(p => ({ ...p, action: e.target.value }))}>
                                 <option value="archive">Archive (move to cold storage)</option>
                                 <option value="delete">Delete (DROP rows)</option>
                             </select>
                         </div>
                         <div>
-                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Age (days)</div>
+                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4,  letterSpacing: '0.04em' }}>Age (days)</div>
                             <input style={inputStyle} type="number" value={newPolicy.age_days} onChange={e => setNewPolicy(p => ({ ...p, age_days: Number(e.target.value) }))} />
                         </div>
                         <div>
-                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Partition Column</div>
+                            <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4,  letterSpacing: '0.04em' }}>Partition Column</div>
                             <input style={inputStyle} placeholder="e.g. created_at" value={newPolicy.partition_col} onChange={e => setNewPolicy(p => ({ ...p, partition_col: e.target.value }))} />
                         </div>
                     </div>
@@ -1086,7 +1086,7 @@ const ResourcesTab = () => {
     const SortTh = ({ label, sortId, align = 'left', width }) => {
         const active = sortKey === sortId;
         return (
-            <th onClick={() => toggleSort(sortId)} style={{ padding: '10px 16px', textAlign: align, width, fontSize: 10, fontWeight: 700, color: active ? THEME.primary : THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50`, cursor: 'pointer', userSelect: 'none', transition: 'color 0.15s', position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>
+            <th onClick={() => toggleSort(sortId)} style={{ padding: '10px 16px', textAlign: align, width, fontSize: 10, fontWeight: 700, color: active ? THEME.primary : THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50`, cursor: 'pointer', userSelect: 'none', transition: 'color 0.15s', position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: align === 'right' ? 'flex-end' : 'flex-start' }}>
                     {label}
                     {active && (sortDir === 'asc' ? <ArrowUp size={10} /> : <ArrowDown size={10} />)}
@@ -1166,7 +1166,7 @@ const ResourcesTab = () => {
                             <m.icon size={18} color={m.color} />
                         </div>
                         <div style={{ minWidth: 0, flex: 1 }}>
-                            <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1, marginBottom: 4 }}>{m.label}</div>
+                            <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600,  letterSpacing: '0.04em', lineHeight: 1, marginBottom: 4 }}>{m.label}</div>
                             <div style={{ fontSize: 20, fontWeight: 800, color: m.color, fontVariantNumeric: 'tabular-nums', lineHeight: 1, letterSpacing: '-0.02em' }}>{m.value}</div>
                             <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 3, lineHeight: 1 }}>{m.sub}</div>
                         </div>
@@ -1197,9 +1197,9 @@ const ResourcesTab = () => {
                                             <SortTh label="Size"       sortId="size"   align="right" width="12%" />
                                             <SortTh label="Rows"       sortId="rows"   align="right" width="11%" />
                                             <SortTh label="Growth"     sortId="growth" align="right" width="11%" />
-                                            <th style={{ padding: '10px 8px', width: '13%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Composition</th>
-                                            <th style={{ padding: '10px 8px', width: '12%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Trend</th>
-                                            <th style={{ padding: '10px 8px', width: '13%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Scans</th>
+                                            <th style={{ padding: '10px 8px', width: '13%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Composition</th>
+                                            <th style={{ padding: '10px 8px', width: '12%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Trend</th>
+                                            <th style={{ padding: '10px 8px', width: '13%', textAlign: 'right', fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>Scans</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -1309,7 +1309,7 @@ const ResourcesTab = () => {
                                                 </div>
                                                 {!resolved && (
                                                     <div style={{ width: '100%', height: 4, borderRadius: 2, background: `${THEME.grid}80`, overflow: 'hidden' }}>
-                                                        <div className="res-bar-animate" style={{ width: `${Math.min(v.bloat_ratio_pct, 100)}%`, height: '100%', borderRadius: 2, background: `linear-gradient(90deg, ${bc}90, ${bc})`, boxShadow: `0 0 8px ${bc}40`, animationDelay: `${i * 0.06}s` }} />
+                                                        <div className="res-bar-animate" style={{ width: `${Math.min(v.bloat_ratio_pct, 100)}%`, height: '100%', borderRadius: 2, background: `linear-gradient(90deg, ${bc}90, ${bc})`,  animationDelay: `${i * 0.06}s` }} />
                                                     </div>
                                                 )}
                                                 {resolved && <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>{resolved.note} — pending DB confirmation on next refresh</div>}
@@ -1439,7 +1439,7 @@ const ResourcesTab = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 120px', gap: 8, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 4 }}>
                                 {['Table', 'Table Size', 'Index Size', 'TOAST', 'Index Ratio'].map((h, i) => (
-                                    <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: i > 0 ? 'right' : 'left' }}>{h}</div>
+                                    <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.04em', textAlign: i > 0 ? 'right' : 'left' }}>{h}</div>
                                 ))}
                             </div>
                             {sortedGrowth.slice(0, 12).map((t, i) => {
@@ -1641,7 +1641,7 @@ const ResourcesTab = () => {
                                     <m.icon size={18} color={m.color} />
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1, marginBottom: 4 }}>{m.label}</div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600,  letterSpacing: '0.04em', lineHeight: 1, marginBottom: 4 }}>{m.label}</div>
                                     <div style={{ fontSize: 22, fontWeight: 800, color: m.color, fontVariantNumeric: 'tabular-nums', lineHeight: 1, letterSpacing: '-0.02em' }}>{m.value}</div>
                                     <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 3, lineHeight: 1 }}>{m.sub}</div>
                                 </div>
@@ -1726,7 +1726,7 @@ const ResourcesTab = () => {
                                     { l: 'Action', a: 'left', w: '14%' }, { l: 'Duration', a: 'right', w: '13%' },
                                     { l: 'Saved', a: 'right', w: '15%' }, { l: 'Status', a: 'right', w: '21%' },
                                 ].map(h => (
-                                    <th key={h.l} style={{ padding: '11px 20px', textAlign: h.a, width: h.w, fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: `1px solid ${THEME.grid}50` }}>{h.l}</th>
+                                    <th key={h.l} style={{ padding: '11px 20px', textAlign: h.a, width: h.w, fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50` }}>{h.l}</th>
                                 ))}
                             </tr>
                             </thead>
@@ -1768,7 +1768,7 @@ const ResourcesTab = () => {
                                         <s.icon size={13} color={s.color} />
                                     </div>
                                     <div>
-                                        <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1, marginBottom: 3 }}>{s.label}</div>
+                                        <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 600,  letterSpacing: '0.04em', lineHeight: 1, marginBottom: 3 }}>{s.label}</div>
                                         <div style={{ fontSize: 14, fontWeight: 800, color: s.color, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{s.value}</div>
                                     </div>
                                 </div>

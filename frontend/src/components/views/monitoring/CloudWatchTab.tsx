@@ -305,8 +305,8 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                     fontSize: 11,
                     fontWeight: 700,
                     color: T.textDim,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
+                    letterSpacing: '0.02em',
+                    
                     fontFamily: T.fontMono,
                     whiteSpace: 'nowrap',
                 }}
@@ -603,7 +603,7 @@ const EmptyState = ({ T, onAdd }) => (
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: `0 0 40px ${T.primary}15`,
+                
             }}
         >
             <Cloud size={36} color={T.primary} />
@@ -763,8 +763,8 @@ const MetricCard = ({ def, datapoints, metricsLoading, T }) => {
                             fontSize: 11,
                             fontWeight: 700,
                             color: T.textDim,
-                            letterSpacing: '0.07em',
-                            textTransform: 'uppercase',
+                            letterSpacing: '0.02em',
+                            
                             fontFamily: T.fontBody,
                         }}
                     >

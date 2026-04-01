@@ -398,7 +398,7 @@ export default function MongoDataToolsTab() {
                     </h3>
                     <div className="mongo-card">
                         <div style={{ marginBottom: 16 }}>
-                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted, textTransform: 'uppercase' }}>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted }}>
                                 Operation
                             </label>
                             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -438,7 +438,7 @@ export default function MongoDataToolsTab() {
                             </div>
                         )}
 
-                        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted, textTransform: 'uppercase' }}>
+                        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted }}>
                             Query / Filter
                         </label>
                         <textarea
@@ -450,7 +450,7 @@ export default function MongoDataToolsTab() {
 
                         {(queryMode === 'update') && (
                             <>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted, textTransform: 'uppercase' }}>
+                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted }}>
                                     Update Expression
                                 </label>
                                 <textarea
@@ -471,7 +471,7 @@ export default function MongoDataToolsTab() {
 
                         {queryResult && (
                             <div style={{ marginTop: 16 }}>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted, textTransform: 'uppercase' }}>
+                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted }}>
                                     Result
                                 </label>
                                 <div className="mongo-result-box">
@@ -532,7 +532,7 @@ export default function MongoDataToolsTab() {
 
                         {queryResult && (
                             <div style={{ marginTop: 16 }}>
-                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted, textTransform: 'uppercase' }}>
+                                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted }}>
                                     Result
                                 </label>
                                 <div className="mongo-result-box">
@@ -550,7 +550,7 @@ export default function MongoDataToolsTab() {
                     </h3>
                     <div className="mongo-card">
                         <div style={{ marginBottom: 16 }}>
-                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted, textTransform: 'uppercase' }}>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted }}>
                                 JSON Data
                             </label>
                             <textarea

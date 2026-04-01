@@ -531,9 +531,9 @@ export var PermissionMatrix = memo(function PermissionMatrix() {
             React.createElement('table', { style:{ width:'100%', borderCollapse:'collapse', minWidth:500 } },
                 React.createElement('thead', null,
                     React.createElement('tr', { style:{ background:T.surfaceMid, borderBottom:'1px solid '+T.border } },
-                        React.createElement('th', { style:{ padding:'11px 16px', textAlign:'left', fontSize:11, fontWeight:700, color:T.textMuted, textTransform:'uppercase', letterSpacing:'.07em' } }, 'Role'),
+                        React.createElement('th', { style:{ padding:'11px 16px', textAlign:'left', fontSize:11, fontWeight:700, color:T.textMuted,  letterSpacing:'0.02em' } }, 'Role'),
                         actions.map(function(a) {
-                            return React.createElement('th', { key:a, style:{ padding:'11px 14px', textAlign:'center', fontSize:11, fontWeight:700, color:T.textMuted, textTransform:'uppercase', letterSpacing:'.07em' } }, a);
+                            return React.createElement('th', { key:a, style:{ padding:'11px 14px', textAlign:'center', fontSize:11, fontWeight:700, color:T.textMuted,  letterSpacing:'0.02em' } }, a);
                         })
                     )
                 ),

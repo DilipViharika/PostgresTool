@@ -317,7 +317,7 @@ const SectionHeader = ({ icon: Icon, title, iconColor, right }) => (
 
 const MiniStat = ({ label, value, sub, color, icon: Icon }) => (
     <div style={{ padding: '14px 18px', background: THEME.surface, borderRadius: 10, border: `1px solid ${THEME.grid}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: THEME.textMuted }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.02em',  color: THEME.textMuted }}>
             {Icon && <Icon size={12} color={color} />} {label}
         </div>
         <div style={{ fontSize: 26, fontWeight: 800, color: color || THEME.textMain, lineHeight: 1, fontFamily: THEME.fontMono }}>{value}</div>
@@ -632,7 +632,7 @@ const PIIAccessLog = () => {
         <SectionHeader icon={Fingerprint} title="PII / Sensitive Access" iconColor={THEME.danger}
                        right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: THEME.fontMono }}>last 24h</span>} />
         <div style={{ padding: '12px 20px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: THEME.textDim, borderBottom: `1px solid ${THEME.grid}`, paddingBottom: 8, marginBottom: 4 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', fontSize: 10, fontWeight: 700, letterSpacing: '0.02em',  color: THEME.textDim, borderBottom: `1px solid ${THEME.grid}`, paddingBottom: 8, marginBottom: 4 }}>
                 <div>Resource · Accessor</div>
                 <div>Hits</div>
                 <div>Trend</div>

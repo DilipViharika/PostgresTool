@@ -40,7 +40,6 @@ const NoConnectionBanner = ({
       borderRadius: '12px',
       background: `linear-gradient(135deg, rgba(0, 184, 116, 0.03) 0%, rgba(0, 184, 116, 0.02) 100%)`,
       border: `1.5px solid ${borderGlow ? 'rgba(0, 184, 116, 0.3)' : 'rgba(0, 184, 116, 0.12)'}`,
-      backdropFilter: 'blur(8px)',
       boxShadow: borderGlow
         ? '0 0 20px rgba(0, 184, 116, 0.15), inset 0 0 20px rgba(0, 184, 116, 0.05)'
         : '0 8px 32px rgba(0, 0, 0, 0.3)',

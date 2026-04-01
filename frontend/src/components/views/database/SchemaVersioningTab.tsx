@@ -407,7 +407,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = '#6366f1', warn, c
             </div>
             <div>
                 <div style={{ fontSize: 26, fontWeight: 800, color: THEME.textMain, lineHeight: 1, letterSpacing: -.5 }}>{value}</div>
-                <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
+                <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4, fontWeight: 700,  letterSpacing: .8 }}>{label}</div>
                 {sub && <div style={{ fontSize: 11, color: critical ? '#ef4444' : warn ? '#f59e0b' : THEME.textDim, marginTop: 3 }}>{sub}</div>}
             </div>
         </div>
@@ -525,7 +525,7 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
                     {mig.tags?.length > 0 && (
                         <div style={{ display: 'flex', gap: 5, marginBottom: 10, flexWrap: 'wrap' }}>
                             {mig.tags.map(tag => (
-                                <span key={tag} className="sv-mono" style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: THEME.surface, color: THEME.textDim, border: `1px solid ${THEME.grid}`, textTransform: 'uppercase', letterSpacing: '.8px' }}>{tag}</span>
+                                <span key={tag} className="sv-mono" style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: THEME.surface, color: THEME.textDim, border: `1px solid ${THEME.grid}`,  letterSpacing: '.8px' }}>{tag}</span>
                             ))}
                         </div>
                     )}
@@ -534,7 +534,7 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
                     <div className={`sv-expandable ${expanded ? 'expanded' : ''}`}>
                         {mig.changes?.length > 0 && (
                             <div style={{ marginBottom: 12 }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.8px' }}>Changes</div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6,  letterSpacing: '.8px' }}>Changes</div>
                                 {mig.changes.map((change, idx) => (
                                     <div key={idx} className="sv-mono" style={{ fontSize: 11, color: THEME.textDim, marginLeft: 12, padding: '5px 10px', background: THEME.surfaceHover, borderRadius: 6, marginBottom: 4, borderLeft: `2px solid rgba(99,102,241,.3)` }}>
                                         {change.type}: <span style={{ color: THEME.primary }}>{change.target}</span>
@@ -547,7 +547,7 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
 
                         {mig.sql && (
                             <div style={{ marginBottom: 12 }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.8px' }}>SQL</div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6,  letterSpacing: '.8px' }}>SQL</div>
                                 <div
                                     className="sv-code"
                                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(highlightSQL(mig.sql.slice(0, 300) + (mig.sql.length > 300 ? '…' : ''))) }}
@@ -573,11 +573,11 @@ const MigrationCard = ({ mig, pending = false, onExpand, expanded = false, isFav
 
                         {pending && mig.pre_checks && (
                             <div style={{ marginBottom: 12 }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.8px' }}>Pre-flight Checks</div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6,  letterSpacing: '.8px' }}>Pre-flight Checks</div>
                                 {mig.pre_checks.map((check, idx) => (
                                     <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: THEME.surfaceHover, borderRadius: 6, marginBottom: 4, fontSize: 11 }}>
                                         <span style={{ color: THEME.textMuted }}>{check.name}</span>
-                                        <span className="sv-mono" style={{ padding: '2px 7px', borderRadius: 14, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', background: check.status === 'passed' ? 'rgba(16,185,129,.15)' : 'rgba(245,158,11,.12)', color: check.status === 'passed' ? '#34d399' : '#fbbf24' }}>{check.status}</span>
+                                        <span className="sv-mono" style={{ padding: '2px 7px', borderRadius: 14, fontSize: 9, fontWeight: 700,  background: check.status === 'passed' ? 'rgba(16,185,129,.15)' : 'rgba(245,158,11,.12)', color: check.status === 'passed' ? '#34d399' : '#fbbf24' }}>{check.status}</span>
                                     </div>
                                 ))}
                             </div>
@@ -634,7 +634,7 @@ const MigrationDetailModal = ({ migration, onClose }) => {
                             { label: 'Duration', value: migration.duration || migration.estimated_time || '—' },
                         ].map(({ label, value }) => (
                             <div key={label} style={{ padding: 14, background: THEME.surfaceHover, borderRadius: 10, border: `1px solid ${THEME.grid}` }}>
-                                <div style={{ fontSize: 10, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 4, fontWeight: 700 }}>{label}</div>
+                                <div style={{ fontSize: 10, color: THEME.textDim,  letterSpacing: '.8px', marginBottom: 4, fontWeight: 700 }}>{label}</div>
                                 <div className="sv-mono" style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>{value}</div>
                             </div>
                         ))}
@@ -642,14 +642,14 @@ const MigrationDetailModal = ({ migration, onClose }) => {
 
                     {migration.sql && (
                         <div style={{ marginBottom: 20 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>Full SQL</div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted,  letterSpacing: '.8px', marginBottom: 8 }}>Full SQL</div>
                             <div className="sv-code" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(highlightSQL(migration.sql)) }} style={{ maxHeight: 300, overflowY: 'auto' }} />
                         </div>
                     )}
 
                     {migration.issues?.length > 0 && (
                         <div style={{ marginBottom: 20 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>Issues</div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted,  letterSpacing: '.8px', marginBottom: 8 }}>Issues</div>
                             {migration.issues.map((issue, i) => (
                                 <div key={i} style={{ padding: '10px 14px', marginBottom: 6, borderRadius: 8, background: `${getSeverityColor(issue.severity)}08`, border: `1px solid ${getSeverityColor(issue.severity)}25`, fontSize: 12 }}>
                                     <span style={{ fontWeight: 700, color: getSeverityColor(issue.severity) }}>[{issue.severity.toUpperCase()}]</span>
@@ -1258,7 +1258,7 @@ const SchemaVersioningTab = () => {
                             <React.Fragment key={key}>
                                 {i > 0 && <ArrowRight size={16} color="#6366f1" strokeWidth={2.5} />}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.8px' }}>{label}</span>
+                                    <span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 700,  letterSpacing: '.8px' }}>{label}</span>
                                     <select
                                         value={envDiff[key]}
                                         onChange={e => setEnvDiff({ ...envDiff, [key]: e.target.value })}
@@ -1292,7 +1292,7 @@ const SchemaVersioningTab = () => {
                                 ].map(({ label, count, color }) => (
                                     <div key={label} className="sv-metric-card" style={{ borderColor: `${color}25`, animationDelay: '0ms' }}>
                                         <div style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1 }}>{count}</div>
-                                        <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
+                                        <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 700,  letterSpacing: .8 }}>{label}</div>
                                     </div>
                                 ));
                             })()}
@@ -1365,7 +1365,7 @@ const SchemaVersioningTab = () => {
                                 {/* Columns */}
                                 {Array.isArray(item.changes) && item.changes.length > 0 && (
                                     <div style={{ marginBottom: 14 }}>
-                                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Columns</div>
+                                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4,  letterSpacing: '.8px' }}>Columns</div>
                                         <div style={{ background: THEME.surfaceHover, borderRadius: 10, border: `1px solid ${THEME.grid}`, overflow: 'hidden' }}>
                                             {item.changes.map((c, j) => {
                                                 if (!c) return null;
@@ -1406,7 +1406,7 @@ const SchemaVersioningTab = () => {
                                 {/* Indexes */}
                                 {Array.isArray(item.indexes) && item.indexes.length > 0 && (
                                     <div style={{ marginBottom: 14 }}>
-                                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Indexes</div>
+                                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4,  letterSpacing: '.8px' }}>Indexes</div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                                             {item.indexes.map((idx, j) => {
                                                 if (!idx || !Array.isArray(idx.columns)) return null;
@@ -1417,9 +1417,9 @@ const SchemaVersioningTab = () => {
                                                         {idx.name} <span style={{ color: THEME.textDim }}>({idx.columns.join(', ')})</span>
                                                     </span>
                                                     <div style={{ display: 'flex', gap: 5 }}>
-                                                        <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 14, background: THEME.surface, color: THEME.textDim, textTransform: 'uppercase', fontWeight: 700 }}>{idx.type}</span>
-                                                        {idx.unique  && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 14, background: 'rgba(99,102,241,.15)', color: '#a5b4fc', textTransform: 'uppercase', fontWeight: 700 }}>UNIQUE</span>}
-                                                        {idx.primary && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 14, background: 'rgba(16,185,129,.15)', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>PRIMARY</span>}
+                                                        <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 14, background: THEME.surface, color: THEME.textDim,  fontWeight: 700 }}>{idx.type}</span>
+                                                        {idx.unique  && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 14, background: 'rgba(99,102,241,.15)', color: '#a5b4fc',  fontWeight: 700 }}>UNIQUE</span>}
+                                                        {idx.primary && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 14, background: 'rgba(16,185,129,.15)', color: '#34d399',  fontWeight: 700 }}>PRIMARY</span>}
                                                     </div>
                                                 </div>
                                                 );
@@ -1431,7 +1431,7 @@ const SchemaVersioningTab = () => {
                                 {/* Constraints */}
                                 {Array.isArray(item.constraints) && item.constraints.length > 0 && (
                                     <div>
-                                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>Constraints</div>
+                                        <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, marginBottom: 8, marginLeft: 4,  letterSpacing: '.8px' }}>Constraints</div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                                             {item.constraints.map((con, j) => {
                                                 if (!con) return null;
@@ -1442,7 +1442,7 @@ const SchemaVersioningTab = () => {
                                                                 {con.status === 'added' && <span style={{ color: '#34d399', marginRight: 6 }}>+</span>}
                                                                 {con.name || 'constraint'}
                                                             </span>
-                                                            <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: THEME.surface, color: THEME.textDim, textTransform: 'uppercase', fontWeight: 700 }}>{(con.type || '').replace('_', ' ')}</span>
+                                                            <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: THEME.surface, color: THEME.textDim,  fontWeight: 700 }}>{(con.type || '').replace('_', ' ')}</span>
                                                         </div>
                                                         <div style={{ fontSize: 10, color: THEME.textDim, fontStyle: 'italic' }}>{con.definition || 'No definition'}</div>
                                                     </div>
@@ -1497,7 +1497,7 @@ const SchemaVersioningTab = () => {
                                 <thead>
                                 <tr style={{ background: THEME.surfaceHover }}>
                                     {['Object', 'Type', 'Dependencies', 'Dependents', 'Risk Level'].map(h => (
-                                        <th key={h} style={{ padding: '10px 14px', textAlign: 'left', borderBottom: `1px solid ${THEME.grid}`, fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '.8px', color: THEME.textDim }}>{h}</th>
+                                        <th key={h} style={{ padding: '10px 14px', textAlign: 'left', borderBottom: `1px solid ${THEME.grid}`, fontWeight: 700, fontSize: 10,  letterSpacing: '.8px', color: THEME.textDim }}>{h}</th>
                                     ))}
                                 </tr>
                                 </thead>

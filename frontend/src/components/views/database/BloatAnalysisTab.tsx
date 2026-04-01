@@ -87,7 +87,6 @@ function ensureBaStyles() {
         `    border-radius: 14px;`,
         `    padding: 20px;`,
         `    animation: baFadeUp .4s ease both;`,
-        `    backdrop-filter: blur(4px);`,
         `    position: relative;`,
         `    overflow: hidden;`,
         `}`,
@@ -349,7 +348,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, war
             </div>
             <div>
                 <div style={{ fontSize: 26, fontWeight: 800, color: THEME.textMain, lineHeight: 1, letterSpacing: -.5 }}>{value}</div>
-                <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .8 }}>{label}</div>
+                <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 4, fontWeight: 700,  letterSpacing: .8 }}>{label}</div>
                 {sub && <div style={{ fontSize: 11, color: critical ? THEME.danger : warn ? THEME.warning : THEME.textDim, marginTop: 3 }}>{sub}</div>}
             </div>
         </div>
@@ -570,7 +569,7 @@ export default function BloatAnalysisTab() {
                 <div className="ba-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 20, minWidth: 200 }}>
                     <HealthGauge score={score} />
                     <div>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: .8, marginBottom: 8 }}>Severity</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted,  letterSpacing: .8, marginBottom: 8 }}>Severity</div>
                         {[
                             { label: 'Critical', color: THEME.danger, count: tables.filter(t => Number(t.dead_pct) > 20).length },
                             { label: 'High', color: THEME.warning, count: tables.filter(t => Number(t.dead_pct) > 10 && Number(t.dead_pct) <= 20).length },
@@ -838,7 +837,7 @@ export default function BloatAnalysisTab() {
                         </div>
 
                         {/* Column headers */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', padding: '10px 20px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 11, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .7 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', padding: '10px 20px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 11, color: THEME.textDim, fontWeight: 700,  letterSpacing: .7 }}>
                             <span>Table</span>
                             <span>Now</span>
                             {horizons.map(h => <span key={h.label}>{h.label}</span>)}

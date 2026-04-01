@@ -113,68 +113,9 @@ import {
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  ADVANCED THEME SYSTEM — Neural Interface OS v3.0
+//  LEGACY THEME EXPORT — delegates to adaptive theme from utils/theme.tsx
 // ═══════════════════════════════════════════════════════════════════════════
-export const THEME = {
-    // Void palette — deeper, richer blacks
-    void: '#00000d',
-    deep: '#010314',
-    abyss: '#02061a',
-    surface: '#04091c',
-    elevated: '#070f24',
-    overlay: '#0c1830',
-    raised: '#101f3c',
-
-    // Plasma accents — more vibrant
-    plasma: '#00f5ff',
-    neon: '#7b2fff',
-    pulse: '#ff2d78',
-    aurora: '#00ff88',
-    solar: '#ffaa00',
-    nova: '#ff6b35',
-    frost: '#a8d8ff',
-    quantum: '#b44bff',
-    ember: '#ff4d00',
-    jade: '#00ffa3',
-    cobalt: '#0080ff',
-    crimson: '#ff1a4b',
-
-    // Semantic
-    primary: '#00f5ff',
-    secondary: '#7b2fff',
-    success: '#00ff88',
-    danger: '#ff2d78',
-    warning: '#ffaa00',
-    info: '#4d9fff',
-    ai: '#a855f7',
-
-    // Text hierarchy
-    textMain: '#eef4ff',
-    textSub: '#8aa3c8',
-    textMuted: '#4a6080',
-    textDim: '#243040',
-    textGhost: '#121e2e',
-
-    // Glass & borders
-    glass: 'rgba(4, 9, 28, 0.88)',
-    glassLight: 'rgba(12, 24, 48, 0.65)',
-    glassFrost: 'rgba(168, 216, 255, 0.04)',
-    border: 'rgba(0, 245, 255, 0.07)',
-    borderHot: 'rgba(0, 245, 255, 0.28)',
-    borderGlow: 'rgba(0, 245, 255, 0.5)',
-    grid: 'rgba(0, 245, 255, 0.035)',
-
-    // Gradients
-    gradientA: 'linear-gradient(135deg, #00f5ff15, #7b2fff08)',
-    gradientB: 'linear-gradient(135deg, #ff2d7808, #ffaa0006)',
-    gradientC: 'linear-gradient(135deg, #00ff8810, #00f5ff06)',
-
-    // Fonts
-    fontMono: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
-    fontDisplay: "'Orbitron', 'Rajdhani', 'Exo 2', sans-serif",
-    fontBody: "'Exo 2', 'Titillium Web', 'Outfit', sans-serif",
-    fontAlt: "'Space Grotesk', 'Inter', sans-serif",
-};
+export const THEME = _AT;
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  GLOBAL CONTEXT — Theme + Alerts + State
@@ -205,14 +146,11 @@ export const NeuralProvider = ({ children, theme: customTheme }) => {
 //  KEYFRAMES v3 — Extended animation suite
 // ═══════════════════════════════════════════════════════════════════════════
 const KEYFRAMES = `
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  --plasma:#00f5ff; --neon:#7b2fff; --pulse:#ff2d78;
-  --aurora:#00ff88; --solar:#ffaa00; --nova:#ff6b35;
-  --void:#00000d; --surface:#04091c;
   --font-mono:'JetBrains Mono',monospace;
-  --font-display:'Orbitron',sans-serif;
+  --font-body:'Outfit',sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -232,42 +170,8 @@ const KEYFRAMES = `
 @keyframes spinReverse  { from{transform:rotate(360deg)} to{transform:rotate(0deg)} }
 @keyframes countUp      { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
 @keyframes shimmer      { 0%{background-position:-600% 0} 100%{background-position:600% 0} }
-@keyframes scanline     { 0%{top:-12%} 100%{top:112%} }
-@keyframes flicker      { 0%,100%{opacity:1} 91%{opacity:1} 92%{opacity:0.75} 93%{opacity:1} 95%{opacity:0.85} 96%{opacity:1} }
-@keyframes plasmaGlow   { 0%,100%{box-shadow:0 0 8px #00f5ff40,0 0 18px #00f5ff18,inset 0 0 10px #00f5ff0c}
-                          50%{box-shadow:0 0 24px #00f5ff70,0 0 48px #00f5ff28,inset 0 0 24px #00f5ff1a} }
-@keyframes neonGlow     { 0%,100%{box-shadow:0 0 8px #7b2fff40,0 0 18px #7b2fff18}
-                          50%{box-shadow:0 0 24px #7b2fff80,0 0 48px #7b2fff35} }
-@keyframes auroraPulse  { 0%,100%{box-shadow:0 0 10px #00ff8840,0 0 20px #00ff8820}
-                          50%{box-shadow:0 0 28px #00ff8880,0 0 50px #00ff8840} }
-@keyframes typewriter   { from{width:0} to{width:100%} }
-@keyframes blink        { 0%,100%{border-color:transparent} 50%{border-color:#00f5ff} }
-@keyframes glitch       {
-  0%,100%{clip-path:inset(0 0 100% 0);transform:translateX(0)}
-  10%{clip-path:inset(20% 0 60% 0);transform:translateX(-4px)}
-  20%{clip-path:inset(50% 0 30% 0);transform:translateX(4px)}
-  30%{clip-path:inset(10% 0 80% 0);transform:translateX(-2px)}
-  40%{clip-path:inset(80% 0 5% 0);transform:translateX(3px)}
-  50%{clip-path:inset(40% 0 40% 0);transform:translateX(-3px)}
-}
-@keyframes glitchShift  {
-  0%,100%{transform:translateX(0);filter:none}
-  10%{transform:translateX(-3px);filter:hue-rotate(90deg)}
-  20%{transform:translateX(3px);filter:hue-rotate(-90deg)}
-  30%{transform:translateX(-1px);filter:none}
-}
-@keyframes matrixRain   { 0%{opacity:0;transform:translateY(-100%)} 10%{opacity:1} 90%{opacity:0.8} 100%{opacity:0;transform:translateY(800%)} }
-@keyframes waveform     { 0%,100%{transform:scaleY(0.3)} 50%{transform:scaleY(1)} }
-@keyframes orbit        { from{transform:rotate(0deg) translateX(24px) rotate(0deg)} to{transform:rotate(360deg) translateX(24px) rotate(-360deg)} }
 @keyframes expand       { from{transform:scaleX(0);transform-origin:left} to{transform:scaleX(1);transform-origin:left} }
-@keyframes jitter       { 0%,100%{transform:translate(0,0)} 25%{transform:translate(1px,-1px)} 50%{transform:translate(-1px,0)} 75%{transform:translate(0,1px)} }
-@keyframes hologram     { 0%,100%{opacity:1;transform:skewX(0deg)} 96%{opacity:1} 97%{opacity:0.6;transform:skewX(-1.5deg)} 98%{opacity:1;transform:skewX(0deg)} 99%{opacity:0.8} }
-@keyframes rgbShift     { 0%{text-shadow:2px 0 #ff2d78,-2px 0 #00f5ff,0 0 #00ff88} 33%{text-shadow:-2px 0 #ff2d78,2px 0 #00f5ff,0 0 #00ff88} 66%{text-shadow:2px 0 #00f5ff,-2px 0 #00ff88,0 0 #ff2d78} 100%{text-shadow:2px 0 #ff2d78,-2px 0 #00f5ff,0 0 #00ff88} }
-@keyframes floatUp      { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-@keyframes borderFlow   { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-@keyframes radarSweep   { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-@keyframes dashDraw     { from{stroke-dashoffset:1000} to{stroke-dashoffset:0} }
-@keyframes bounce       { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes bounce       { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
 @keyframes numberFlip   { 0%{transform:rotateX(-90deg);opacity:0} 100%{transform:rotateX(0deg);opacity:1} }
 
 /* Scrollbar styling */
@@ -447,7 +351,7 @@ export const ChipBadge = ({ label, color = _AT.primary, micro = false, animated 
         style={{
             fontSize: micro ? 9 : 10,
             fontWeight: 600,
-            textTransform: 'uppercase',
+            
             letterSpacing: '0.04em',
             padding: micro ? '2px 6px' : '3px 8px',
             borderRadius: 6,
@@ -939,7 +843,7 @@ export const ResourceGauge = ({
                         style={{
                             fontSize: 9,
                             color: _AT.textMuted,
-                            textTransform: 'uppercase',
+                            
                             marginTop: 3,
                             fontFamily: _AT.fontDisplay,
                             letterSpacing: '1px',
@@ -1169,7 +1073,7 @@ export const CustomTooltip = ({ active, payload, label, formatter, unit }) => {
                         marginBottom: 10,
                         fontFamily: _AT.fontDisplay,
                         letterSpacing: '1.5px',
-                        textTransform: 'uppercase',
+                        
                     }}
                 >
                     {label}
@@ -1226,7 +1130,7 @@ export const SeverityBadge = ({ severity }) => {
             style={{
                 fontSize: 8,
                 fontWeight: 800,
-                textTransform: 'uppercase',
+                
                 letterSpacing: '1.5px',
                 padding: '2px 9px',
                 borderRadius: 2,
@@ -1349,7 +1253,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                                 fontSize: 9,
                                 color: _AT.textMuted,
                                 fontFamily: _AT.fontMono,
-                                textTransform: 'uppercase',
+                                
                                 letterSpacing: '1px',
                             }}
                         >
@@ -1454,7 +1358,6 @@ export const AlertToast = ({ alerts, onDismiss }) => {
                             border: `1px solid ${config.color}30`,
                             boxShadow: `0 8px 32px rgba(0,0,0,0.8), 0 0 20px ${config.color}14`,
                             animation: 'alertSlide 0.4s cubic-bezier(0.16,1,0.3,1) backwards',
-                            backdropFilter: 'blur(20px)',
                             display: 'flex',
                             alignItems: 'center',
                             gap: 10,
@@ -1469,7 +1372,7 @@ export const AlertToast = ({ alerts, onDismiss }) => {
                                 width: 2,
                                 borderRadius: '4px 0 0 4px',
                                 background: config.color,
-                                boxShadow: `0 0 8px ${config.color}`,
+                                
                             }}
                         />
                         <div style={{ marginLeft: 6 }}>
@@ -2428,7 +2331,7 @@ export const FilterPills = ({ options, active, onChange, multi = false, color = 
                         transition: 'all 0.2s',
                         fontFamily: _AT.fontDisplay,
                         letterSpacing: '1px',
-                        textTransform: 'uppercase',
+                        
                         boxShadow: isActive ? `0 0 12px ${color}18` : 'none',
                         display: 'flex',
                         alignItems: 'center',
@@ -2640,7 +2543,7 @@ export const RadarMetric = ({ data = [], size = 200, color = _AT.primary, label 
                                 fill: _AT.textMuted,
                                 fontFamily: _AT.fontDisplay,
                                 letterSpacing: '0.5px',
-                                textTransform: 'uppercase',
+                                
                             }}
                         >
                             {d.label}
@@ -2655,7 +2558,7 @@ export const RadarMetric = ({ data = [], size = 200, color = _AT.primary, label 
                         color: _AT.textMuted,
                         fontFamily: _AT.fontDisplay,
                         letterSpacing: '2px',
-                        textTransform: 'uppercase',
+                        
                     }}
                 >
                     {label}
@@ -2709,7 +2612,7 @@ export const HeatmapGrid = ({ data = [], weeks = 26, color = _AT.primary, label 
                         color: _AT.textMuted,
                         fontFamily: _AT.fontDisplay,
                         letterSpacing: '1.5px',
-                        textTransform: 'uppercase',
+                        
                         marginBottom: 2,
                     }}
                 >
@@ -2836,7 +2739,6 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                 justifyContent: 'center',
                 paddingTop: '12vh',
                 background: 'rgba(0,0,20,0.85)',
-                backdropFilter: 'blur(10px)',
                 animation: 'fadeIn 0.15s ease',
             }}
             onClick={onClose}
@@ -2925,7 +2827,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                                     color: _AT.textDim,
                                     fontFamily: _AT.fontDisplay,
                                     letterSpacing: '1.5px',
-                                    textTransform: 'uppercase',
+                                    
                                 }}
                             >
                                 {group}
@@ -3263,7 +3165,7 @@ export const StatCompare = ({ label, before, after, unit, color = _AT.primary, i
                     color: _AT.textMuted,
                     fontFamily: _AT.fontDisplay,
                     letterSpacing: '1.5px',
-                    textTransform: 'uppercase',
+                    
                     marginBottom: 12,
                 }}
             >
@@ -3579,7 +3481,7 @@ export const NeuralSelect = ({ value, options, onChange, label, color = _AT.prim
                         color: _AT.textMuted,
                         fontFamily: _AT.fontDisplay,
                         letterSpacing: '1.5px',
-                        textTransform: 'uppercase',
+                        
                         marginBottom: 6,
                     }}
                 >
@@ -3622,7 +3524,6 @@ export const NeuralSelect = ({ value, options, onChange, label, color = _AT.prim
                         borderRadius: 10,
                         border: `1px solid ${_AT.glassBorderHover}`,
                         boxShadow: `0 8px 32px rgba(0,0,0,0.8), 0 0 20px ${color}10`,
-                        backdropFilter: 'blur(20px)',
                         overflow: 'hidden',
                         animation: 'fadeDown 0.15s ease backwards',
                     }}
@@ -3827,7 +3728,7 @@ export const ConnectionPoolBar = ({ total, idle, active, waiting, max }) => {
                                 height: 8,
                                 borderRadius: 1,
                                 background: seg.color,
-                                boxShadow: `0 0 6px ${seg.color}70`,
+                                
                             }}
                         />
                         <span style={{ fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono }}>
@@ -3940,7 +3841,7 @@ export const RoleBadge = ({ role, showIcon = true, size = 'default' }) => {
                     fontSize: sm ? 9 : 10,
                     fontWeight: 800,
                     color: config.color,
-                    textTransform: 'uppercase',
+                    
                     letterSpacing: '1px',
                     fontFamily: _AT.fontDisplay,
                 }}
@@ -4316,7 +4217,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                             cursor: 'pointer',
                             fontSize: 8,
                             fontWeight: 700,
-                            textTransform: 'uppercase',
+                            
                             letterSpacing: '1px',
                             fontFamily: _AT.fontDisplay,
                             transition: 'all 0.2s',
@@ -4361,7 +4262,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                                     height: 8,
                                     borderRadius: '50%',
                                     background: c,
-                                    boxShadow: `0 0 5px ${c}80`,
+                                    
                                 }}
                             />
                         ))}
@@ -4635,7 +4536,7 @@ export const CacheStatsRing = ({ size: cacheSize, maxSize, hitRate }) => {
                         marginBottom: 6,
                         fontFamily: _AT.fontDisplay,
                         letterSpacing: '1px',
-                        textTransform: 'uppercase',
+                        
                     }}
                 >
                     App Cache
@@ -4687,7 +4588,7 @@ export const BloatStatusBadge = ({ status, bloatPct }) => {
                     fontSize: 9,
                     fontWeight: 800,
                     color: config.color,
-                    textTransform: 'uppercase',
+                    
                     letterSpacing: '1px',
                     fontFamily: _AT.fontDisplay,
                 }}
@@ -5035,7 +4936,6 @@ const ToastContainer = ({ toasts, onRemove }) => {
                                 alignItems: 'center',
                                 gap: 12,
                                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25), inset 0 0.5px 0 rgba(255,255,255,0.1)',
-                                backdropFilter: 'blur(16px) saturate(180%)',
                                 fontFamily: _AT.fontBody,
                                 fontSize: 13,
                                 color: _AT.textMain,

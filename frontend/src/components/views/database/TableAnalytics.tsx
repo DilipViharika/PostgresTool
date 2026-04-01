@@ -183,7 +183,7 @@ const SecHead = ({ Icon, title, sub, accent, right }) => {
 };
 
 const THead = ({ cols, labels }) => (
-    <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '9px 18px', gap: 12, borderBottom: `1px solid ${THEME.glassBorder}`, fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.08em', fontFamily: THEME.fontMono, background: `${THEME.primary}06` }}>
+    <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '9px 18px', gap: 12, borderBottom: `1px solid ${THEME.glassBorder}`, fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.08em', fontFamily: THEME.fontMono, background: `${THEME.primary}06` }}>
         {labels.map(l => <span key={l}>{l}</span>)}
     </div>
 );
@@ -221,7 +221,7 @@ const FilterSelect = React.memo(function FilterSelect({ label, filterKey, val, o
     const active = !!val;
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flex: 1, minWidth: 150 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: THEME.fontMono }}>{label}</label>
+            <label style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.07em', fontFamily: THEME.fontMono }}>{label}</label>
             <div style={{ position: 'relative' }}>
                 <select
                     value={val}
@@ -315,7 +315,7 @@ function S_Health() {
                      sub="Per-table health score, dead tuple ratio, and VACUUM recommendations"
                      right={<Chip color={THEME.cyan}>{rows.length} tables</Chip>} />
             <Card style={{ padding: '18px 18px 10px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Dead Tuple % Overview</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Dead Tuple % Overview</div>
                 <ResponsiveContainer width="100%" height={110}>
                     <BarChart data={chartData} barCategoryGap="28%">
                         <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
@@ -470,11 +470,11 @@ function S_Forecast() {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, padding: '10px 14px', borderRadius: 8, background: `${THEME.glassBorder}40` }}>
                                 <div>
-                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, textTransform: 'uppercase', letterSpacing: '.05em' }}>Current</div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono,  letterSpacing: '.05em' }}>Current</div>
                                     <div style={{ fontSize: 18, fontWeight: 700, color: c, fontFamily: THEME.fontMono, marginTop: 2 }}>{dead}%</div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, textTransform: 'uppercase', letterSpacing: '.05em' }}>VACUUM est.</div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono,  letterSpacing: '.05em' }}>VACUUM est.</div>
                                     <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMuted, fontFamily: THEME.fontMono, marginTop: 2 }}>{est}</div>
                                 </div>
                             </div>
@@ -583,7 +583,7 @@ function S_Columns() {
                      right={<Chip color={THEME.purple}>{rows.length} columns</Chip>} />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
                 <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: THEME.fontMono }}>Null Distribution</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.07em', fontFamily: THEME.fontMono }}>Null Distribution</div>
                     <PieChart width={140} height={140}>
                         <Pie data={nullDist} cx={65} cy={65} innerRadius={38} outerRadius={60} dataKey="value" paddingAngle={3}>
                             {nullDist.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
@@ -904,13 +904,13 @@ function S_Deps() {
                 {/* Section banners — aligned over each group of nodes */}
                 {deps.length > 0 && (
                     <text x={MAIN_INSET} y={22} textAnchor="middle" fontSize={9} fontWeight={800}
-                          letterSpacing="0.09em" fill={CHART_COLORS[0]} fontFamily="'Fira Code',monospace" opacity={0.8}>
+                          letterSpacing="0.02em" fill={CHART_COLORS[0]} fontFamily="'Fira Code',monospace" opacity={0.8}>
                         ◀ DEPENDS ON
                     </text>
                 )}
                 {refs.length > 0 && (
                     <text x={W - MAIN_INSET} y={22} textAnchor="middle" fontSize={9} fontWeight={800}
-                          letterSpacing="0.09em" fill={CHART_COLORS[1]} fontFamily="'Fira Code',monospace" opacity={0.8}>
+                          letterSpacing="0.02em" fill={CHART_COLORS[1]} fontFamily="'Fira Code',monospace" opacity={0.8}>
                         REFERENCED BY ▶
                     </text>
                 )}
@@ -1217,7 +1217,7 @@ function S_Deps() {
                     <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                         {dash
                             ? <svg width={18} height={8}><line x1={0} y1={4} x2={18} y2={4} stroke={color} strokeWidth={1.5} strokeDasharray="4 2" /></svg>
-                            : <div style={{ width: 22, height: 3, borderRadius: 2, background: color, boxShadow: `0 0 5px ${color}70` }} />
+                            : <div style={{ width: 22, height: 3, borderRadius: 2, background: color }} />
                         }
                         <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{label}</span>
                     </div>
@@ -1525,7 +1525,7 @@ function S_QueryPerf() {
                 ))}
             </div>
             <Card style={{ padding: '18px 18px 10px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Call Frequency vs. Mean Exec Time (ms)</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Call Frequency vs. Mean Exec Time (ms)</div>
                 <ResponsiveContainer width="100%" height={130}>
                     <BarChart data={chartData} barCategoryGap="28%">
                         <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
@@ -1601,7 +1601,7 @@ function S_Locks() {
             )}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
                 <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: THEME.fontMono }}>Lock Types</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.07em', fontFamily: THEME.fontMono }}>Lock Types</div>
                     {pieData.length > 0 ? (
                         <>
                             <PieChart width={140} height={140}>
@@ -1680,7 +1680,7 @@ function S_Autovacuum() {
                          {overdue > 0 && <Chip color={THEME.warning}>{overdue} overdue</Chip>}
                      </div>} />
             <Card style={{ padding: '18px 18px 10px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Vacuum & Analyze Run Counts</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.07em', marginBottom: 12, fontFamily: THEME.fontMono }}>Vacuum & Analyze Run Counts</div>
                 <ResponsiveContainer width="100%" height={110}>
                     <BarChart data={chartData} barCategoryGap="28%">
                         <CartesianGrid vertical={false} stroke={`${THEME.glassBorder}60`} />
@@ -1759,7 +1759,7 @@ function S_Connections() {
             {total > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
                     <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: THEME.fontMono }}>By State</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.07em', fontFamily: THEME.fontMono }}>By State</div>
                         <PieChart width={140} height={140}>
                             <Pie data={chartData} cx={65} cy={65} innerRadius={38} outerRadius={60} dataKey="count" paddingAngle={3}>
                                 {chartData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
@@ -1841,19 +1841,19 @@ const FindingCard = ({ finding, delay = 0 }) => {
                     <p style={{ fontSize: 13, color: THEME.textMuted, lineHeight: 1.7, marginTop: 12 }}>{finding.description}</p>
                     {finding.impact && (
                         <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 8, background: `${THEME.warning}0d`, border: `1px solid ${THEME.warning}20` }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.warning, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>Impact</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.warning,  letterSpacing: '.06em', marginBottom: 4 }}>Impact</div>
                             <p style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>{finding.impact}</p>
                         </div>
                     )}
                     {finding.recommendation && (
                         <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 8, background: `${THEME.success}0d`, border: `1px solid ${THEME.success}20` }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.success, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>Recommendation</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.success,  letterSpacing: '.06em', marginBottom: 4 }}>Recommendation</div>
                             <p style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>{finding.recommendation}</p>
                         </div>
                     )}
                     {finding.sql && (
                         <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 8, background: `${THEME.glassBorder}60`, border: `1px solid ${THEME.glassBorder}` }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.cyan, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>SQL Fix</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.cyan,  letterSpacing: '.06em', marginBottom: 6 }}>SQL Fix</div>
                             <pre style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>{finding.sql}</pre>
                         </div>
                     )}
@@ -2157,7 +2157,7 @@ Rules:
                         <Card style={{ padding: '16px 20px', borderLeft: `3px solid ${THEME.purple}`, background: `${THEME.purple}06` }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: 11, fontWeight: 700, color: THEME.purple, textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: THEME.fontMono, marginBottom: 6 }}>Executive Summary</div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: THEME.purple,  letterSpacing: '.07em', fontFamily: THEME.fontMono, marginBottom: 6 }}>Executive Summary</div>
                                     <p style={{ fontSize: 13, color: THEME.textMuted, lineHeight: 1.7 }}>{summary}</p>
                                 </div>
                                 <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
@@ -2377,7 +2377,7 @@ export default function UnifiedDashboard() {
 
                     <div style={{ padding: '9px 14px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success, boxShadow: `0 0 5px ${THEME.success}`, animation: 'ud-pulse 2s infinite' }} />
+                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success,  animation: 'ud-pulse 2s infinite' }} />
                             <span style={{ fontSize: 11, color: THEME.textMuted }}>Live data</span>
                         </div>
                         <LiveClock />
@@ -2385,7 +2385,7 @@ export default function UnifiedDashboard() {
 
                     {(filter.schema || filter.table) && (
                         <div style={{ margin: '10px 12px 0', padding: '8px 12px', borderRadius: 8, background: `${THEME.primary}0f`, border: `1px solid ${THEME.primary}22` }}>
-                            <div style={{ fontSize: 9, fontWeight: 700, color: THEME.primary, textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: THEME.fontMono, marginBottom: 4 }}>Scope</div>
+                            <div style={{ fontSize: 9, fontWeight: 700, color: THEME.primary,  letterSpacing: '.07em', fontFamily: THEME.fontMono, marginBottom: 4 }}>Scope</div>
                             {filter.schema && <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{filter.schema}</div>}
                             {filter.table  && <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, fontFamily: THEME.fontMono, marginTop: 2 }}>{filter.table}</div>}
                         </div>
@@ -2402,7 +2402,7 @@ export default function UnifiedDashboard() {
                                             style={{ width: '100%', padding: '7px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: isAI ? `${THEME.purple}06` : 'transparent', border: 'none', cursor: 'pointer' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                                             <g.Icon size={11} color={gColor} />
-                                            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', color: gColor, fontFamily: THEME.fontMono }}>{g.label}</span>
+                                            <span style={{ fontSize: 10, fontWeight: 700,  letterSpacing: '.08em', color: gColor, fontFamily: THEME.fontMono }}>{g.label}</span>
                                             {isAI && <span style={{ fontSize: 8, fontWeight: 700, color: THEME.purple, background: `${THEME.purple}20`, padding: '1px 5px', borderRadius: 10, letterSpacing: '.04em' }}>NEW</span>}
                                         </div>
                                         <ChevronDown size={11} color={THEME.textDim} style={{ transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform .2s' }} />

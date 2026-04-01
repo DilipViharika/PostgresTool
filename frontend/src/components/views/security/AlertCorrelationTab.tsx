@@ -541,7 +541,7 @@ export default function AlertCorrelationTab() {
                                                 borderRadius: '4px',
                                                 fontSize: '11px',
                                                 fontWeight: '700',
-                                                textTransform: 'uppercase',
+                                                
                                             }}
                                         >
                       {group.severity}

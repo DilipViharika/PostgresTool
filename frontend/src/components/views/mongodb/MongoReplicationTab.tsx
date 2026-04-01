@@ -475,7 +475,7 @@ export default function MongoReplicationTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                        textTransform: 'uppercase',
+                                        
                                         marginBottom: 8,
                                     }}
                                 >

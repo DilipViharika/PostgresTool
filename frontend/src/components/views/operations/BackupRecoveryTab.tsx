@@ -50,7 +50,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, color = THEME.primary }) =>
         </div>
         <div>
             <div style={{ fontSize:22, fontWeight:800, color:THEME.textMain, lineHeight:1 }}>{value}</div>
-            <div style={{ fontSize:11, color:THEME.textMuted, marginTop:3, fontWeight:600, textTransform:'uppercase', letterSpacing:.5 }}>{label}</div>
+            <div style={{ fontSize:11, color:THEME.textMuted, marginTop:3, fontWeight:600, letterSpacing:'0.02em' }}>{label}</div>
             {sub && <div style={{ fontSize:11, color:THEME.textDim, marginTop:2 }}>{sub}</div>}
         </div>
     </div>
@@ -231,7 +231,7 @@ export default function BackupRecoveryTab() {
 
                     {/* Replication readiness */}
                     <div style={{ marginTop:20 }}>
-                        <div style={{ fontSize:12, fontWeight:700, color:THEME.textMuted, textTransform:'uppercase', letterSpacing:.5, marginBottom:10 }}>Replication Readiness</div>
+                        <div style={{ fontSize:12, fontWeight:700, color:THEME.textMuted, letterSpacing:'0.02em', marginBottom:10 }}>Replication Readiness</div>
                         <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                             {[
                                 { label:'WAL Level ≥ replica', ok: ['replica','logical'].includes(walLevel) },

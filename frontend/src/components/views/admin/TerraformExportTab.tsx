@@ -63,7 +63,7 @@ const ExportCard = ({ title, description, icon: Icon, format, onPreview, onDownl
                     </button>
                 </div>
             </div>
-            <div style={{ fontSize:11, color:THEME.textMuted, fontWeight:700, textTransform:'uppercase' }}>
+            <div style={{ fontSize:11, color:THEME.textMuted, fontWeight:700,  }}>
                 {format}
             </div>
         </div>

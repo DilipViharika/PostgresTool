@@ -105,7 +105,7 @@ const PulseDot = ({ color, size = 8 }) => (
 const SeverityBadge = ({ severity, small }) => {
   const s = SEVERITY[severity] || SEVERITY.info;
   return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: small ? '2px 6px' : '3px 8px', borderRadius: 10, background: s.bg, border: `1px solid ${s.color}30`, color: s.color, fontSize: small ? 9 : 10, fontFamily: THEME.fontMono, fontWeight: 700, letterSpacing: '0.08em' }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: small ? '2px 6px' : '3px 8px', borderRadius: 10, background: s.bg, border: `1px solid ${s.color}30`, color: s.color, fontSize: small ? 9 : 10, fontFamily: THEME.fontMono, fontWeight: 700, letterSpacing: '0.02em' }}>
       {s.label}
     </span>
   );
@@ -343,11 +343,11 @@ const VIGILDashboard = () => {
     wrap:     { color: THEME.textMain, fontFamily: THEME.fontMono },
     card:     { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8 },
     input:    { background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 5, padding: '7px 10px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
-    label:    { display: 'block', fontSize: 10, color: '#6b7280', marginBottom: 5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' },
-    tab:      (on) => ({ background: on ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${on ? 'rgba(99,102,241,0.3)' : 'transparent'}`, borderRadius: 6, padding: '7px 14px', color: on ? '${THEME.primary}' : '#6b7280', cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s', outline: 'none', letterSpacing: '0.06em', fontFamily: 'inherit' }),
-    btn:      (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: '#4f46e5', color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' } : v === 'success' ? { background: 'rgba(34,211,165,0.1)', color: '#22d3a5', border: '1px solid rgba(34,211,165,0.2)' } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.grid}` }) }),
+    label:    { display: 'block', fontSize: 10, color: '#6b7280', marginBottom: 5, fontWeight: 600, letterSpacing: '0.02em' },
+    tab:      (on) => ({ background: on ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${on ? 'rgba(99,102,241,0.3)' : 'transparent'}`, borderRadius: 6, padding: '7px 14px', color: on ? '${THEME.primary}' : '#6b7280', cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s', outline: 'none', letterSpacing: '0.02em', fontFamily: 'inherit' }),
+    btn:      (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.02em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: '#4f46e5', color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' } : v === 'success' ? { background: 'rgba(34,211,165,0.1)', color: '#22d3a5', border: '1px solid rgba(34,211,165,0.2)' } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.grid}` }) }),
     modalBox: { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 10, width: 520, maxWidth: '95vw', padding: 24, boxShadow: '0 32px 64px rgba(0,0,0,0.6)', color: THEME.textMain, maxHeight: '90vh', overflowY: 'auto' },
-    sHdr:     { fontSize: 9, color: '#374151', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 },
+    sHdr:     { fontSize: 9, color: '#374151', letterSpacing: '0.02em',  marginBottom: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 },
   };
 
   // ─── RENDER: STATS ─────────────────────────────────────────────
@@ -361,7 +361,7 @@ const VIGILDashboard = () => {
         ].map((s, i) => (
             <div key={i} style={{ ...css.card, padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', bottom: 0, right: 0, width: 60, height: 60, borderRadius: '50%', background: `radial-gradient(circle, ${s.color}12 0%, transparent 70%)` }} />
-              <div style={{ fontSize: 10, color: '#6b7280', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>{s.label}</div>
+              <div style={{ fontSize: 10, color: '#6b7280', letterSpacing: '0.02em',  marginBottom: 6 }}>{s.label}</div>
               <div style={{ fontSize: 28, fontWeight: 700, color: s.color, lineHeight: 1, marginBottom: 4 }}>{s.val}</div>
               <div style={{ fontSize: 10, color: '#4b5563' }}>{s.sub}</div>
             </div>
@@ -435,18 +435,18 @@ const VIGILDashboard = () => {
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: 64, height: 64, borderRadius: '50%', border: `3px solid ${scoreColor}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `${scoreColor}10` }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: scoreColor, lineHeight: 1 }}>{score.toFixed(1)}</div>
-                <div style={{ fontSize: 8, color: '#4b5563', letterSpacing: '0.06em' }}>IMPACT</div>
+                <div style={{ fontSize: 8, color: '#4b5563', letterSpacing: '0.02em' }}>IMPACT</div>
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Users Affected</div>
+              <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em',  marginBottom: 4 }}>Users Affected</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: '#e5e7eb', fontFamily: THEME.fontMono }}>
                 {ir.users.toLocaleString()}
                 {ir.users > 10000 && <span style={{ fontSize: 9, color: SEVERITY.critical.color, marginLeft: 6 }}>HIGH IMPACT</span>}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Affected Services</div>
+              <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em',  marginBottom: 6 }}>Affected Services</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                 {ir.services.map(s => <span key={s} style={{ fontSize: 9, color: '${THEME.primary}', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 10, padding: '2px 6px', fontFamily: THEME.fontMono }}>{s}</span>)}
               </div>
@@ -454,7 +454,7 @@ const VIGILDashboard = () => {
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em' }}>BLAST RADIUS</span>
+              <span style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em' }}>BLAST RADIUS</span>
               <span style={{ fontSize: 9, color: scoreColor }}>{score >= 8 ? 'CRITICAL — INCIDENT RESPONSE REQUIRED' : score >= 5 ? 'SIGNIFICANT — MONITOR CLOSELY' : 'CONTAINED — LOW RISK'}</span>
             </div>
             <div style={{ height: 6, background: THEME.grid, borderRadius: 10, overflow: 'hidden' }}>
@@ -518,7 +518,7 @@ const VIGILDashboard = () => {
         {filteredAlerts.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 8, paddingLeft: 4 }}>
               <input type="checkbox" checked={selectedAlerts.size === filteredAlerts.length && filteredAlerts.length > 0} onChange={e => e.target.checked ? selectAll() : clearSelection()} style={{ accentColor: '#6366f1', cursor: 'pointer' }} />
-              <span style={{ fontSize: 10, color: '#4b5563', letterSpacing: '0.06em' }}>{filteredAlerts.length} ALERT{filteredAlerts.length !== 1 ? 'S' : ''}</span>
+              <span style={{ fontSize: 10, color: '#4b5563', letterSpacing: '0.02em' }}>{filteredAlerts.length} ALERT{filteredAlerts.length !== 1 ? 'S' : ''}</span>
             </div>
         )}
 
@@ -558,7 +558,7 @@ const VIGILDashboard = () => {
                           </div>
                           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: alert.acknowledged ? 0 : 10 }}>
                             <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '2px 7px', fontSize: 10, color: '#9ca3af', fontFamily: THEME.fontMono }}>{alert.source}</span>
-                            <span style={{ fontSize: 10, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{alert.category}</span>
+                            <span style={{ fontSize: 10, color: '#4b5563',  letterSpacing: '0.04em' }}>{alert.category}</span>
                             <span style={{ fontSize: 10, color: '#374151' }}>⟵ {alert.rule}</span>
                             {alert.tags?.map(t => <span key={t} style={{ fontSize: 9, color: '#4b5563', borderRadius: 2, border: '1px solid rgba(255,255,255,0.05)', padding: '1px 5px' }}>#{t}</span>)}
                             {alert.acknowledged && <span style={{ color: THEME.success, fontSize: 10 }}>✓ acked by {alert.acknowledged_by}</span>}
@@ -603,7 +603,7 @@ const VIGILDashboard = () => {
                               { label: 'Category',    val: alert.category },
                             ].map(item => (
                                 <div key={item.label}>
-                                  <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>{item.label}</div>
+                                  <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em',  marginBottom: 4 }}>{item.label}</div>
                                   <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: THEME.fontMono }}>{item.val}</div>
                                 </div>
                             ))}
@@ -632,7 +632,7 @@ const VIGILDashboard = () => {
                 <div style={{ fontSize: 10, color: '#4b5563' }}>Fire a test alert without affecting production</div>
               </div>
             </div>
-            <span style={{ fontSize: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '${THEME.primary}', borderRadius: 10, padding: '2px 8px', letterSpacing: '0.08em' }}>SANDBOX</span>
+            <span style={{ fontSize: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '${THEME.primary}', borderRadius: 10, padding: '2px 8px', letterSpacing: '0.02em' }}>SANDBOX</span>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 180 }}>
@@ -666,7 +666,7 @@ const VIGILDashboard = () => {
                     { label: 'Channels Hit',     val: Object.entries(simState.result.channels || {}).filter(([,v]) => v).map(([k]) => k).join(', ') || 'none' },
                   ].map(item => (
                       <div key={item.label}>
-                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.08em', marginBottom: 3 }}>{item.label.toUpperCase()}</div>
+                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>{item.label.toUpperCase()}</div>
                         <div style={{ fontSize: 11, color: '#9ca3af', fontFamily: THEME.fontMono }}>{item.val}</div>
                       </div>
                   ))}
@@ -693,7 +693,7 @@ const VIGILDashboard = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
                       <span style={{ fontSize: 13, color: '#e5e7eb', fontWeight: 700 }}>{rule.name}</span>
                       <SeverityBadge severity={rule.severity} small />
-                      <span style={{ fontSize: 9, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{rule.category}</span>
+                      <span style={{ fontSize: 9, color: '#4b5563',  letterSpacing: '0.04em' }}>{rule.category}</span>
                     </div>
                     <div style={{ fontSize: 11, color: '#6b7280', fontFamily: THEME.fontMono }}>
                       <span style={{ color: '${THEME.primary}' }}>{METRICS[rule.metric]?.label || rule.metric}</span>
@@ -704,11 +704,11 @@ const VIGILDashboard = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em', marginBottom: 3 }}>FIRED</div>
+                      <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>FIRED</div>
                       <div style={{ fontSize: 13, color: '#9ca3af', fontWeight: 700 }}>{rule.triggerCount}×</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em', marginBottom: 3 }}>CHANNELS</div>
+                      <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>CHANNELS</div>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <ChannelDot active={rule.channels?.email} label="Email" />
                         <ChannelDot active={rule.channels?.slack} label="Slack" />
@@ -743,7 +743,7 @@ const VIGILDashboard = () => {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <span style={{ fontSize: 12, color: '#e5e7eb', fontWeight: 700 }}>{sw.name}</span>
-                      {sw.active && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}30`, color: SEVERITY.warning.color, borderRadius: 10, padding: '1px 6px', letterSpacing: '0.06em' }}>ACTIVE</span>}
+                      {sw.active && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}30`, color: SEVERITY.warning.color, borderRadius: 10, padding: '1px 6px', letterSpacing: '0.02em' }}>ACTIVE</span>}
                     </div>
                     <div style={{ fontSize: 10, color: '#6b7280', fontFamily: THEME.fontMono, marginBottom: 4 }}>
                       <Clock size={10} style={{ display: 'inline', marginRight: 4 }} />{sw.schedule}
@@ -754,7 +754,7 @@ const VIGILDashboard = () => {
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em', marginBottom: 3 }}>SUPPRESSED</div>
+                    <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>SUPPRESSED</div>
                     <div style={{ fontSize: 14, color: '#9ca3af', fontWeight: 700 }}>{sw.suppressCount}×</div>
                   </div>
                 </div>
@@ -783,16 +783,16 @@ const VIGILDashboard = () => {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <PulseDot color={statusColor} size={6} />
-                        <span style={{ fontSize: 9, color: statusColor, letterSpacing: '0.06em', fontWeight: 700 }}>{ch.status.toUpperCase()}</span>
+                        <span style={{ fontSize: 9, color: statusColor, letterSpacing: '0.02em', fontWeight: 700 }}>{ch.status.toUpperCase()}</span>
                       </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: ch.quota ? 8 : 0 }}>
                       <div>
-                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em', marginBottom: 3 }}>DELIVERY</div>
+                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>DELIVERY</div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: ch.deliveryRate >= 98 ? SEVERITY.resolved.color : ch.deliveryRate >= 90 ? SEVERITY.warning.color : SEVERITY.critical.color, fontFamily: THEME.fontMono }}>{ch.deliveryRate}%</div>
                       </div>
                       <div>
-                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em', marginBottom: 3 }}>LATENCY</div>
+                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>LATENCY</div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: ch.latency < 500 ? '#9ca3af' : SEVERITY.warning.color, fontFamily: THEME.fontMono }}>
                           {ch.latency < 1000 ? ch.latency + 'ms' : (ch.latency/1000).toFixed(1) + 's'}
                         </div>
@@ -801,7 +801,7 @@ const VIGILDashboard = () => {
                     {ch.quota && (
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.06em' }}>API QUOTA</span>
+                            <span style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em' }}>API QUOTA</span>
                             <span style={{ fontSize: 9, color: quotaPct > 0.85 ? SEVERITY.warning.color : '#6b7280', fontFamily: THEME.fontMono }}>
                               {ch.quota.used.toLocaleString()} / {ch.quota.limit.toLocaleString()}
                             </span>
@@ -832,7 +832,7 @@ const VIGILDashboard = () => {
         <div style={{ ...css.card, overflow: 'hidden' }}>
           <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'grid', gridTemplateColumns: '80px 1fr 80px 90px 100px', gap: 16, alignItems: 'center' }}>
             {['SEVERITY', 'MESSAGE', 'DURATION', 'RULE', 'RESOLVED AT'].map(h => (
-                <div key={h} style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.1em', fontWeight: 700 }}>{h}</div>
+                <div key={h} style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', fontWeight: 700 }}>{h}</div>
             ))}
           </div>
           {filteredHistory.map((item, i) => (
@@ -963,9 +963,9 @@ const VIGILDashboard = () => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
               <Terminal size={16} color="${THEME.primary}" />
-              <span style={{ fontSize: 16, fontWeight: 700, color: '#e5e7eb', letterSpacing: '0.06em' }}>VIGIL</span>
-              <span style={{ fontSize: 9, color: '#4b5563', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '2px 6px', letterSpacing: '0.1em' }}>v3.0</span>
-              {maintenanceMode && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}40`, color: SEVERITY.warning.color, borderRadius: 10, padding: '2px 8px', letterSpacing: '0.1em', fontWeight: 700 }}>MAINTENANCE WINDOW</span>}
+              <span style={{ fontSize: 16, fontWeight: 700, color: '#e5e7eb', letterSpacing: '0.02em' }}>VIGIL</span>
+              <span style={{ fontSize: 9, color: '#4b5563', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '2px 6px', letterSpacing: '0.02em' }}>v3.0</span>
+              {maintenanceMode && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}40`, color: SEVERITY.warning.color, borderRadius: 10, padding: '2px 8px', letterSpacing: '0.02em', fontWeight: 700 }}>MAINTENANCE WINDOW</span>}
             </div>
             <div style={{ fontSize: 10, color: '#4b5563', display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ display: 'flex', alignItems: 'center' }}><PulseDot color={SEVERITY.resolved.color} size={6} /><span style={{ marginLeft: 6 }}>Connected · Last sync {formatAge(Date.now() - 8000)}</span></span>

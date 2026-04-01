@@ -100,7 +100,7 @@ const S = {
         display: 'inline-flex', alignItems: 'center', gap: 5,
         padding: '3px 10px', borderRadius: 14, fontSize: 11, fontWeight: 700,
         background: `${color}22`, color: color,
-        border: `1px solid ${color}44`, letterSpacing: '0.05em',
+        border: `1px solid ${color}44`, letterSpacing: '0.02em',
     }),
     btn: (bg, border, color) => ({
         background: bg, border: `1px solid ${border}`, borderRadius: 7,
@@ -118,7 +118,7 @@ const S = {
     }),
     get label() { return {
         display: 'block', fontSize: 11, fontWeight: 700,
-        color: THEME.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em',
+        color: THEME.textMuted, marginBottom: 6,  letterSpacing: '0.02em',
         fontFamily: FONT_UI,
     }; },
 };
@@ -611,7 +611,7 @@ const LeakDetector = () => {
                             {/* Column headers */}
                             <div style={{ display: 'grid', gridTemplateColumns: '60px 120px 100px 90px 1fr 140px', gap: 12,
                                 padding: '10px 20px', fontSize: 11, color: THEME.textDim, fontWeight: 700,
-                                textTransform: 'uppercase', letterSpacing: .7, borderBottom: `1px solid ${THEME.glassBorder}22` }}>
+                                 letterSpacing: .7, borderBottom: `1px solid ${THEME.glassBorder}22` }}>
                                 <span>PID</span><span>User</span><span>State</span><span>Idle For</span><span>Last Query</span><span>Application</span>
                             </div>
                             {suspects.map((s, i) => (
@@ -1051,7 +1051,7 @@ const ConnectionsTab = () => {
                                     position: 'absolute', top: 14, right: 14,
                                     width: 10, height: 10, borderRadius: '50%',
                                     background: dbMeta.accent,
-                                    boxShadow: `0 0 8px ${dbMeta.accent}`,
+                                    
                                     animation: 'pulse 1s ease-in-out infinite',
                                 }} />
                             )}

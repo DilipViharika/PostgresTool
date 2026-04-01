@@ -456,8 +456,8 @@ function Panel({ title, icon: TIcon, accentColor, rightNode, noPad, children, st
                 fontSize: 11,
                 fontWeight: 700,
                 color: THEME.textMuted,
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
+                
+                letterSpacing: '0.02em',
               }}
             >
               {title}
@@ -555,8 +555,8 @@ function RingGauge({ value, color, size = 80, strokeWidth = 6, label }) {
               fontSize: 7.5,
               color: THEME.textDim,
               fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              
+              letterSpacing: '0.02em',
               marginTop: 1,
             }}
           >
@@ -594,7 +594,7 @@ function StatusBadge({ label, color, pulse }) {
           height: 5,
           borderRadius: '50%',
           background: color,
-          boxShadow: `0 0 5px ${color}70`,
+          
           flexShrink: 0,
           animation: pulse ? 'demoPulse 1.5s ease-in-out infinite' : 'none',
         }}
@@ -612,7 +612,6 @@ function LiveDot({ color }) {
         height: 8,
         borderRadius: '50%',
         background: color,
-        boxShadow: `0 0 8px ${color}, 0 0 12px ${color}60`,
         animation: 'demoPulse 1.5s ease-in-out infinite',
       }}
     />
@@ -637,7 +636,7 @@ function DonutWidget({ data, size = 110, innerRadius = 38, outerRadius = 50, cen
         </ResponsiveContainer>
         <div style={{ position: 'relative', top: -(size / 2 + 12), textAlign: 'center', pointerEvents: 'none' }}>
           <div style={{ fontSize: 16, fontWeight: 800, color: color, fontFamily: "'JetBrains Mono',monospace" }}>{centerValue}</div>
-          <div style={{ fontSize: 7.5, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{centerLabel}</div>
+          <div style={{ fontSize: 7.5, fontWeight: 600, color: THEME.textDim,  letterSpacing: '0.02em' }}>{centerLabel}</div>
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -1220,8 +1219,8 @@ function DemoTable({ columns, rows, color }) {
                 fontWeight: 600,
                 color: THEME.textMuted,
                 fontSize: 10,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
+                
+                letterSpacing: '0.02em',
                 width: col.width,
               }}>
                 {col.label}
@@ -1309,7 +1308,7 @@ function SectionContent({ section, db }) {
   // Section header
   const headerNode = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingLeft: 16, borderLeft: `4px solid ${db.color}` }}>
-      <h2 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{section.name}</h2>
+      <h2 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.02em' }}>{section.name}</h2>
       <StatusBadge label={`${section.tabs.length} tabs`} color={db.color} />
     </div>
   );
@@ -1961,7 +1960,7 @@ function gen7d(seed, base, variance) {
 function StatCard({ label, value, unit, color }) {
   return (
     <div style={{ textAlign: 'center', padding: '14px 8px' }}>
-      <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 600,  letterSpacing: '0.02em', marginBottom: 6 }}>{label}</div>
       <span style={{ fontSize: 22, fontWeight: 700, color: color || THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{value}</span>
       {unit && <span style={{ fontSize: 10, color: THEME.textDim, marginLeft: 3 }}>{unit}</span>}
     </div>
@@ -2417,13 +2416,13 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Current Locks</div>
+                  <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4, fontWeight: 600,  letterSpacing: '0.02em' }}>Current Locks</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: THEME.danger, letterSpacing: '-0.02em' }}>
                     {Math.floor(hashNorm(`${seed}-locks-curr`) * 5)}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Max Wait</div>
+                  <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4, fontWeight: 600,  letterSpacing: '0.02em' }}>Max Wait</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: THEME.warning, letterSpacing: '-0.02em' }}>
                     {Math.floor(hashNorm(`${seed}-locks-wait`) * 2000 + 500)}ms
                   </div>
@@ -2656,11 +2655,11 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${THEME.gridLine}` }}>
               <div>
-                <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Monthly Budget</div>
+                <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 3, fontWeight: 600,  letterSpacing: '0.02em' }}>Monthly Budget</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>43.2 min</div>
               </div>
               <div>
-                <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Remaining</div>
+                <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 3, fontWeight: 600,  letterSpacing: '0.02em' }}>Remaining</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: THEME.success }}>{Math.floor(hashNorm(`${seed}-budg`) * 30 + 10)} min</div>
               </div>
             </div>
@@ -2897,7 +2896,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${THEME.gridLine}` }}>
               {severityDistData.map((item, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <div style={{ fontSize: 8, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <div style={{ fontSize: 8, color: THEME.textDim, fontWeight: 600,  letterSpacing: '0.02em' }}>
                     {item.name}
                   </div>
                   <div style={{ fontSize: 16, fontWeight: 800, color: item.color }}>
@@ -4596,7 +4595,7 @@ export default function DemoDataTab({ dbKey = 'postgresql', sectionId, subTabId 
                   <MiniSparkline data={genSparkData(m.label)} color={db.color} width={48} height={18} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 9.5, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1, marginBottom: 5 }}>
+                  <div style={{ fontSize: 9.5, color: THEME.textDim, fontWeight: 600,  letterSpacing: '0.02em', lineHeight: 1, marginBottom: 5 }}>
                     {m.label}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
@@ -4638,7 +4637,7 @@ export default function DemoDataTab({ dbKey = 'postgresql', sectionId, subTabId 
                   <MiniSparkline data={genSparkData(kpi.label)} color={db.color} width={48} height={18} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 9.5, color: THEME.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1, marginBottom: 5 }}>
+                  <div style={{ fontSize: 9.5, color: THEME.textDim, fontWeight: 600,  letterSpacing: '0.02em', lineHeight: 1, marginBottom: 5 }}>
                     {kpi.label}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>

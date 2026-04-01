@@ -159,7 +159,7 @@ export default function StatusPageTab() {
                     <div style={{ display:'flex', alignItems:'center', gap:16 }}>
                         <Globe size={32} color={statusColor} />
                         <div>
-                            <div style={{ fontSize:12, color:THEME.textMuted, fontWeight:700, textTransform:'uppercase', marginBottom:4 }}>
+                            <div style={{ fontSize:12, color:THEME.textMuted, fontWeight:700, marginBottom:4 }}>
                                 System Status
                             </div>
                             <div style={{ fontSize:28, fontWeight:800, color:statusColor, textTransform:'capitalize' }}>

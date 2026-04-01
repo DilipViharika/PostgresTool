@@ -929,7 +929,7 @@ function DemoMongoDBTab({ tabId }) {
                 style={{
                     fontSize: '11px',
                     uppercase: true,
-                    letterSpacing: '0.1em',
+                    letterSpacing: '0.02em',
                     color: THEME.textDim,
                     marginBottom: 4,
                 }}
@@ -1225,7 +1225,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         fontSize: 10,
                                                         color: THEME.textDim,
                                                         fontWeight: 600,
-                                                        letterSpacing: '0.05em',
+                                                        letterSpacing: '0.02em',
                                                         marginBottom: 4,
                                                     }}
                                                 >
@@ -1825,7 +1825,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     fontSize: 10,
                                                     color: THEME.textDim,
                                                     fontWeight: 600,
-                                                    letterSpacing: '0.05em',
+                                                    letterSpacing: '0.02em',
                                                     marginBottom: 6,
                                                 }}
                                             >
@@ -1842,7 +1842,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     fontSize: 10,
                                                     color: THEME.textDim,
                                                     fontWeight: 600,
-                                                    letterSpacing: '0.05em',
+                                                    letterSpacing: '0.02em',
                                                     marginBottom: 6,
                                                 }}
                                             >
@@ -1858,7 +1858,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     fontSize: 10,
                                                     color: THEME.textDim,
                                                     fontWeight: 600,
-                                                    letterSpacing: '0.05em',
+                                                    letterSpacing: '0.02em',
                                                     marginBottom: 6,
                                                 }}
                                             >
@@ -1874,7 +1874,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     fontSize: 10,
                                                     color: THEME.textDim,
                                                     fontWeight: 600,
-                                                    letterSpacing: '0.05em',
+                                                    letterSpacing: '0.02em',
                                                     marginBottom: 6,
                                                 }}
                                             >
@@ -2166,7 +2166,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 fontSize: 10,
                                                 color: THEME.textDim,
                                                 fontWeight: 600,
-                                                letterSpacing: '0.05em',
+                                                letterSpacing: '0.02em',
                                                 marginBottom: 8,
                                             }}
                                         >
@@ -2182,7 +2182,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 fontSize: 10,
                                                 color: THEME.textDim,
                                                 fontWeight: 600,
-                                                letterSpacing: '0.05em',
+                                                letterSpacing: '0.02em',
                                                 marginBottom: 8,
                                             }}
                                         >
@@ -2199,7 +2199,7 @@ function DemoMongoDBTab({ tabId }) {
                                             fontSize: 10,
                                             color: THEME.textDim,
                                             fontWeight: 600,
-                                            letterSpacing: '0.05em',
+                                            letterSpacing: '0.02em',
                                             marginBottom: 8,
                                         }}
                                     >
@@ -2550,7 +2550,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 fontSize: 10,
                                                 color: THEME.textDim,
                                                 fontWeight: 600,
-                                                letterSpacing: '0.05em',
+                                                letterSpacing: '0.02em',
                                                 marginBottom: 8,
                                             }}
                                         >
@@ -2566,7 +2566,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 fontSize: 10,
                                                 color: THEME.textDim,
                                                 fontWeight: 600,
-                                                letterSpacing: '0.05em',
+                                                letterSpacing: '0.02em',
                                                 marginBottom: 8,
                                             }}
                                         >
@@ -2584,7 +2584,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 fontSize: 10,
                                                 color: THEME.textDim,
                                                 fontWeight: 600,
-                                                letterSpacing: '0.05em',
+                                                letterSpacing: '0.02em',
                                                 marginBottom: 8,
                                             }}
                                         >
@@ -2600,7 +2600,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 fontSize: 10,
                                                 color: THEME.textDim,
                                                 fontWeight: 600,
-                                                letterSpacing: '0.05em',
+                                                letterSpacing: '0.02em',
                                                 marginBottom: 8,
                                             }}
                                         >
@@ -3323,7 +3323,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     fontSize: 10,
                                                     color: THEME.textDim,
                                                     fontWeight: 600,
-                                                    letterSpacing: '0.05em',
+                                                    letterSpacing: '0.02em',
                                                     marginBottom: 8,
                                                 }}
                                             >
@@ -3339,7 +3339,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     fontSize: 10,
                                                     color: THEME.textDim,
                                                     fontWeight: 600,
-                                                    letterSpacing: '0.05em',
+                                                    letterSpacing: '0.02em',
                                                     marginBottom: 8,
                                                 }}
                                             >
@@ -4802,7 +4802,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         fontSize: 10,
                                                         color: THEME.textDim,
                                                         fontWeight: 600,
-                                                        letterSpacing: '0.05em',
+                                                        letterSpacing: '0.02em',
                                                         marginBottom: 6,
                                                     }}
                                                 >

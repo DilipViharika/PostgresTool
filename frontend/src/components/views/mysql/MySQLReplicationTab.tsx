@@ -276,7 +276,7 @@ export default function MySQLReplicationTab() {
                                                 fontWeight: 600,
                                                 color: DARK_THEME.textMuted,
                                                 marginBottom: 12,
-                                                textTransform: 'uppercase',
+                                                
                                             }}
                                         >
                                             IO Thread
@@ -308,7 +308,7 @@ export default function MySQLReplicationTab() {
                                                 fontWeight: 600,
                                                 color: DARK_THEME.textMuted,
                                                 marginBottom: 12,
-                                                textTransform: 'uppercase',
+                                                
                                             }}
                                         >
                                             SQL Thread
@@ -340,7 +340,7 @@ export default function MySQLReplicationTab() {
                                                 fontWeight: 600,
                                                 color: DARK_THEME.textMuted,
                                                 marginBottom: 12,
-                                                textTransform: 'uppercase',
+                                                
                                             }}
                                         >
                                             Seconds Behind Master

@@ -90,7 +90,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {TIcon && <TIcon size={13} color={accent || (refreshing ? THEME.primary : THEME.textDim)} style={{ transition: 'color 0.3s' }} />}
-                    <span style={{ fontSize: 11, fontWeight: 800, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{title}</span>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: THEME.textMuted,  letterSpacing: '0.02em' }}>{title}</span>
                     {refreshing && <span style={{ fontSize: 9, color: THEME.primary, fontWeight: 700, animation: 'relPulse 1s ease-in-out infinite' }}>LIVE</span>}
                 </div>
                 {rightNode}
@@ -109,14 +109,14 @@ const StatusBadge = ({ label, color, pulse }) => (
         fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 5,
         background: `${color}12`, color, border: `1px solid ${color}22`, lineHeight: 1.2, whiteSpace: 'nowrap',
     }}>
-        <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}60`, flexShrink: 0, animation: pulse ? 'relFlash 1.5s ease-in-out infinite' : 'none' }} />
+        <span style={{ width: 5, height: 5, borderRadius: '50%', background: color,  flexShrink: 0, animation: pulse ? 'relFlash 1.5s ease-in-out infinite' : 'none' }} />
         {label}
     </span>
 );
 
 const LiveDot = ({ color = THEME.success, size = 7 }) => (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}80` }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color }} />
         <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: `1px solid ${color}50`, animation: 'relPulseRing 2s ease-out infinite' }} />
     </div>
 );
@@ -410,7 +410,6 @@ const UptimeHeatmap = ({ days }) => {
                             <div key={di} onMouseEnter={() => setHoveredDay(day)} onMouseLeave={() => setHoveredDay(null)} style={{
                                 width: 12, height: 12, borderRadius: 2, background: statusColor(day.status),
                                 opacity: day.status === 'up' ? 0.55 : 0.9, cursor: 'pointer', transition: 'all 0.15s',
-                                boxShadow: hoveredDay?.date === day.date ? `0 0 6px ${statusColor(day.status)}60` : 'none',
                                 transform: hoveredDay?.date === day.date ? 'scale(1.35)' : 'scale(1)',
                             }} />
                         ))}
@@ -1078,7 +1077,7 @@ const ReliabilityTab = () => {
                             <m.icon size={16} color={m.color} />
                         </div>
                         <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1, marginBottom: 4 }}>{m.label}</div>
+                            <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700,  letterSpacing: '0.02em', lineHeight: 1, marginBottom: 4 }}>{m.label}</div>
                             <div style={{ fontSize: 18, fontWeight: 800, color: m.color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{m.value}</div>
                             <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 3, lineHeight: 1 }}>{m.sub}</div>
                         </div>
@@ -1249,7 +1248,7 @@ const ReliabilityTab = () => {
                                     <div style={{ width: 44, height: 44, borderRadius: 13, background: `${s.color}10`, border: `1px solid ${s.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <s.icon size={20} color={s.color} />
                                     </div>
-                                    <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700,  letterSpacing: '0.02em' }}>{s.label}</div>
                                     <div style={{ fontSize: 26, fontWeight: 800, color: s.color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{s.value}</div>
                                     <div style={{ fontSize: 10, color: THEME.textDim }}>target: {s.target}</div>
                                 </div>
@@ -1320,7 +1319,7 @@ const ReliabilityTab = () => {
                                     <s.icon size={12} color={s.color} />
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{s.label}</div>
+                                    <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700,  letterSpacing: '0.02em', marginBottom: 2 }}>{s.label}</div>
                                     <div style={{ fontSize: 14, fontWeight: 800, color: s.color, fontFamily: THEME.fontMono }}>{s.value}</div>
                                 </div>
                             </div>
@@ -1335,7 +1334,7 @@ const ReliabilityTab = () => {
                             return (
                                 <div key={inc.id} style={{ display: 'flex', gap: 14, position: 'relative' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 18, flexShrink: 0 }}>
-                                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: sev.color, border: `2px solid ${THEME.bg}`, boxShadow: `0 0 6px ${sev.color}40`, flexShrink: 0, zIndex: 1 }} />
+                                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: sev.color, border: `2px solid ${THEME.bg}`,  flexShrink: 0, zIndex: 1 }} />
                                         {i < incidents.length - 1 && <div style={{ width: 2, flex: 1, background: `${THEME.grid}60`, minHeight: 20 }} />}
                                     </div>
                                     <div style={{ flex: 1, marginBottom: 14, padding: '14px 18px', borderRadius: 12, background: THEME.surface, border: `1px solid ${THEME.glassBorder}` }}>
@@ -1356,11 +1355,11 @@ const ReliabilityTab = () => {
                                         </div>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
                                             <div style={{ padding: '9px 12px', borderRadius: 8, background: `${sev.color}06`, border: `1px solid ${sev.color}12` }}>
-                                                <div style={{ fontSize: 8, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Impact</div>
+                                                <div style={{ fontSize: 8, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 4 }}>Impact</div>
                                                 <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>{inc.impact}</div>
                                             </div>
                                             <div style={{ padding: '9px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
-                                                <div style={{ fontSize: 8, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Root Cause</div>
+                                                <div style={{ fontSize: 8, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 4 }}>Root Cause</div>
                                                 <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>{inc.root_cause}</div>
                                             </div>
                                         </div>

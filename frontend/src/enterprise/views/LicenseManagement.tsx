@@ -160,7 +160,7 @@ const LicenseManagement = () => {
             fontSize: '12px',
             color: '#94a3b8',
             fontWeight: '600',
-            textTransform: 'uppercase',
+            
             margin: '0 0 4px 0',
         },
         value: {

@@ -923,7 +923,7 @@ const styles = {
   statLabel: {
     fontSize: 12,
     color: THEME.textMuted,
-    textTransform: 'uppercase',
+    
     letterSpacing: '0.5px',
     marginBottom: 4,
     fontWeight: 500,
@@ -967,7 +967,7 @@ const styles = {
     backgroundColor: THEME.surface,
     color: THEME.primary,
     borderColor: THEME.primary,
-    boxShadow: `0 0 12px ${THEME.primary}40`,
+    
   },
 
   searchInput: {
@@ -1494,7 +1494,7 @@ const styles = {
     padding: '4px 10px',
     borderRadius: 10,
     fontWeight: 600,
-    textTransform: 'uppercase',
+    
   },
 
   approvalActions: {
@@ -1547,7 +1547,7 @@ const styles = {
     fontWeight: 600,
     fontSize: 13,
     color: THEME.textMuted,
-    textTransform: 'uppercase',
+    
     letterSpacing: '0.5px',
   },
 
@@ -1590,7 +1590,7 @@ const styles = {
     borderRadius: 14,
     fontSize: 11,
     fontWeight: 600,
-    textTransform: 'uppercase',
+    
   },
 
   taskTitleRow: {

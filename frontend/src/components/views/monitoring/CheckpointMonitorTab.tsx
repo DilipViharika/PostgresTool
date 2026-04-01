@@ -39,7 +39,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, color = THEME.primary, warn
         </div>
         <div>
             <div style={{ fontSize:22, fontWeight:800, color:THEME.textMain, lineHeight:1 }}>{value}</div>
-            <div style={{ fontSize:11, color:THEME.textMuted, marginTop:3, fontWeight:600, textTransform:'uppercase', letterSpacing:.5 }}>{label}</div>
+            <div style={{ fontSize:11, color:THEME.textMuted, marginTop:3, fontWeight:600,  letterSpacing:'0.02em' }}>{label}</div>
             {sub && <div style={{ fontSize:11, color: warn ? THEME.warning : THEME.textDim, marginTop:2 }}>{sub}</div>}
         </div>
     </div>
@@ -333,7 +333,7 @@ export default function CheckpointMonitorTab() {
                         { label:'Checkpoint Timeout',       value: wal.checkpoint_timeout_sec ? `${wal.checkpoint_timeout_sec}s` : '—' },
                     ].map(({ label, value }) => (
                         <div key={label} style={{ padding:'12px 14px', background:`${THEME.bg}60`, borderRadius:8, border:`1px solid ${THEME.grid}` }}>
-                            <div style={{ fontSize:11, color:THEME.textMuted, textTransform:'uppercase', letterSpacing:.5, marginBottom:6 }}>{label}</div>
+                            <div style={{ fontSize:11, color:THEME.textMuted,  letterSpacing:'0.02em', marginBottom:6 }}>{label}</div>
                             <div style={{ fontFamily:THEME.fontMono, fontSize:13, fontWeight:700, color:THEME.textMain }}>{value}</div>
                         </div>
                     ))}

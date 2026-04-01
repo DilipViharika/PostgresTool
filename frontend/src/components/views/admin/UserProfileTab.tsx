@@ -235,7 +235,7 @@ const UserProfileTab: FC = () => {
                     {profile?.fullName}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 12, alignItems: 'center', marginBottom: 8 }}>
-                    <div style={{ background: THEME.primary, color: THEME.textInverse, padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
+                    <div style={{ background: THEME.primary, color: THEME.textInverse, padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
                         {profile?.role || 'User'}
                     </div>
                     <div style={{ color: THEME.textMuted, fontSize: 12 }}>

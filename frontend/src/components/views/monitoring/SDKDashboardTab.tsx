@@ -140,12 +140,12 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
                 ) : (
                     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                         <div>
-                            <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, textTransform:'uppercase', letterSpacing:0.5, marginBottom:6 }}>App Name</label>
+                            <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, letterSpacing:'0.02em', marginBottom:6 }}>App Name</label>
                             <input type="text" placeholder="My Salesforce Integration" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                                 style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13 }} />
                         </div>
                         <div>
-                            <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, textTransform:'uppercase', letterSpacing:0.5, marginBottom:6 }}>App Type</label>
+                            <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, letterSpacing:'0.02em', marginBottom:6 }}>App Type</label>
                             <select value={form.appType} onChange={e => setForm({...form, appType: e.target.value})}
                                 style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13, cursor:'pointer' }}>
                                 <option value="salesforce">Salesforce</option>
@@ -158,7 +158,7 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
                             </select>
                         </div>
                         <div>
-                            <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, textTransform:'uppercase', letterSpacing:0.5, marginBottom:6 }}>Environment</label>
+                            <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, letterSpacing:'0.02em', marginBottom:6 }}>Environment</label>
                             <select value={form.environment} onChange={e => setForm({...form, environment: e.target.value})}
                                 style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13, cursor:'pointer' }}>
                                 <option value="development">Development</option>

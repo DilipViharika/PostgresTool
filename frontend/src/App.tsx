@@ -320,14 +320,11 @@ const AppStyles = () => (
         @keyframes pulse           { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         @keyframes bounce          { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
         @keyframes shimmer         { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-        @keyframes scanline        { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
-        @keyframes glowPulse       { 0%, 100% { box-shadow: 0 0 8px rgba(0,184,116,0.2); } 50% { box-shadow: 0 0 24px rgba(0,184,116,0.4); } }
-        @keyframes orb             { 0%, 100% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-20px) scale(1.05); } 66% { transform: translate(-20px,15px) scale(0.97); } }
+        @keyframes subtlePulse      { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         @keyframes rotate          { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes tabIn           { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes notifPop        { 0% { transform: scale(0.85); opacity: 0; } 80% { transform: scale(1.02); } 100% { transform: scale(1); opacity: 1; } }
         @keyframes badgePop        { 0% { transform: scale(0); } 70% { transform: scale(1.3); } 100% { transform: scale(1); } }
-        @keyframes headerGlow      { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
         @keyframes waveFlow        { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes dotBlink        { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
 
@@ -346,9 +343,8 @@ const AppStyles = () => (
 
         /* ── Header: clean bar ── */
         header {
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            box-shadow: ${DS._dark ? '0 1px 0 rgba(255,255,255,0.04)' : '0 1px 0 rgba(0,0,0,0.04)'} !important;
+            background: ${DS._dark ? THEME.bgAlt : '#ffffff'} !important;
+            box-shadow: ${DS._dark ? '0 1px 0 rgba(255,255,255,0.04)' : '0 1px 0 rgba(0,0,0,0.06)'} !important;
         }
 
         header::after {
@@ -560,7 +556,7 @@ const AppStyles = () => (
         .notif-item:hover { background: rgba(0,184,116,0.05) !important; }
 
         /* ── Feedback overlay ── */
-        .feedback-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 2000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease-out; }
+        .feedback-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease-out; }
         .feedback-modal   { animation: slideUp 0.3s cubic-bezier(0.34,1.4,0.64,1) both; }
         .fb-input:focus   { border-color: rgba(0,184,116,0.5) !important; box-shadow: 0 0 0 3px rgba(0,184,116,0.1) !important; }
         .fb-tab:hover     { opacity: 1 !important; }
@@ -708,7 +704,7 @@ const StatusPill = ({ connected }) => (
             border: `1px solid ${connected ? 'rgba(52,211,153,0.3)' : 'rgba(251,113,133,0.3)'}`,
             fontSize: 11,
             fontWeight: 600,
-            letterSpacing: '0.05em',
+            letterSpacing: '0.02em',
             color: connected ? DS.emerald : DS.rose,
             fontFamily: DS.fontMono,
         }}
@@ -812,8 +808,7 @@ const FbLabel = ({ children, color }) => (
         style={{
             fontSize: 10,
             fontWeight: 600,
-            letterSpacing: '0.09em',
-            textTransform: 'uppercase',
+            letterSpacing: '0.02em',
             color: color || DS.textMuted,
             marginBottom: 8,
             fontFamily: DS.fontMono,
@@ -1042,8 +1037,7 @@ const FbSectionDropdown = ({ value, onChange, includeAll = false }) => {
                                     fontWeight: 700,
                                     color: g.accent,
                                     fontFamily: DS.fontMono,
-                                    letterSpacing: '0.1em',
-                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.02em',
                                     background: `${g.accent}08`,
                                     borderBottom: `1px solid ${DS.border}`,
                                 }}
@@ -1107,8 +1101,7 @@ const FbSectionCard = ({ label, data, onChange, compact = false, accent = DS.cya
                     alignItems: 'center',
                     gap: 6,
                     fontFamily: DS.fontMono,
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
+                    letterSpacing: '0.02em',
                 }}
             >
                 <Layers size={10} /> {label}
@@ -1279,8 +1272,7 @@ const FbBugGeneralForm = ({ section, onSectionChange, forms, onFieldChange }) =>
                                     fontWeight: 700,
                                     color: g.accent,
                                     fontFamily: DS.fontMono,
-                                    letterSpacing: '0.1em',
-                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.02em',
                                     marginBottom: 6,
                                     marginTop: 4,
                                     paddingLeft: 2,
@@ -1581,7 +1573,7 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                                 color: DS.textMuted,
                                 marginTop: 4,
                                 fontFamily: DS.fontMono,
-                                letterSpacing: '0.1em',
+                                letterSpacing: '0.02em',
                             }}
                         >
                             VIGIL · DATABASE MONITOR
@@ -1921,7 +1913,7 @@ class ErrorBoundary extends React.Component {
                                         fontSize: 12,
                                         marginBottom: this.state.showStackTrace ? 12 : 0,
                                         fontFamily: DS.fontMono,
-                                        letterSpacing: '0.05em',
+                                        letterSpacing: '0.02em',
                                     }}
                                 >
                                     {this.state.showStackTrace ? '▼ Hide' : '▶ Show'} Developer Info
@@ -1967,7 +1959,7 @@ class ErrorBoundary extends React.Component {
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.background = `${DS.cyan}25`;
-                                    e.currentTarget.style.boxShadow = `0 0 12px ${DS.cyan}40`;
+                                    e.currentTarget.style.boxShadow = 'none';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.background = `${DS.cyan}15`;
@@ -2079,7 +2071,7 @@ const ProfileModal = ({ user, onClose, onSave }) => {
                 position: 'fixed',
                 inset: 0,
                 background: 'rgba(0,0,0,0.75)',
-                backdropFilter: 'blur(8px)',
+                backdropFilter: 'blur(4px)',
                 zIndex: 2000,
                 display: 'flex',
                 alignItems: 'center',
@@ -2191,7 +2183,7 @@ const ProfileModal = ({ user, onClose, onSave }) => {
                                     color: DS.cyan,
                                     fontFamily: DS.fontMono,
                                     marginTop: 2,
-                                    letterSpacing: '0.06em',
+                                    letterSpacing: '0.02em',
                                 }}
                             >
                                 {user?.role || 'user'} · {user?.accessLevel || 'read'}
@@ -2208,8 +2200,7 @@ const ProfileModal = ({ user, onClose, onSave }) => {
                                 fontWeight: 600,
                                 color: DS.textMuted,
                                 marginBottom: 6,
-                                letterSpacing: '0.07em',
-                                textTransform: 'uppercase',
+                                letterSpacing: '0.02em',
                             }}
                         >
                             Display Name
@@ -2248,8 +2239,7 @@ const ProfileModal = ({ user, onClose, onSave }) => {
                                 fontWeight: 600,
                                 color: DS.textMuted,
                                 marginBottom: 6,
-                                letterSpacing: '0.07em',
-                                textTransform: 'uppercase',
+                                letterSpacing: '0.02em',
                             }}
                         >
                             Email
@@ -2290,8 +2280,7 @@ const ProfileModal = ({ user, onClose, onSave }) => {
                                         fontWeight: 600,
                                         color: DS.textMuted,
                                         marginBottom: 6,
-                                        letterSpacing: '0.07em',
-                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.02em',
                                     }}
                                 >
                                     {lbl}
@@ -2780,7 +2769,7 @@ const Sidebar = ({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: `0 0 24px ${DS.cyan}60, 0 0 48px ${DS.cyan}20, 0 4px 12px rgba(0,0,0,0.3)`,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                         border: `1px solid ${DS.cyan}40`,
                     }}
                 >
@@ -2804,7 +2793,6 @@ const Sidebar = ({
                             style={{
                                 fontSize: 9,
                                 letterSpacing: '0.14em',
-                                textTransform: 'uppercase',
                                 color: DS.logoSub,
                                 fontFamily: DS.fontMono,
                                 marginTop: 2,
@@ -3085,7 +3073,7 @@ const Sidebar = ({
                             <div style={{
                                 width: 6, height: 6, borderRadius: '50%',
                                 background: DS.cyan, flexShrink: 0,
-                                boxShadow: `0 0 6px ${DS.cyan}60`,
+                                boxShadow: 'none',
                             }} />
                         </>
                     )}
@@ -3433,8 +3421,7 @@ const ConnectionSelector = () => {
                                     borderRadius: 3,
                                     padding: '2px 6px',
                                     flexShrink: 0,
-                                    letterSpacing: '0.05em',
-                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.02em',
                                 }}
                                 title={`Database type: ${activeConnection.dbType || 'unknown'}`}
                             >
@@ -3503,7 +3490,7 @@ const ConnectionSelector = () => {
                                 fontSize: 10,
                                 color: DS.textMuted,
                                 fontFamily: DS.fontMono,
-                                letterSpacing: '0.08em',
+                                letterSpacing: '0.02em',
                                 marginBottom: 4,
                             }}
                         >
@@ -4032,7 +4019,6 @@ const DashboardInner = ({ onLogout }) => {
                             justifyContent: 'space-between',
                             padding: '0 28px',
                             background: DS.headerBg,
-                            backdropFilter: 'blur(20px)',
                             position: 'sticky',
                             top: 0,
                             zIndex: 40,
@@ -4051,7 +4037,7 @@ const DashboardInner = ({ onLogout }) => {
                                             fontSize: 11,
                                             color: DS.textMuted,
                                             fontFamily: DS.fontMono,
-                                            letterSpacing: '0.06em',
+                                            letterSpacing: '0.02em',
                                         }}
                                     >
                                         {getSectionForTab(activeTab)?.toUpperCase() || 'CORE'}
@@ -4148,7 +4134,7 @@ const DashboardInner = ({ onLogout }) => {
                                         borderRadius: 12,
                                         overflow: 'hidden',
                                         border: `1px solid ${SEV_COLORS[latestAlert.severity] || DS.cyan}50`,
-                                        boxShadow: `${DS.shadowCard}, 0 0 20px ${SEV_COLORS[latestAlert.severity] || DS.cyan}20`,
+                                        boxShadow: DS.shadowCard,
                                     }}
                                 >
                                     <div
@@ -4265,7 +4251,7 @@ const DashboardInner = ({ onLogout }) => {
                             position: 'fixed',
                             inset: 0,
                             background: 'rgba(0,0,0,0.75)',
-                            backdropFilter: 'blur(8px)',
+                            backdropFilter: 'blur(4px)',
                             zIndex: 2000,
                             display: 'flex',
                             alignItems: 'center',
@@ -4317,7 +4303,7 @@ const DashboardInner = ({ onLogout }) => {
                                             fontSize: 11,
                                             color: DS.textMuted,
                                             fontFamily: DS.fontMono,
-                                            letterSpacing: '0.05em',
+                                            letterSpacing: '0.02em',
                                         }}
                                     >
                                         Press Ctrl+? anytime to toggle this dialog
@@ -4360,8 +4346,7 @@ const DashboardInner = ({ onLogout }) => {
                                             style={{
                                                 fontSize: 11,
                                                 fontWeight: 700,
-                                                letterSpacing: '0.1em',
-                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.02em',
                                                 color: DS.cyan,
                                                 marginBottom: 12,
                                             }}
@@ -4426,8 +4411,7 @@ const DashboardInner = ({ onLogout }) => {
                                             style={{
                                                 fontSize: 11,
                                                 fontWeight: 700,
-                                                letterSpacing: '0.1em',
-                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.02em',
                                                 color: DS.emerald,
                                                 marginBottom: 12,
                                             }}
@@ -4561,7 +4545,7 @@ const LoadingScreen = () => (
                     textAlign: 'center',
                     marginTop: 4,
                     fontFamily: DS.fontMono,
-                    letterSpacing: '0.1em',
+                    letterSpacing: '0.02em',
                 }}
             >
                 INITIALIZING…
@@ -4696,7 +4680,7 @@ const AuthConsumer = () => {
                                                     fontSize: 12,
                                                     color: DS.textMuted,
                                                     fontFamily: DS.fontMono,
-                                                    letterSpacing: '0.08em',
+                                                    letterSpacing: '0.02em',
                                                 }}
                                             >
                                                 SIGNING OUT…

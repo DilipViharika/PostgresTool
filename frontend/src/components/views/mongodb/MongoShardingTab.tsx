@@ -489,7 +489,7 @@ export default function MongoShardingTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                        textTransform: 'uppercase',
+                                        
                                         marginBottom: 4,
                                     }}
                                 >
@@ -512,7 +512,7 @@ export default function MongoShardingTab() {
                                     style={{
                                         fontSize: 11,
                                         color: DARK_THEME.textMuted,
-                                        textTransform: 'uppercase',
+                                        
                                         marginBottom: 4,
                                     }}
                                 >

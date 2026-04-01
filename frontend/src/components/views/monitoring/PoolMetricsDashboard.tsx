@@ -69,7 +69,7 @@ const MetricCard = ({ icon: Icon, label, value, unit = '', sub, color = THEME.pr
                 {value}
                 {unit && <span style={{ fontSize: '12px', marginLeft: '4px', fontWeight: 600, color: THEME.textMuted }}>{unit}</span>}
             </div>
-            <div style={{ fontSize: '11px', color: THEME.textMuted, marginTop: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: '11px', color: THEME.textMuted, marginTop: 4, fontWeight: 600,  letterSpacing: '0.5px' }}>
                 {label}
             </div>
             {sub && <div style={{ fontSize: '11px', color: warn ? THEME.warning : THEME.textDim, marginTop: 2 }}>{sub}</div>}

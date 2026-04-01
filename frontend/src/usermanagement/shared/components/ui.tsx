@@ -259,7 +259,7 @@ export const FormField = ({ label, error, required, children }) => (
         <label style={{
             display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6,
             color: error ? T.danger : T.textDim,
-            textTransform: 'uppercase', letterSpacing: '0.06em',
+            letterSpacing: '0.02em',
         }}>
             {label}{required && <span style={{ color: T.danger, marginLeft: 3 }}>*</span>}
         </label>

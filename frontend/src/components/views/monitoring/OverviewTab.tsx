@@ -290,11 +290,11 @@ const StatusBadge = ({ label, color, pulse }) => (
             borderRadius: 12,
             background: `${color}12`,
             color,
-            border: `1px solid ${color}28`,
+            
             lineHeight: 1.3,
             whiteSpace: 'nowrap',
             fontFamily: THEME.fontMono,
-            letterSpacing: '0.05em',
+            letterSpacing: '0.02em',
         }}
     >
         <span
@@ -303,7 +303,7 @@ const StatusBadge = ({ label, color, pulse }) => (
                 height: 6,
                 borderRadius: '50%',
                 background: color,
-                boxShadow: `0 0 4px ${color}40`,
+                
                 flexShrink: 0,
                 animation: pulse ? 'ovPulse 1.5s ease-in-out infinite' : 'none',
             }}
@@ -320,7 +320,6 @@ const LiveDot = ({ color = THEME.success, size = 7 }) => (
                 inset: 0,
                 borderRadius: '50%',
                 background: color,
-                boxShadow: `0 0 8px ${color}a0, 0 0 12px ${color}60`,
             }}
         />
         <div
@@ -441,8 +440,8 @@ const RingGauge = ({
                                 fontSize: 7.5,
                                 color: THEME.textDim,
                                 fontWeight: 600,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em',
+                                
+                                letterSpacing: '0.02em',
                                 marginTop: 1,
                             }}
                         >
@@ -583,7 +582,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                     cursor: 'pointer',
                     color: env.color,
                     transition: 'all 0.18s ease',
-                    boxShadow: `0 0 8px ${env.color}20`,
+                    
                 }}
             >
                 <env.icon size={12} />
@@ -619,8 +618,8 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                                 fontSize: 9.5,
                                 fontWeight: 700,
                                 color: THEME.textDim,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.08em',
+                                
+                                letterSpacing: '0.02em',
                             }}
                         >
                             Switch Environment
@@ -664,7 +663,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     flexShrink: 0,
-                                    boxShadow: `0 0 8px ${e.color}25`,
+                                    
                                 }}
                             >
                                 <e.icon size={14} color={e.color} />
@@ -755,7 +754,6 @@ const NotificationBell = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     transition: 'all 0.15s ease',
-                    boxShadow: unread > 0 ? `0 0 12px ${SEVERITY_COLOR.critical}30` : 'none',
                 }}
             >
                 {unread > 0 ? (
@@ -781,7 +779,7 @@ const NotificationBell = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontFamily: THEME.fontMono,
-                            boxShadow: `0 0 8px ${SEVERITY_COLOR.critical}60`,
+                            
                             animation: 'ovPulse 2s ease-in-out infinite',
                         }}
                     >
@@ -1025,8 +1023,8 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                                 fontSize: 9,
                                 fontWeight: 700,
                                 color: THEME.textDim,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.08em',
+                                
+                                letterSpacing: '0.02em',
                             }}
                         >
                             Refresh interval
@@ -1094,7 +1092,7 @@ const PgVersionBadge = ({ version = '16.2', environment = 'prod' }) => {
                 borderRadius: 12,
                 background: `linear-gradient(135deg, ${envData.color}12, ${envData.color}08)`,
                 border: `1px solid ${envData.color}28`,
-                boxShadow: `0 0 8px ${envData.color}18`,
+                
             }}
         >
             <div
@@ -1155,13 +1153,10 @@ const BackupStatusCard = ({ lastBackup }) => {
                 border: `1px solid ${isOld ? `${THEME.warning}30` : THEME.glassBorder}`,
                 position: 'relative',
                 overflow: 'hidden',
-                boxShadow: isOld
-                    ? `0 0 0 1px ${THEME.warning}12, 0 4px 12px rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.06)`
-                    : `0 0 0 1px ${THEME.glassBorder}, 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
+                boxShadow: THEME.shadowSm,
             }}
-            className={isOld ? 'ov-glow-warn' : ''}
+            
         >
-            <div className="ov-card-shine" />
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1171,11 +1166,11 @@ const BackupStatusCard = ({ lastBackup }) => {
                             height: 32,
                             borderRadius: 10,
                             background: `${statusColor}14`,
-                            border: `1px solid ${statusColor}28`,
+                            
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: `0 0 8px ${statusColor}25`,
+                            
                         }}
                     >
                         <HardDriveDownload size={15} color={statusColor} />
@@ -1186,8 +1181,8 @@ const BackupStatusCard = ({ lastBackup }) => {
                                 fontSize: 10,
                                 fontWeight: 700,
                                 color: THEME.textMuted,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.06em',
+                                
+                                letterSpacing: '0.02em',
                                 lineHeight: 1,
                             }}
                         >
@@ -1277,10 +1272,9 @@ const LongTxnCard = ({ data, onNavigate }) => {
                     position: 'relative',
                     overflow: 'hidden',
                     boxShadow:
-                        '0 0 0 1px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)',
+                        '0 0 0 1px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.08)',
                 }}
             >
-                <div className="ov-card-shine" />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div
@@ -1293,7 +1287,7 @@ const LongTxnCard = ({ data, onNavigate }) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                boxShadow: `0 0 8px ${THEME.success}25`,
+                                
                             }}
                         >
                             <Hourglass size={15} color={THEME.success} />
@@ -1304,8 +1298,8 @@ const LongTxnCard = ({ data, onNavigate }) => {
                                     fontSize: 10,
                                     fontWeight: 700,
                                     color: THEME.textMuted,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.06em',
+                                    
+                                    letterSpacing: '0.02em',
                                     lineHeight: 1,
                                 }}
                             >
@@ -1369,10 +1363,9 @@ const LongTxnCard = ({ data, onNavigate }) => {
                 position: 'relative',
                 overflow: 'hidden',
                 boxShadow:
-                    '0 0 0 1px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)',
+                    '0 0 0 1px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.08)',
             }}
         >
-            <div className="ov-card-shine" />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div
@@ -1385,7 +1378,7 @@ const LongTxnCard = ({ data, onNavigate }) => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: `0 0 8px ${THEME.warning}25`,
+                            
                         }}
                     >
                         <Hourglass size={15} color={THEME.warning} />
@@ -1396,8 +1389,8 @@ const LongTxnCard = ({ data, onNavigate }) => {
                                 fontSize: 10,
                                 fontWeight: 700,
                                 color: THEME.textMuted,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.06em',
+                                
+                                letterSpacing: '0.02em',
                                 lineHeight: 1,
                             }}
                         >
@@ -1479,7 +1472,6 @@ const LongTxnCard = ({ data, onNavigate }) => {
                                                 ? `linear-gradient(90deg, ${THEME.danger}70, ${THEME.danger})`
                                                 : `linear-gradient(90deg, ${THEME.warning}70, ${THEME.warning})`,
                                         animationDelay: `${i * 0.1}s`,
-                                        boxShadow: i === 0 ? `0 0 6px ${THEME.danger}50` : `0 0 6px ${THEME.warning}40`,
                                     }}
                                 />
                             </div>
@@ -1541,12 +1533,11 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                 overflow: 'hidden',
                 boxShadow:
                     vacuum.urgentCount > 3
-                        ? `0 0 0 1px ${THEME.danger}12, 0 4px 12px rgba(0,0,0,0.12), inset 0 1px 2px rgba(255,255,255,0.06)`
-                        : `0 0 0 1px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.06)`,
+                        ? `0 0 0 1px ${THEME.danger}12, 0 4px 12px rgba(0,0,0,0.12)`
+                        : `0 0 0 1px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.08)`,
             }}
-            className={vacuum.urgentCount > 3 ? 'ov-glow-warn' : ''}
+            
         >
-            <div className="ov-card-shine" />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div
@@ -1555,11 +1546,11 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                             height: 32,
                             borderRadius: 10,
                             background: `${urgentColor}14`,
-                            border: `1px solid ${urgentColor}28`,
+                            
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: `0 0 8px ${urgentColor}25`,
+                            
                         }}
                         className={vacuum.urgentCount > 3 ? 'ov-vacuum-urgent' : ''}
                     >
@@ -1571,8 +1562,8 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                                 fontSize: 10,
                                 fontWeight: 700,
                                 color: THEME.textMuted,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.06em',
+                                
+                                letterSpacing: '0.02em',
                                 lineHeight: 1,
                             }}
                         >
@@ -1595,7 +1586,7 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                             fontSize: 9,
                             color: THEME.textDim,
                             fontWeight: 600,
-                            textTransform: 'uppercase',
+                            
                             letterSpacing: '0.04em',
                         }}
                     >
@@ -1622,7 +1613,7 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                         height: '100%',
                         background: THEME.danger,
                         transition: 'width 0.9s ease',
-                        boxShadow: `0 0 8px ${THEME.danger}40`,
+                        
                     }}
                 />
                 <div
@@ -1631,7 +1622,7 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                         height: '100%',
                         background: THEME.warning,
                         transition: 'width 0.9s ease 0.05s',
-                        boxShadow: `0 0 6px ${THEME.warning}30`,
+                        
                     }}
                 />
                 <div
@@ -1640,7 +1631,7 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                         height: '100%',
                         background: `${THEME.success}60`,
                         transition: 'width 0.9s ease 0.1s',
-                        boxShadow: `0 0 6px ${THEME.success}25`,
+                        
                     }}
                 />
             </div>
@@ -1833,7 +1824,7 @@ const ConnectionStatusBanner = () => {
                 borderRadius: 14,
                 background: THEME.surface,
                 
-                border: `1px solid ${statusColor}28`,
+                
                 padding: '12px 16px',
                 display: 'flex',
                 alignItems: 'center',
@@ -1849,7 +1840,7 @@ const ConnectionStatusBanner = () => {
                     borderRadius: '50%',
                     flexShrink: 0,
                     background: statusColor,
-                    boxShadow: `0 0 7px ${statusColor}`,
+                    
                     animation: activeConnection.status === 'success' ? 'dotBlink 2.5s ease-in-out infinite' : 'none',
                 }}
             />
@@ -1868,8 +1859,8 @@ const ConnectionStatusBanner = () => {
                             fontSize: 10,
                             color: statusColor,
                             fontWeight: 600,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
+                            
+                            letterSpacing: '0.02em',
                         }}
                     >
                         ● {activeConnection.status || 'untested'}
@@ -2574,7 +2565,7 @@ const OverviewTab = () => {
                                         fontSize: 9,
                                         color: THEME.textDim,
                                         fontWeight: 600,
-                                        textTransform: 'uppercase',
+                                        
                                         letterSpacing: '0.04em',
                                         marginBottom: 3,
                                     }}
@@ -2653,7 +2644,7 @@ const OverviewTab = () => {
                                                     borderRadius: 10,
                                                     background: `linear-gradient(90deg, ${item.color}80, ${item.color})`,
                                                     animationDelay: `${i * 0.12}s`,
-                                                    boxShadow: `0 0 8px ${item.color}50`,
+                                                    
                                                 }}
                                             />
                                         </div>
@@ -2687,7 +2678,7 @@ const OverviewTab = () => {
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.grid}40`,
                                                 boxShadow:
-                                                    '0 0 0 1px rgba(0,0,0,0.04), inset 0 1px 2px rgba(255,255,255,0.08)',
+                                                    '0 0 0 1px rgba(0,0,0,0.04)',
                                             }}
                                         >
                                             <div
@@ -2695,7 +2686,7 @@ const OverviewTab = () => {
                                                     fontSize: 9,
                                                     color: THEME.textDim,
                                                     fontWeight: 600,
-                                                    textTransform: 'uppercase',
+                                                    
                                                     letterSpacing: '0.04em',
                                                     marginBottom: 2,
                                                 }}
@@ -2816,7 +2807,7 @@ const OverviewTab = () => {
                                     fontSize: 9,
                                     color: THEME.textDim,
                                     fontWeight: 600,
-                                    textTransform: 'uppercase',
+                                    
                                     letterSpacing: '0.04em',
                                     marginBottom: 3,
                                 }}
@@ -2890,8 +2881,8 @@ const OverviewTab = () => {
                                         fontSize: 8,
                                         color: THEME.textDim,
                                         fontWeight: 600,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.05em',
+                                        
+                                        letterSpacing: '0.02em',
                                         marginTop: 2,
                                     }}
                                 >
@@ -2955,7 +2946,7 @@ const OverviewTab = () => {
                                             justifyContent: 'center',
                                             background: `${row.color}12`,
                                             border: `1px solid ${row.color}20`,
-                                            boxShadow: `0 0 8px ${row.color}25`,
+                                            
                                         }}
                                     >
                                         <row.icon size={14} color={row.color} />
@@ -2993,7 +2984,7 @@ const OverviewTab = () => {
                                                     height: '100%',
                                                     borderRadius: 10,
                                                     background: `linear-gradient(90deg, ${row.color}65, ${row.color})`,
-                                                    boxShadow: `0 0 8px ${row.color}30`,
+                                                    
                                                     animationDelay: `${i * 0.1}s`,
                                                 }}
                                             />
@@ -3018,7 +3009,7 @@ const OverviewTab = () => {
                                 fontSize: 10,
                                 color: THEME.textDim,
                                 fontWeight: 600,
-                                textTransform: 'uppercase',
+                                
                                 letterSpacing: '0.04em',
                             }}
                         >
@@ -3286,7 +3277,7 @@ const OverviewTab = () => {
                                             fontSize: 9.5,
                                             color: THEME.textDim,
                                             fontWeight: 600,
-                                            textTransform: 'uppercase',
+                                            
                                             letterSpacing: '0.04em',
                                         }}
                                     >
@@ -3315,7 +3306,7 @@ const OverviewTab = () => {
                                             height: '100%',
                                             borderRadius: 10,
                                             background: `linear-gradient(90deg, ${THEME.danger}75, ${THEME.danger})`,
-                                            boxShadow: `0 0 8px ${THEME.danger}40`,
+                                            
                                         }}
                                     />
                                 </div>
@@ -3411,14 +3402,14 @@ const OverviewTab = () => {
                                                 style={{
                                                     width: `${rp}%`,
                                                     background: `linear-gradient(90deg, ${THEME.primary}80, ${THEME.primary})`,
-                                                    boxShadow: `0 0 6px ${THEME.primary}40`,
+                                                    
                                                 }}
                                             />
                                             <div
                                                 style={{
                                                     flex: 1,
                                                     background: `linear-gradient(90deg, ${THEME.secondary}80, ${THEME.secondary})`,
-                                                    boxShadow: `0 0 6px ${THEME.secondary}40`,
+                                                    
                                                 }}
                                             />
                                         </div>

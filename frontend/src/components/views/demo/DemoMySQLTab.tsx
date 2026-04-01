@@ -545,7 +545,7 @@ function DemoMySQLTab({ tabId }) {
                                             style={{
                                                 fontSize: 11,
                                                 color: THEME.textMuted,
-                                                textTransform: 'uppercase',
+                                                
                                                 fontWeight: 600,
                                                 marginBottom: 4,
                                             }}
@@ -561,7 +561,7 @@ function DemoMySQLTab({ tabId }) {
                                             style={{
                                                 fontSize: 11,
                                                 color: THEME.textMuted,
-                                                textTransform: 'uppercase',
+                                                
                                                 fontWeight: 600,
                                                 marginBottom: 4,
                                             }}
@@ -575,7 +575,7 @@ function DemoMySQLTab({ tabId }) {
                                             style={{
                                                 fontSize: 11,
                                                 color: THEME.textMuted,
-                                                textTransform: 'uppercase',
+                                                
                                                 fontWeight: 600,
                                                 marginBottom: 4,
                                             }}
@@ -591,7 +591,7 @@ function DemoMySQLTab({ tabId }) {
                                             style={{
                                                 fontSize: 11,
                                                 color: THEME.textMuted,
-                                                textTransform: 'uppercase',
+                                                
                                                 fontWeight: 600,
                                                 marginBottom: 4,
                                             }}

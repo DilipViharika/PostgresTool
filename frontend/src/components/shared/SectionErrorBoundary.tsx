@@ -121,7 +121,6 @@ class SectionErrorBoundary extends React.Component {
                     background: `linear-gradient(135deg, ${THEME.surface}80, ${THEME.elevated}80)`,
                     border: `1px solid ${THEME.borderHot}`,
                     borderRadius: '12px',
-                    backdropFilter: 'blur(8px)',
                 }}
             >
                 <div

@@ -343,7 +343,7 @@ const CostMeter = ({ sql }) => {
         <div style={{ padding:'6px 14px', borderTop:`1px solid ${THEME.glassBorder}`, background:THEME.surface, animation:'sqlSlideDown 0.2s ease' }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
                 <FlameKindling size={10} color={color}/>
-                <span style={{ fontSize:9, fontWeight:700, color:color, textTransform:'uppercase', letterSpacing:'0.06em' }}>Query Cost Estimate</span>
+                <span style={{ fontSize:9, fontWeight:700, color:color, letterSpacing:'0.02em' }}>Query Cost Estimate</span>
                 <div style={{ flex:1, height:3, borderRadius:4, background:`${THEME.grid}30`, overflow:'hidden' }}>
                     <div style={{ height:'100%', width:`${score}%`, background:`linear-gradient(90deg, ${THEME.success}, ${score>60?THEME.danger:THEME.warning})`, borderRadius:4, transition:'width 0.6s ease', transformOrigin:'left', animation:'sqlBarGrow 0.6s ease' }}/>
                 </div>
@@ -370,7 +370,7 @@ const Panel = ({ title, icon:TIcon, rightNode, noPad, children, style={} }) => (
             <div style={{ padding:'11px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, minHeight:42 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                     {TIcon && <TIcon size={12} color={THEME.textDim}/>}
-                    <span style={{ fontSize:11, fontWeight:700, color:THEME.textMuted, textTransform:'uppercase', letterSpacing:'0.07em' }}>{title}</span>
+                    <span style={{ fontSize:11, fontWeight:700, color:THEME.textMuted, letterSpacing:'0.02em' }}>{title}</span>
                 </div>
                 {rightNode}
             </div>
@@ -557,7 +557,7 @@ const ExplainNode = ({ node, depth=0, maxTime }) => {
                     <div style={{ position:'absolute', left:0, top:0, bottom:0, width:`${pctOfTotal}%`, background:`${nodeColor}06`, pointerEvents:'none', transformOrigin:'left', animation:'sqlBarGrow 0.6s ease' }}/>
                 )}
                 {plans.length > 0 && <ChevronRight size={10} color={THEME.textDim} style={{ flexShrink:0, transition:'transform 0.15s', transform:expanded?'rotate(90deg)':'none', position:'relative' }}/>}
-                <span style={{ width:7, height:7, borderRadius:'50%', background:nodeColor, flexShrink:0, boxShadow:`0 0 5px ${nodeColor}70`, position:'relative' }}/>
+                <span style={{ width:7, height:7, borderRadius:'50%', background:nodeColor, flexShrink:0, position:'relative' }}/>
                 <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain, position:'relative' }}>{nodeType}</span>
                 {relation && <span style={{ fontSize:11, color:THEME.primary, fontFamily:'monospace', fontWeight:600, position:'relative' }}>{relation}</span>}
                 {loops > 1 && <span style={{ fontSize:9, color:THEME.warning, fontWeight:700, padding:'1px 5px', borderRadius:3, background:`${THEME.warning}12` }}>×{loops}</span>}
@@ -600,12 +600,12 @@ const DiffViewer = ({ leftRows, rightRows, leftFields, rightFields, leftLabel, r
                 {[{ rows:leftRows, set:rightSet, side:'left', label:leftLabel||'Left', isAdd:false },
                     { rows:rightRows, set:leftSet, side:'right', label:rightLabel||'Right', isAdd:true }].map(({ rows, set, side, label, isAdd }) => (
                     <div key={side} style={{ flex:1, minWidth:0 }}>
-                        <div style={{ padding:'6px 12px', background:THEME.surface, fontSize:10, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.05em', borderBottom:`1px solid ${THEME.grid}30`, position:'sticky', top:0, zIndex:2 }}>
+                        <div style={{ padding:'6px 12px', background:THEME.surface, fontSize:10, fontWeight:700, color:THEME.textDim, letterSpacing:'0.02em', borderBottom:`1px solid ${THEME.grid}30`, position:'sticky', top:0, zIndex:2 }}>
                             {label} ({rows.length} rows)
                         </div>
                         <table style={{ width:'100%', borderCollapse:'collapse' }}>
                             <thead>
-                            <tr>{allKeys.map(k=><th key={k} style={{ padding:'6px 10px', fontSize:9, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', textAlign:'left', position:'sticky', top:28, background:THEME.surface, borderBottom:`1px solid ${THEME.grid}30` }}>{k}</th>)}</tr>
+                            <tr>{allKeys.map(k=><th key={k} style={{ padding:'6px 10px', fontSize:9, fontWeight:700, color:THEME.textDim, textAlign:'left', position:'sticky', top:28, background:THEME.surface, borderBottom:`1px solid ${THEME.grid}30` }}>{k}</th>)}</tr>
                             </thead>
                             <tbody>
                             {rows.map((row,ri)=>{
@@ -635,7 +635,7 @@ const AutoComplete = ({ suggestions, onSelect, anchorRect }) => {
     if (!suggestions.length) return null;
     return (
         <div className="sql-suggest-box" style={{ position:'fixed', zIndex:600, top:(anchorRect?.top||0)+20, left:(anchorRect?.left||0), background:THEME.surface, border:`1px solid ${THEME.primary}25`, borderRadius:10, overflow:'hidden', minWidth:220, maxWidth:360, boxShadow:`0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${THEME.primary}12` }}>
-            <div style={{ padding:'4px 10px', borderBottom:`1px solid ${THEME.grid}30`, fontSize:9, color:THEME.textDim, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em' }}>
+            <div style={{ padding:'4px 10px', borderBottom:`1px solid ${THEME.grid}30`, fontSize:9, color:THEME.textDim, fontWeight:600, letterSpacing:'0.02em' }}>
                 {suggestions.length} completions · Tab to accept
             </div>
             {suggestions.slice(0,8).map((s,i) => (
@@ -787,7 +787,7 @@ const AIAssistPanel = ({ sql, result, onSuggest }) => {
         <div style={{ display:'flex', flexDirection:'column', height:'100%', gap:8 }}>
             {autoSuggestions.length > 0 && (
                 <div style={{ flexShrink:0 }}>
-                    <div style={{ fontSize:9, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:5 }}>Quick Tips</div>
+                    <div style={{ fontSize:9, fontWeight:700, color:THEME.textDim, letterSpacing:'0.02em', marginBottom:5 }}>Quick Tips</div>
                     {autoSuggestions.map((s,i) => (
                         <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:7, padding:'7px 9px', borderRadius:8, background:`${THEME.secondary}07`, border:`1px solid ${THEME.secondary}12`, marginBottom:4, cursor:'pointer' }}
                              onClick={() => onSuggest(s)}>
@@ -808,7 +808,7 @@ const AIAssistPanel = ({ sql, result, onSuggest }) => {
                 )}
                 {conversation.map((m, i) => (
                     <div key={i} style={{ padding:'8px 10px', borderRadius:8, background:m.role==='user'?`${THEME.primary}10`:`${THEME.secondary}08`, border:`1px solid ${m.role==='user'?`${THEME.primary}15`:`${THEME.secondary}12`}`, animation:'sqlFadeIn 0.2s ease' }}>
-                        <div style={{ fontSize:9, fontWeight:700, color:m.role==='user'?THEME.primary:THEME.secondary, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:4 }}>{m.role==='user'?'You':'AI Assistant'}</div>
+                        <div style={{ fontSize:9, fontWeight:700, color:m.role==='user'?THEME.primary:THEME.secondary, letterSpacing:'0.02em', marginBottom:4 }}>{m.role==='user'?'You':'AI Assistant'}</div>
                         <span style={{ fontSize:11, color:THEME.textMuted, lineHeight:1.6 }}>{m.text}</span>
                     </div>
                 ))}
@@ -1300,7 +1300,7 @@ const SqlConsoleTab = () => {
         return (
             <th
                 onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}
-                style={{ padding:'8px 10px', textAlign:'left', fontSize:9, fontWeight:700, color:active?THEME.primary:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.04em', borderBottom:`1px solid ${THEME.grid}40`, cursor:'pointer', userSelect:'none', whiteSpace:'nowrap', position:'sticky', top:0, background:isPinned?`${THEME.primary}08`:THEME.surface, zIndex:isPinned?4:2, transition:'color 0.15s', minWidth:isPinned?'auto':80 }}
+                style={{ padding:'8px 10px', textAlign:'left', fontSize:9, fontWeight:700, color:active?THEME.primary:THEME.textDim, letterSpacing:'0.04em', borderBottom:`1px solid ${THEME.grid}40`, cursor:'pointer', userSelect:'none', whiteSpace:'nowrap', position:'sticky', top:0, background:isPinned?`${THEME.primary}08`:THEME.surface, zIndex:isPinned?4:2, transition:'color 0.15s', minWidth:isPinned?'auto':80 }}
                 className={isPinned?'sql-frozen':''}>
                 <div style={{ display:'flex', alignItems:'center', gap:3 }}>
                     <span onClick={()=>{ if(active) updateTab(activeTab,{sortDir:sortDir==='asc'?'desc':'asc'}); else updateTab(activeTab,{sortCol:field,sortDir:'asc'}); }}>
@@ -1427,7 +1427,7 @@ const SqlConsoleTab = () => {
                                     if (!items.length) return null;
                                     return (
                                         <div key={group}>
-                                            <div style={{ padding:'5px 16px 3px', fontSize:9, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.06em' }}>{group}</div>
+                                            <div style={{ padding:'5px 16px 3px', fontSize:9, fontWeight:700, color:THEME.textDim, letterSpacing:'0.02em' }}>{group}</div>
                                             <div style={{ display:'flex', flexWrap:'wrap', gap:4, padding:'0 12px 7px' }}>
                                                 {items.map((t,i)=>(
                                                     <button key={i} onClick={()=>{ setSql(t.sql); setShowTemplates(false); editorRef.current?.focus(); }}
@@ -1867,7 +1867,7 @@ const SqlConsoleTab = () => {
                                                 </div>
                                             ) : null;
                                         })()}
-                                        <div style={{ fontSize:10, fontWeight:700, color:THEME.textDim, textTransform:'uppercase', letterSpacing:'0.04em', marginBottom:10, display:'flex', alignItems:'center', gap:6 }}>
+                                        <div style={{ fontSize:10, fontWeight:700, color:THEME.textDim, letterSpacing:'0.04em', marginBottom:10, display:'flex', alignItems:'center', gap:6 }}>
                                             <Workflow size={11} color={THEME.secondary}/> Execution Plan
                                         </div>
                                         <ExplainNode node={explainPlan} depth={0} maxTime={explainMaxTime}/>
@@ -2046,7 +2046,7 @@ const SqlConsoleTab = () => {
                                             <div style={{ paddingTop:8, borderTop:`1px solid ${THEME.glassBorder}`, display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:5, fontSize:9, flexShrink:0, marginTop:6 }}>
                                                 {[{label:'Total',value:history.length,color:THEME.textMuted},{label:'OK',value:history.filter(h=>h.success).length,color:THEME.success},{label:'Err',value:history.filter(h=>!h.success).length,color:THEME.danger}].map((s,i)=>(
                                                     <div key={i} style={{ textAlign:'center', padding:'5px', borderRadius:7, background:THEME.surface }}>
-                                                        <div style={{ color:THEME.textDim, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:2 }}>{s.label}</div>
+                                                        <div style={{ color:THEME.textDim, fontWeight:600, letterSpacing:'0.02em', marginBottom:2 }}>{s.label}</div>
                                                         <div style={{ fontSize:16, fontWeight:800, color:s.color, fontVariantNumeric:'tabular-nums', lineHeight:1 }}>{s.value}</div>
                                                     </div>
                                                 ))}

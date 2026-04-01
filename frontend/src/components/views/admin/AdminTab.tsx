@@ -131,7 +131,7 @@ const AdminStyles = () => (
 
         .adm-tooltip { position:relative; }
         .adm-tooltip:hover .adm-tooltip-content { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
-        .adm-tooltip-content { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(4px); background:rgba(8,8,12,0.96); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 11px; font-size:10px; white-space:nowrap; color:#fff; pointer-events:none; opacity:0; transition:all 0.15s; z-index:9999; backdrop-filter:blur(8px); }
+        .adm-tooltip-content { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(4px); background:rgba(8,8,12,0.96); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 11px; font-size:10px; white-space:nowrap; color:#fff; pointer-events:none; opacity:0; transition:all 0.15s; z-index:9999; }
 
         .adm-progress-animated { transition:width 1.2s cubic-bezier(0.22,1,0.36,1); }
         .adm-conn-row:hover .adm-kill-btn { opacity:1 !important; }
@@ -146,20 +146,12 @@ const AdminStyles = () => (
             background-size: 24px 24px;
         }
 
-        .adm-scanline::after {
-            content:''; position:absolute; left:0; right:0; height:60px;
-            background:linear-gradient(to bottom, transparent, ${T.primary}04, transparent);
-            animation:admScanline 4s linear infinite; pointer-events:none;
-        }
-
-
         .adm-segment-bar { position:relative; overflow:hidden; border-radius:4px; }
-        .adm-segment-bar::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%); }
 
         .adm-heatmap-cell { transition:all 0.2s; border-radius:3px; }
         .adm-heatmap-cell:hover { transform:scale(1.3); z-index:2; position:relative; }
 
-        .panel-glow { box-shadow:0 0 0 1px ${T.primary}12, 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04); }
+        .panel-glow { box-shadow:0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06); }
     `}</style>
 );
 
@@ -273,7 +265,7 @@ const StatusBadge = ({ label, color, pulse, size = 'md' }) => (
 
 const LiveDot = ({ color = T.success, size = 7 }) => (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}` }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: color }} />
         <div style={{ position: 'absolute', inset: -3, borderRadius: '50%', border: `1px solid ${color}60`, animation: 'admPulseRing 2s ease-out infinite' }} />
     </div>
 );
@@ -304,7 +296,7 @@ const RingGauge = ({ value, color, size = 80, strokeWidth = 6, label, sublabel }
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                 <span style={{ fontSize: size > 60 ? 17 : 10, fontWeight: 800, color: dangerColor, fontFamily: T.fontMono, lineHeight: 1 }}>{value}%</span>
-                {label && <span style={{ fontSize: 8, color: T.textDim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>}
+                {label && <span style={{ fontSize: 8, color: T.textDim, fontWeight: 700,  letterSpacing: '0.02em' }}>{label}</span>}
                 {sublabel && <span style={{ fontSize: 7, color: `${dangerColor}80`, fontWeight: 600 }}>{sublabel}</span>}
             </div>
         </div>
@@ -357,7 +349,7 @@ const TPSIndicator = ({ value, history, color }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
             <span style={{ fontSize: 22, fontWeight: 900, color, fontFamily: T.fontMono, lineHeight: 1 }}>{formattedValue}</span>
-            <span style={{ fontSize: 9, color: T.textDim, textTransform: 'uppercase', letterSpacing: '0.08em' }}>TPS</span>
+            <span style={{ fontSize: 9, color: T.textDim,  letterSpacing: '0.02em' }}>TPS</span>
         </div>
         <MiniSparkline data={safeHistory} color={color} width={140} height={28} filled />
     </div>
@@ -387,7 +379,7 @@ const StatCard = ({ label, value, icon: Icon, color, sub, spark, trend }) => {
             )}
         </div>
         <div style={{ fontSize: 24, fontWeight: 900, color, fontFamily: T.fontMono, lineHeight: 1, marginBottom: 4 }}>{safeValue}</div>
-        <div style={{ fontSize: 10, color: T.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: safeSpark ? 8 : 0 }}>{label}</div>
+        <div style={{ fontSize: 10, color: T.textDim, fontWeight: 600,  letterSpacing: '0.02em', marginBottom: safeSpark ? 8 : 0 }}>{label}</div>
         {sub && <div style={{ fontSize: 10, color: T.textDim, marginBottom: safeSpark ? 6 : 0 }}>{sub}</div>}
         {safeSpark && <MiniSparkline data={safeSpark} color={color} width="100%" height={24} filled />}
     </div>
@@ -410,7 +402,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {TIcon && <TIcon size={13} color={accent || T.primary} />}
-                    <span style={{ fontSize: 11, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: T.fontBody }}>{title}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: T.textMuted,  letterSpacing: '0.02em', fontFamily: T.fontBody }}>{title}</span>
                 </div>
                 {rightNode}
             </div>
@@ -423,7 +415,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
 
 /* ── Confirm Dialog ── */
 const ConfirmDialog = ({ title, body, onConfirm, onCancel, danger = false }) => (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
         <div style={{ width: 420, background: T.surface, borderRadius: 16, border: `1px solid ${danger ? T.danger+'40' : T.glassBorder}`, padding: 28, boxShadow: `0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)`, animation: 'admSlideUp 0.2s ease' }}>
             <div style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: danger ? `${T.danger}15` : `${T.primary}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${danger ? T.danger : T.primary}25` }}>
@@ -478,7 +470,7 @@ const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS
     return (
         <div style={{ width: 210, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 0 8px' }}>
-                <span style={{ fontSize: 9.5, fontWeight: 800, color: T.textDim, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: T.fontBody }}>Server Status</span>
+                <span style={{ fontSize: 9.5, fontWeight: 800, color: T.textDim,  letterSpacing: '0.02em', fontFamily: T.fontBody }}>Server Status</span>
                 <button onClick={onToggle} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim, padding: 2 }}><ChevronRight size={12} /></button>
             </div>
 
@@ -504,7 +496,7 @@ const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS
                 ].map(g => (
                     <div key={g.label} style={{ padding: '10px 8px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                         <RingGauge value={g.value} color={g.color} size={52} strokeWidth={5} />
-                        <span style={{ fontSize: 9, color: T.textDim, fontWeight: 700, textTransform: 'uppercase' }}>{g.label}</span>
+                        <span style={{ fontSize: 9, color: T.textDim, fontWeight: 700 }}>{g.label}</span>
                     </div>
                 ))}
             </div>
@@ -604,7 +596,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
     const restartCount = safeRecommendations.filter(r => selected.has(r?.name) && r?.impact === 'restart').length;
 
     return (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
             <div style={{ width: 680, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: T.surface, borderRadius: 20, border: `1px solid ${T.glassBorder}`, boxShadow: `0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px ${T.primary}10`, overflow: 'hidden', animation: 'admSlideUp 0.25s cubic-bezier(0.22,1,0.36,1)' }}>
                 {/* Header */}
                 <div style={{ padding: '18px 26px', borderBottom: `1px solid ${T.grid}30`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `linear-gradient(135deg, ${T.primary}08, ${T.secondary}04)`, position: 'relative', overflow: 'hidden' }}>
@@ -626,12 +618,12 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                     {[1,2].map(i => (
                         <React.Fragment key={i}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: i <= step ? T.primary : T.surface, border: `2px solid ${i <= step ? T.primary : T.grid}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: i <= step ? THEME.textMain : T.textDim, transition: 'all 0.3s', boxShadow: i <= step ? `0 0 12px ${T.primary}60` : 'none' }}>
+                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: i <= step ? T.primary : T.surface, border: `2px solid ${i <= step ? T.primary : T.grid}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: i <= step ? THEME.textMain : T.textDim, transition: 'all 0.3s' }}>
                                     {i < step ? <Check size={11} /> : i}
                                 </div>
                                 <span style={{ fontSize: 10.5, color: i <= step ? T.textMain : T.textDim, fontWeight: i === step ? 700 : 500 }}>{i === 1 ? 'System Specs' : 'Recommendations'}</span>
                             </div>
-                            {i < 2 && <div style={{ flex: 1, height: 1, background: step > i ? T.primary : `${T.grid}40`, transition: 'background 0.4s', boxShadow: step > i ? `0 0 8px ${T.primary}60` : 'none' }} />}
+                            {i < 2 && <div style={{ flex: 1, height: 1, background: step > i ? T.primary : `${T.grid}40`, transition: 'background 0.4s' }} />}
                         </React.Fragment>
                     ))}
                 </div>
@@ -646,7 +638,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                     { key: 'pgVersion', label: 'PG Version', unit: '', icon: Database, min: 12, max: 17 }
                                 ].map(f => (
                                     <div key={f.key}>
-                                        <label style={{ display: 'block', fontSize: 9.5, fontWeight: 800, color: T.textDim, marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.09em' }}>{f.label}</label>
+                                        <label style={{ display: 'block', fontSize: 9.5, fontWeight: 800, color: T.textDim, marginBottom: 7,  letterSpacing: '0.02em' }}>{f.label}</label>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 13px', background: T.surface, border: `1px solid ${T.grid}50`, borderRadius: 9 }}>
                                             <f.icon size={14} color={T.primary} />
                                             <input type="number" value={inputs[f.key]} min={f.min||1} max={f.max||2048}
@@ -659,14 +651,13 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', fontSize: 9.5, fontWeight: 800, color: T.textDim, marginBottom: 8, textTransform: 'uppercase' }}>Storage Type</label>
+                                <label style={{ display: 'block', fontSize: 9.5, fontWeight: 800, color: T.textDim, marginBottom: 8 }}>Storage Type</label>
                                 <div style={{ display: 'flex', gap: 8 }}>
                                     {[{v:'ssd',l:'SSD',i:Zap,d:'Solid State'},{v:'nvme',l:'NVMe',i:Flame,d:'Ultra Fast'},{v:'hdd',l:'HDD',i:HardDrive,d:'Spinning Disk'}].map(t => (
                                         <button key={t.v} onClick={() => setInputs({...inputs, storage: t.v})} style={{
                                             flex: 1, padding: '12px', borderRadius: 10, border: `1px solid ${inputs.storage === t.v ? T.primary : T.grid}50`,
                                             background: inputs.storage === t.v ? `${T.primary}14` : 'transparent',
                                             cursor: 'pointer', transition: 'all 0.2s',
-                                            boxShadow: inputs.storage === t.v ? `0 0 12px ${T.primary}25` : 'none',
                                         }}>
                                             <t.i size={18} color={inputs.storage === t.v ? T.primary : T.textDim} style={{ display: 'block', margin: '0 auto 6px' }} />
                                             <div style={{ color: inputs.storage === t.v ? THEME.textMain : T.textMuted, fontWeight: 700, fontSize: 12 }}>{t.l}</div>
@@ -677,7 +668,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', fontSize: 9.5, fontWeight: 800, color: T.textDim, marginBottom: 8, textTransform: 'uppercase' }}>Workload Profile</label>
+                                <label style={{ display: 'block', fontSize: 9.5, fontWeight: 800, color: T.textDim, marginBottom: 8 }}>Workload Profile</label>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                                     {[
                                         {id:'web',l:'Web Application',d:'High concurrency, short queries',i:Network},
@@ -690,7 +681,6 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                             padding: '12px 14px', borderRadius: 10, border: `1px solid ${inputs.profile === p.id ? T.secondary : T.grid}50`,
                                             background: inputs.profile === p.id ? `${T.secondary}10` : 'transparent',
                                             textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 12,
-                                            boxShadow: inputs.profile === p.id ? `0 0 12px ${T.secondary}20` : 'none',
                                         }}>
                                             <p.i size={14} color={inputs.profile === p.id ? T.secondary : T.textDim} style={{ flexShrink: 0 }} />
                                             <div>
@@ -740,7 +730,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                     <thead style={{ background: `${T.surface}` }}>
                                     <tr>
                                         <th style={{ padding: '9px 14px', width: 36 }}></th>
-                                        <th style={{ padding: '9px 14px', textAlign: 'left', fontSize: 9.5, color: T.textDim, fontWeight: 700, textTransform: 'uppercase' }}>Parameter</th>
+                                        <th style={{ padding: '9px 14px', textAlign: 'left', fontSize: 9.5, color: T.textDim, fontWeight: 700 }}>Parameter</th>
                                         <th style={{ padding: '9px 14px', textAlign: 'left', fontSize: 9.5, color: T.textDim, fontWeight: 700 }}>Current</th>
                                         <th style={{ padding: '9px 14px', textAlign: 'left', fontSize: 9.5, color: T.success, fontWeight: 700 }}>Recommended</th>
                                         <th style={{ padding: '9px 14px', textAlign: 'center', fontSize: 9.5, color: T.textDim, fontWeight: 700 }}>Apply</th>
@@ -754,7 +744,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                         return (
                                             <tr key={rec.name} onClick={() => toggleSel(rec.name)} style={{ borderTop: `1px solid ${T.grid}20`, background: isSel && changed ? `${T.success}04` : 'transparent', cursor: 'pointer', transition: 'background 0.15s' }}>
                                                 <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                                                    <div style={{ width: 16, height: 16, borderRadius: 14, border: `2px solid ${isSel ? T.primary : T.grid}60`, background: isSel ? T.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', boxShadow: isSel ? `0 0 8px ${T.primary}50` : 'none' }}>
+                                                    <div style={{ width: 16, height: 16, borderRadius: 14, border: `2px solid ${isSel ? T.primary : T.grid}60`, background: isSel ? T.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
                                                         {isSel && <Check size={10} color={THEME.textMain} />}
                                                     </div>
                                                 </td>
@@ -798,7 +788,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
    CHANGE LOG MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
 const ChangeLogModal = ({ onClose }) => (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
         <div style={{ width: 560, maxHeight: '80vh', display: 'flex', flexDirection: 'column', background: T.surface, borderRadius: 18, border: `1px solid ${T.glassBorder}`, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.7)', animation: 'admSlideUp 0.2s ease' }}>
             <div style={{ padding: '16px 22px', borderBottom: `1px solid ${T.grid}30`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `linear-gradient(90deg, ${T.primary}06, transparent)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
@@ -908,7 +898,7 @@ const CacheView = ({ onClear }) => {
                 <Panel title="Cache Breakdown" icon={BarChart3} accent={T.secondary}>
                     {/* Stacked bar */}
                     <div style={{ marginBottom: 18 }}>
-                        <div style={{ fontSize: 9.5, color: T.textDim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Composition</div>
+                        <div style={{ fontSize: 9.5, color: T.textDim, marginBottom: 6,  letterSpacing: '0.02em' }}>Composition</div>
                         <div style={{ display: 'flex', height: 12, borderRadius: 6, overflow: 'hidden', gap: 1 }}>
                             {Array.isArray(c?.breakdown) && c.breakdown.map((b, i) => (
                                 <Tooltip key={i} content={`${b?.label || 'Item'}: ${b?.pct || 0}%`}>
@@ -931,7 +921,7 @@ const CacheView = ({ onClear }) => {
                             <div key={i}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <div style={{ width: 9, height: 9, borderRadius: 2, background: b.color, boxShadow: `0 0 6px ${b.color}60` }} />
+                                        <div style={{ width: 9, height: 9, borderRadius: 2, background: b.color }} />
                                         <span style={{ fontSize: 12, color: T.textMuted, fontWeight: 600 }}>{b.label}</span>
                                     </div>
                                     <div style={{ display: 'flex', gap: 12 }}>
@@ -940,7 +930,7 @@ const CacheView = ({ onClear }) => {
                                     </div>
                                 </div>
                                 <div style={{ height: 5, background: `${T.grid}40`, borderRadius: 10, overflow: 'hidden' }}>
-                                    <div className="adm-progress-animated" style={{ width: `${b.pct * 2.5}%`, height: '100%', background: `linear-gradient(90deg, ${b.color}, ${b.color}bb)`, borderRadius: 10, maxWidth: '100%', boxShadow: `0 0 8px ${b.color}30` }} />
+                                    <div className="adm-progress-animated" style={{ width: `${b.pct * 2.5}%`, height: '100%', background: `linear-gradient(90deg, ${b.color}, ${b.color}bb)`, borderRadius: 10, maxWidth: '100%' }} />
                                 </div>
                             </div>
                         ))}
@@ -1017,7 +1007,7 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
     };
 
     const ColHeader = ({ field, children }) => (
-        <th onClick={() => toggleSort(field)} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 9.5, fontWeight: 700, color: sortField === field ? T.primary : T.textDim, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+        <th onClick={() => toggleSort(field)} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 9.5, fontWeight: 700, color: sortField === field ? T.primary : T.textDim, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', letterSpacing: '0.02em' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                 {children}
                 {sortField === field && (sortDir === 'asc' ? <ChevronUp size={9} /> : <ChevronDown size={9} />)}
@@ -1209,7 +1199,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
                     <div key={cat}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                             <div style={{ width: 4, height: 16, borderRadius: 2, background: catColor }} />
-                            <span style={{ fontSize: 10, fontWeight: 800, color: catColor, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: T.fontBody }}>{cat}</span>
+                            <span style={{ fontSize: 10, fontWeight: 800, color: catColor,  letterSpacing: '0.02em', fontFamily: T.fontBody }}>{cat}</span>
                             <div style={{ flex: 1, height: 1, background: `${catColor}15` }} />
                             <span style={{ fontSize: 9.5, color: T.textDim }}>{catItems.length} extension{catItems.length !== 1 ? 's' : ''}</span>
                         </div>
@@ -1221,7 +1211,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
                                     border: `1px solid ${ext.active ? catColor+'30' : ext.installed ? T.primary+'15' : T.glassBorder}`,
                                     position: 'relative', overflow: 'hidden',
                                 }}>
-                                    {ext.active && <div style={{ position: 'absolute', top: 10, right: 10, width: 6, height: 6, borderRadius: '50%', background: T.success, boxShadow: `0 0 8px ${T.success}` }} />}
+                                    {ext.active && <div style={{ position: 'absolute', top: 10, right: 10, width: 6, height: 6, borderRadius: '50%', background: T.success }} />}
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                                         <div>
                                             <div style={{ fontWeight: 800, color: T.textMain, fontSize: 13, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 7, fontFamily: T.fontBody }}>
@@ -1676,7 +1666,7 @@ const SettingsView = ({
                             <Download size={13} />
                         </button>
                     </Tooltip>
-                    <button onClick={() => setShowWizard(true)} className="adm-btn" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 8, border: `1px solid ${T.primary}35`, cursor: 'pointer', background: `linear-gradient(135deg, ${T.primary}14, ${T.secondary}08)`, color: T.primary, fontSize: 11.5, fontWeight: 700, boxShadow: `0 0 12px ${T.primary}20` }}>
+                    <button onClick={() => setShowWizard(true)} className="adm-btn" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 8, border: `1px solid ${T.primary}35`, cursor: 'pointer', background: `linear-gradient(135deg, ${T.primary}14, ${T.secondary}08)`, color: T.primary, fontSize: 11.5, fontWeight: 700 }}>
                         <Sparkles size={12} /> Tuning Wizard
                     </button>
                     <div style={{ width: 1, height: 20, background: `${T.grid}60` }} />
@@ -1906,7 +1896,7 @@ const AdminTab = () => {
                         }}>
                             <t.i size={13} />
                             {t.l}
-                            {t.dot && <span style={{ width: 6, height: 6, borderRadius: '50%', background: activeSub === t.id ? 'rgba(255,255,255,0.8)' : T.warning, position: 'absolute', top: 6, right: 6, boxShadow: `0 0 6px ${T.warning}` }} />}
+                            {t.dot && <span style={{ width: 6, height: 6, borderRadius: '50%', background: activeSub === t.id ? 'rgba(255,255,255,0.8)' : T.warning, position: 'absolute', top: 6, right: 6 }} />}
                         </button>
                     ))}
                 </div>
@@ -1972,7 +1962,7 @@ const AdminTab = () => {
 
             {/* Toast */}
             {toast && (
-                <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 600, padding: '13px 18px', borderRadius: 12, background: T.surface, backdropFilter: 'blur(20px)', border: `1px solid ${toast.type === 'error' ? T.danger : T.success}35`, boxShadow: `0 10px 36px rgba(0,0,0,0.6), 0 0 0 1px ${toast.type === 'error' ? T.danger : T.success}12, 0 0 24px ${toast.type === 'error' ? T.danger : T.success}15`, display: 'flex', alignItems: 'center', gap: 11, animation: 'admSlideUp 0.3s cubic-bezier(0.22,1,0.36,1)' }}>
+                <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 600, padding: '13px 18px', borderRadius: 12, background: T.surface, border: `1px solid ${toast.type === 'error' ? T.danger : T.success}35`, boxShadow: `0 10px 36px rgba(0,0,0,0.6), 0 0 0 1px ${toast.type === 'error' ? T.danger : T.success}12, 0 0 24px ${toast.type === 'error' ? T.danger : T.success}15`, display: 'flex', alignItems: 'center', gap: 11, animation: 'admSlideUp 0.3s cubic-bezier(0.22,1,0.36,1)' }}>
                     {toast.type === 'error' ? <XCircle size={18} color={T.danger} /> : <CheckCircle size={18} color={T.success} />}
                     <span style={{ fontWeight: 700, color: T.textMain, fontSize: 13, fontFamily: T.fontBody }}>{toast.msg}</span>
                     <button onClick={() => setToast(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim, padding: 0, marginLeft: 4 }}><X size={12} /></button>
