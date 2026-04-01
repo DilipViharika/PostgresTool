@@ -881,6 +881,13 @@ const ConnectionsTab = () => {
         return () => clearTimeout(t);
     }, [saveSuccess]);
 
+    // Listen for "open new connection" event from header + button
+    useEffect(() => {
+        const handler = () => openNew();
+        window.addEventListener('vigil:open-new-connection', handler);
+        return () => window.removeEventListener('vigil:open-new-connection', handler);
+    }, []);
+
     // Filter connections based on search
     const filteredConnections = connections.filter(conn =>
         conn.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

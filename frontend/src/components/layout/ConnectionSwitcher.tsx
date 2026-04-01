@@ -130,7 +130,10 @@ const ConnectionSwitcher = () => {
                 </div>
                 {!isLoading && (
                     <button
-                        onClick={() => goToTab('connections')}
+                        onClick={() => {
+                            goToTab('connections');
+                            setTimeout(() => window.dispatchEvent(new CustomEvent('vigil:open-new-connection')), 100);
+                        }}
                         title="Add new connection"
                         style={{
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
