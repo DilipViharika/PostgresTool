@@ -1260,38 +1260,81 @@ const ConnectionsTab = () => {
             {/* ── Modal ── */}
             {showModal && (
                 <>
+                    {/* Full-screen backdrop */}
                     <div onClick={closeModal} style={{
-                        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-                        backdropFilter: 'blur(6px)', zIndex: 999,
+                        position: 'fixed', inset: 0,
+                        background: `linear-gradient(135deg, ${THEME.bg}f2 0%, rgba(0,0,0,0.92) 100%)`,
+                        backdropFilter: 'blur(12px)',
+                        zIndex: 999,
                     }} />
+
+                    {/* Modal container */}
                     <div style={{
                         position: 'fixed', top: '50%', left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        width: '90%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto',
-                        background: THEME.surface,
+                        width: '94%', maxWidth: 540, maxHeight: '88vh',
+                        display: 'flex', flexDirection: 'column',
+                        background: THEME.glass,
                         border: `1px solid ${THEME.glassBorder}`,
-                        borderTop: `2px solid ${DB_TYPES[formData.dbType].accent}66`,
-                        borderRadius: 14, padding: 30, zIndex: 1000,
-                        boxShadow: '0 40px 100px rgba(0,0,0,0.7)',
+                        borderRadius: 16,
+                        boxShadow: `0 0 0 1px ${DB_TYPES[formData.dbType].accent}15, 0 24px 80px rgba(0,0,0,0.6), 0 0 120px ${DB_TYPES[formData.dbType].accent}08`,
                         fontFamily: FONT_UI,
-                        animation: 'slideUp 0.3s ease-out',
+                        zIndex: 1000,
+                        animation: 'modalIn 0.25s ease-out',
+                        overflow: 'hidden',
                     }}>
-                        {/* Modal header */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                            <h2 style={{ fontSize: 18, fontWeight: 800, color: THEME.textMain, margin: 0 }}>
-                                {editingConnection ? '✏️ Edit Connection' : '🔌 New Connection'}
-                            </h2>
+                        {/* Accent top bar */}
+                        <div style={{
+                            height: 3,
+                            background: `linear-gradient(90deg, ${DB_TYPES[formData.dbType].accent}, ${DB_TYPES[formData.dbType].accent}44)`,
+                        }} />
+
+                        {/* Modal header — sticky */}
+                        <div style={{
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                            padding: '20px 28px 16px',
+                            borderBottom: `1px solid ${THEME.glassBorder}`,
+                            background: THEME.surface,
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <div style={{
+                                    width: 36, height: 36, borderRadius: 10,
+                                    background: `${DB_TYPES[formData.dbType].accent}15`,
+                                    border: `1px solid ${DB_TYPES[formData.dbType].accent}30`,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 18,
+                                }}>
+                                    {DB_TYPES[formData.dbType].icon}
+                                </div>
+                                <div>
+                                    <h2 style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, margin: 0 }}>
+                                        {editingConnection ? 'Edit Connection' : 'New Connection'}
+                                    </h2>
+                                    <p style={{ fontSize: 11, color: THEME.textMuted, margin: 0, marginTop: 2 }}>
+                                        {DB_TYPES[formData.dbType].label} · Port {DB_TYPES[formData.dbType].defaultPort}
+                                    </p>
+                                </div>
+                            </div>
                             <button
                                 onClick={closeModal}
-                                style={{ background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 6, borderRadius: 6 }}
-                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = THEME.textMuted; }}
+                                style={{
+                                    background: 'none', border: `1px solid ${THEME.glassBorder}`,
+                                    color: THEME.textMuted, cursor: 'pointer', padding: 6, borderRadius: 8,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    transition: 'all 0.15s',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.12)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; e.currentTarget.style.color = '#ef4444'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = THEME.glassBorder; e.currentTarget.style.color = THEME.textMuted; }}
                             >
-                                <X size={18} />
+                                <X size={16} />
                             </button>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                        {/* Scrollable form body */}
+                        <div style={{
+                            flex: 1, overflowY: 'auto', padding: '24px 28px',
+                            display: 'flex', flexDirection: 'column', gap: 18,
+                        }}>
                             <DBTypeSelector value={formData.dbType} onChange={handleDbTypeChange} />
 
                             <div>
@@ -1302,7 +1345,7 @@ const ConnectionsTab = () => {
                                     onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
                                     placeholder={`My ${DB_TYPES[formData.dbType].label} DB`}
                                     style={S.input(!!formErrors.name)}
-                                    onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                    onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
                                     onBlur={e => e.currentTarget.style.borderColor = formErrors.name ? '#ef4444' : THEME.glassBorder}
                                 />
                                 {formErrors.name && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors.name}</div>}
@@ -1354,11 +1397,19 @@ const ConnectionsTab = () => {
                             )}
                         </div>
 
-                        {/* Modal footer */}
-                        <div style={{ display: 'flex', gap: 10, marginTop: 28, justifyContent: 'flex-end' }}>
+                        {/* Modal footer — sticky */}
+                        <div style={{
+                            display: 'flex', gap: 10, justifyContent: 'flex-end',
+                            padding: '16px 28px',
+                            borderTop: `1px solid ${THEME.glassBorder}`,
+                            background: THEME.surface,
+                        }}>
                             <button
                                 onClick={closeModal}
-                                style={S.btn(THEME.surface, THEME.glassBorder, THEME.textMuted)}
+                                style={{
+                                    ...S.btn(THEME.surface, THEME.glassBorder, THEME.textMuted),
+                                    padding: '10px 20px',
+                                }}
                                 onMouseEnter={e => e.currentTarget.style.background = THEME.surfaceHover}
                                 onMouseLeave={e => e.currentTarget.style.background = THEME.surface}
                             >
@@ -1368,12 +1419,13 @@ const ConnectionsTab = () => {
                                 onClick={saveConnection}
                                 disabled={saving}
                                 style={{
-                                    ...S.btn(THEME.primary + '33', THEME.primary + '73', THEME.primary),
+                                    ...S.btn(THEME.primary + '22', THEME.primary + '55', THEME.primary),
+                                    padding: '10px 24px',
                                     opacity: saving ? 0.7 : 1,
                                     cursor: saving ? 'wait' : 'pointer',
                                 }}
-                                onMouseEnter={e => !saving && (e.currentTarget.style.background = THEME.primary + '52')}
-                                onMouseLeave={e => !saving && (e.currentTarget.style.background = THEME.primary + '33')}
+                                onMouseEnter={e => !saving && (e.currentTarget.style.background = THEME.primary + '3D')}
+                                onMouseLeave={e => !saving && (e.currentTarget.style.background = THEME.primary + '22')}
                             >
                                 {saving ? <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <ShieldCheck size={16} />}
                                 {saving ? 'Encrypting & Saving...' : editingConnection ? 'Update' : 'Encrypt & Save'}
@@ -1386,9 +1438,8 @@ const ConnectionsTab = () => {
             <style>{`
                 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
                 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-                @keyframes slideUp { from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)); } to { opacity: 1; transform: translate(-50%, -50%); } }
+                @keyframes modalIn { from { opacity: 0; transform: translate(-50%, calc(-50% + 16px)) scale(0.97); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
                 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-                @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
                 * { box-sizing: border-box; }
                 ::-webkit-scrollbar { width: 6px; }
                 ::-webkit-scrollbar-track { background: transparent; }
