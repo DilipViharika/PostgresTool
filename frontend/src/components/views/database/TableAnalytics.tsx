@@ -14,6 +14,16 @@ import {
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────────
+   CHART COLORS PALETTE
+───────────────────────────────────────────────────────────────── */
+const CHART_COLORS = [
+    '#FF6B6B','#4ECDC4','#FFD93D','#C77DFF',
+    '#45B7D1','#FF8C69','#A8E063','#F08080',
+    '#7EC8E3','#FFB347','#DDA0DD','#98FB98',
+    '#87CEEB','#FFA07A','#20B2AA','#9370DB',
+];
+
+/* ─────────────────────────────────────────────────────────────────
    CONTEXT
 ───────────────────────────────────────────────────────────────── */
 const FilterCtx = createContext({ db: '', schema: '', table: '' });
@@ -26,7 +36,7 @@ const CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#ffffff14;border-radius:4px}
+::-webkit-scrollbar-thumb{background:${THEME.textMuted}1a;border-radius:4px}
 @keyframes ud-spin  {to{transform:rotate(360deg)}}
 @keyframes ud-rise  {from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ud-pulse {0%,100%{opacity:1}50%{opacity:.45}}
@@ -43,7 +53,7 @@ const CSS = `
 .ud-row:hover{background:rgba(255,255,255,.04)!important}
 .ud-btn{transition:all .16s;cursor:pointer}
 .ud-btn:hover{opacity:.8}
-.ai-thinking{background:linear-gradient(90deg,#00b87410 25%,#00b87430 50%,#00b87410 75%);background-size:200% 100%;animation:ud-shimmer 1.6s ease-in-out infinite}
+.ai-thinking{background:linear-gradient(90deg,${THEME.primary}10 25%,${THEME.primary}30 50%,${THEME.primary}10 75%);background-size:200% 100%;animation:ud-shimmer 1.6s ease-in-out infinite}
 .ai-glow{animation:ai-glow 3s ease-in-out infinite}
 .ai-token{animation:ud-typewriter .15s ease both}
 button{outline:none;font-family:inherit}
@@ -745,14 +755,6 @@ function S_Deps() {
 
     const W = 980, H = 560, cx = W / 2, cy = H / 2;
 
-    /* Vibrant mind-map palette — each branch gets its own colour */
-    const PALETTE = [
-        '#FF6B6B','#4ECDC4','#FFD93D','#C77DFF',
-        '#45B7D1','#FF8C69','#A8E063','#F08080',
-        '#7EC8E3','#FFB347','#DDA0DD','#98FB98',
-        '#87CEEB','#FFA07A','#20B2AA','#9370DB',
-    ];
-
     const sn = (s, n = 14) => s.length > n ? s.slice(0, n - 1) + '…' : s;
 
     /* Smooth cubic-bezier branch — horizontal tension */
@@ -830,7 +832,7 @@ function S_Deps() {
                 name, side,
                 x: ex,
                 y: N === 1 ? cy : cy - spread / 2 + (spread / (N - 1)) * i,
-                color: PALETTE[(side === 'left' ? i : i + 8) % PALETTE.length],
+                color: CHART_COLORS[(side === 'left' ? i : i + 8) % CHART_COLORS.length],
             }));
         };
 
@@ -903,13 +905,13 @@ function S_Deps() {
                 {/* Section banners — aligned over each group of nodes */}
                 {deps.length > 0 && (
                     <text x={MAIN_INSET} y={22} textAnchor="middle" fontSize={9} fontWeight={800}
-                          letterSpacing="0.09em" fill="#FF6B6B" fontFamily="'Fira Code',monospace" opacity={0.8}>
+                          letterSpacing="0.09em" fill={CHART_COLORS[0]} fontFamily="'Fira Code',monospace" opacity={0.8}>
                         ◀ DEPENDS ON
                     </text>
                 )}
                 {refs.length > 0 && (
                     <text x={W - MAIN_INSET} y={22} textAnchor="middle" fontSize={9} fontWeight={800}
-                          letterSpacing="0.09em" fill="#4ECDC4" fontFamily="'Fira Code',monospace" opacity={0.8}>
+                          letterSpacing="0.09em" fill={CHART_COLORS[1]} fontFamily="'Fira Code',monospace" opacity={0.8}>
                         REFERENCED BY ▶
                     </text>
                 )}
@@ -921,7 +923,7 @@ function S_Deps() {
                 <g onClick={() => setSelected(null)} style={{ cursor: 'pointer' }}>
                     {/* Outermost soft halo */}
                     <ellipse cx={cx} cy={cy} rx={cRx + 38} ry={cRy + 38}
-                             fill="none" stroke="#4ECDC4" strokeWidth={1}
+                             fill="none" stroke={CHART_COLORS[1]} strokeWidth={1}
                              strokeOpacity={0.08} filter="url(#mm-glow)"
                              style={{ animation: 'ud-pulse 4s ease-in-out infinite' }} />
                     {/* Orbit ring with dashes */}
@@ -930,7 +932,7 @@ function S_Deps() {
                              strokeDasharray="6 4" strokeOpacity={0.4} />
                     {/* Mid glow ring */}
                     <ellipse cx={cx} cy={cy} rx={cRx + 14} ry={cRy + 14}
-                             fill={`#4ECDC408`} stroke="#4ECDC4" strokeWidth={0.5} strokeOpacity={0.18} />
+                             fill={`${CHART_COLORS[1]}08`} stroke={CHART_COLORS[1]} strokeWidth={0.5} strokeOpacity={0.18} />
                     {/* Main body */}
                     <ellipse cx={cx} cy={cy} rx={cRx} ry={cRy}
                              fill="url(#hub-grad-focus)" />
@@ -943,18 +945,18 @@ function S_Deps() {
                              fill="none" stroke="url(#rim-grad)" strokeWidth={2} />
                     {/* Inner rim hairline */}
                     <ellipse cx={cx} cy={cy} rx={cRx - 3} ry={cRy - 3}
-                             fill="none" stroke="#4ECDC4" strokeWidth={0.4} strokeOpacity={0.2} />
+                             fill="none" stroke={CHART_COLORS[1]} strokeWidth={0.4} strokeOpacity={0.2} />
 
                     {/* Table name */}
                     <text x={cx} y={cy - 7} textAnchor="middle"
-                          fontSize={11.5} fontWeight={800} fill="#e8f4f8"
+                          fontSize={11.5} fontWeight={800} fill={THEME.textMain}
                           fontFamily="'Plus Jakarta Sans',sans-serif"
                           letterSpacing="0.02em" style={{ userSelect: 'none' }}>
                         {sn(focusRow.name, 18)}
                     </text>
                     {/* Subtitle: FK stats */}
                     <text x={cx} y={cy + 10} textAnchor="middle"
-                          fontSize={8} fontWeight={500} fill="#4ECDC4"
+                          fontSize={8} fontWeight={500} fill={CHART_COLORS[1]}
                           fontFamily="'Fira Code',monospace" fillOpacity={0.75}
                           style={{ userSelect: 'none' }}>
                         {focusRow.refsTo.length} deps · {focusRow.refsBy.length} refs
@@ -967,7 +969,7 @@ function S_Deps() {
                         const dy = (cRy + 26) * Math.sin(rad);
                         return (
                             <circle key={i} cx={cx + dx} cy={cy + dy} r={2.8}
-                                    fill={['#4ECDC4','#FF6B6B','#FFD93D'][i]}
+                                    fill={[CHART_COLORS[1], CHART_COLORS[0], CHART_COLORS[2]][i]}
                                     fillOpacity={0.7} />
                         );
                     })}
@@ -976,12 +978,12 @@ function S_Deps() {
                     {focusRow.refsBy.length > 2 && (
                         <g filter="url(#mm-glow-sm)">
                             <circle cx={cx + cRx + 2} cy={cy - cRy + 2} r={11}
-                                    fill="#FF4757" />
+                                    fill={THEME.danger} />
                             <circle cx={cx + cRx + 2} cy={cy - cRy + 2} r={11}
-                                    fill="none" stroke="#fff" strokeWidth={1.2} strokeOpacity={0.3} />
+                                    fill="none" stroke={THEME.textMain} strokeWidth={1.2} strokeOpacity={0.3} />
                             <text x={cx + cRx + 2} y={cy - cRy + 2}
                                   textAnchor="middle" dominantBaseline="central"
-                                  fontSize={8.5} fontWeight={900} fill="#fff"
+                                  fontSize={8.5} fontWeight={900} fill={THEME.textMain}
                                   fontFamily="sans-serif">!</text>
                         </g>
                     )}
@@ -1020,7 +1022,7 @@ function S_Deps() {
                     const sin     = Math.sin(angle);
                     const nx      = cx + R * cos;
                     const ny      = cy + R * sin;
-                    const color   = PALETTE[i % PALETTE.length];
+                    const color   = CHART_COLORS[i % CHART_COLORS.length];
                     const isCrit  = t.refsBy.length > 2;
                     const degree  = t.refsTo.length + t.refsBy.length;
                     const lit     = hovered === t.name;
@@ -1085,7 +1087,7 @@ function S_Deps() {
                                 <>
                                     <circle cx={nx + pillW/2 + 2} cy={ny - 10} r={7} fill={THEME.danger} />
                                     <text x={nx + pillW/2 + 2} y={ny - 10} textAnchor="middle"
-                                          dominantBaseline="central" fontSize={7.5} fontWeight={800} fill="#fff">!</text>
+                                          dominantBaseline="central" fontSize={7.5} fontWeight={800} fill={THEME.textMain}>!</text>
                                 </>
                             )}
 
@@ -1106,7 +1108,7 @@ function S_Deps() {
                 <g>
                     {/* Outermost soft halo */}
                     <ellipse cx={cx} cy={cy} rx={104} ry={66}
-                             fill="none" stroke="#4ECDC4" strokeWidth={1}
+                             fill="none" stroke={CHART_COLORS[1]} strokeWidth={1}
                              strokeOpacity={0.07} filter="url(#mm-glow)"
                              style={{ animation: 'ud-pulse 4.5s ease-in-out infinite' }} />
                     {/* Dashed orbit ring */}
@@ -1115,7 +1117,7 @@ function S_Deps() {
                              strokeWidth={0.9} strokeDasharray="7 5" strokeOpacity={0.35} />
                     {/* Subtle mid ring */}
                     <ellipse cx={cx} cy={cy} rx={84} ry={52}
-                             fill="#4ECDC40a" stroke="#4ECDC4" strokeWidth={0.5} strokeOpacity={0.15} />
+                             fill={`${CHART_COLORS[1]}0a`} stroke={CHART_COLORS[1]} strokeWidth={0.5} strokeOpacity={0.15} />
                     {/* Main body */}
                     <ellipse cx={cx} cy={cy} rx={76} ry={46}
                              fill="url(#hub-grad-global)" />
@@ -1126,23 +1128,23 @@ function S_Deps() {
                     <ellipse cx={cx} cy={cy} rx={76} ry={46}
                              fill="none" stroke="url(#rim-grad)" strokeWidth={2} />
                     <ellipse cx={cx} cy={cy} rx={73} ry={43}
-                             fill="none" stroke="#4ECDC4" strokeWidth={0.4} strokeOpacity={0.18} />
+                             fill="none" stroke={CHART_COLORS[1]} strokeWidth={0.4} strokeOpacity={0.18} />
 
                     {/* Title */}
                     <text x={cx} y={cy - 9} textAnchor="middle"
-                          fontSize={13} fontWeight={800} fill="#e8f4f8"
+                          fontSize={13} fontWeight={800} fill={THEME.textMain}
                           fontFamily="'Plus Jakarta Sans',sans-serif" letterSpacing="0.015em">
                         Dependency
                     </text>
                     {/* Subtitle */}
                     <text x={cx} y={cy + 9} textAnchor="middle"
-                          fontSize={9} fontWeight={600} fill="#4ECDC4"
+                          fontSize={9} fontWeight={600} fill={CHART_COLORS[1]}
                           fontFamily="'Fira Code',monospace" fillOpacity={0.8}>
                         Mind Map
                     </text>
                     {/* Row count badge */}
                     <text x={cx} y={cy + 23} textAnchor="middle"
-                          fontSize={7.5} fontWeight={500} fill="#45B7D1"
+                          fontSize={7.5} fontWeight={500} fill={CHART_COLORS[4]}
                           fontFamily="'Fira Code',monospace" fillOpacity={0.55}>
                         {rows.length} tables
                     </text>
@@ -1155,7 +1157,7 @@ function S_Deps() {
                                     cx={cx + 94 * Math.cos(rad)}
                                     cy={cy + 60 * Math.sin(rad)}
                                     r={2.5}
-                                    fill={['#4ECDC4','#FF6B6B','#FFD93D','#C77DFF'][i]}
+                                    fill={[CHART_COLORS[1], CHART_COLORS[0], CHART_COLORS[2], CHART_COLORS[3]][i]}
                                     fillOpacity={0.65} />
                         );
                     })}
@@ -1208,8 +1210,8 @@ function S_Deps() {
             {/* Legend */}
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', padding: '7px 14px', borderRadius: 8, background: `${THEME.glassBorder}22` }}>
                 {[
-                    { color: '#FF6B6B', label: 'Depends On (outgoing FK)' },
-                    { color: '#4ECDC4', label: 'Referenced By (incoming FK)' },
+                    { color: CHART_COLORS[0], label: 'Depends On (outgoing FK)' },
+                    { color: CHART_COLORS[1], label: 'Referenced By (incoming FK)' },
                     { color: THEME.danger, label: 'Critical node (3+ refs)' },
                     { color: THEME.textDim, label: 'Sub-branch (2nd-level link)', dash: true },
                 ].map(({ color, label, dash }) => (
@@ -1227,7 +1229,7 @@ function S_Deps() {
                 <div style={{
                     borderRadius: 14, overflow: 'hidden',
                     border: `1px solid ${THEME.glassBorder}`,
-                    background: `radial-gradient(ellipse at 50% 50%, ${THEME.cyan}05 0%, #060c18 70%)`,
+                    background: `radial-gradient(ellipse at 50% 50%, ${THEME.cyan}05 0%, ${THEME.deepTeal} 70%)`,
                 }}>
                     <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
                         <defs>
@@ -1247,30 +1249,30 @@ function S_Deps() {
                             </filter>
                             {/* Center hub gradient — focused view */}
                             <radialGradient id="hub-grad-focus" cx="38%" cy="35%" r="65%">
-                                <stop offset="0%"   stopColor="#1a3a5c" />
-                                <stop offset="45%"  stopColor="#0d1f38" />
-                                <stop offset="100%" stopColor="#060c1a" />
+                                <stop offset="0%"   stopColor={`${THEME.surface}dd`} />
+                                <stop offset="45%"  stopColor={THEME.bg} />
+                                <stop offset="100%" stopColor={THEME.deepTeal} />
                             </radialGradient>
                             {/* Center hub gradient — global view */}
                             <radialGradient id="hub-grad-global" cx="38%" cy="35%" r="65%">
-                                <stop offset="0%"   stopColor="#1b2e4a" />
-                                <stop offset="50%"  stopColor="#0e1d32" />
-                                <stop offset="100%" stopColor="#070d1c" />
+                                <stop offset="0%"   stopColor={THEME.surface} />
+                                <stop offset="50%"  stopColor={THEME.bg} />
+                                <stop offset="100%" stopColor={THEME.mariana} />
                             </radialGradient>
                             {/* Rim gradient — light sweep */}
                             <linearGradient id="rim-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%"   stopColor="#4ECDC4" stopOpacity="0.9" />
-                                <stop offset="40%"  stopColor="#45B7D1" stopOpacity="0.6" />
-                                <stop offset="100%" stopColor="#1a6b8a" stopOpacity="0.2" />
+                                <stop offset="0%"   stopColor={CHART_COLORS[1]} stopOpacity="0.9" />
+                                <stop offset="40%"  stopColor={CHART_COLORS[4]} stopOpacity="0.6" />
+                                <stop offset="100%" stopColor={THEME.info} stopOpacity="0.2" />
                             </linearGradient>
                             {/* Stat badge gradient */}
                             <linearGradient id="badge-dep"  x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#FF6B6B" stopOpacity="0.18" />
-                                <stop offset="100%" stopColor="#FF6B6B" stopOpacity="0.06" />
+                                <stop offset="0%" stopColor={CHART_COLORS[0]} stopOpacity="0.18" />
+                                <stop offset="100%" stopColor={CHART_COLORS[0]} stopOpacity="0.06" />
                             </linearGradient>
                             <linearGradient id="badge-ref"  x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#4ECDC4" stopOpacity="0.18" />
-                                <stop offset="100%" stopColor="#4ECDC4" stopOpacity="0.06" />
+                                <stop offset="0%" stopColor={CHART_COLORS[1]} stopOpacity="0.18" />
+                                <stop offset="100%" stopColor={CHART_COLORS[1]} stopOpacity="0.06" />
                             </linearGradient>
                         </defs>
                         {focusRow ? <FocusedView /> : <GlobalView />}

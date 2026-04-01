@@ -371,7 +371,7 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
                         return (
                             <div key={key} onClick={() => toggle(key)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', background: checked ? `${THEME.success}08` : THEME.surface, border: `1px solid ${checked ? `${THEME.success}25` : `${THEME.grid}40`}`, transition: 'all 0.15s' }}>
                                 <div style={{ width: 16, height: 16, borderRadius: 14, flexShrink: 0, marginTop: 1, border: `2px solid ${checked ? THEME.success : THEME.grid}`, background: checked ? THEME.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
-                                    {checked && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                    {checked && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke={THEME.textMain} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                 </div>
                                 <span style={{ fontSize: 12, color: checked ? THEME.textMain : THEME.textMuted, lineHeight: 1.5, transition: 'color 0.15s' }}>{label}</span>
                             </div>
@@ -793,7 +793,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                         <button onClick={() => setShowNew(false)} style={{ padding: '7px 14px', borderRadius: 7, border: `1px solid ${THEME.grid}50`, background: 'transparent', color: THEME.textDim, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                        <button onClick={addPolicy} style={{ padding: '7px 14px', borderRadius: 7, border: 'none', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <button onClick={addPolicy} style={{ padding: '7px 14px', borderRadius: 7, border: 'none', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`, color: THEME.textMain, fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
                             <CheckCircle size={11} /> Save Policy
                         </button>
                     </div>
@@ -810,7 +810,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
 
                             {/* Toggle */}
                             <div onClick={() => toggleEnabled(p.id)} style={{ width: 34, height: 18, borderRadius: 9, flexShrink: 0, cursor: 'pointer', background: p.enabled ? THEME.success : `${THEME.grid}60`, display: 'flex', alignItems: 'center', padding: '0 2px', transition: 'background 0.2s', justifyContent: p.enabled ? 'flex-end' : 'flex-start' }}>
-                                <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.3)', transition: 'all 0.2s' }} />
+                                <div style={{ width: 14, height: 14, borderRadius: '50%', background: THEME.textMain, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', transition: 'all 0.2s' }} />
                             </div>
 
                             {/* Action icon */}
@@ -940,7 +940,7 @@ const ResourcesTab = () => {
                     days: ['Current'],
                     series: top10.map((t, i) => ({
                         name: t.table_name,
-                        color: [THEME.primary, THEME.secondary, THEME.success, THEME.warning, THEME.danger, '#00b874', '#00b874', '#f97316', '#84cc16', '#ec4899'][i % 10],
+                        color: [THEME.primary, THEME.secondary, THEME.success, THEME.warning, THEME.danger, THEME.primary, THEME.primary, THEME.warning, THEME.success, THEME.danger][i % 10],
                         data: [Number(t.growth_rate || 0)],
                     })),
                 });
@@ -1068,17 +1068,17 @@ const ResourcesTab = () => {
                 fontWeight: 600, fontSize: 12.5, lineHeight: 1,
                 transition: 'all 0.25s', whiteSpace: 'nowrap', border: 'none',
                 background: active ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})` : THEME.surface,
-                color: active ? '#fff' : THEME.textMuted,
+                color: active ? THEME.textMain : THEME.textMuted,
                 boxShadow: active ? `0 4px 16px ${THEME.primary}35` : 'none',
                 outline: active ? 'none' : `1px solid ${THEME.grid}60`,
             }}>
                 <Icon size={13} style={{ flexShrink: 0 }} />
                 {label}
                 {count != null && (
-                    <span style={{ fontSize: 9.5, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.primary}15`, color: active ? '#fff' : THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.primary}15`, color: active ? THEME.textMain : THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
                 )}
                 {badge && (
-                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.danger}15`, color: active ? '#fff' : THEME.danger }}>{badge}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.danger}15`, color: active ? THEME.textMain : THEME.danger }}>{badge}</span>
                 )}
             </button>
         );
@@ -1361,7 +1361,7 @@ const ResourcesTab = () => {
                                             <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>Apply the optimization below, then click the button →</div>
                                         </div>
                                     </div>
-                                    <button onClick={() => handleRequestConfirm(selectedTable.table_name)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', background: `linear-gradient(135deg, ${THEME.success}, ${THEME.success}bb)`, color: '#fff', boxShadow: `0 3px 12px ${THEME.success}40`, transition: 'all 0.15s' }}>
+                                    <button onClick={() => handleRequestConfirm(selectedTable.table_name)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', background: `linear-gradient(135deg, ${THEME.success}, ${THEME.success}bb)`, color: THEME.textMain, boxShadow: `0 3px 12px ${THEME.success}40`, transition: 'all 0.15s' }}>
                                         <CheckCircle size={12} /> Mark Optimization Done
                                     </button>
                                 </div>

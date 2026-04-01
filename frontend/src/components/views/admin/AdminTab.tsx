@@ -168,19 +168,19 @@ const AdminStyles = () => (
    DATA & CONSTANTS
    ═══════════════════════════════════════════════════════════════════════════ */
 const RISK_LEVELS = {
-    high:   { color: '#ef4444', label: 'HIGH RISK',   icon: ShieldAlert },
-    medium: { color: '#f59e0b', label: 'MEDIUM RISK', icon: AlertTriangle },
-    low:    { color: '#10b981', label: 'LOW RISK',    icon: ShieldCheck },
+    high:   { color: THEME.danger, label: 'HIGH RISK',   icon: ShieldAlert },
+    medium: { color: THEME.warning, label: 'MEDIUM RISK', icon: AlertTriangle },
+    low:    { color: THEME.success, label: 'LOW RISK',    icon: ShieldCheck },
 };
 
 const SETTING_CATEGORIES = {
-    memory:      { label: 'Memory',         icon: MemoryStick, color: '#00b874', keys: ['shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_buffers','temp_buffers','huge_pages'] },
-    connections: { label: 'Connections',    icon: Network,     color: '#3b82f6', keys: ['max_connections','superuser_reserved_connections','max_prepared_transactions','tcp_keepalives','listen_addresses','port'] },
-    performance: { label: 'Performance',    icon: Zap,         color: '#f59e0b', keys: ['max_worker_processes','max_parallel_workers','max_parallel_workers_per_gather','random_page_cost','effective_io_concurrency','parallel_tuple_cost','jit'] },
-    wal:         { label: 'WAL & Recovery', icon: Shield,      color: '#10b981', keys: ['wal_level','max_wal_size','min_wal_size','checkpoint_timeout','checkpoint_completion_target','archive_mode','wal_compression'] },
-    logging:     { label: 'Logging',        icon: FileText,    color: '#00b874', keys: ['log_statement','log_min_duration_statement','log_connections','log_disconnections','logging_collector','log_destination'] },
-    autovacuum:  { label: 'Autovacuum',     icon: RefreshCw,   color: '#14b8a6', keys: ['autovacuum','autovacuum_max_workers','autovacuum_naptime','autovacuum_vacuum_threshold','autovacuum_analyze_threshold','autovacuum_vacuum_scale_factor'] },
-    security:    { label: 'Security',       icon: Lock,        color: '#00e5a0', keys: ['ssl','password_encryption','krb_server_keyfile','pg_hba','row_security','fsync','synchronous_commit'] },
+    memory:      { label: 'Memory',         icon: MemoryStick, color: THEME.primary, keys: ['shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_buffers','temp_buffers','huge_pages'] },
+    connections: { label: 'Connections',    icon: Network,     color: THEME.primary, keys: ['max_connections','superuser_reserved_connections','max_prepared_transactions','tcp_keepalives','listen_addresses','port'] },
+    performance: { label: 'Performance',    icon: Zap,         color: THEME.warning, keys: ['max_worker_processes','max_parallel_workers','max_parallel_workers_per_gather','random_page_cost','effective_io_concurrency','parallel_tuple_cost','jit'] },
+    wal:         { label: 'WAL & Recovery', icon: Shield,      color: THEME.success, keys: ['wal_level','max_wal_size','min_wal_size','checkpoint_timeout','checkpoint_completion_target','archive_mode','wal_compression'] },
+    logging:     { label: 'Logging',        icon: FileText,    color: THEME.primary, keys: ['log_statement','log_min_duration_statement','log_connections','log_disconnections','logging_collector','log_destination'] },
+    autovacuum:  { label: 'Autovacuum',     icon: RefreshCw,   color: THEME.info, keys: ['autovacuum','autovacuum_max_workers','autovacuum_naptime','autovacuum_vacuum_threshold','autovacuum_analyze_threshold','autovacuum_vacuum_scale_factor'] },
+    security:    { label: 'Security',       icon: Lock,        color: THEME.primaryLight, keys: ['ssl','password_encryption','krb_server_keyfile','pg_hba','row_security','fsync','synchronous_commit'] },
 };
 
 const categorize = (name) => {
@@ -438,7 +438,7 @@ const ConfirmDialog = ({ title, body, onConfirm, onCancel, danger = false }) => 
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                 <button onClick={onCancel} style={{ padding: '9px 18px', borderRadius: 8, background: T.surface, border: `1px solid ${T.grid}50`, color: T.textMuted, cursor: 'pointer', fontSize: 12 }}>Cancel</button>
-                <button onClick={onConfirm} style={{ padding: '9px 18px', borderRadius: 8, background: danger ? T.danger : T.primary, border: 'none', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700, boxShadow: `0 4px 14px ${danger ? T.danger : T.primary}40` }}>
+                <button onClick={onConfirm} style={{ padding: '9px 18px', borderRadius: 8, background: danger ? T.danger : T.primary, border: 'none', color: THEME.textMain, cursor: 'pointer', fontSize: 12, fontWeight: 700, boxShadow: `0 4px 14px ${danger ? T.danger : T.primary}40` }}>
                     {danger ? 'Yes, proceed' : 'Confirm'}
                 </button>
             </div>
@@ -613,7 +613,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                     <div className="adm-grid-pattern" style={{ position: 'absolute', inset: 0, opacity: 0.3 }} />
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14 }}>
                         <div style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 6px 20px ${T.primary}50` }} className="adm-float">
-                            <Sparkles size={20} color="#fff" />
+                            <Sparkles size={20} color={THEME.textMain} />
                         </div>
                         <div>
                             <div style={{ fontSize: 17, fontWeight: 800, color: T.textMain, fontFamily: T.fontBody, letterSpacing: '-0.02em' }}>Config Tuning Wizard</div>
@@ -628,7 +628,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                     {[1,2].map(i => (
                         <React.Fragment key={i}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: i <= step ? T.primary : T.surface, border: `2px solid ${i <= step ? T.primary : T.grid}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: i <= step ? '#fff' : T.textDim, transition: 'all 0.3s', boxShadow: i <= step ? `0 0 12px ${T.primary}60` : 'none' }}>
+                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: i <= step ? T.primary : T.surface, border: `2px solid ${i <= step ? T.primary : T.grid}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: i <= step ? THEME.textMain : T.textDim, transition: 'all 0.3s', boxShadow: i <= step ? `0 0 12px ${T.primary}60` : 'none' }}>
                                     {i < step ? <Check size={11} /> : i}
                                 </div>
                                 <span style={{ fontSize: 10.5, color: i <= step ? T.textMain : T.textDim, fontWeight: i === step ? 700 : 500 }}>{i === 1 ? 'System Specs' : 'Recommendations'}</span>
@@ -671,7 +671,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                             boxShadow: inputs.storage === t.v ? `0 0 12px ${T.primary}25` : 'none',
                                         }}>
                                             <t.i size={18} color={inputs.storage === t.v ? T.primary : T.textDim} style={{ display: 'block', margin: '0 auto 6px' }} />
-                                            <div style={{ color: inputs.storage === t.v ? '#fff' : T.textMuted, fontWeight: 700, fontSize: 12 }}>{t.l}</div>
+                                            <div style={{ color: inputs.storage === t.v ? THEME.textMain : T.textMuted, fontWeight: 700, fontSize: 12 }}>{t.l}</div>
                                             <div style={{ color: T.textDim, fontSize: 9.5 }}>{t.d}</div>
                                         </button>
                                     ))}
@@ -696,7 +696,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                         }}>
                                             <p.i size={14} color={inputs.profile === p.id ? T.secondary : T.textDim} style={{ flexShrink: 0 }} />
                                             <div>
-                                                <div style={{ color: inputs.profile === p.id ? '#fff' : T.textMain, fontWeight: 700, fontSize: 12 }}>{p.l}</div>
+                                                <div style={{ color: inputs.profile === p.id ? THEME.textMain : T.textMain, fontWeight: 700, fontSize: 12 }}>{p.l}</div>
                                                 <div style={{ color: T.textDim, fontSize: 9.5, marginTop: 2 }}>{p.d}</div>
                                             </div>
                                         </button>
@@ -704,7 +704,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                 </div>
                             </div>
 
-                            <button onClick={handleCalculate} style={{ padding: '14px', borderRadius: 12, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, fontSize: 13, fontFamily: T.fontBody, boxShadow: `0 6px 20px ${T.primary}50`, letterSpacing: '-0.01em' }}>
+                            <button onClick={handleCalculate} style={{ padding: '14px', borderRadius: 12, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, color: THEME.textMain, border: 'none', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, fontSize: 13, fontFamily: T.fontBody, boxShadow: `0 6px 20px ${T.primary}50`, letterSpacing: '-0.01em' }}>
                                 <Sparkles size={16} /> Generate Recommendations
                             </button>
                         </div>
@@ -757,7 +757,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                             <tr key={rec.name} onClick={() => toggleSel(rec.name)} style={{ borderTop: `1px solid ${T.grid}20`, background: isSel && changed ? `${T.success}04` : 'transparent', cursor: 'pointer', transition: 'background 0.15s' }}>
                                                 <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                                                     <div style={{ width: 16, height: 16, borderRadius: 14, border: `2px solid ${isSel ? T.primary : T.grid}60`, background: isSel ? T.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', boxShadow: isSel ? `0 0 8px ${T.primary}50` : 'none' }}>
-                                                        {isSel && <Check size={10} color="#fff" />}
+                                                        {isSel && <Check size={10} color={THEME.textMain} />}
                                                     </div>
                                                 </td>
                                                 <td style={{ padding: '10px 14px' }}>
@@ -1142,7 +1142,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
     const [filter, setFilter] = useState('all');
     const [search, setSearch] = useState('');
 
-    const EXT_CATEGORY_COLORS = { monitoring:'#3b82f6', security:'#00e5a0', utility:'#f59e0b', search:'#10b981', geospatial:'#14b8a6', partitioning:'#00b874', timeseries:'#00b874', ai:'#f97316', maintenance:'#64748b' };
+    const EXT_CATEGORY_COLORS = { monitoring:THEME.primary, security:THEME.primaryLight, utility:THEME.warning, search:THEME.success, geospatial:THEME.info, partitioning:THEME.primary, timeseries:THEME.primary, ai:THEME.warning, maintenance:THEME.textMuted };
 
     const filtered = useMemo(() => {
         let list = Array.isArray(extData) ? extData : [];
@@ -1266,7 +1266,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
 const HBA_SAMPLE = [];
 const HBA_METHODS  = ['trust','reject','md5','scram-sha-256','password','gss','sspi','ident','peer','ldap','radius','cert','pam'];
 const HBA_TYPES    = ['local','host','hostssl','hostnossl','hostgssenc','hostnogssenc'];
-const METHOD_CLR   = { trust:'#ff465a', reject:'#64748b', md5:'#f5c518', 'scram-sha-256':'#4ade80', ldap:'#63d7ff', cert:'#00e5a0' };
+const METHOD_CLR   = { trust:THEME.danger, reject:THEME.textMuted, md5:THEME.warning, 'scram-sha-256':THEME.success, ldap:THEME.info, cert:THEME.primaryLight };
 
 /* ── Shared mini form controls — defined OUTSIDE HBAView so React doesn't remount on each render ── */
 const HBASelect = ({ val, opts, onChange, w = 120 }) => (
@@ -1335,7 +1335,7 @@ const HBAView = () => {
                     <HBAInput val={newRow.address}  onChange={v=>setNewRow(p=>({...p,address:v}))}  ph="address"  w={130}/>
                     <HBASelect val={newRow.method}   opts={HBA_METHODS} onChange={v=>setNewRow(p=>({...p,method:v}))}   w={130}/>
                     <HBAInput val={newRow.comment}  onChange={v=>setNewRow(p=>({...p,comment:v}))}  ph="comment"  w={160}/>
-                    <button onClick={addRule} style={{ background:T.success, color:'#fff', border:'none', padding:'5px 12px', borderRadius:6, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody }}>Add</button>
+                    <button onClick={addRule} style={{ background:T.success, color:THEME.textMain, border:'none', padding:'5px 12px', borderRadius:6, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody }}>Add</button>
                     <button onClick={()=>setShowAdd(false)} style={{ background:'transparent', color:T.textDim, border:'none', cursor:'pointer' }}><X size={14}/></button>
                 </div>
             )}
@@ -1393,8 +1393,8 @@ const HBAView = () => {
                     </table>
                 </div>
                 <div style={{ padding:'10px 16px', borderTop:`1px solid ${T.grid}25`, fontSize:11, color:T.textDim, display:'flex', gap:18, flexWrap:'wrap' }}>
-                    <span>⚡ <strong style={{color:'#ff465a'}}>trust</strong> = no password required</span>
-                    <span>🔒 <strong style={{color:'#4ade80'}}>scram-sha-256</strong> = recommended</span>
+                    <span>⚡ <strong style={{color:THEME.danger}}>trust</strong> = no password required</span>
+                    <span>🔒 <strong style={{color:THEME.success}}>scram-sha-256</strong> = recommended</span>
                     <span>💡 Needs <span style={{fontFamily:T.fontMono,color:T.primary}}>SELECT pg_reload_conf()</span> to take effect</span>
                 </div>
             </div>
@@ -1407,7 +1407,7 @@ const ExtDashboard = ({ extData = [] }) => {
     const installed  = extData.filter(e => e.installed);
     const categories = extData.reduce((acc, e) => { acc[e.category] = (acc[e.category]||0)+1; return acc; }, {});
     const catEntries = Object.entries(categories).sort((a,b)=>b[1]-a[1]);
-    const clrs = ['#63d7ff','#4ade80','#f5c518','#f472b6','#00e5a0','#fb923c'];
+    const clrs = [THEME.info, THEME.success, THEME.warning, THEME.danger, THEME.primaryLight, THEME.warning];
     const secFlags = extData.filter(e => e.installed && (e.name==='dblink'||e.name==='pg_tle'||e.superuser)).length;
 
     return (
@@ -1638,7 +1638,7 @@ const SettingsView = ({
                         <button onClick={() => dispatch({ type: 'UNDO' })} disabled={!history.past.length} style={{ background: 'none', border: `1px solid ${T.grid}50`, borderRadius: 6, padding: '4px 9px', cursor: history.past.length ? 'pointer' : 'not-allowed', color: T.textMuted, fontSize: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <RotateCcw size={10} /> Undo
                         </button>
-                        <button onClick={triggerSave} style={{ background: T.warning, border: 'none', borderRadius: 6, padding: '4px 13px', cursor: 'pointer', color: '#000', fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <button onClick={triggerSave} style={{ background: T.warning, border: 'none', borderRadius: 6, padding: '4px 13px', cursor: 'pointer', color: THEME.bg, fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5 }}>
                             <Save size={11} /> Save
                         </button>
                         <button onClick={() => { dispatch({ type: 'CLEAR' }); setValidationErrors({}); }} style={{ background: 'none', border: `1px solid ${T.grid}50`, borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: T.textDim, display: 'flex' }}>
@@ -1684,7 +1684,7 @@ const SettingsView = ({
                     <div style={{ width: 1, height: 20, background: `${T.grid}60` }} />
                     {isEditMode ? (
                         <>
-                            <button onClick={triggerSave} className="adm-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${T.success}, ${T.teal})`, color: '#000', fontSize: 11.5, fontWeight: 800 }}>
+                            <button onClick={triggerSave} className="adm-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${T.success}, ${T.teal})`, color: THEME.bg, fontSize: 11.5, fontWeight: 800 }}>
                                 <Save size={12} /> Save{Object.keys(pendingChanges).length > 0 ? ` (${Object.keys(pendingChanges).length})` : ''}
                             </button>
                             <button onClick={() => { setIsEditMode(false); dispatch({ type: 'CLEAR' }); setValidationErrors({}); }} style={{ padding: '7px', borderRadius: 8, border: 'none', cursor: 'pointer', background: T.surface, color: T.textDim, display: 'flex' }}>
@@ -1882,7 +1882,7 @@ const AdminTab = () => {
         <div style={{ padding: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
             <AdminStyles />
             <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="adm-float">
-                <Settings size={22} color="#fff" className="adm-spin" />
+                <Settings size={22} color={THEME.textMain} className="adm-spin" />
             </div>
             <div style={{ color: T.textDim, fontSize: 12 }}>Loading Admin Panel…</div>
         </div>
@@ -1901,7 +1901,7 @@ const AdminTab = () => {
                             padding: '9px 18px', borderRadius: 9, cursor: 'pointer', border: 'none',
                             display: 'flex', alignItems: 'center', gap: 7, fontSize: 12.5, fontWeight: 700,
                             background: activeSub === t.id ? `linear-gradient(135deg, ${T.primary}, ${T.secondary})` : 'transparent',
-                            color: activeSub === t.id ? '#fff' : T.textMuted,
+                            color: activeSub === t.id ? THEME.textMain : T.textMuted,
                             boxShadow: activeSub === t.id ? `0 4px 16px ${T.primary}35` : 'none',
                             fontFamily: T.fontBody,
                             position: 'relative',

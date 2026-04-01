@@ -2460,7 +2460,7 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
 
     const typeColors = {
         input: _AT.textMain,
-        output: '#7dd3fc',
+        output: _AT.info,
         error: _AT.danger,
         success: _AT.success,
         info: _AT.textMuted,
@@ -2470,7 +2470,7 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
     return (
         <div
             style={{
-                background: '#01060e',
+                background: _AT.bgTeal,
                 borderRadius: 14,
                 border: `1px solid ${_AT.glassBorder}`,
                 overflow: 'hidden',
@@ -2483,7 +2483,7 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
             {/* Header */}
             <div
                 style={{
-                    background: '#010509',
+                    background: _AT.bg,
                     padding: '8px 14px',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -2583,7 +2583,7 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
                         gap: 8,
                         padding: '10px 16px',
                         borderTop: `1px solid ${_AT.glassBorder}`,
-                        background: '#000812',
+                        background: _AT.inkBlack,
                         position: 'relative',
                         zIndex: 2,
                     }}
@@ -4548,7 +4548,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
             <div
                 style={{
                     flex: 1,
-                    background: '#01060e',
+                    background: _AT.bgTeal,
                     borderRadius: 14,
                     border: `1px solid ${_AT.glassBorder}`,
                     overflow: 'hidden',
@@ -4561,7 +4561,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                 <ScanlineOverlay opacity={0.012} />
                 <div
                     style={{
-                        background: '#010509',
+                        background: _AT.bg,
                         padding: '7px 14px',
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -4593,7 +4593,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                         padding: 14,
                         fontFamily: _AT.fontMono,
                         fontSize: 11,
-                        color: '#7dd3fc',
+                        color: _AT.info,
                         lineHeight: 1.9,
                         flex: 1,
                         overflowY: 'auto',
@@ -4735,7 +4735,7 @@ export const QueryHistoryItem = ({ entry, onFavourite, onTag, onReplay, onCopy }
                             fontSize: 11,
                             color: '#93c5fd',
                             fontFamily: _AT.fontMono,
-                            background: '#01060e',
+                            background: _AT.bgTeal,
                             padding: 12,
                             borderRadius: 10,
                             margin: '10px 0',
@@ -5421,7 +5421,7 @@ export const ProgressBar = ({ progress = 0, isVisible = true }) => {
                 left: 0,
                 height: 2,
                 width: `${progress * 100}%`,
-                background: `linear-gradient(90deg, #00f5ff, #7b2fff, #ff2d78)`,
+                background: `linear-gradient(90deg, ${_AT.primary}, ${_AT.secondary}, ${_AT.danger})`,
                 backgroundSize: '200% 100%',
                 animation: 'waveFlow 2s ease-in-out infinite',
                 zIndex: 500,

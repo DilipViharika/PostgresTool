@@ -335,7 +335,7 @@ const AppStyles = () => (
 
         /* ── Sidebar: gradient glass background ── */
         aside {
-            background: linear-gradient(180deg, ${DS._dark ? '#091620' : '#f0f2f8'}, ${DS._dark ? '#0b1e2c' : '#e8ecf2'}) !important;
+            background: linear-gradient(180deg, ${DS._dark ? THEME.mariana : THEME.surfaceHover}, ${DS._dark ? THEME.bgAlt : '#e8ecf2'}) !important;
             border-right: 1px solid ${DS._dark ? 'rgba(0,184,116,0.08)' : 'rgba(0,0,0,0.06)'} !important;
             box-shadow: ${DS._dark ? '4px 0 24px rgba(0,0,0,0.4)' : '2px 0 12px rgba(0,0,0,0.04)'} !important;
         }
@@ -1910,7 +1910,7 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                             background: ready
                                 ? `linear-gradient(135deg, ${DS.cyan}, ${DS.violet})`
                                 : 'rgba(255,255,255,0.05)',
-                            color: ready ? '#fff' : DS.textMuted,
+                            color: ready ? THEME.textInverse : DS.textMuted,
                             fontSize: 13,
                             fontWeight: 700,
                             cursor: ready ? 'pointer' : 'not-allowed',
@@ -2087,7 +2087,7 @@ class ErrorBoundary extends React.Component {
                                     border: 'none',
                                     cursor: 'pointer',
                                     background: `linear-gradient(135deg, ${DS.rose}, ${DS.violet})`,
-                                    color: '#fff',
+                                    color: THEME.textInverse,
                                     fontWeight: 600,
                                     fontSize: 13,
                                     fontFamily: DS.fontUI,
@@ -2445,7 +2445,7 @@ const ProfileModal = ({ user, onClose, onSave }) => {
                             background: saved
                                 ? `linear-gradient(135deg, ${DS.emerald}, ${DS.emerald})`
                                 : `linear-gradient(135deg, ${DS.cyan}, ${DS.violet})`,
-                            color: '#fff',
+                            color: THEME.textInverse,
                             fontSize: 13,
                             fontWeight: 700,
                             cursor: saving || saved ? 'default' : 'pointer',
@@ -2525,7 +2525,7 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
                             height: 18,
                             borderRadius: 9,
                             background: DS.rose,
-                            color: '#fff',
+                            color: THEME.textInverse,
                             fontSize: 10,
                             fontWeight: 700,
                             display: 'flex',
@@ -2891,7 +2891,7 @@ const Sidebar = ({
                         height: 34,
                         borderRadius: 10,
                         flexShrink: 0,
-                        background: `linear-gradient(135deg, ${DS.cyan}, ${DS.violet || '#00b874'})`,
+                        background: `linear-gradient(135deg, ${DS.cyan}, ${DS.violet || THEME.primary})`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -2899,7 +2899,7 @@ const Sidebar = ({
                         border: `1px solid ${DS.cyan}40`,
                     }}
                 >
-                    <Database color="#fff" size={16} strokeWidth={2.5} />
+                    <Database color={THEME.textInverse} size={16} strokeWidth={2.5} />
                 </div>
 
                 {/* Wordmark — hidden when collapsed */}
@@ -3359,7 +3359,7 @@ const Sidebar = ({
                 }}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.background = DS.cyan;
-                    e.currentTarget.style.color = DS._dark ? '#020409' : '#ffffff';
+                    e.currentTarget.style.color = DS._dark ? THEME.deepTeal : THEME.surface;
                     e.currentTarget.style.borderColor = DS.cyan;
                     e.currentTarget.style.boxShadow = DS.glowCyan;
                     e.currentTarget.style.transform = 'scale(1.15)';
@@ -3677,8 +3677,8 @@ const ConnectionSelector = () => {
                                     <span
                                         style={{
                                             fontSize: 9,
-                                            color: DS.violet || '#00e5a0',
-                                            background: `${DS.violet || '#00e5a0'}18`,
+                                            color: DS.violet || THEME.primaryLight,
+                                            background: `${DS.violet || THEME.primaryLight}18`,
                                             padding: '1px 5px',
                                             borderRadius: 14,
                                             fontFamily: DS.fontMono,
@@ -4099,8 +4099,8 @@ const DashboardInner = ({ onLogout }) => {
                     display: 'flex',
                     height: '100vh',
                     width: '100%',
-                    background: isDemoFullPage ? '#f0f4f8' : DS.bg,
-                    color: isDemoFullPage ? '#0f172a' : DS.textPrimary,
+                    background: isDemoFullPage ? THEME.surfaceHover : DS.bg,
+                    color: isDemoFullPage ? THEME.bg : DS.textPrimary,
                     overflow: 'hidden',
                     fontFamily: DS.fontUI,
                     position: 'relative',

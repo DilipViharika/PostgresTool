@@ -19,7 +19,7 @@ const Styles = () => (
         .rw-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:5px; font-size:10px; font-weight:700; }
         .rw-table-head { display:grid; gap:8px; padding:8px 14px; font-size:10px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid ${THEME.grid}; }
         .rw-table-row  { display:grid; gap:8px; padding:11px 14px; font-size:12px; border-bottom:1px solid ${THEME.grid}20; align-items:center; }
-        .rw-table-row:hover { background:${THEME.primary}05; }
+        .rw-table-row:hover { background:${THEME.surfaceHover}; }
         .rw-table-row:last-child { border-bottom:none; }
     `}</style>
 );

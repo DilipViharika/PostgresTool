@@ -213,7 +213,7 @@ class SectionErrorBoundary extends React.Component {
                             style={{
                                 padding: '10px 16px',
                                 background: THEME.primary,
-                                color: THEME.void,
+                                color: THEME.deepTeal,
                                 border: 'none',
                                 borderRadius: '8px',
                                 fontSize: '13px',
@@ -275,7 +275,7 @@ class SectionErrorBoundary extends React.Component {
                             style={{
                                 marginTop: '16px',
                                 padding: '12px',
-                                background: THEME.void,
+                                background: THEME.deepTeal,
                                 border: `1px solid ${THEME.grid}`,
                                 borderRadius: '6px',
                                 fontSize: '10px',

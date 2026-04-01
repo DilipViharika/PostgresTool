@@ -1178,7 +1178,7 @@ export default function VacuumMaintenanceTab() {
                                               : 0;
                                     const urgent = pct > 10;
                                     const warn = pct > 5;
-                                    const color = urgent ? '#ef4444' : warn ? '#f97316' : '#22c55e';
+                                    const color = urgent ? THEME.danger : warn ? THEME.warning : THEME.success;
                                     return (
                                         <div
                                             key={i}

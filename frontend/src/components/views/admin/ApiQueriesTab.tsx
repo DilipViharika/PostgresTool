@@ -375,7 +375,7 @@ const TraceWaterfall = ({ spans, totalMs }) => {
                                     borderRadius: 14, animationDelay: `${i * 0.05}s`,
                                     display: 'flex', alignItems: 'center', padding: '0 8px',
                                 }}>
-                                    <span style={{ fontSize: 9, color: '#fff', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.5)', whiteSpace: 'nowrap' }}>{fmtMs(span.duration)}</span>
+                                    <span style={{ fontSize: 9, color: THEME.textMain, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.5)', whiteSpace: 'nowrap' }}>{fmtMs(span.duration)}</span>
                                 </div>
                                 {span.error && (
                                     <div style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)' }}>

@@ -47,8 +47,8 @@ const SecStyles = () => (
         }
 
         .card-glow-red:hover {
-            border-color: rgba(255,70,90,0.3) !important;
-            box-shadow: 0 0 24px rgba(255,70,90,0.08) !important;
+            border-color: ${THEME.danger}4d !important;
+            box-shadow: 0 0 24px ${THEME.danger}14 !important;
         }
 
         .mono { font-family: ${THEME.fontMono}; }
@@ -90,11 +90,11 @@ const SecStyles = () => (
             transition: background 0.15s;
             gap: 12px;
         }
-        .threat-row:hover { background: rgba(255,70,90,0.04); }
-        .threat-row.critical-row { border-left: 2px solid #ff465a; }
-        .threat-row.high-row { border-left: 2px solid #ff8c42; }
-        .threat-row.medium-row { border-left: 2px solid #f5c518; }
-        .threat-row.low-row { border-left: 2px solid #63d7ff; }
+        .threat-row:hover { background: ${THEME.danger}0a; }
+        .threat-row.critical-row { border-left: 2px solid ${THEME.danger}; }
+        .threat-row.high-row { border-left: 2px solid ${THEME.warning}; }
+        .threat-row.medium-row { border-left: 2px solid ${THEME.warning}; }
+        .threat-row.low-row { border-left: 2px solid ${THEME.info}; }
 
         .threat-row-header {
             display: grid;
@@ -131,7 +131,7 @@ const SecStyles = () => (
         }
         .live-dot {
             width: 8px; height: 8px; border-radius: 50%;
-            background: #ff465a;
+            background: ${THEME.danger};
             position: relative; display: inline-block;
         }
         .live-dot::after {
@@ -139,7 +139,7 @@ const SecStyles = () => (
             position: absolute;
             inset: 0;
             border-radius: 50%;
-            background: #ff465a;
+            background: ${THEME.danger};
             animation: pulse-ring 1.6s ease-out infinite;
         }
 
@@ -288,11 +288,11 @@ const AUDIT_EVENTS = [];
    HELPERS
    ═══════════════════════════════════════════════════════════════════════════ */
 const SEV_COLORS = {
-    critical: '#ff465a',
-    high: '#ff8c42',
-    medium: '#f5c518',
-    low: '#63d7ff',
-    info: '#60a5fa',
+    critical: THEME.danger,
+    high: THEME.warning,
+    medium: THEME.warning,
+    low: THEME.info,
+    info: THEME.info,
 };
 
 const Badge = ({ label, color }) => (
@@ -302,7 +302,7 @@ const Badge = ({ label, color }) => (
 );
 
 const ThreatBadge = ({ severity }) => (
-    <Badge label={severity} color={SEV_COLORS[severity] || '#888'} />
+    <Badge label={severity} color={SEV_COLORS[severity] || THEME.textMuted} />
 );
 
 const SectionHeader = ({ icon: Icon, title, iconColor, right }) => (
@@ -329,7 +329,7 @@ const MiniStat = ({ label, value, sub, color, icon: Icon }) => (
 const ScoreRing = ({ score }) => {
     const r = 68, circ = 2 * Math.PI * r;
     const offset = circ - (score / 100) * circ;
-    const color = score >= 80 ? '#4ade80' : score >= 60 ? '#f5c518' : '#ff465a';
+    const color = score >= 80 ? THEME.success : score >= 60 ? THEME.warning : THEME.danger;
     return (
         <div style={{ position: 'relative', width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="160" height="160" viewBox="0 0 160 160">
@@ -370,7 +370,7 @@ const ChartTooltip = ({ active, payload, label }) => {
         <div style={{ background: THEME.surface, border: `1px solid ${THEME.primary}33`, borderRadius: 8, padding: '8px 14px', fontSize: 12, fontFamily: THEME.fontMono }}>
             <div style={{ color: THEME.textMuted, marginBottom: 4 }}>{label}</div>
             {payload.map((p, i) => (
-                <div key={i} style={{ color: p.color || '#63d7ff' }}>{p.name}: <strong>{p.value}</strong></div>
+                <div key={i} style={{ color: p.color || THEME.info }}>{p.name}: <strong>{p.value}</strong></div>
             ))}
         </div>
     );
@@ -394,11 +394,11 @@ const ThreatMonitor = ({ search, threatLogs = [] }) => {
             <SectionHeader
                 icon={AlertOctagon}
                 title="Live Threat Monitor"
-                iconColor="#ff465a"
+                iconColor={THEME.danger}
                 right={
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span className="live-dot" />
-                        <span style={{ fontSize: 11, color: '#ff465a', fontWeight: 700, fontFamily: THEME.fontMono }}>LIVE</span>
+                        <span style={{ fontSize: 11, color: THEME.danger, fontWeight: 700, fontFamily: THEME.fontMono }}>LIVE</span>
                     </div>
                 }
             />
@@ -432,7 +432,7 @@ const ThreatMonitor = ({ search, threatLogs = [] }) => {
                             <span className="mitre-tag">{log.mitre}</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <ThreatBadge severity={log.severity} />
-                                {log.blocked && <Badge label="blocked" color="#4ade80" />}
+                                {log.blocked && <Badge label="blocked" color={THEME.success} />}
                             </div>
                             <ChevronDown size={14} color={THEME.textDim}
                                          style={{ transform: expanded === log.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
@@ -445,7 +445,7 @@ const ThreatMonitor = ({ search, threatLogs = [] }) => {
                                 <div style={{ display: 'flex', gap: 24, fontSize: 11, color: THEME.textMuted }}>
                                     <span>Time: <strong style={{ color: THEME.textMain }}>{log.time}</strong></span>
                                     <span>Origin: <strong style={{ color: THEME.textMain }}>{log.geo}</strong></span>
-                                    <span>Status: <strong style={{ color: log.blocked ? '#4ade80' : '#ff465a' }}>{log.blocked ? 'Blocked' : 'Allowed'}</strong></span>
+                                    <span>Status: <strong style={{ color: log.blocked ? THEME.success : THEME.danger }}>{log.blocked ? 'Blocked' : 'Allowed'}</strong></span>
                                 </div>
                             </div>
                         )}
@@ -459,27 +459,27 @@ const ThreatMonitor = ({ search, threatLogs = [] }) => {
 /* ── Threat Timeline Chart ──────────────────────────────────────────────── */
 const ThreatTimeline = () => (
     <div className="card">
-        <SectionHeader icon={Activity} title="Threat Activity (24h)" iconColor="#ff8c42"
+        <SectionHeader icon={Activity} title="Threat Activity (24h)" iconColor={THEME.warning}
                        right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: THEME.fontMono }}>threats / hour</span>} />
         <div style={{ padding: '16px 8px 8px' }}>
             <ResponsiveContainer width="100%" height={140}>
                 <AreaChart data={THREAT_TIMELINE} margin={{ top: 4, right: 16, left: -20, bottom: 0 }}>
                     <defs>
                         <linearGradient id="tGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#ff465a" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#ff465a" stopOpacity={0} />
+                            <stop offset="5%" stopColor={THEME.danger} stopOpacity={0.3} />
+                            <stop offset="95%" stopColor={THEME.danger} stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="bGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#4ade80" stopOpacity={0.25} />
-                            <stop offset="95%" stopColor="#4ade80" stopOpacity={0} />
+                            <stop offset="5%" stopColor={THEME.success} stopOpacity={0.25} />
+                            <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
                         </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
                     <XAxis dataKey="h" tick={{ fill: THEME.textDim, fontSize: 9 }} axisLine={false} tickLine={false} interval={3} />
                     <YAxis tick={{ fill: THEME.textDim, fontSize: 9 }} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTooltip />} />
-                    <Area type="monotone" dataKey="threats" name="Threats" stroke="#ff465a" fill="url(#tGrad)" strokeWidth={2} dot={false} />
-                    <Area type="monotone" dataKey="blocked" name="Blocked" stroke="#4ade80" fill="url(#bGrad)" strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
+                    <Area type="monotone" dataKey="threats" name="Threats" stroke={THEME.danger} fill="url(#tGrad)" strokeWidth={2} dot={false} />
+                    <Area type="monotone" dataKey="blocked" name="Blocked" stroke={THEME.success} fill="url(#bGrad)" strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
                 </AreaChart>
             </ResponsiveContainer>
         </div>
@@ -491,8 +491,8 @@ const GeoThreatPanel = () => {
     const safeGeoThreats = Array.isArray(GEO_THREATS) ? GEO_THREATS : [];
     return (
     <div className="card" style={{ padding: 20 }}>
-        <SectionHeader icon={Globe} title="Attack Origin" iconColor="#63d7ff"
-                       right={<Badge label="last 24h" color="#63d7ff" />} />
+        <SectionHeader icon={Globe} title="Attack Origin" iconColor={THEME.info}
+                       right={<Badge label="last 24h" color={THEME.info} />} />
         <div style={{ marginTop: 16 }}>
             {safeGeoThreats.map((g, i) => (
                 <div key={i} className="geo-cell" style={{ background: `${g.color}08`, border: `1px solid ${g.color}15` }}>
@@ -525,7 +525,7 @@ const CompliancePanel = ({ complianceChecks = [] }) => {
         <div className="card">
             <SectionHeader icon={FileCheck} title="Compliance Posture"
                            right={
-                               <div className="mono" style={{ fontSize: 12, color: '#4ade80', fontWeight: 700 }}>
+                               <div className="mono" style={{ fontSize: 12, color: THEME.success, fontWeight: 700 }}>
                                    {passCount}/{safeChecks.length} Pass
                                </div>
                            }
@@ -539,7 +539,7 @@ const CompliancePanel = ({ complianceChecks = [] }) => {
             </div>
             <div className="sec-scroll" style={{ maxHeight: 320, overflowY: 'auto', padding: '10px 14px' }}>
                 {filtered.map(item => {
-                    const color = item.status === 'pass' ? '#4ade80' : item.status === 'fail' ? '#ff465a' : '#f5c518';
+                    const color = item.status === 'pass' ? THEME.success : item.status === 'fail' ? THEME.danger : THEME.warning;
                     const Icon = item.status === 'pass' ? CheckCircle : item.status === 'fail' ? XCircle : AlertTriangle;
                     return (
                         <div key={item.id} className="comp-item">
@@ -611,13 +611,13 @@ const SecurityRadar = ({ complianceChecks = [] }) => {
 
     return (
         <div className="card" style={{ padding: '0 0 12px' }}>
-            <SectionHeader icon={BarChart2} title="Security Posture Radar" iconColor="#00e5a0" />
+            <SectionHeader icon={BarChart2} title="Security Posture Radar" iconColor={THEME.primaryLight} />
             <ResponsiveContainer width="100%" height={220}>
                 <RadarChart data={radarData} cx="50%" cy="50%" outerRadius={75}>
                     <PolarGrid stroke={THEME.grid} />
                     <PolarAngleAxis dataKey="axis" tick={{ fill: THEME.textMuted, fontSize: 11 }} />
                     <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-                    <Radar name="Score" dataKey="val" stroke="#00e5a0" fill="#00e5a0" fillOpacity={0.15} strokeWidth={2} dot={{ fill: '#00e5a0', r: 3 }} />
+                    <Radar name="Score" dataKey="val" stroke={THEME.primaryLight} fill={THEME.primaryLight} fillOpacity={0.15} strokeWidth={2} dot={{ fill: THEME.primaryLight, r: 3 }} />
                 </RadarChart>
             </ResponsiveContainer>
         </div>
@@ -629,7 +629,7 @@ const PIIAccessLog = () => {
     const safePIIAccess = Array.isArray(PII_ACCESS) ? PII_ACCESS : [];
     return (
     <div className="card">
-        <SectionHeader icon={Fingerprint} title="PII / Sensitive Access" iconColor="#f472b6"
+        <SectionHeader icon={Fingerprint} title="PII / Sensitive Access" iconColor={THEME.danger}
                        right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: THEME.fontMono }}>last 24h</span>} />
         <div style={{ padding: '12px 20px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: THEME.textDim, borderBottom: `1px solid ${THEME.grid}`, paddingBottom: 8, marginBottom: 4 }}>
@@ -643,18 +643,18 @@ const PIIAccessLog = () => {
                     <div>
                         <div>
                             <span style={{ color: THEME.textMuted }}>{a.table}</span>
-                            <span style={{ color: '#f472b6', fontWeight: 700 }}>.{a.col}</span>
+                            <span style={{ color: THEME.danger, fontWeight: 700 }}>.{a.col}</span>
                         </div>
                         <div className="mono" style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>{a.user}</div>
                     </div>
                     <div className="mono" style={{ fontWeight: 700, color: THEME.textMain }}>{(a.hits || 0).toLocaleString()}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         {a.trend > 0
-                            ? <TrendingUp size={12} color="#f5c518" />
+                            ? <TrendingUp size={12} color={THEME.warning} />
                             : a.trend < 0
-                                ? <TrendingDown size={12} color="#4ade80" />
+                                ? <TrendingDown size={12} color={THEME.success} />
                                 : <span style={{ color: THEME.textDim, fontSize: 11 }}>—</span>}
-                        <span className="mono" style={{ fontSize: 11, color: a.trend > 0 ? '#f5c518' : a.trend < 0 ? '#4ade80' : THEME.textDim }}>
+                        <span className="mono" style={{ fontSize: 11, color: a.trend > 0 ? THEME.warning : a.trend < 0 ? THEME.success : THEME.textDim }}>
                             {a.trend !== 0 ? `${a.trend > 0 ? '+' : ''}${a.trend}%` : ''}
                         </span>
                     </div>
@@ -668,13 +668,13 @@ const PIIAccessLog = () => {
 
 /* ── Encryption Key Vault ───────────────────────────────────────────────── */
 const KeyVault = () => {
-    const statusColors = { active: '#4ade80', expiring: '#ff465a', warning: '#f5c518' };
+    const statusColors = { active: THEME.success, expiring: THEME.danger, warning: THEME.warning };
     const safeEncryptionKeys = Array.isArray(ENCRYPTION_KEYS) ? ENCRYPTION_KEYS : [];
     return (
         <div className="card" style={{ padding: 0 }}>
-            <SectionHeader icon={Key} title="Encryption Key Vault" iconColor="#fbbf24"
+            <SectionHeader icon={Key} title="Encryption Key Vault" iconColor={THEME.warning}
                            right={
-                               <button style={{ fontSize: 11, color: '#63d7ff', background: 'rgba(99,215,255,0.08)', border: '1px solid rgba(99,215,255,0.2)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontFamily: THEME.fontBody, fontWeight: 700 }}>
+                               <button style={{ fontSize: 11, color: THEME.info, background: `${THEME.info}14`, border: `1px solid ${THEME.info}33`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontFamily: THEME.fontBody, fontWeight: 700 }}>
                                    Rotate Keys
                                </button>
                            }
@@ -699,7 +699,7 @@ const KeyVault = () => {
                                 </span>
                             </div>
                             <div className="key-progress">
-                                <div className="key-progress-fill" style={{ width: `${pct}%`, background: pct > 60 ? color : pct > 20 ? '#f5c518' : '#ff465a' }} />
+                                <div className="key-progress-fill" style={{ width: `${pct}%`, background: pct > 60 ? color : pct > 20 ? THEME.warning : THEME.danger }} />
                             </div>
                         </div>
                     );
@@ -714,7 +714,7 @@ const AuditTimeline = ({ auditEvents = [] }) => {
     const safeAuditEvents = Array.isArray(auditEvents) ? auditEvents : [];
     return (
     <div className="card" style={{ padding: 0 }}>
-        <SectionHeader icon={Clock} title="Audit Events" iconColor="#63d7ff"
+        <SectionHeader icon={Clock} title="Audit Events" iconColor={THEME.info}
                        right={<button style={{ fontSize: 11, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Export</button>} />
         <div style={{ padding: '16px 20px' }}>
             {safeAuditEvents.map((ev, i) => {
@@ -730,7 +730,7 @@ const AuditTimeline = ({ auditEvents = [] }) => {
                                 <span className="mono" style={{ fontSize: 10, color: THEME.textDim }}>{ev.ts}</span>
                             </div>
                             <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2 }}>
-                                <span style={{ color: '#63d7ff' }}>{ev.user}</span> → {ev.target}
+                                <span style={{ color: THEME.info }}>{ev.user}</span> → {ev.target}
                             </div>
                         </div>
                     </div>
@@ -747,7 +747,7 @@ const AuditTimeline = ({ auditEvents = [] }) => {
 const SUPERUSER_SAMPLE = [];
 // Empty state: "Superuser activity will load from pg_stat_activity."
 
-const RISK_COLOR = { critical: '#ff2d55', high: '#ff465a', medium: '#f5c518', low: '#4ade80' };
+const RISK_COLOR = { critical: THEME.danger, high: THEME.danger, medium: THEME.warning, low: THEME.success };
 
 const SuperuserMonitor = () => {
     const [rows, setRows]           = useState([]);
@@ -794,7 +794,7 @@ const SuperuserMonitor = () => {
 
             <div className="card" style={{ padding: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <SectionHeader icon={UserCog} title="Superuser Activity Log" iconColor="#f472b6" />
+                    <SectionHeader icon={UserCog} title="Superuser Activity Log" iconColor={THEME.danger} />
                     <button onClick={fetchActivity} disabled={loading}
                         style={{ background: 'rgba(100,215,255,0.1)', border: '1px solid rgba(100,215,255,0.25)', color: THEME.primary, padding: '6px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontFamily: THEME.fontBody, display: 'flex', gap: 6, alignItems: 'center' }}>
                         <RefreshCw size={12} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} /> Refresh
@@ -831,9 +831,9 @@ const SuperuserMonitor = () => {
                                         <td className="mono" style={{ padding: '10px 10px', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: THEME.textMuted }}>
                                             {r.query}
                                         </td>
-                                        <td className="mono" style={{ padding: '10px 10px', color: r.duration_sec > 10 ? '#f5c518' : THEME.textDim }}>{r.duration_sec}s</td>
+                                        <td className="mono" style={{ padding: '10px 10px', color: r.duration_sec > 10 ? THEME.warning : THEME.textDim }}>{r.duration_sec}s</td>
                                         <td style={{ padding: '10px 10px' }}>
-                                            <Badge label={r.state} color={r.state === 'active' ? '#4ade80' : r.state.includes('transaction') ? '#ff465a' : THEME.textDim} />
+                                            <Badge label={r.state} color={r.state === 'active' ? THEME.success : r.state.includes('transaction') ? THEME.danger : THEME.textDim} />
                                         </td>
                                         <td style={{ padding: '10px 10px', color: THEME.textDim }}>{r.app}</td>
                                         <td style={{ padding: '10px 10px' }}>
@@ -849,7 +849,7 @@ const SuperuserMonitor = () => {
                                                 </div>
                                                 <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
                                                     {r.risk === 'critical' || r.risk === 'high' ? (
-                                                        <div style={{ fontSize: 11, color: '#ff465a', display: 'flex', gap: 4, alignItems: 'center' }}>
+                                                        <div style={{ fontSize: 11, color: THEME.danger, display: 'flex', gap: 4, alignItems: 'center' }}>
                                                             <AlertCircle size={12} /> This operation warrants immediate review — consider revoking session if unauthorized
                                                         </div>
                                                     ) : (
@@ -905,7 +905,7 @@ const ComplianceReportGenerator = () => {
     if (!fw) {
         return (
             <div className="card" style={{ padding: 20, marginTop: 18 }}>
-                <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor="#00e5a0" />
+                <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor={THEME.primaryLight} />
                 <div style={{ padding: '20px', textAlign: 'center', color: THEME.textDim }}>
                     No compliance frameworks configured
                 </div>
@@ -915,7 +915,7 @@ const ComplianceReportGenerator = () => {
 
     return (
         <div className="card" style={{ padding: 20, marginTop: 18 }}>
-            <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor="#00e5a0" />
+            <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor={THEME.primaryLight} />
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, margin: '16px 0' }}>
                 {safeFrameworks.map(f => (
@@ -947,7 +947,7 @@ const ComplianceReportGenerator = () => {
                         <label key={opt.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, cursor: 'pointer', fontSize: 12, color: THEME.textMuted }}>
                             <div onClick={() => opt.set(v => !v)}
                                 style={{ width: 36, height: 20, borderRadius: 10, background: opt.val ? THEME.primary : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
-                                <div style={{ position: 'absolute', top: 3, left: opt.val ? 18 : 3, width: 14, height: 14, borderRadius: 7, background: '#fff', transition: 'left 0.2s' }} />
+                                <div style={{ position: 'absolute', top: 3, left: opt.val ? 18 : 3, width: 14, height: 14, borderRadius: 7, background: THEME.textMain, transition: 'left 0.2s' }} />
                             </div>
                             {opt.label}
                         </label>
@@ -974,8 +974,8 @@ const ComplianceReportGenerator = () => {
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: THEME.textDim, marginBottom: 6 }}>
-                                    <span style={{ color: '#4ade80' }}>✓ Passed: {fw.passed}</span>
-                                    <span style={{ color: '#ff465a' }}>✗ Failed: {fw.checks - fw.passed}</span>
+                                    <span style={{ color: THEME.success }}>✓ Passed: {fw.passed}</span>
+                                    <span style={{ color: THEME.danger }}>✗ Failed: {fw.checks - fw.passed}</span>
                                 </div>
                                 <div style={{ height: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>
                                     <div style={{ height: 8, width: `${pct}%`, background: fw.color, borderRadius: 4 }} />
@@ -985,13 +985,13 @@ const ComplianceReportGenerator = () => {
                         </div>
                         {lastGenerated && (
                             <div style={{ fontSize: 11, color: THEME.textDim, padding: '8px 12px', background: 'rgba(74,222,128,0.08)', borderRadius: 6, display: 'flex', gap: 6, alignItems: 'center' }}>
-                                <CheckCircle size={11} color="#4ade80" /> Last report generated: {lastGenerated}
+                                <CheckCircle size={11} color={THEME.success} /> Last report generated: {lastGenerated}
                             </div>
                         )}
                     </div>
 
                     <button onClick={handleGenerate} disabled={generating}
-                        style={{ marginTop: 16, background: generating ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)', color: '#00e5a0', padding: '10px 18px', borderRadius: 8, cursor: generating ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: THEME.fontBody, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                        style={{ marginTop: 16, background: generating ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)', color: THEME.primaryLight, padding: '10px 18px', borderRadius: 8, cursor: generating ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: THEME.fontBody, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
                         {generating ? (
                             <><RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} /> Generating…</>
                         ) : (
@@ -1060,11 +1060,11 @@ const SecurityComplianceTab = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                            <Shield size={22} color="#63d7ff" />
+                            <Shield size={22} color={THEME.info} />
                             <h1 style={{ fontSize: 22, fontWeight: 800, color: THEME.textMain, margin: 0, letterSpacing: '-0.02em' }}>
                                 Security & Compliance
                             </h1>
-                            <Badge label="Protected" color="#4ade80" />
+                            <Badge label="Protected" color={THEME.success} />
                         </div>
                         <div style={{ fontSize: 12, color: THEME.textMuted, fontFamily: THEME.fontMono }}>
                             Last scan: 12m ago &nbsp;·&nbsp; 4 active threats &nbsp;·&nbsp; 1 critical
@@ -1076,7 +1076,7 @@ const SecurityComplianceTab = () => {
                             <Search size={13} color={THEME.textDim} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                             <input className="search-input" placeholder="Search threats..." value={search} onChange={e => setSearch(e.target.value)} />
                         </div>
-                        <button style={{ background: 'rgba(255,70,90,0.12)', color: '#ff465a', border: '1px solid rgba(255,70,90,0.3)', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: THEME.fontBody }}>
+                        <button style={{ background: `${THEME.danger}1f`, color: THEME.danger, border: `1px solid ${THEME.danger}4d`, padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: THEME.fontBody }}>
                             <AlertOctagon size={13} /> Run Scan
                         </button>
                         <button style={{ background: THEME.primary, color: THEME.bg, border: 'none', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: THEME.fontBody }}>
@@ -1100,10 +1100,10 @@ const SecurityComplianceTab = () => {
                 <div style={{ padding: '0 24px' }} className="fade-in">
                     {/* Metric bar */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 22 }}>
-                        <MiniStat label="Security Score" value={score} sub="↑ +3 from last week" color="#4ade80" icon={Shield} />
-                        <MiniStat label="Active Threats" value="4" sub="1 critical, 2 medium" color="#ff465a" icon={AlertOctagon} />
-                        <MiniStat label="Failed Logins" value="42" sub="last 24 hours" color="#f5c518" icon={UserCheck} />
-                        <MiniStat label="PII Accesses" value="1.5k" sub="tracked resources" color="#f472b6" icon={Eye} />
+                        <MiniStat label="Security Score" value={score} sub="↑ +3 from last week" color={THEME.success} icon={Shield} />
+                        <MiniStat label="Active Threats" value="4" sub="1 critical, 2 medium" color={THEME.danger} icon={AlertOctagon} />
+                        <MiniStat label="Failed Logins" value="42" sub="last 24 hours" color={THEME.warning} icon={UserCheck} />
+                        <MiniStat label="PII Accesses" value="1.5k" sub="tracked resources" color={THEME.danger} icon={Eye} />
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 18 }}>
@@ -1163,7 +1163,7 @@ const SecurityComplianceTab = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
                         <KeyVault />
                         <div className="card" style={{ padding: 20 }}>
-                            <SectionHeader icon={Lock} title="TLS Certificate Status" iconColor="#4ade80" />
+                            <SectionHeader icon={Lock} title="TLS Certificate Status" iconColor={THEME.success} />
                             <div style={{ padding: '16px 0' }}>
                                 {[
                                     { domain: 'db.internal.company.com', expires: '2026-09-12', days: 207, status: 'valid' },
@@ -1176,8 +1176,8 @@ const SecurityComplianceTab = () => {
                                             <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 3 }}>Expires {cert.expires}</div>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <span className="mono" style={{ fontSize: 11, color: cert.days < 30 ? '#ff465a' : '#4ade80' }}>{cert.days}d</span>
-                                            <Badge label={cert.status} color={cert.status === 'valid' ? '#4ade80' : '#ff465a'} />
+                                            <span className="mono" style={{ fontSize: 11, color: cert.days < 30 ? THEME.danger : THEME.success }}>{cert.days}d</span>
+                                            <Badge label={cert.status} color={cert.status === 'valid' ? THEME.success : THEME.danger} />
                                         </div>
                                     </div>
                                 ))}
@@ -1202,9 +1202,9 @@ const SecurityComplianceTab = () => {
                 <div style={{ padding: '0 24px' }} className="fade-in">
                     <div style={{ marginBottom: 16 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                            <UserCog size={16} color="#f472b6" />
+                            <UserCog size={16} color={THEME.danger} />
                             <span style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>Superuser Activity Monitor</span>
-                            <Badge label="Live" color="#4ade80" />
+                            <Badge label="Live" color={THEME.success} />
                         </div>
                         <div style={{ fontSize: 12, color: THEME.textDim }}>
                             Tracks all queries and actions executed by superusers in real time. High-risk operations are automatically flagged.
@@ -1214,13 +1214,13 @@ const SecurityComplianceTab = () => {
 
                     {/* Role privilege summary */}
                     <div className="card" style={{ padding: 20, marginTop: 18 }}>
-                        <SectionHeader icon={Shield} title="Superuser Role Summary" iconColor="#63d7ff" />
+                        <SectionHeader icon={Shield} title="Superuser Role Summary" iconColor={THEME.info} />
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 14 }}>
                             {(Array.isArray(SUPERUSER_SAMPLE) && SUPERUSER_SAMPLE.length > 0 ? SUPERUSER_SAMPLE.map(s => ({ role: s.user || 'unknown', sessions: 1, queries_24h: 0, last_seen: s.ts || 'N/A', critical: s.risk === 'critical' ? 1 : 0 })) : []).map(r => (
-                                <div key={r.role} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '14px 16px', border: r.critical > 0 ? '1px solid rgba(255,70,90,0.3)' : `1px solid ${THEME.border}` }}>
+                                <div key={r.role} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '14px 16px', border: r.critical > 0 ? `1px solid ${THEME.danger}4d` : `1px solid ${THEME.border}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                         <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{r.role}</span>
-                                        {r.critical > 0 && <Badge label="⚠ Critical" color="#ff465a" />}
+                                        {r.critical > 0 && <Badge label="⚠ Critical" color={THEME.danger} />}
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11 }}>
                                         <div style={{ color: THEME.textDim }}>Active sessions</div><div style={{ color: THEME.textMain, textAlign: 'right' }}>{r.sessions}</div>

@@ -434,8 +434,14 @@ export const ChartDefs = () => (
 // GLOBAL STYLES
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+// Import shared keyframes from centralized animation system
+import { KEYFRAMES_CSS } from '../config/animations';
+
 export const GlobalStyles = () => (
     <style>{`
+    /* ── Shared VIGIL Keyframes (from config/animations.ts) ── */
+    ${KEYFRAMES_CSS}
+
     /* ── Google Font Import ── */
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,600&family=JetBrains+Mono:wght@300;400;500&display=swap');
 

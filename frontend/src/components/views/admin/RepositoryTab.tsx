@@ -195,7 +195,7 @@ const RepoStyles = () => (
         .r8-shimmer { background:linear-gradient(90deg, ${THEME.surface} 25%, ${THEME.glassBorder} 50%, ${THEME.surface} 75%); background-size:200% 100%; animation:rShimmer 1.5s infinite; border-radius:8px; }
 
         .r8-btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:9px; border:none; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .16s; white-space:nowrap; }
-        .r8-btn-p  { background:linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary}); color:#fff; box-shadow:0 4px 14px ${THEME.primary}28; }
+        .r8-btn-p  { background:linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary}); color:${THEME.textMain}; box-shadow:0 4px 14px ${THEME.primary}28; }
         .r8-btn-p:hover:not(:disabled)  { filter:brightness(1.1); transform:translateY(-1px); }
         .r8-btn-p:disabled { opacity: 0.5; cursor: not-allowed; }
         .r8-btn-g  { background:transparent; color:${THEME.textDim}; border:1px solid ${THEME.glassBorder}; }
@@ -207,10 +207,10 @@ const RepoStyles = () => (
 );
 
 const PROV = {
-    github:    { label:'GitHub',    Icon:Github,    color:'#6e7681' },
-    gitlab:    { label:'GitLab',    Icon:Gitlab,    color:'#fc6d26' },
+    github:    { label:'GitHub',    Icon:Github,    color:THEME.textMuted },
+    gitlab:    { label:'GitLab',    Icon:Gitlab,    color:THEME.warning },
     local:     { label:'Local',     Icon:HardDrive, color:THEME.info },
-    bitbucket: { label:'Bitbucket', Icon:GitBranch, color:'#0052cc' },
+    bitbucket: { label:'Bitbucket', Icon:GitBranch, color:THEME.primary },
 };
 
 const RocketIcon = ({ size=14, color='currentColor' }) => (
@@ -601,7 +601,7 @@ const CodeView = ({ activeRepo }) => {
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); applyLineFix(iss.idx); }}
                                                                     title="Apply this fix"
-                                                                    style={{ background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, border:'none', borderRadius:4, cursor:'pointer', color:'#fff', padding:'2px 8px', fontSize:9, fontWeight:700, display:'flex', alignItems:'center', gap:3, boxShadow:`0 2px 6px ${THEME.success}40` }}
+                                                                    style={{ background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, border:'none', borderRadius:4, cursor:'pointer', color:THEME.textMain, padding:'2px 8px', fontSize:9, fontWeight:700, display:'flex', alignItems:'center', gap:3, boxShadow:`0 2px 6px ${THEME.success}40` }}
                                                                 >
                                                                     <Check size={9}/> Apply Fix
                                                                 </button>
@@ -730,7 +730,7 @@ const CodeView = ({ activeRepo }) => {
                                                                 {iss.fix && (
                                                                     <button
                                                                         onClick={() => applyLineFix(i)}
-                                                                        style={{ fontSize:10, padding:'3px 9px', borderRadius:5, border:'none', background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, color:'#fff', cursor:'pointer', fontWeight:700, display:'flex', alignItems:'center', gap:4, boxShadow:`0 2px 6px ${THEME.success}30` }}
+                                                                        style={{ fontSize:10, padding:'3px 9px', borderRadius:5, border:'none', background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, color:THEME.textMain, cursor:'pointer', fontWeight:700, display:'flex', alignItems:'center', gap:4, boxShadow:`0 2px 6px ${THEME.success}30` }}
                                                                     >
                                                                         <Wrench size={10}/> Apply Fix
                                                                     </button>
@@ -1118,7 +1118,7 @@ const RepositoryTab = () => {
 
             <div style={{ display:'flex', gap:4, padding:4, background:THEME.glass, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, marginBottom:14, width:'fit-content' }}>
                 {NAV_TABS.map(tab=>(
-                    <button key={tab.id} onClick={()=>setSubView(tab.id)} className={`r8-tab${subView===tab.id?' r8-tab-on':''}`} style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 15px', borderRadius:8, border:'none', cursor:'pointer', background:subView===tab.id?`linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`:'transparent', color:subView===tab.id?'#fff':THEME.textDim, fontSize:12, fontWeight:700 }}>
+                    <button key={tab.id} onClick={()=>setSubView(tab.id)} className={`r8-tab${subView===tab.id?' r8-tab-on':''}`} style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 15px', borderRadius:8, border:'none', cursor:'pointer', background:subView===tab.id?`linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`:'transparent', color:subView===tab.id?THEME.textMain:THEME.textDim, fontSize:12, fontWeight:700 }}>
                         <tab.icon size={12}/> {tab.label}
                     </button>
                 ))}

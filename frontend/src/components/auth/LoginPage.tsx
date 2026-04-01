@@ -70,26 +70,26 @@ const STYLES = `
 
   .vdb-input:focus {
     outline: none;
-    border-color: #00b874 !important;
-    box-shadow: 0 0 0 4px rgba(0,184,116,0.08), 0 1px 3px rgba(0,0,0,0.04) !important;
+    border-color: ${THEME.primary} !important;
+    box-shadow: 0 0 0 4px ${THEME.primaryFaint}, 0 1px 3px rgba(0,0,0,0.04) !important;
     background: #fff !important;
   }
-  .vdb-input::placeholder { color: #b8bdd0; font-weight: 400; }
+  .vdb-input::placeholder { color: ${THEME.textDim}; font-weight: 400; }
   .vdb-input:-webkit-autofill,
   .vdb-input:-webkit-autofill:hover,
   .vdb-input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px #f3f4f8 inset !important;
-    -webkit-text-fill-color: #1a1e2e !important;
-    caret-color: #1a1e2e;
+    -webkit-box-shadow: 0 0 0 1000px ${THEME.surfaceHover} inset !important;
+    -webkit-text-fill-color: ${THEME.textMain} !important;
+    caret-color: ${THEME.textMain};
     transition: background-color 5000s ease-in-out 0s;
   }
 
   .vdb-submit:not(:disabled):hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 8px 28px rgba(0,184,116,0.25), 0 4px 16px rgba(0,184,116,0.15) !important;
+    box-shadow: 0 8px 28px ${THEME.primary}40, 0 4px 16px ${THEME.primary}26 !important;
   }
   .vdb-submit:not(:disabled):active { transform: translateY(0) !important; }
-  .vdb-forgot:hover { color: #00b874 !important; }
+  .vdb-forgot:hover { color: ${THEME.primary} !important; }
   .vdb-toggle:hover {
     background: rgba(255,255,255,0.12) !important;
     transform: scale(1.1) rotate(15deg) !important;
@@ -111,7 +111,7 @@ const STYLES = `
 // ─────────────────────────────────────────────────────────────────────────────
 const ServerStatus = ({ status }: { status: { status: string; latency?: number } }) => {
     const isOnline = status.status === 'online';
-    const color = isOnline ? '#00b874' : status.status === 'offline' ? '#e53e5c' : '#f59e0b';
+    const color = isOnline ? THEME.primary : status.status === 'offline' ? THEME.danger : THEME.warning;
     const label = isOnline ? 'ONLINE' : status.status === 'offline' ? 'OFFLINE' : 'CHECKING';
 
     return (
@@ -143,9 +143,9 @@ const ServerStatus = ({ status }: { status: { status: string; latency?: number }
 const DecoRings = () => (
     <div style={{ position: 'absolute', bottom: -60, right: -60, width: 280, height: 280, zIndex: 0 }}>
         {[
-            { inset: 0, dur: '30s', dir: 'normal', borderColor: 'rgba(0,229,160,0.08)', dotColor: '#00e5a0', dotPos: { top: 0, left: '50%', transform: 'translate(-50%,-50%)' } },
-            { inset: 30, dur: '24s', dir: 'reverse', borderColor: 'rgba(71,179,255,0.07)', dotColor: '#47b3ff', dotPos: { bottom: 10, right: 10 } },
-            { inset: 60, dur: '18s', dir: 'normal', borderColor: 'rgba(167,139,250,0.06)', dotColor: '#00e5a0', dotPos: { top: '50%', left: 0, transform: 'translate(-50%,-50%)' } },
+            { inset: 0, dur: '30s', dir: 'normal', borderColor: `${THEME.primaryLight}14`, dotColor: THEME.primaryLight, dotPos: { top: 0, left: '50%', transform: 'translate(-50%,-50%)' } },
+            { inset: 30, dur: '24s', dir: 'reverse', borderColor: `${THEME.info}12`, dotColor: THEME.info, dotPos: { bottom: 10, right: 10 } },
+            { inset: 60, dur: '18s', dir: 'normal', borderColor: `${THEME.primaryLight}10`, dotColor: THEME.primaryLight, dotPos: { top: '50%', left: 0, transform: 'translate(-50%,-50%)' } },
         ].map((r, i) => (
             <div key={i} style={{
                 position: 'absolute', inset: r.inset, border: `1px solid ${r.borderColor}`,
@@ -249,11 +249,11 @@ const LoginPage = () => {
 
     const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading;
 
-    // ─── Shared values ─────────────────────────────────
-    const accent = '#00b874';
-    const accentHover = '#00a066';
-    const fontDisplay = "'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-    const fontMono = "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace";
+    // ─── Shared values (from THEME tokens) ─────────────
+    const accent = THEME.primary;
+    const accentHover = THEME.primaryDark;
+    const fontDisplay = THEME.fontDisplay;
+    const fontMono = THEME.fontMono;
 
     return (
         <div style={{ height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative', fontFamily: fontDisplay }}>
@@ -408,7 +408,7 @@ const LoginPage = () => {
                                 { value: '12K+', label: 'Databases' },
                             ].map(s => (
                                 <div key={s.label}>
-                                    <div style={{ fontFamily: fontMono, fontWeight: 700, fontSize: '1.15rem', color: '#00e5a0' }}>{s.value}</div>
+                                    <div style={{ fontFamily: fontMono, fontWeight: 700, fontSize: '1.15rem', color: THEME.primaryLight }}>{s.value}</div>
                                     <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>{s.label}</div>
                                 </div>
                             ))}
@@ -446,8 +446,8 @@ const LoginPage = () => {
                                 display: 'flex', alignItems: 'center', gap: 10,
                                 animation: shake ? 'shake .5s ease' : 'none',
                             }}>
-                                <AlertCircle size={14} color="#e53e5c" style={{ flexShrink: 0 }} />
-                                <span style={{ color: '#e53e5c', fontSize: 12, fontWeight: 500 }}>{error || rateLimitError}</span>
+                                <AlertCircle size={14} color={THEME.danger} style={{ flexShrink: 0 }} />
+                                <span style={{ color: THEME.danger, fontSize: 12, fontWeight: 500 }}>{error || rateLimitError}</span>
                             </div>
                         )}
 
@@ -624,7 +624,7 @@ const LoginPage = () => {
                                 <div style={{
                                     padding: '10px 12px', borderRadius: 10,
                                     background: resetMessage.includes('failed') || resetMessage.includes('Unable') ? 'rgba(229,62,92,0.07)' : 'rgba(0,184,116,0.07)',
-                                    color: resetMessage.includes('failed') || resetMessage.includes('Unable') ? '#e53e5c' : accent, fontSize: 12,
+                                    color: resetMessage.includes('failed') || resetMessage.includes('Unable') ? THEME.danger : accent, fontSize: 12,
                                 }}>
                                     {resetMessage}
                                 </div>
