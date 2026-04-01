@@ -310,7 +310,7 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
         try {
             const id = parseInt(req.params.id);
 
-            log('INFO', 'PUT /users/:id request body', { userId: id, body: JSON.stringify(req.body) });
+            log('INFO', '=== PUT /users/:id START ===', { userId: id, bodyKeys: Object.keys(req.body), email: req.body.email, name: req.body.name });
 
             const { email, name } = req.body;
 
@@ -324,8 +324,22 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 return res.status(404).json({ error: 'User not found' });
             }
 
-            log('INFO', 'User updated — responding with', { userId: id, email: updated.email, name: updated.name });
-            res.json(updated);
+            // Verify directly from DB that the update actually persisted
+            const { rows: verifyRows } = await pool.query(
+                `SELECT id, email, name, updated_at FROM pgmonitoringtool.users WHERE id = $1`, [id]
+            );
+            const dbState = verifyRows[0];
+            log('INFO', '=== DB VERIFY AFTER UPDATE ===', {
+                userId: id,
+                requestedEmail: email,
+                updateReturnedEmail: updated.email,
+                directDbEmail: dbState?.email,
+                directDbUpdatedAt: dbState?.updated_at,
+                match: email === dbState?.email
+            });
+
+            // Return the updated user along with debug info
+            res.json({ ...updated, _debug: { dbEmail: dbState?.email, requestedEmail: email, match: email === dbState?.email } });
 
             // Fire-and-forget audit logging
             writeAudit(pool, {
@@ -339,7 +353,7 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 ip:            req.ip,
             }).catch(e => log('WARN', 'Audit write failed for USER_UPDATED', { error: e.message }));
         } catch (err) {
-            log('ERROR', 'Failed to update user', { error: err.message });
+            log('ERROR', 'Failed to update user', { error: err.message, stack: err.stack });
             res.status(500).json({ error: err.message });
         }
     });

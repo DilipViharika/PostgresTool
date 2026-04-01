@@ -149,16 +149,21 @@ function useUsers(initialUsers = []) {
     }, [getAuthHeaders]);
 
     const updateUser = useCallback(async (id, formData) => {
+        console.log('[updateUser] SENDING PUT', { id, email: formData.email, name: formData.name, allKeys: Object.keys(formData) });
         const prev = users;
         setUsers(u => u.map(x => x.id === id ? { ...x, ...formData } : x));
         try {
             const res = await fetch(`${API_BASE}/api/users/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(formData) });
             if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `HTTP ${res.status}`); }
             const updated = await res.json();
+            console.log('[updateUser] PUT RESPONSE', { email: updated.email, _debug: updated._debug });
             setUsers(u => u.map(x => x.id == id ? (updated.user || updated) : x));
             // Re-fetch the full user list to ensure UI reflects database state
-            setTimeout(() => fetchUsers(), 500);
-        } catch (err) { setUsers(prev); throw err; }
+            setTimeout(async () => {
+                await fetchUsers();
+                console.log('[updateUser] RE-FETCH COMPLETE');
+            }, 500);
+        } catch (err) { console.error('[updateUser] ERROR', err); setUsers(prev); throw err; }
     }, [getAuthHeaders, users, fetchUsers]);
 
     const deleteUsers = useCallback(async (ids) => {
