@@ -72,7 +72,8 @@ export async function listUsers(pool) {
                   AND  expires_at > NOW()
             ) AS session_count
 
-        FROM ${S}.v_users u
+        FROM ${S}.users u
+        WHERE u.deleted_at IS NULL
         ORDER BY u.created_at ASC
     `);
 
@@ -143,7 +144,8 @@ export async function updateUser(pool, id, data) {
             location        = COALESCE($8,  location),
             mfa_enabled     = COALESCE($9,  mfa_enabled),
             api_access      = COALESCE($10, api_access),
-            data_access     = COALESCE($11, data_access)
+            data_access     = COALESCE($11, data_access),
+            updated_at      = NOW()
          WHERE id = $12 AND deleted_at IS NULL
          RETURNING *`,
         [data.name ?? null, data.email ?? null, role, accessLevelFor(role),

@@ -150,7 +150,8 @@ export async function listUsers(pool: Pool): Promise<ClientUser[]> {
               AND  expires_at > NOW()
         ) AS session_count
 
-    FROM ${S}.v_users u
+    FROM ${S}.users u
+    WHERE u.deleted_at IS NULL
     ORDER BY u.created_at ASC
   `);
 
