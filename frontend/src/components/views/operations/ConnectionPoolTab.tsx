@@ -645,170 +645,6 @@ const LeakDetector = () => {
     );
 };
 
-// ─── Onboarding Empty State ───────────────────────────────────────────────────
-const EmptyState = ({ onQuickStart }) => {
-    return (
-        <div style={{ gridColumn: '1 / -1', animation: 'fadeUp 0.4s ease-out' }}>
-            {/* Header */}
-            <div style={{ textAlign: 'center', marginBottom: 40 }}>
-                <div style={{ fontSize: 64, marginBottom: 16 }}>
-                    <span style={{ animation: 'float 3s ease-in-out infinite' }}>🔌</span>
-                </div>
-                <h3 style={{ fontSize: 24, fontWeight: 800, color: THEME.textMain, marginBottom: 8, letterSpacing: '-0.02em' }}>
-                    No connections yet
-                </h3>
-                <p style={{ fontSize: 14, color: THEME.textMuted, marginBottom: 2 }}>
-                    Connect to PostgreSQL, MySQL, MongoDB or other databases to start monitoring
-                </p>
-            </div>
-
-            {/* Quick Start Database Cards */}
-            <div style={{ marginBottom: 48 }}>
-                <h4 style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>
-                    Quick Start
-                </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
-                    {['postgresql', 'mysql', 'mongodb'].map(dbType => {
-                        const db = DB_TYPES[dbType];
-                        return (
-                            <button
-                                key={dbType}
-                                onClick={() => onQuickStart(dbType)}
-                                style={{
-                                    background: THEME.surface,
-                                    border: `1px solid ${THEME.glassBorder}`,
-                                    borderRadius: 14,
-                                    padding: 24,
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.320, 1)',
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    textAlign: 'left',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 12,
-                                }}
-                                onMouseEnter={e => {
-                                    e.currentTarget.style.borderColor = db.accent;
-                                    e.currentTarget.style.background = `${db.accent}08`;
-                                    e.currentTarget.style.transform = 'translateY(-4px)';
-                                    e.currentTarget.style.boxShadow = `0 12px 32px ${db.accent}20`;
-                                }}
-                                onMouseLeave={e => {
-                                    e.currentTarget.style.borderColor = THEME.glassBorder;
-                                    e.currentTarget.style.background = THEME.surface;
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = 'none';
-                                }}
-                            >
-                                {/* Gradient bg */}
-                                <div style={{
-                                    position: 'absolute', top: -20, right: -20, width: 80, height: 80,
-                                    borderRadius: '50%', background: `${db.accent}15`, pointerEvents: 'none',
-                                }} />
-
-                                {/* Icon */}
-                                <div style={{ fontSize: 32, position: 'relative', zIndex: 1 }}>
-                                    {db.icon}
-                                </div>
-
-                                {/* Label */}
-                                <div style={{ position: 'relative', zIndex: 1 }}>
-                                    <div style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>
-                                        {db.label}
-                                    </div>
-                                    <div style={{ fontSize: 12, color: THEME.textMuted }}>
-                                        Default port <span style={{ color: db.accent, fontWeight: 600 }}>{db.defaultPort}</span>
-                                    </div>
-                                </div>
-
-                                {/* Arrow indicator */}
-                                <div style={{
-                                    position: 'absolute', bottom: 12, right: 12, opacity: 0.5,
-                                    transition: 'all 0.2s',
-                                }}>
-                                    <ChevronRight size={16} color={db.accent} />
-                                </div>
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Getting Started Steps */}
-            <div style={{ marginBottom: 48 }}>
-                <h4 style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>
-                    Getting Started
-                </h4>
-                <div style={{
-                    background: THEME.surface,
-                    border: `1px solid ${THEME.glassBorder}`,
-                    borderRadius: 14,
-                    padding: 24,
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: 24,
-                }}>
-                    {[
-                        { num: '1', title: 'Host & Port', desc: 'Enter database server address' },
-                        { num: '2', title: 'Credentials', desc: 'Username and password for authentication' },
-                        { num: '3', title: 'Database', desc: 'Specify which database to connect to' },
-                        { num: '4', title: 'Security (Optional)', desc: 'Enable SSL, SSH tunnel, or other options' },
-                    ].map((step, i) => (
-                        <div key={i} style={{ display: 'flex', gap: 12 }}>
-                            <div style={{
-                                width: 32, height: 32, borderRadius: '50%',
-                                background: `${THEME.primary}22`, border: `2px solid ${THEME.primary}`,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: 14, fontWeight: 700, color: THEME.primary, flexShrink: 0,
-                            }}>
-                                {step.num}
-                            </div>
-                            <div>
-                                <div style={{ fontSize: 13, fontWeight: 600, color: THEME.textMain, marginBottom: 2 }}>
-                                    {step.title}
-                                </div>
-                                <div style={{ fontSize: 11, color: THEME.textMuted }}>
-                                    {step.desc}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Supported Features */}
-            <div>
-                <h4 style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>
-                    Supported Features
-                </h4>
-                <div style={{
-                    background: THEME.surface,
-                    border: `1px solid ${THEME.glassBorder}`,
-                    borderRadius: 14,
-                    padding: 24,
-                }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
-                        {[
-                            { icon: '📊', label: 'Real-time Monitoring' },
-                            { icon: '🔌', label: 'Connection Pooling' },
-                            { icon: '⚠️', label: 'Query Analysis' },
-                            { icon: '🔒', label: 'Encryption' },
-                            { icon: '🌐', label: 'SSH Tunnel' },
-                            { icon: '✅', label: 'Health Checks' },
-                        ].map((feat, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <span style={{ fontSize: 16 }}>{feat.icon}</span>
-                                <span style={{ fontSize: 12, color: THEME.textMuted }}>{feat.label}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 const ConnectionsTab = () => {
     useAdaptiveTheme();
 
@@ -1381,9 +1217,18 @@ const ConnectionsTab = () => {
                     );
                 })}
 
-                {/* Empty state */}
+                {/* Empty state — no connections, just prompt to use + button */}
                 {connections.length === 0 && !connectionsLoading && !refreshing && (
-                    <EmptyState onQuickStart={openNew} />
+                    <div style={{
+                        gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px',
+                        animation: 'fadeUp 0.4s ease-out',
+                    }}>
+                        <Database size={48} color={THEME.textMuted} style={{ marginBottom: 16, opacity: 0.4 }} />
+                        <h3 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>No connections yet</h3>
+                        <p style={{ fontSize: 13, color: THEME.textMuted }}>
+                            Click <strong>+ New Connection</strong> to add your first database
+                        </p>
+                    </div>
                 )}
 
                 {/* No search results */}
