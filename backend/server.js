@@ -1602,17 +1602,28 @@ app.get('/api/overview/top-tables', authenticate, cached('ov:toptbl', 60000), as
     try {
         const _p = await reqPool(req);
         const r = await _p.query(`
-            SELECT c.relname AS table_name,
+            SELECT n.nspname AS schemaname,
+                   c.relname AS table_name,
                    pg_total_relation_size(c.oid) AS total_bytes,
                    pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size,
-                   s.n_live_tup AS row_count, s.seq_scan, s.idx_scan,
-                   s.n_dead_tup
+                   COALESCE(s.n_live_tup, 0) AS row_count,
+                   COALESCE(s.seq_scan, 0) AS seq_scan,
+                   COALESCE(s.idx_scan, 0) AS idx_scan,
+                   COALESCE(s.seq_tup_read, 0) AS seq_tup_read,
+                   COALESCE(s.idx_tup_fetch, 0) AS idx_tup_fetch,
+                   COALESCE(s.n_tup_ins, 0) AS n_tup_ins,
+                   COALESCE(s.n_tup_upd, 0) AS n_tup_upd,
+                   COALESCE(s.n_tup_del, 0) AS n_tup_del,
+                   COALESCE(s.n_dead_tup, 0) AS n_dead_tup,
+                   COALESCE(s.seq_tup_read, 0) + COALESCE(s.idx_tup_fetch, 0) AS reads,
+                   COALESCE(s.n_tup_ins, 0) + COALESCE(s.n_tup_upd, 0) + COALESCE(s.n_tup_del, 0) AS writes
             FROM pg_class c
             JOIN pg_namespace n ON n.oid = c.relnamespace
             LEFT JOIN pg_stat_user_tables s ON s.relid = c.oid
             WHERE c.relkind = 'r'
               AND n.nspname NOT IN ('pg_catalog','information_schema','pg_toast')
-            ORDER BY pg_total_relation_size(c.oid) DESC
+            ORDER BY COALESCE(s.seq_tup_read, 0) + COALESCE(s.idx_tup_fetch, 0)
+                   + COALESCE(s.n_tup_ins, 0) + COALESCE(s.n_tup_upd, 0) + COALESCE(s.n_tup_del, 0) DESC
             LIMIT 10
         `);
         res.json(r.rows);

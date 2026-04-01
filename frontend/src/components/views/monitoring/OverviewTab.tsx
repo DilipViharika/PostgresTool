@@ -3337,14 +3337,14 @@ const OverviewTab = () => {
                 <Panel title="Top Impacted Tables" icon={BarChart3} noPad>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         {(topTables.length > 0 ? topTables : []).map((t, i, arr) => {
-                            const name = t.name || `${t.schemaname || 'public'}.${t.relname || 'unknown'}`;
-                            const reads = Number(t.reads || t.seq_tup_read || 0);
-                            const writes = Number(t.writes || 0);
+                            const name = t.table_name ? `${t.schemaname || 'public'}.${t.table_name}` : (t.name || 'unknown');
+                            const reads = Number(t.reads || t.seq_tup_read || t.seq_scan || 0);
+                            const writes = Number(t.writes || t.n_tup_ins || 0) + Number(t.n_tup_upd || 0) + Number(t.n_tup_del || 0);
                             const total = reads + writes;
                             const rp = total > 0 ? Math.round((reads / total) * 100) : 50;
                             return (
                                 <div
-                                    key={t.name}
+                                    key={t.table_name || t.name || i}
                                     style={{
                                         padding: '10px 18px',
                                         borderBottom: i < arr.length - 1 ? `1px solid ${THEME.grid}22` : 'none',
