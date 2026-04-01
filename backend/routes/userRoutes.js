@@ -173,7 +173,12 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
             });
             if (!updated) return res.status(404).json({ error: 'User not found' });
 
-            await writeAudit(pool, {
+            // Send response immediately
+            log('INFO', 'Profile self-update', { userId, fields: Object.keys(req.body) });
+            res.json({ success: true, user: updated });
+
+            // Fire-and-forget audit logging
+            writeAudit(pool, {
                 actorId:       userId,
                 actorUsername: req.user.username,
                 action:        'PROFILE_UPDATED',
@@ -182,10 +187,7 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 level:         'info',
                 detail:        `User updated own profile: ${[fullName && 'name', email && 'email'].filter(Boolean).join(', ')}`,
                 ip:            req.ip,
-            });
-
-            log('INFO', 'Profile self-update', { userId, fields: Object.keys(req.body) });
-            res.json({ success: true, user: updated });
+            }).catch(e => log('WARN', 'Audit write failed for PROFILE_UPDATED', { error: e.message }));
         } catch (err) {
             log('ERROR', 'Failed to update own profile', { error: err.message });
             res.status(500).json({ error: err.message });
@@ -198,8 +200,8 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
         try {
             const limit = Math.min(parseInt(req.query.limit) || 10, 50);
             const { rows } = await pool.query(
-                `SELECT action, detail, ip, created_at as "createdAt"
-                 FROM vigil.audit_logs
+                `SELECT action, detail, ip_address as ip, created_at as "createdAt"
+                 FROM pgmonitoringtool.audit_log
                  WHERE actor_id = $1
                  ORDER BY created_at DESC
                  LIMIT $2`,
@@ -268,7 +270,10 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
 
             const newUser = await createUser(pool, req.body);
 
-            await writeAudit(pool, {
+            log('INFO', 'User created', { by: req.user.username, newUser: newUser.username });
+            res.status(201).json(newUser);
+
+            writeAudit(pool, {
                 actorId:      req.user.id,
                 actorUsername: req.user.username,
                 action:       'USER_CREATED',
@@ -277,10 +282,7 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 level:        'info',
                 detail:       `Created user ${newUser.username} with role ${newUser.role}`,
                 ip:           req.ip,
-            });
-
-            log('INFO', 'User created', { by: req.user.username, newUser: newUser.username });
-            res.status(201).json(newUser);
+            }).catch(e => log('WARN', 'Audit write failed for USER_CREATED', { error: e.message }));
         } catch (err) {
             log('ERROR', 'Failed to create user', { error: err.message });
             res.status(500).json({ error: err.message });
@@ -301,7 +303,12 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
             const updated = await updateUser(pool, id, req.body);
             if (!updated) return res.status(404).json({ error: 'User not found' });
 
-            await writeAudit(pool, {
+            // Send response immediately — don't let audit failure block the user
+            log('INFO', 'User updated', { by: req.user.username, userId: id });
+            res.json(updated);
+
+            // Fire-and-forget audit logging
+            writeAudit(pool, {
                 actorId:       req.user.id,
                 actorUsername: req.user.username,
                 action:        'USER_UPDATED',
@@ -310,10 +317,7 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 level:         'info',
                 detail:        `Updated fields: ${Object.keys(req.body).join(', ')}`,
                 ip:            req.ip,
-            });
-
-            log('INFO', 'User updated', { by: req.user.username, userId: id });
-            res.json(updated);
+            }).catch(e => log('WARN', 'Audit write failed for USER_UPDATED', { error: e.message }));
         } catch (err) {
             log('ERROR', 'Failed to update user', { error: err.message });
             res.status(500).json({ error: err.message });
@@ -330,7 +334,10 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
             const deleted = await deleteUser(pool, id);
             if (!deleted) return res.status(404).json({ error: 'User not found' });
 
-            await writeAudit(pool, {
+            log('INFO', 'User deleted', { by: req.user.username, userId: id });
+            res.json({ success: true });
+
+            writeAudit(pool, {
                 actorId:       req.user.id,
                 actorUsername: req.user.username,
                 action:        'USER_DELETED',
@@ -339,10 +346,7 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 level:         'warn',
                 detail:        `User ${id} soft-deleted`,
                 ip:            req.ip,
-            });
-
-            log('INFO', 'User deleted', { by: req.user.username, userId: id });
-            res.json({ success: true });
+            }).catch(e => log('WARN', 'Audit write failed for USER_DELETED', { error: e.message }));
         } catch (err) {
             log('ERROR', 'Failed to delete user', { error: err.message });
             res.status(500).json({ error: err.message });
@@ -362,7 +366,10 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
 
             const count = await bulkDeleteUsers(pool, ids);
 
-            await writeAudit(pool, {
+            log('INFO', 'Bulk delete', { by: req.user.username, count });
+            res.json({ success: true, deleted: count });
+
+            writeAudit(pool, {
                 actorId:       req.user.id,
                 actorUsername: req.user.username,
                 action:        'USERS_BULK_DELETED',
@@ -370,10 +377,7 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 detail:        `Bulk-deleted ${count} users`,
                 metadata:      { ids },
                 ip:            req.ip,
-            });
-
-            log('INFO', 'Bulk delete', { by: req.user.username, count });
-            res.json({ success: true, deleted: count });
+            }).catch(e => log('WARN', 'Audit write failed for USERS_BULK_DELETED', { error: e.message }));
         } catch (err) {
             log('ERROR', 'Failed to bulk-delete users', { error: err.message });
             res.status(500).json({ error: err.message });
@@ -392,7 +396,10 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
             const ok = await resetUserPassword(pool, id, newPassword);
             if (!ok) return res.status(404).json({ error: 'User not found' });
 
-            await writeAudit(pool, {
+            log('INFO', 'Password reset', { by: req.user.username, userId: id });
+            res.json({ success: true }); // never return the password
+
+            writeAudit(pool, {
                 actorId:       req.user.id,
                 actorUsername: req.user.username,
                 action:        'PASSWORD_RESET',
@@ -401,10 +408,7 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 level:         'warn',
                 detail:        `Password reset by ${req.user.username}`,
                 ip:            req.ip,
-            });
-
-            log('INFO', 'Password reset', { by: req.user.username, userId: id });
-            res.json({ success: true }); // never return the password
+            }).catch(e => log('WARN', 'Audit write failed for PASSWORD_RESET', { error: e.message }));
         } catch (err) {
             log('ERROR', 'Failed to reset password', { error: err.message });
             res.status(500).json({ error: err.message });
