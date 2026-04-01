@@ -155,9 +155,11 @@ function useUsers(initialUsers = []) {
             const res = await fetch(`${API_BASE}/api/users/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(formData) });
             if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `HTTP ${res.status}`); }
             const updated = await res.json();
-            setUsers(u => u.map(x => x.id === id ? (updated.user || updated) : x));
+            setUsers(u => u.map(x => x.id == id ? (updated.user || updated) : x));
+            // Re-fetch the full user list to ensure UI reflects database state
+            setTimeout(() => fetchUsers(), 500);
         } catch (err) { setUsers(prev); throw err; }
-    }, [getAuthHeaders, users]);
+    }, [getAuthHeaders, users, fetchUsers]);
 
     const deleteUsers = useCallback(async (ids) => {
         const prev = users;
