@@ -4030,8 +4030,7 @@ const DashboardInner = ({ onLogout }) => {
 
                         {/* Left: breadcrumb + reconnecting */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                            {/* Enhanced breadcrumb navigation — hidden for connections tab */}
-                            {activeTab !== 'connections' && (
+                            {/* Breadcrumb navigation — shows current section / tab */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <span
@@ -4042,7 +4041,7 @@ const DashboardInner = ({ onLogout }) => {
                                             letterSpacing: '0.02em',
                                         }}
                                     >
-                                        {getSectionForTab(activeTab)?.toUpperCase() || 'CORE'}
+                                        {getSectionForTab(activeTab) || 'Core'}
                                     </span>
                                     <span style={{ color: DS.textMuted, fontSize: 13 }}>/</span>
                                     <h2
@@ -4052,19 +4051,12 @@ const DashboardInner = ({ onLogout }) => {
                                             margin: 0,
                                             color: DS.textPrimary,
                                             letterSpacing: '-0.01em',
-                                            cursor: 'pointer',
-                                            transition: 'color 0.15s',
                                         }}
-                                        onMouseEnter={(e) => (e.currentTarget.style.color = DS.cyan)}
-                                        onMouseLeave={(e) => (e.currentTarget.style.color = DS.textPrimary)}
-                                        title="Current tab"
                                     >
                                         {activeTabMeta?.label || ''}
                                     </h2>
                                 </div>
-                                {/* Tab counter removed */}
                             </div>
-                            )}
 
                             {reconnecting && (
                                 <div
