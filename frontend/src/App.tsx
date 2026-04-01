@@ -344,10 +344,10 @@ const AppStyles = () => (
             content: '';
             position: absolute;
             top: 0;
-            right: 0;
+            right: -1px;
             bottom: 0;
             width: 1px;
-            background: linear-gradient(180deg, transparent 5%, ${DS.cyan}50 35%, ${DS.violet}40 70%, transparent 95%);
+            background: linear-gradient(180deg, transparent 5%, ${DS.cyan}30 35%, ${DS.violet}20 70%, transparent 95%);
             pointer-events: none;
             z-index: 10;
         }
@@ -374,7 +374,7 @@ const AppStyles = () => (
         .nav-item {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
             border-radius: 8px !important;
-            margin: 1px 8px !important;
+            margin: 1px 0 !important;
             position: relative;
         }
 
@@ -390,7 +390,7 @@ const AppStyles = () => (
         .section-btn {
             transition: all 0.2s ease !important;
             border-radius: 6px !important;
-            margin: 0 6px !important;
+            margin: 0 !important;
         }
 
         .section-btn:hover {
@@ -597,11 +597,18 @@ const AppStyles = () => (
             animation: subtleFloat 25s ease-in-out infinite reverse;
         }
 
-        /* ── Sidebar scroll ── */
+        /* ── Scrollbar styling (sidebar + main content) ── */
         .sidebar-nav::-webkit-scrollbar { width: 3px; }
         .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
         .sidebar-nav::-webkit-scrollbar-thumb { background: ${DS.border}; border-radius: 2px; }
         .sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(0,184,116,0.6); }
+
+        /* Main content scrollbar — thin overlay style */
+        .main-scroll::-webkit-scrollbar { width: 6px; }
+        .main-scroll::-webkit-scrollbar-track { background: transparent; }
+        .main-scroll::-webkit-scrollbar-thumb { background: ${DS._dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}; border-radius: 3px; }
+        .main-scroll::-webkit-scrollbar-thumb:hover { background: ${DS._dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}; }
+        .main-scroll { scrollbar-width: thin; scrollbar-color: ${DS._dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'} transparent; }
 
         /* ── Section tab animation ── */
         .section-open { animation: sectionOpen 0.18s ease-out both; }
@@ -2857,19 +2864,7 @@ const Sidebar = ({
                 overflow: 'hidden',
             }}
         >
-            {/* Right-edge gradient rule */}
-            <div
-                style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    bottom: 0,
-                    width: 1,
-                    pointerEvents: 'none',
-                    background:
-                        'linear-gradient(180deg, transparent 0%, rgba(0,184,116,0.18) 40%, rgba(0,184,116,0.12) 75%, transparent 100%)',
-                }}
-            />
+            {/* Right-edge gradient rule — handled by aside::after in CSS */}
 
             {/* ── LOGO ── */}
             <div
@@ -4245,13 +4240,15 @@ const DashboardInner = ({ onLogout }) => {
 
                     {/* ── MAIN CONTENT ── */}
                     <div
+                        className="main-scroll"
                         style={{
                             flex: 1,
                             overflowY: 'auto',
+                            overflowX: 'hidden',
                             position: 'relative',
                             background: isDemoFullPage
                                 ? 'transparent'
-                                : `linear-gradient(135deg, ${DS.bg} 0%, rgba(0,184,116,0.02) 100%)`,
+                                : DS.bg,
                         }}
                     >
                         {/* Floating alert toast */}
