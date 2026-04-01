@@ -294,17 +294,21 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
     router.put('/users/:id', ...guard, async (req, res) => {
         try {
             const id = parseInt(req.params.id);
-            const { email } = req.body;
+            const { email, name } = req.body;
+
+            log('INFO', 'User update request', { userId: id, fieldsReceived: Object.keys(req.body), email, name });
 
             if (email && await emailExists(pool, email, id)) {
                 return res.status(409).json({ error: 'Email already in use' });
             }
 
             const updated = await updateUser(pool, id, req.body);
-            if (!updated) return res.status(404).json({ error: 'User not found' });
+            if (!updated) {
+                log('WARN', 'User not found for update', { userId: id });
+                return res.status(404).json({ error: 'User not found' });
+            }
 
-            // Send response immediately — don't let audit failure block the user
-            log('INFO', 'User updated', { by: req.user.username, userId: id });
+            log('INFO', 'User updated successfully', { userId: id, newEmail: updated.email, newName: updated.name, by: req.user.username });
             res.json(updated);
 
             // Fire-and-forget audit logging

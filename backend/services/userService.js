@@ -129,7 +129,12 @@ export async function createUser(pool, data) {
 
 export async function updateUser(pool, id, data) {
     const existing = await getUserById(pool, id);
-    if (!existing) return null;
+    if (!existing) {
+        console.log(`[updateUser] No existing user found for id=${id}`);
+        return null;
+    }
+
+    console.log(`[updateUser] id=${id}, data.email=${data.email}, existing.email=${existing.email}, data.name=${data.name}, existing.name=${existing.name}`);
 
     const role = data.role ?? existing.role;
     const { rows } = await pool.query(
@@ -153,6 +158,7 @@ export async function updateUser(pool, id, data) {
             data.department ?? null, data.location ?? null,
             data.mfa ?? null, data.apiAccess ?? null, data.dataAccess ?? null, id]
     );
+    console.log(`[updateUser] rows returned: ${rows.length}, updatedEmail: ${rows[0]?.email}, updatedName: ${rows[0]?.name}`);
     return rows[0] ? toClient(rows[0]) : null;
 }
 
