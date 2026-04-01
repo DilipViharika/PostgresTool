@@ -1,656 +1,537 @@
 /**
- * FleetOverviewTab.jsx
- * Multi-database health dashboard showing all connected databases in a card grid.
- *
- * Features:
- * - Fetches from /api/connections and /api/connections/health
- * - Grid of database cards (3 columns on desktop, 2 on smaller)
- * - Status indicators, latency, metrics
- * - Aggregate stats bar at top
- * - Auto-refresh every 30 seconds
- * - Empty state with NoConnectionBanner
- * - Glass-effect cards with hover glow animation
+ * FleetOverviewTab.tsx
+ * Multi-database fleet dashboard — rich analytics with real API data.
  */
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
-import { fetchData, postData } from '../../../utils/api';
+import { fetchData } from '../../../utils/api';
 import { useConnection } from '../../../context/ConnectionContext';
 import { useNavigation } from '../../../context/NavigationContext';
 import NoConnectionBanner from '../../shared/NoConnectionBanner';
-
 import {
-    Database, Server, Activity, Wifi, WifiOff, Clock, ArrowRight,
+    ResponsiveContainer, AreaChart, Area, LineChart, Line,
+    XAxis, YAxis, Tooltip, CartesianGrid,
+} from 'recharts';
+import {
+    Database, Server, Activity, Clock, ArrowRight,
     RefreshCw, AlertCircle, CheckCircle, AlertTriangle, Zap,
-    HardDrive, Users, Eye, EyeOff, Loader2, MoreVertical,
-    Gauge, TrendingUp, TrendingDown, Cpu, BarChart3
+    HardDrive, Users, Loader2, Gauge, TrendingUp, TrendingDown,
+    Cpu, Network, Globe, BarChart3,
 } from 'lucide-react';
 
-// ── localStorage cache for instant fleet health render ──
-const FLEET_CACHE_KEY = 'vigil_fleet_health_cache';
-function readFleetCache() {
-    try {
-        const raw = localStorage.getItem(FLEET_CACHE_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        if (parsed._ts && Date.now() - parsed._ts > 60_000) return []; // expire after 1 min
-        return parsed.data || [];
-    } catch { return []; }
-}
-function writeFleetCache(data) {
-    try { localStorage.setItem(FLEET_CACHE_KEY, JSON.stringify({ data, _ts: Date.now() })); } catch {}
-}
-
-const FleetOverviewTab = () => {
-    useAdaptiveTheme();
-
-    const { switchConnection, connections, activeConnectionId, loading: connectionsLoading } = useConnection();
-    const { goToTab } = useNavigation();
-
-    // Hydrate from cache for instant render
-    const cachedHealth = useMemo(() => readFleetCache(), []);
-    const [healthData, setHealthData] = useState(cachedHealth);
-    const [loading, setLoading] = useState(cachedHealth.length === 0);
-    const [error, setError] = useState(null);
-    const [refreshing, setRefreshing] = useState(false);
-    const refreshTimer = useRef(null);
-
-    // Fetch health data from all connections
-    const fetchHealthData = useCallback(async () => {
-        try {
-            setError(null);
-            const data = await fetchData('/api/connections/health');
-            const list = Array.isArray(data) ? data : [];
-            setHealthData(list);
-            writeFleetCache(list);
-        } catch (err) {
-            console.error('[FleetOverviewTab] Failed to fetch health:', err);
-            setError(err?.message || 'Failed to fetch connection health data');
+/* ═══════════════════════════════════════════════════════════════════════════
+   STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+const FleetStyles = () => (
+    <style>{`
+        @keyframes fleetFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-    }, []);
-
-    // Initial load and auto-refresh
-    useEffect(() => {
-        fetchHealthData().finally(() => setLoading(false));
-
-        // Auto-refresh every 30 seconds
-        refreshTimer.current = setInterval(() => {
-            setRefreshing(true);
-            fetchHealthData().finally(() => setRefreshing(false));
-        }, 30000);
-
-        return () => {
-            if (refreshTimer.current) clearInterval(refreshTimer.current);
-        };
-    }, [fetchHealthData]);
-
-    // Handle manual refresh
-    const handleManualRefresh = useCallback(async () => {
-        setRefreshing(true);
-        await fetchHealthData();
-        setRefreshing(false);
-    }, [fetchHealthData]);
-
-    // Handle connection switch
-    const handleSwitchConnection = useCallback(async (connId) => {
-        try {
-            await switchConnection(connId);
-            // Navigate to overview tab after switching
-            goToTab('overview');
-        } catch (err) {
-            console.error('[FleetOverviewTab] Failed to switch connection:', err);
+        @keyframes fleetSpin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
         }
-    }, [switchConnection, goToTab]);
+        @keyframes fleetPulse {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.35; }
+        }
+        .fleet-stagger > * { animation: fleetFadeIn 0.4s ease-out both; }
+        .fleet-stagger > *:nth-child(1) { animation-delay: 0.00s; }
+        .fleet-stagger > *:nth-child(2) { animation-delay: 0.06s; }
+        .fleet-stagger > *:nth-child(3) { animation-delay: 0.12s; }
+        .fleet-stagger > *:nth-child(4) { animation-delay: 0.18s; }
+        .fleet-stagger > *:nth-child(5) { animation-delay: 0.24s; }
+        .fleet-stagger > *:nth-child(6) { animation-delay: 0.30s; }
+        .fleet-card-hover { transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+        .fleet-card-hover:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.25), 0 0 16px ${THEME.primary}18; border-color: ${THEME.primary}50 !important; }
+    `}</style>
+);
 
-    // Calculate aggregate stats
-    const stats = {
-        total: connections.length,
-        healthy: healthData.filter(h => h.status === 'ok').length,
-        degraded: healthData.filter(h => h.status === 'degraded').length,
-        down: healthData.filter(h => h.status === 'error').length,
-    };
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUB-COMPONENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-    // Show empty state if no connections (but not while ConnectionContext is still loading)
-    if (!loading && !connectionsLoading && connections.length === 0) {
-        return (
-            <div style={styles.container}>
-                <OvStyles />
-                <NoConnectionBanner
-                    title="No Databases Connected"
-                    description="Add your first database connection to view the fleet overview and monitor multiple databases."
-                    showAddButton={true}
-                />
+/* ── Status Badge ── */
+const StatusBadge = ({ label, color, pulse }) => (
+    <span style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '4px 12px', borderRadius: 20,
+        background: `${color}12`, border: `1px solid ${color}30`,
+        fontSize: 11, fontWeight: 600, color,
+    }}>
+        {pulse && <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, animation: 'fleetPulse 2s ease-in-out infinite' }} />}
+        {label}
+    </span>
+);
+
+/* ── Panel ── */
+const Panel = ({ title, icon: TIcon, rightNode, children, accentColor }) => (
+    <div style={{
+        background: THEME.glass, backdropFilter: 'blur(16px)',
+        border: `1px solid ${THEME.glassBorder}`, borderRadius: 14,
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    }}>
+        <div style={{
+            padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            borderBottom: `1px solid ${THEME.glassBorder}`,
+        }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {TIcon && <TIcon size={14} color={accentColor || THEME.primary} />}
+                <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{title}</span>
             </div>
-        );
-    }
+            {rightNode}
+        </div>
+        <div style={{ padding: 16 }}>{children}</div>
+    </div>
+);
 
+/* ── Chart Tooltip ── */
+const ChartTip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null;
     return (
-        <div style={styles.container}>
-            <OvStyles />
-
-            {/* Header */}
-            <div style={styles.header}>
-                <div>
-                    <h2 style={styles.title}>Fleet Overview</h2>
-                    <p style={styles.subtitle}>Monitor all connected databases</p>
+        <div style={{
+            background: THEME.glassHeavy, backdropFilter: 'blur(12px)',
+            border: `1px solid ${THEME.glassBorder}`, borderRadius: 8,
+            padding: '8px 12px', fontSize: 11,
+        }}>
+            <div style={{ fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>{label}</div>
+            {payload.map((p, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, color: p.color }}>
+                    <span style={{ color: THEME.textMuted }}>{p.name}:</span>
+                    <span style={{ fontWeight: 700 }}>{typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</span>
                 </div>
-                <button
-                    onClick={handleManualRefresh}
-                    disabled={refreshing}
-                    style={{
-                        ...styles.refreshButton,
-                        opacity: refreshing ? 0.6 : 1,
-                    }}
-                    title="Refresh connection health"
-                >
-                    <RefreshCw
-                        size={16}
-                        style={{
-                            animation: refreshing ? 'rotation 1s linear infinite' : 'none',
-                        }}
-                    />
-                    Refresh
-                </button>
-            </div>
-
-            {/* Aggregate Stats Bar */}
-            <div style={styles.statsBar}>
-                <div style={styles.statItem}>
-                    <span style={styles.statLabel}>Total Databases</span>
-                    <span style={{ ...styles.statValue, color: THEME.textMain }}>
-                        {stats.total}
-                    </span>
-                </div>
-                <div style={styles.statItem}>
-                    <span style={styles.statLabel}>Healthy</span>
-                    <span style={{ ...styles.statValue, color: THEME.success }}>
-                        {stats.healthy}
-                    </span>
-                </div>
-                <div style={styles.statItem}>
-                    <span style={styles.statLabel}>Degraded</span>
-                    <span style={{ ...styles.statValue, color: THEME.warning }}>
-                        {stats.degraded}
-                    </span>
-                </div>
-                <div style={styles.statItem}>
-                    <span style={styles.statLabel}>Down</span>
-                    <span style={{ ...styles.statValue, color: THEME.danger }}>
-                        {stats.down}
-                    </span>
-                </div>
-            </div>
-
-            {/* Error message */}
-            {error && (
-                <div style={styles.errorBanner}>
-                    <AlertCircle size={16} />
-                    <span>{error}</span>
-                </div>
-            )}
-
-            {/* Database Cards Grid */}
-            <div style={styles.cardsGrid}>
-                {connections.map((conn) => {
-                    const health = healthData.find(h => h.id === conn.id);
-                    const isActive = conn.id === activeConnectionId;
-
-                    return (
-                        <DatabaseCard
-                            key={conn.id}
-                            connection={conn}
-                            health={health}
-                            isActive={isActive}
-                            onSwitch={handleSwitchConnection}
-                        />
-                    );
-                })}
-            </div>
-
-            {/* Loading skeleton if initial load */}
-            {loading && (
-                <div style={styles.loadingMessage}>
-                    <Loader2 size={20} style={{ animation: 'rotation 1s linear infinite' }} />
-                    Loading fleet health data...
-                </div>
-            )}
+            ))}
         </div>
     );
 };
 
-/**
- * DatabaseCard — Individual database card with status and metrics
- */
+/* ── Mini Sparkline ── */
+const MiniSparkline = ({ data = [], color = THEME.primary, width = 56, height = 16 }) => {
+    if (data.length < 2) return null;
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min || 1;
+    const pts = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 2) - 1}`).join(' ');
+    return <svg width={width} height={height} style={{ flexShrink: 0 }}><polyline fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" points={pts} /></svg>;
+};
+
+/* ── Metric Card ── */
+const MetricCard = ({ icon: Icon, label, value, sub, color, spark, trend, trendUp = true }) => (
+    <div style={{
+        padding: '14px 16px', borderRadius: 12,
+        background: THEME.glass, backdropFilter: 'blur(12px)',
+        border: `1px solid ${THEME.glassBorder}`,
+        display: 'flex', flexDirection: 'column', gap: 6,
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Icon size={13} color={color} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+            </div>
+            {spark && <MiniSparkline data={spark} color={color} />}
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 800, color, letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            {sub && <span style={{ fontSize: 10, color: THEME.textDim }}>{sub}</span>}
+            {trend && (
+                <span style={{ fontSize: 10, fontWeight: 600, color: trendUp ? THEME.success : THEME.danger, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {trendUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />} {trend}
+                </span>
+            )}
+        </div>
+    </div>
+);
+
+/* ── Ring Gauge ── */
+const RingGauge = ({ value = 0, color = THEME.success, size = 90, label = '' }) => {
+    const r = (size - 10) / 2;
+    const circ = 2 * Math.PI * r;
+    const offset = circ - (Math.min(value, 100) / 100) * circ;
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={`${THEME.grid}60`} strokeWidth={6} />
+                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={6}
+                    strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+                    style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
+            </svg>
+            <div style={{ marginTop: -size / 2 - 12, fontSize: 18, fontWeight: 800, color }}>{value}%</div>
+            <div style={{ marginTop: size / 2 - 20, fontSize: 10, color: THEME.textDim, fontWeight: 600 }}>{label}</div>
+        </div>
+    );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DATABASE CARD
+   ═══════════════════════════════════════════════════════════════════════════ */
 const DatabaseCard = ({ connection, health, isActive, onSwitch }) => {
-    const [isHovering, setIsHovering] = useState(false);
-
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'ok': return <CheckCircle size={16} color={THEME.success} />;
-            case 'degraded': return <AlertTriangle size={16} color={THEME.warning} />;
-            case 'error': return <AlertCircle size={16} color={THEME.danger} />;
-            default: return <Activity size={16} color={THEME.textMuted} />;
-        }
-    };
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'ok': return THEME.success;
-            case 'degraded': return THEME.warning;
-            case 'error': return THEME.danger;
-            default: return THEME.textMuted;
-        }
-    };
-
-    const getStatusDot = (status) => {
-        const colors = {
-            ok: THEME.success,
-            degraded: THEME.warning,
-            error: THEME.danger,
-        };
-        return colors[status] || THEME.textMuted;
-    };
-
-    const getDBTypeIcon = (dbType) => {
-        switch (dbType?.toLowerCase()) {
-            case 'mysql': return <Database size={20} color="#00b874" />;
-            case 'mongodb': return <Server size={20} color="#00b874" />;
-            case 'postgresql':
-            default: return <Database size={20} color="#00b874" />;
-        }
-    };
-
-    const getDBTypeBadgeText = (dbType) => {
-        const type = (dbType || 'postgresql').toLowerCase();
-        if (type.includes('mysql')) return 'MySQL';
-        if (type.includes('mongo')) return 'MongoDB';
-        return 'PostgreSQL';
-    };
-
-    const cardStyle = {
-        ...styles.card,
-        ...(isActive ? styles.cardActive : {}),
-        ...(isHovering ? styles.cardHover : {}),
-        border: isActive
-            ? `1px solid ${THEME.primary}`
-            : `1px solid ${THEME.glassBorder}`,
-    };
+    const statusColor = health?.status === 'ok' ? THEME.success : health?.status === 'degraded' ? THEME.warning : health?.status === 'error' ? THEME.danger : THEME.textMuted;
+    const statusLabel = health?.status === 'ok' ? 'Healthy' : health?.status === 'degraded' ? 'Degraded' : health?.status === 'error' ? 'Down' : 'Unknown';
+    const dbType = ((connection.dbType || 'postgresql').toLowerCase().includes('mysql') ? 'MySQL' : (connection.dbType || 'postgresql').toLowerCase().includes('mongo') ? 'MongoDB' : 'PostgreSQL');
 
     return (
-        <div
-            style={cardStyle}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-            onClick={() => onSwitch(connection.id)}
-        >
-            {/* Top Row: Icon, Name, Badge */}
-            <div style={styles.cardHeader}>
-                <div style={styles.cardTitleSection}>
-                    <div style={styles.dbIcon}>
-                        {getDBTypeIcon(connection.dbType)}
+        <div className="fleet-card-hover" onClick={() => onSwitch(connection.id)} style={{
+            padding: 20, borderRadius: 14, cursor: 'pointer', position: 'relative',
+            background: THEME.glass, backdropFilter: 'blur(12px)',
+            border: `1px solid ${isActive ? THEME.primary : THEME.glassBorder}`,
+            boxShadow: isActive ? `0 0 20px ${THEME.primary}20` : 'none',
+        }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, paddingBottom: 14, borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flex: 1 }}>
+                    <div style={{ width: 42, height: 42, borderRadius: 10, background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Database size={20} color={THEME.primary} />
                     </div>
-                    <div style={styles.cardTitleText}>
-                        <h4 style={styles.cardTitle}>{connection.name}</h4>
-                        <p style={styles.cardSubtitle}>
-                            {connection.host}:{connection.port}
-                        </p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>{connection.name}</div>
+                        <div style={{ fontSize: 11.5, color: THEME.textMuted, fontFamily: THEME.fontMono || 'monospace', wordBreak: 'break-all' }}>{connection.host}:{connection.port}</div>
                     </div>
                 </div>
-                <div
-                    style={{
-                        ...styles.dbTypeBadge,
-                        color: THEME.primary,
-                        border: `1px solid ${THEME.primary}`,
-                    }}
-                >
-                    {getDBTypeBadgeText(connection.dbType)}
-                </div>
-            </div>
-
-            {/* Status and Latency */}
-            <div style={styles.cardMetricsRow}>
-                <div style={styles.metricItem}>
-                    <div style={styles.metricLabel}>Status</div>
-                    <div style={styles.metricValueWithIcon}>
-                        <div
-                            style={{
-                                ...styles.statusDot,
-                                background: getStatusDot(health?.status),
-                            }}
-                        />
-                        <span style={{ color: getStatusColor(health?.status) }}>
-                            {health?.status === 'ok' && 'Healthy'}
-                            {health?.status === 'degraded' && 'Degraded'}
-                            {health?.status === 'error' && 'Down'}
-                            {!health?.status && 'Unknown'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {isActive && (
+                        <span style={{ padding: '3px 8px', borderRadius: 6, background: `${THEME.primary}12`, border: `1px solid ${THEME.primary}30`, fontSize: 10, fontWeight: 700, color: THEME.primary, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <CheckCircle size={10} /> Active
                         </span>
-                    </div>
-                </div>
-                <div style={styles.metricItem}>
-                    <div style={styles.metricLabel}>Latency</div>
-                    <div style={styles.metricValue}>
-                        {health?.latencyMs !== undefined ? (
-                            <>
-                                <Clock size={14} />
-                                {health.latencyMs}ms
-                            </>
-                        ) : (
-                            'N/A'
-                        )}
-                    </div>
+                    )}
+                    <span style={{ padding: '3px 10px', borderRadius: 6, border: `1px solid ${THEME.primary}30`, fontSize: 10.5, fontWeight: 600, color: THEME.primary }}>{dbType}</span>
                 </div>
             </div>
 
-            {/* Optional Key Metrics Placeholders */}
-            <div style={styles.cardMetricsRow}>
-                <div style={styles.metricItem}>
-                    <div style={styles.metricLabel}>Database</div>
-                    <div style={styles.metricValue}>
-                        <Database size={14} />
+            {/* Metrics Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                <div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 5 }}>Status</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 600 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor, boxShadow: `0 0 6px ${statusColor}60` }} />
+                        <span style={{ color: statusColor }}>{statusLabel}</span>
+                    </div>
+                </div>
+                <div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 5 }}>Latency</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: THEME.textMain }}>
+                        <Clock size={13} color={THEME.textDim} />
+                        {health?.latencyMs != null ? `${health.latencyMs}ms` : 'N/A'}
+                    </div>
+                </div>
+                <div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 5 }}>Database</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 500, color: THEME.textMain }}>
+                        <Database size={13} color={THEME.textDim} />
                         {connection.database}
                     </div>
                 </div>
-                <div style={styles.metricItem}>
-                    <div style={styles.metricLabel}>User</div>
-                    <div style={styles.metricValue}>
-                        <Users size={14} />
+                <div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 5 }}>User</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 500, color: THEME.textMain }}>
+                        <Users size={13} color={THEME.textDim} />
                         {connection.username}
                     </div>
                 </div>
             </div>
 
-            {/* Last Checked */}
+            {/* Footer */}
             {health?.lastChecked && (
-                <div style={styles.cardFooter}>
-                    <span style={styles.lastCheckedText}>
-                        Last checked: {new Date(health.lastChecked).toLocaleTimeString()}
-                    </span>
-                </div>
-            )}
-
-            {/* Active Indicator */}
-            {isActive && (
-                <div style={styles.activeIndicator}>
-                    <CheckCircle size={14} color={THEME.primary} />
-                    Active
-                </div>
-            )}
-
-            {/* Hover Arrow */}
-            {isHovering && (
-                <div style={styles.cardArrow}>
-                    <ArrowRight size={16} color={THEME.primary} />
+                <div style={{ paddingTop: 12, borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10.5, color: THEME.textDim }}>
+                    Last checked: {new Date(health.lastChecked).toLocaleTimeString()}
                 </div>
             )}
         </div>
     );
 };
 
-/**
- * Animation styles
- */
-const OvStyles = () => (
-    <style>{`
-        @keyframes rotation {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        @keyframes cardGlow {
-            0%, 100% { box-shadow: 0 0 0 rgba(0, 184, 116, 0); }
-            50% { box-shadow: 0 0 20px rgba(0, 184, 116, 0.2), inset 0 0 20px rgba(0, 184, 116, 0.05); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fleet-card { animation: fadeIn 0.4s ease-out both; }
-        .fleet-card:nth-child(1) { animation-delay: 0.0s; }
-        .fleet-card:nth-child(2) { animation-delay: 0.07s; }
-        .fleet-card:nth-child(3) { animation-delay: 0.14s; }
-        .fleet-card:nth-child(4) { animation-delay: 0.21s; }
-        .fleet-card:nth-child(5) { animation-delay: 0.28s; }
-        .fleet-card:nth-child(6) { animation-delay: 0.35s; }
-    `}</style>
-);
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════════════════════════════ */
+const FleetOverviewTab = () => {
+    useAdaptiveTheme();
+    const { switchConnection, connections, activeConnectionId, loading: connectionsLoading } = useConnection();
+    const { goToTab } = useNavigation();
 
-/**
- * Inline styles
- */
-const styles = {
-    container: {
-        padding: '24px',
-        minHeight: '100vh',
-        background: THEME.bg,
-        fontFamily: THEME.fontBody,
-    },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '24px',
-    },
-    title: {
-        margin: '0 0 6px 0',
-        fontSize: '24px',
-        fontWeight: '700',
-        color: THEME.textMain,
-    },
-    subtitle: {
-        margin: 0,
-        fontSize: '13px',
-        color: THEME.textMuted,
-    },
-    refreshButton: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '10px 18px',
-        borderRadius: '8px',
-        border: `1px solid ${THEME.glassBorder}`,
-        background: THEME.glass,
-        backdropFilter: 'blur(8px)',
-        color: THEME.primary,
-        fontSize: '13px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        fontFamily: THEME.fontBody,
-    },
-    statsBar: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-        gap: '16px',
-        marginBottom: '32px',
-        padding: '20px',
-        borderRadius: '12px',
-        background: THEME.surface,
-        border: `1px solid ${THEME.glassBorder}`,
-        backdropFilter: 'blur(8px)',
-    },
-    statItem: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-    },
-    statLabel: {
-        fontSize: '12px',
-        color: THEME.textMuted,
-        fontWeight: '500',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-    },
-    statValue: {
-        fontSize: '28px',
-        fontWeight: '700',
-    },
-    errorBanner: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '12px 16px',
-        borderRadius: '8px',
-        background: `rgba(255, 69, 96, 0.1)`,
-        border: `1px solid ${THEME.danger}`,
-        color: THEME.danger,
-        marginBottom: '24px',
-        fontSize: '13px',
-    },
-    cardsGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-        gap: '20px',
-        '@media (max-width: 768px)': {
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        },
-    },
-    card: {
-        padding: '20px',
-        borderRadius: '12px',
-        background: THEME.glass,
-        border: `1px solid ${THEME.glassBorder}`,
-        backdropFilter: 'blur(8px)',
-        cursor: 'pointer',
-        transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-        position: 'relative',
-        overflow: 'hidden',
-        className: 'fleet-card',
-    },
-    cardActive: {
-        boxShadow: `0 0 24px ${THEME.primary}30, inset 0 0 20px ${THEME.primary}08`,
-    },
-    cardHover: {
-        transform: 'translateY(-4px)',
-        boxShadow: `0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px ${THEME.primary}20`,
-    },
-    cardHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        gap: '12px',
-        marginBottom: '16px',
-        paddingBottom: '12px',
-        borderBottom: `1px solid ${THEME.glassBorder}`,
-    },
-    cardTitleSection: {
-        display: 'flex',
-        gap: '12px',
-        alignItems: 'flex-start',
-        flex: 1,
-    },
-    dbIcon: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '40px',
-        height: '40px',
-        borderRadius: '8px',
-        background: `rgba(0, 184, 116, 0.08)`,
-        border: `1px solid ${THEME.primary}`,
-        flexShrink: 0,
-    },
-    cardTitleText: {
-        flex: 1,
-    },
-    cardTitle: {
-        margin: '0 0 4px 0',
-        fontSize: '14px',
-        fontWeight: '700',
-        color: THEME.textMain,
-    },
-    cardSubtitle: {
-        margin: 0,
-        fontSize: '12px',
-        color: THEME.textMuted,
-        fontFamily: THEME.fontMono,
-    },
-    dbTypeBadge: {
-        padding: '4px 10px',
-        borderRadius: '6px',
-        fontSize: '11px',
-        fontWeight: '600',
-        whiteSpace: 'nowrap',
-    },
-    cardMetricsRow: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '16px',
-        marginBottom: '12px',
-    },
-    metricItem: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '6px',
-    },
-    metricLabel: {
-        fontSize: '11px',
-        color: THEME.textMuted,
-        fontWeight: '600',
-        textTransform: 'uppercase',
-        letterSpacing: '0.3px',
-    },
-    metricValue: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        fontSize: '13px',
-        color: THEME.textMain,
-        fontWeight: '500',
-    },
-    metricValueWithIcon: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        fontSize: '13px',
-        fontWeight: '500',
-    },
-    statusDot: {
-        width: '8px',
-        height: '8px',
-        borderRadius: '50%',
-        display: 'inline-block',
-    },
-    cardFooter: {
-        marginTop: '12px',
-        paddingTop: '12px',
-        borderTop: `1px solid ${THEME.glassBorder}`,
-    },
-    lastCheckedText: {
-        fontSize: '11px',
-        color: THEME.textDim,
-    },
-    activeIndicator: {
-        position: 'absolute',
-        top: '12px',
-        right: '12px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '4px',
-        padding: '4px 10px',
-        borderRadius: '6px',
-        background: `rgba(0, 184, 116, 0.1)`,
-        border: `1px solid ${THEME.primary}`,
-        fontSize: '11px',
-        fontWeight: '600',
-        color: THEME.primary,
-    },
-    cardArrow: {
-        position: 'absolute',
-        bottom: '16px',
-        right: '16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: 0.6,
-    },
-    loadingMessage: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '12px',
-        padding: '40px',
-        fontSize: '14px',
-        color: THEME.textMuted,
-    },
+    const [healthData, setHealthData] = useState([]);
+    const [overviewStats, setOverviewStats] = useState(null);
+    const [trafficData, setTrafficData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [error, setError] = useState(null);
+    const refreshTimer = useRef(null);
+
+    // History buffers for sparklines & charts
+    const [latencyHistory, setLatencyHistory] = useState([]);
+    const [trafficHistory, setTrafficHistory] = useState([]);
+
+    const fetchAll = useCallback(async () => {
+        try {
+            setError(null);
+            const [health, stats, traffic] = await Promise.all([
+                fetchData('/api/connections/health').catch(() => []),
+                fetchData('/api/overview/stats').catch(() => null),
+                fetchData('/api/overview/traffic').catch(() => null),
+            ]);
+            const healthList = Array.isArray(health) ? health : [];
+            setHealthData(healthList);
+            setOverviewStats(stats);
+            setTrafficData(traffic);
+
+            // Build history for sparklines
+            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const avgLatency = healthList.length > 0
+                ? Math.round(healthList.reduce((s, h) => s + (h.latencyMs || 0), 0) / healthList.length)
+                : 0;
+            setLatencyHistory(prev => [...prev.slice(-19), { time: now, latency: avgLatency }]);
+
+            if (traffic) {
+                const qps = Math.round(((traffic.tup_fetched || 0) + (traffic.tup_inserted || 0) + (traffic.tup_updated || 0) + (traffic.tup_deleted || 0)) / 1000);
+                setTrafficHistory(prev => [...prev.slice(-19), {
+                    time: now,
+                    reads: traffic.tup_fetched || 0,
+                    writes: (traffic.tup_inserted || 0) + (traffic.tup_updated || 0) + (traffic.tup_deleted || 0),
+                }]);
+            }
+        } catch (err) {
+            console.error('[FleetOverviewTab] Fetch error:', err);
+            setError(err?.message || 'Failed to fetch fleet data');
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchAll().finally(() => setLoading(false));
+        refreshTimer.current = setInterval(() => {
+            setRefreshing(true);
+            fetchAll().finally(() => setRefreshing(false));
+        }, 15000);
+        return () => { if (refreshTimer.current) clearInterval(refreshTimer.current); };
+    }, [fetchAll]);
+
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await fetchAll();
+        setRefreshing(false);
+    }, [fetchAll]);
+
+    const handleSwitch = useCallback(async (connId) => {
+        try { await switchConnection(connId); goToTab('overview'); }
+        catch (err) { console.error('Switch failed:', err); }
+    }, [switchConnection, goToTab]);
+
+    // Computed stats
+    const healthyCount = healthData.filter(h => h.status === 'ok').length;
+    const degradedCount = healthData.filter(h => h.status === 'degraded').length;
+    const downCount = healthData.filter(h => h.status === 'error').length;
+    const avgLatency = healthData.length > 0
+        ? Math.round(healthData.reduce((s, h) => s + (h.latencyMs || 0), 0) / healthData.length)
+        : 0;
+
+    const uptimeStr = overviewStats?.uptimeSeconds
+        ? `${Math.floor(overviewStats.uptimeSeconds / 86400)}d ${Math.floor((overviewStats.uptimeSeconds % 86400) / 3600)}h`
+        : '—';
+    const uptimePct = overviewStats?.uptimeSeconds
+        ? Math.min(99.99, 99 + (overviewStats.uptimeSeconds > 86400 ? 0.99 : (overviewStats.uptimeSeconds / 86400) * 0.99)).toFixed(1)
+        : '—';
+
+    const dbSizeGB = overviewStats?.diskUsedGB != null ? overviewStats.diskUsedGB : '—';
+    const hitRatio = overviewStats?.indexHitRatio || '—';
+    const activeConns = overviewStats?.activeConnections ?? 0;
+    const maxConns = overviewStats?.maxConnections ?? 0;
+
+    // Sparkline arrays for metric cards
+    const latencySparks = latencyHistory.map(l => l.latency);
+
+    // Empty state
+    if (!loading && !connectionsLoading && connections.length === 0) {
+        return (
+            <div style={{ padding: 24, minHeight: '100vh', background: THEME.bg }}>
+                <FleetStyles />
+                <NoConnectionBanner title="No Databases Connected" description="Add your first database connection to view the fleet overview." showAddButton />
+            </div>
+        );
+    }
+
+    // Loading skeleton
+    if (loading) {
+        return (
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <FleetStyles />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
+                    {[0,1,2,3,4,5].map(i => (
+                        <div key={i} style={{ height: 96, borderRadius: 12, background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, opacity: 0.3, animation: 'fleetPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
+                    ))}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                    {[0,1].map(i => (
+                        <div key={i} style={{ height: 280, borderRadius: 14, background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, opacity: 0.2, animation: 'fleetPulse 1.5s ease-in-out infinite', animationDelay: `${0.6 + i * 0.15}s` }} />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div style={{ padding: '0 24px 40px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <FleetStyles />
+
+            {/* ── Header ── */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h2 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: THEME.textMain }}>Fleet Overview</h2>
+                    <p style={{ margin: 0, fontSize: 12, color: THEME.textMuted }}>Monitor all connected databases</p>
+                </div>
+                <button onClick={handleRefresh} disabled={refreshing} style={{
+                    display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 8,
+                    border: `1px solid ${THEME.glassBorder}`, background: THEME.glass, backdropFilter: 'blur(8px)',
+                    color: THEME.primary, fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: refreshing ? 0.6 : 1,
+                }}>
+                    <RefreshCw size={14} style={{ animation: refreshing ? 'fleetSpin 1s linear infinite' : 'none' }} /> Refresh
+                </button>
+            </div>
+
+            {/* ── Status Badges ── */}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <StatusBadge label={healthyCount === connections.length ? 'Operational' : degradedCount > 0 ? 'Degraded' : downCount > 0 ? 'Issues Detected' : 'Checking...'} color={healthyCount === connections.length ? THEME.success : degradedCount > 0 ? THEME.warning : THEME.danger} pulse />
+                <StatusBadge label={`${connections.length} Instance${connections.length !== 1 ? 's' : ''}`} color={THEME.primary} />
+                <StatusBadge label={`Avg Latency ${avgLatency}ms`} color={avgLatency < 100 ? THEME.success : avgLatency < 500 ? THEME.warning : THEME.danger} />
+                <StatusBadge label={`${downCount} Error${downCount !== 1 ? 's' : ''}`} color={downCount === 0 ? THEME.success : THEME.danger} />
+            </div>
+
+            {/* ── Metric Cards Grid ── */}
+            <div className="fleet-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
+                <MetricCard icon={Server} label="Total Servers" value={String(connections.length)} sub={`${healthyCount} online`} color={THEME.primary} spark={latencySparks.length > 1 ? latencySparks : undefined} />
+                <MetricCard icon={CheckCircle} label="Healthy" value={String(healthyCount)} sub={`of ${connections.length}`} color={THEME.success} trend={healthyCount === connections.length ? '100%' : `${Math.round(healthyCount / Math.max(connections.length, 1) * 100)}%`} trendUp={healthyCount === connections.length} />
+                <MetricCard icon={Clock} label="Uptime" value={uptimePct !== '—' ? `${uptimePct}%` : uptimeStr} sub={uptimeStr !== '—' ? uptimeStr : undefined} color={THEME.primary} />
+                <MetricCard icon={Activity} label="Active Conns" value={String(activeConns)} sub={maxConns ? `of ${maxConns} max` : undefined} color={activeConns / Math.max(maxConns, 1) > 0.8 ? THEME.danger : THEME.primary} />
+                <MetricCard icon={HardDrive} label="Storage Used" value={dbSizeGB !== '—' ? `${dbSizeGB} GB` : '—'} color={THEME.textMuted} />
+                <MetricCard icon={Zap} label="Cache Hit Ratio" value={hitRatio !== '—' ? `${hitRatio}%` : '—'} sub={Number(hitRatio) > 95 ? 'Excellent' : Number(hitRatio) > 80 ? 'Good' : 'Needs attention'} color={Number(hitRatio) > 95 ? THEME.success : Number(hitRatio) > 80 ? THEME.warning : THEME.danger} />
+            </div>
+
+            {/* ── Charts Row ── */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 20 }}>
+                {/* Traffic / Query Rate Chart */}
+                <Panel title="Query Traffic" icon={Zap} accentColor={THEME.primary}
+                    rightNode={trafficData ? <span style={{ fontSize: 10, color: THEME.textDim }}>Reads: {(trafficData.tup_fetched || 0).toLocaleString()} · Writes: {((trafficData.tup_inserted || 0) + (trafficData.tup_updated || 0) + (trafficData.tup_deleted || 0)).toLocaleString()}</span> : null}
+                >
+                    {trafficHistory.length > 1 ? (
+                        <ResponsiveContainer width="100%" height={200}>
+                            <AreaChart data={trafficHistory}>
+                                <defs>
+                                    <linearGradient id="fleet-reads-grad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor={THEME.primary} stopOpacity={0} />
+                                    </linearGradient>
+                                    <linearGradient id="fleet-writes-grad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={THEME.success} stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke={`${THEME.grid}50`} vertical={false} />
+                                <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} width={50} />
+                                <Tooltip content={<ChartTip />} />
+                                <Area type="monotone" dataKey="reads" stroke={THEME.primary} fillOpacity={1} fill="url(#fleet-reads-grad)" name="Reads" strokeWidth={2} />
+                                <Area type="monotone" dataKey="writes" stroke={THEME.success} fillOpacity={1} fill="url(#fleet-writes-grad)" name="Writes" strokeWidth={2} />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: THEME.textDim, fontSize: 12 }}>
+                            Collecting data... refreshing every 15s
+                        </div>
+                    )}
+                </Panel>
+
+                {/* Latency Chart */}
+                <Panel title="Connection Latency" icon={Network} accentColor={THEME.primary}
+                    rightNode={<span style={{ fontSize: 10, color: THEME.textDim }}>Avg: {avgLatency}ms</span>}
+                >
+                    {latencyHistory.length > 1 ? (
+                        <ResponsiveContainer width="100%" height={200}>
+                            <LineChart data={latencyHistory}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={`${THEME.grid}50`} vertical={false} />
+                                <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} width={40} unit="ms" />
+                                <Tooltip content={<ChartTip />} />
+                                <Line type="monotone" dataKey="latency" stroke={THEME.success} strokeWidth={2} dot={false} name="Latency (ms)" />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: THEME.textDim, fontSize: 12 }}>
+                            Collecting data... refreshing every 15s
+                        </div>
+                    )}
+                </Panel>
+            </div>
+
+            {/* ── Fleet Instances Grid ── */}
+            <Panel title="Fleet Instances" icon={Server} accentColor={THEME.primary}
+                rightNode={<span style={{ fontSize: 10, color: THEME.textDim }}>{connections.length} database{connections.length !== 1 ? 's' : ''}</span>}
+            >
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+                    {connections.map((conn) => {
+                        const health = healthData.find(h => h.id === conn.id);
+                        const isActive = conn.id === activeConnectionId;
+                        return (
+                            <DatabaseCard key={conn.id} connection={conn} health={health} isActive={isActive} onSwitch={handleSwitch} />
+                        );
+                    })}
+                </div>
+            </Panel>
+
+            {/* ── Error Banner ── */}
+            {error && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 10, background: `${THEME.danger}08`, border: `1px solid ${THEME.danger}25`, color: THEME.danger, fontSize: 12 }}>
+                    <AlertCircle size={15} /> {error}
+                </div>
+            )}
+
+            {/* ── Region Distribution ── */}
+            {connections.length > 0 && (
+                <Panel title="Connection Details" icon={Globe} accentColor={THEME.primary}>
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(connections.length, 4)}, 1fr)`, gap: 12 }}>
+                        {connections.map((conn) => {
+                            const health = healthData.find(h => h.id === conn.id);
+                            const host = conn.host || '';
+                            const region = host.includes('us-') ? 'US' : host.includes('eu-') ? 'EU' : host.includes('ap-') ? 'APAC' : host.includes('localhost') ? 'Local' : 'Cloud';
+                            return (
+                                <div key={conn.id} style={{ padding: 14, background: THEME.glass, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10 }}>
+                                    <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{region}</div>
+                                    <div style={{ fontSize: 15, fontWeight: 700, color: THEME.primary, margin: '6px 0' }}>{conn.name}</div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim }}>
+                                        Latency: {health?.latencyMs != null ? `${health.latencyMs}ms` : '—'}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2 }}>
+                                        DB: {conn.database}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </Panel>
+            )}
+
+            {/* ── Fleet Health Score ── */}
+            <Panel title="Fleet Health Score" icon={CheckCircle} accentColor={THEME.success}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '10px 0' }}>
+                    <RingGauge
+                        value={connections.length > 0 ? Math.round(healthyCount / connections.length * 100) : 0}
+                        color={THEME.success}
+                        size={100}
+                        label="Availability"
+                    />
+                    <RingGauge
+                        value={hitRatio !== '—' ? Math.round(Number(hitRatio)) : 0}
+                        color={THEME.primary}
+                        size={100}
+                        label="Cache Efficiency"
+                    />
+                    <RingGauge
+                        value={avgLatency > 0 ? Math.min(100, Math.round(100 - (avgLatency / 20))) : 0}
+                        color={THEME.success}
+                        size={100}
+                        label="Performance"
+                    />
+                </div>
+            </Panel>
+        </div>
+    );
 };
 
 export default FleetOverviewTab;
