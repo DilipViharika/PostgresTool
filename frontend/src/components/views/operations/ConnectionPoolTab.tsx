@@ -1260,11 +1260,10 @@ const ConnectionsTab = () => {
             {/* ── Modal ── */}
             {showModal && (
                 <>
-                    {/* Full-screen backdrop */}
+                    {/* Full-screen backdrop — fully opaque */}
                     <div onClick={closeModal} style={{
                         position: 'fixed', inset: 0,
-                        background: `linear-gradient(135deg, ${THEME.bg}f2 0%, rgba(0,0,0,0.92) 100%)`,
-                        backdropFilter: 'blur(12px)',
+                        background: THEME.bg,
                         zIndex: 999,
                     }} />
 
