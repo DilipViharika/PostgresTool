@@ -1490,7 +1490,7 @@ const LongTxnCard = ({ data }) => {
 /* ═══════════════════════════════════════════════════════════════════════════
    NEW: VACUUM HEALTH CARD
    ═══════════════════════════════════════════════════════════════════════════ */
-const VacuumHealthCard = ({ data }) => {
+const VacuumHealthCard = ({ data, onNavigate }) => {
     const raw = data || {};
     const summary = raw.summary || raw;
     const vacuum = {
@@ -1659,6 +1659,23 @@ const VacuumHealthCard = ({ data }) => {
                 Last run: <strong style={{ color: THEME.textMuted }}>{vacuum.lastRunTable}</strong>{' '}
                 <span className="ov-mono">{vacuum.lastRunAgo}</span>
             </div>
+
+            {onNavigate && (
+                <button
+                    onClick={onNavigate}
+                    style={{
+                        marginTop: 12, width: '100%', padding: '8px 0', borderRadius: 8,
+                        border: `1px solid ${THEME.primary}25`, background: `${THEME.primary}08`,
+                        color: THEME.primary, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = `${THEME.primary}18`; e.currentTarget.style.borderColor = `${THEME.primary}40`; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = `${THEME.primary}08`; e.currentTarget.style.borderColor = `${THEME.primary}25`; }}
+                >
+                    Vacuum &amp; Maintenance <span style={{ fontSize: 13 }}>→</span>
+                </button>
+            )}
         </div>
     );
 };
@@ -1983,6 +2000,7 @@ function writeOverviewCache(obj) {
 const OverviewTab = () => {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const { activeConnection, loading: connectionsLoading } = useConnection();
+    const nav = useNavigation();
 
     // Hydrate from localStorage so the dashboard renders instantly on refresh
     const cachedOv = useMemo(() => readOverviewCache(), []);
@@ -2303,15 +2321,6 @@ const OverviewTab = () => {
             detail: longTxns.length > 0 ? `${longTxns.length} active` : 'None',
             healthy: longTxns.length === 0,
         },
-        {
-            label: 'Urgent Vacuum',
-            value: String(vacuumData?.urgentCount || vacuumData?.urgent || 0),
-            sub: 'tables',
-            color: (vacuumData?.urgentCount || 0) > 0 ? THEME.danger : THEME.success,
-            icon: Leaf,
-            detail: `${vacuumData?.warnCount || vacuumData?.warn || 0} warn`,
-            healthy: (vacuumData?.urgentCount || 0) === 0,
-        },
     ];
 
     /* ══════════════════════════════════════════════════════════════════
@@ -2447,7 +2456,7 @@ const OverviewTab = () => {
             <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
                 <BackupStatusCard lastBackup={backupData} />
                 <LongTxnCard data={longTxns.length > 0 ? longTxns : null} />
-                <VacuumHealthCard data={vacuumData} />
+                <VacuumHealthCard data={vacuumData} onNavigate={() => nav?.goToTab('maintenance')} />
             </div>
 
             {/* ═══════ Row 3: Velocity Chart + Health + Connection Pool ═══════ */}
