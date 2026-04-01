@@ -7,6 +7,7 @@ import {
     Database, Plus, Edit, Trash2, Eye, EyeOff, Check, X,
     Server, Key, User, AlertCircle, CheckCircle, Link as LinkIcon,
     RefreshCw, ChevronDown, Terminal, Lock, ChevronRight, ShieldCheck,
+    Search, MoreVertical, Copy, Zap,
 } from 'lucide-react';
 
 // ─── Database type definitions ───────────────────────────────────────────────
@@ -89,9 +90,9 @@ const S = {
         background: THEME.surface,
         border: `1px solid ${THEME.glassBorder}`,
         borderTop: `2px solid ${accent}55`,
-        borderRadius: 10,
+        borderRadius: 14,
         padding: 20,
-        transition: 'all 0.2s',
+        transition: 'all 0.3s cubic-bezier(0.23, 1, 0.320, 1)',
         position: 'relative',
         overflow: 'hidden',
     }),
@@ -519,7 +520,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-/* ── ★ NEW HIGH: Connection Leak Detector ───────────────────────────────────
+/* ── ★ Connection Leak Detector ───────────────────────────────────────────────
    Shows pg_stat_activity entries that have been idle for an abnormally long
    time — strong indicator of a connection leak in application code.
    ─────────────────────────────────────────────────────────────────────────── */
@@ -644,6 +645,170 @@ const LeakDetector = () => {
     );
 };
 
+// ─── Onboarding Empty State ───────────────────────────────────────────────────
+const EmptyState = ({ onQuickStart }) => {
+    return (
+        <div style={{ gridColumn: '1 / -1', animation: 'fadeUp 0.4s ease-out' }}>
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                <div style={{ fontSize: 64, marginBottom: 16 }}>
+                    <span style={{ animation: 'float 3s ease-in-out infinite' }}>🔌</span>
+                </div>
+                <h3 style={{ fontSize: 24, fontWeight: 800, color: THEME.textMain, marginBottom: 8, letterSpacing: '-0.02em' }}>
+                    No connections yet
+                </h3>
+                <p style={{ fontSize: 14, color: THEME.textMuted, marginBottom: 2 }}>
+                    Connect to PostgreSQL, MySQL, MongoDB or other databases to start monitoring
+                </p>
+            </div>
+
+            {/* Quick Start Database Cards */}
+            <div style={{ marginBottom: 48 }}>
+                <h4 style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>
+                    Quick Start
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+                    {['postgresql', 'mysql', 'mongodb'].map(dbType => {
+                        const db = DB_TYPES[dbType];
+                        return (
+                            <button
+                                key={dbType}
+                                onClick={() => onQuickStart(dbType)}
+                                style={{
+                                    background: THEME.surface,
+                                    border: `1px solid ${THEME.glassBorder}`,
+                                    borderRadius: 14,
+                                    padding: 24,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.320, 1)',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    textAlign: 'left',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 12,
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.borderColor = db.accent;
+                                    e.currentTarget.style.background = `${db.accent}08`;
+                                    e.currentTarget.style.transform = 'translateY(-4px)';
+                                    e.currentTarget.style.boxShadow = `0 12px 32px ${db.accent}20`;
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.borderColor = THEME.glassBorder;
+                                    e.currentTarget.style.background = THEME.surface;
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                {/* Gradient bg */}
+                                <div style={{
+                                    position: 'absolute', top: -20, right: -20, width: 80, height: 80,
+                                    borderRadius: '50%', background: `${db.accent}15`, pointerEvents: 'none',
+                                }} />
+
+                                {/* Icon */}
+                                <div style={{ fontSize: 32, position: 'relative', zIndex: 1 }}>
+                                    {db.icon}
+                                </div>
+
+                                {/* Label */}
+                                <div style={{ position: 'relative', zIndex: 1 }}>
+                                    <div style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>
+                                        {db.label}
+                                    </div>
+                                    <div style={{ fontSize: 12, color: THEME.textMuted }}>
+                                        Default port <span style={{ color: db.accent, fontWeight: 600 }}>{db.defaultPort}</span>
+                                    </div>
+                                </div>
+
+                                {/* Arrow indicator */}
+                                <div style={{
+                                    position: 'absolute', bottom: 12, right: 12, opacity: 0.5,
+                                    transition: 'all 0.2s',
+                                }}>
+                                    <ChevronRight size={16} color={db.accent} />
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Getting Started Steps */}
+            <div style={{ marginBottom: 48 }}>
+                <h4 style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>
+                    Getting Started
+                </h4>
+                <div style={{
+                    background: THEME.surface,
+                    border: `1px solid ${THEME.glassBorder}`,
+                    borderRadius: 14,
+                    padding: 24,
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: 24,
+                }}>
+                    {[
+                        { num: '1', title: 'Host & Port', desc: 'Enter database server address' },
+                        { num: '2', title: 'Credentials', desc: 'Username and password for authentication' },
+                        { num: '3', title: 'Database', desc: 'Specify which database to connect to' },
+                        { num: '4', title: 'Security (Optional)', desc: 'Enable SSL, SSH tunnel, or other options' },
+                    ].map((step, i) => (
+                        <div key={i} style={{ display: 'flex', gap: 12 }}>
+                            <div style={{
+                                width: 32, height: 32, borderRadius: '50%',
+                                background: `${THEME.primary}22`, border: `2px solid ${THEME.primary}`,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: 14, fontWeight: 700, color: THEME.primary, flexShrink: 0,
+                            }}>
+                                {step.num}
+                            </div>
+                            <div>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: THEME.textMain, marginBottom: 2 }}>
+                                    {step.title}
+                                </div>
+                                <div style={{ fontSize: 11, color: THEME.textMuted }}>
+                                    {step.desc}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Supported Features */}
+            <div>
+                <h4 style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>
+                    Supported Features
+                </h4>
+                <div style={{
+                    background: THEME.surface,
+                    border: `1px solid ${THEME.glassBorder}`,
+                    borderRadius: 14,
+                    padding: 24,
+                }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+                        {[
+                            { icon: '📊', label: 'Real-time Monitoring' },
+                            { icon: '🔌', label: 'Connection Pooling' },
+                            { icon: '⚠️', label: 'Query Analysis' },
+                            { icon: '🔒', label: 'Encryption' },
+                            { icon: '🌐', label: 'SSH Tunnel' },
+                            { icon: '✅', label: 'Health Checks' },
+                        ].map((feat, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={{ fontSize: 16 }}>{feat.icon}</span>
+                                <span style={{ fontSize: 12, color: THEME.textMuted }}>{feat.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const ConnectionsTab = () => {
     useAdaptiveTheme();
 
@@ -671,6 +836,7 @@ const ConnectionsTab = () => {
     const [switchingId, setSwitchingId] = useState(null);
     const [saving, setSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Connection context — keeps the header dropdown in sync
     const { refreshConnections: refreshCtxConnections, activeConnectionId, switchConnection } = useConnection();
@@ -778,7 +944,7 @@ const ConnectionsTab = () => {
         }
     };
 
-    // ✅ FIX 1: Allow deleting default connections — auto-promote next connection
+    // Allow deleting default connections — auto-promote next connection
     const deleteConnection = async (id) => {
         if (!confirm('Delete this connection?')) return;
         try {
@@ -837,9 +1003,9 @@ const ConnectionsTab = () => {
         } catch (e) { console.error(e); }
     };
 
-    const openNew = () => {
+    const openNew = (dbType = null) => {
         setEditingConnection(null);
-        setFormData(defaultFormData());
+        setFormData(defaultFormData(dbType || 'postgresql'));
         setFormErrors({});
         setErrorMsg('');
         setShowPassword(false);
@@ -879,6 +1045,20 @@ const ConnectionsTab = () => {
         return () => clearTimeout(t);
     }, [saveSuccess]);
 
+    // Filter connections based on search
+    const filteredConnections = connections.filter(conn =>
+        conn.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        conn.host?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        conn.database?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Count by type
+    const typeStats = {
+        postgresql: connections.filter(c => c.dbType === 'postgresql').length,
+        mysql: connections.filter(c => c.dbType === 'mysql').length,
+        mongodb: connections.filter(c => c.dbType === 'mongodb').length,
+    };
+
     return (
         <div style={S.root}>
             {/* ── Success / Error Toast ── */}
@@ -902,25 +1082,88 @@ const ConnectionsTab = () => {
                 </div>
             )}
 
-            {/* ── Header ── */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
-                <div>
-                    <h2 style={{ fontSize: 22, fontWeight: 800, color: THEME.textMain, margin: 0, letterSpacing: '-0.02em' }}>
-                        Database Connections
-                    </h2>
-                    <p style={{ fontSize: 13, color: THEME.textMuted, marginTop: 4, fontWeight: 500 }}>
-                        {connections.length} connection{connections.length !== 1 ? 's' : ''} · Encrypted at rest · PostgreSQL, MySQL, MongoDB
-                    </p>
+            {/* ── Header with Stats & Controls ── */}
+            <div style={{ marginBottom: 32 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+                    <div>
+                        <h2 style={{ fontSize: 26, fontWeight: 800, color: THEME.textMain, margin: 0, letterSpacing: '-0.02em' }}>
+                            Database Connections
+                        </h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
+                            <p style={{ fontSize: 13, color: THEME.textMuted, margin: 0, fontWeight: 500 }}>
+                                {connections.length} connection{connections.length !== 1 ? 's' : ''} · Encrypted at rest
+                            </p>
+                            {connections.length > 0 && (
+                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                    {typeStats.postgresql > 0 && (
+                                        <span style={{ ...S.badge('#4a90d9'), fontSize: 10 }}>
+                                            {typeStats.postgresql} PostgreSQL
+                                        </span>
+                                    )}
+                                    {typeStats.mysql > 0 && (
+                                        <span style={{ ...S.badge('#f5a623'), fontSize: 10 }}>
+                                            {typeStats.mysql} MySQL
+                                        </span>
+                                    )}
+                                    {typeStats.mongodb > 0 && (
+                                        <span style={{ ...S.badge('#00ed64'), fontSize: 10 }}>
+                                            {typeStats.mongodb} MongoDB
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                        <button
+                            onClick={() => fetchConnections()}
+                            disabled={refreshing}
+                            style={{
+                                ...S.btn(THEME.surfaceHover, THEME.glassBorder, THEME.textMuted),
+                                opacity: refreshing ? 0.6 : 1,
+                            }}
+                            title="Refresh connections"
+                        >
+                            <RefreshCw size={14} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+                        </button>
+                        <button
+                            onClick={() => openNew()}
+                            style={S.btn(THEME.primary + '2E', THEME.primary + '66', THEME.primary)}
+                            onMouseEnter={e => e.currentTarget.style.background = THEME.primary + '4D'}
+                            onMouseLeave={e => e.currentTarget.style.background = THEME.primary + '2E'}
+                        >
+                            <Plus size={16} />
+                            New Connection
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={openNew}
-                    style={S.btn(THEME.primary + '2E', THEME.primary + '66', THEME.primary)}
-                    onMouseEnter={e => e.currentTarget.style.background = THEME.primary + '4D'}
-                    onMouseLeave={e => e.currentTarget.style.background = THEME.primary + '2E'}
-                >
-                    <Plus size={16} />
-                    New Connection
-                </button>
+
+                {/* Search bar (shown when there are connections) */}
+                {connections.length > 0 && (
+                    <div style={{ position: 'relative' }}>
+                        <Search size={14} style={{
+                            position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                            color: THEME.textMuted, pointerEvents: 'none',
+                        }} />
+                        <input
+                            type="text"
+                            placeholder="Search by name, host, database..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            style={{
+                                width: '100%', boxSizing: 'border-box',
+                                paddingLeft: 36, paddingRight: 12, paddingTop: 8, paddingBottom: 8,
+                                background: THEME.surfaceHover,
+                                border: `1px solid ${THEME.glassBorder}`,
+                                borderRadius: 8, color: THEME.textMain, fontSize: 13,
+                                outline: 'none', transition: 'border-color 0.2s',
+                            }}
+                            onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
+                            onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* ── Loading state ── */}
@@ -928,7 +1171,7 @@ const ConnectionsTab = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14, marginBottom: 14 }}>
                     {[0, 1, 2].map(i => (
                         <div key={i} style={{
-                            height: 160, borderRadius: 14, background: THEME.glass,
+                            height: 200, borderRadius: 14, background: THEME.glass,
                             border: `1px solid ${THEME.glassBorder}`, opacity: 0.4,
                             animation: `fadeUp 0.3s ease-out, pulse 1.5s ease-in-out infinite`,
                             animationDelay: `${i * 0.1}s`,
@@ -938,123 +1181,147 @@ const ConnectionsTab = () => {
             )}
 
             {/* ── Cards Grid ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
-                {connections.map(conn => {
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+                {filteredConnections.map((conn, idx) => {
                     const dbMeta = DB_TYPES[conn.dbType] || DB_TYPES.postgresql;
+                    const isActive = conn.id === activeConnectionId;
+
                     return (
-                        <div key={conn.id} style={S.card(dbMeta.accent)}>
+                        <div
+                            key={conn.id}
+                            style={{
+                                ...S.card(dbMeta.accent),
+                                animation: `slideUp 0.4s ease-out ${idx * 0.05}s backwards`,
+                                border: isActive ? `2px solid ${dbMeta.accent}66` : `1px solid ${THEME.glassBorder}`,
+                                background: isActive ? `${dbMeta.accent}08` : THEME.surface,
+                            }}
+                        >
+                            {/* Ambient glow background */}
                             <div style={{
                                 position: 'absolute', top: -40, left: -40, width: 120, height: 120,
-                                borderRadius: '50%', background: `${dbMeta.accent}08`, pointerEvents: 'none',
+                                borderRadius: '50%', background: `${dbMeta.accent}12`, pointerEvents: 'none',
+                                animation: isActive ? 'pulse 2s ease-in-out infinite' : 'none',
                             }} />
 
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                            {/* Active indicator dot */}
+                            {isActive && (
+                                <div style={{
+                                    position: 'absolute', top: 14, right: 14,
+                                    width: 10, height: 10, borderRadius: '50%',
+                                    background: dbMeta.accent,
+                                    boxShadow: `0 0 8px ${dbMeta.accent}`,
+                                    animation: 'pulse 1s ease-in-out infinite',
+                                }} />
+                            )}
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14, position: 'relative', zIndex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <span style={{ fontSize: 24 }}>{dbMeta.icon}</span>
+                                    <span style={{ fontSize: 28 }}>{dbMeta.icon}</span>
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                                             <span style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain }}>{conn.name}</span>
                                             {conn.isDefault && <span style={S.badge('#4ade80')}>DEFAULT</span>}
+                                            {isActive && <span style={S.badge(dbMeta.accent)}>ACTIVE</span>}
                                             {conn.sshEnabled && (
                                                 <span style={{ ...S.badge('#00b874'), display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                                     <Terminal size={10} /> SSH
                                                 </span>
                                             )}
-                                            <span style={{ ...S.badge('#22c55e'), display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                                                <Lock size={9} /> AES-256
-                                            </span>
                                         </div>
-                                        <div style={{ fontSize: 12, color: THEME.textMuted, marginTop: 2 }}>
-                                            <span style={{ color: dbMeta.accent }}>{dbMeta.label}</span>
-                                            {conn.host && ` · ${conn.host}${conn.port ? `:${conn.port}` : ''}`}
-                                            {conn.authSource && ` · auth:${conn.authSource}`}
+                                        <div style={{ fontSize: 12, color: THEME.textMuted, marginTop: 4 }}>
+                                            <span style={{ color: dbMeta.accent, fontWeight: 600 }}>{dbMeta.label}</span>
+                                            {conn.host && ` • ${conn.host}${conn.port ? `:${conn.port}` : ''}`}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div style={{ background: THEME.surfaceHover, borderRadius: 6, padding: '8px 12px', marginBottom: 14, fontSize: 12 }}>
+                            {/* Connection details */}
+                            <div style={{ background: THEME.surfaceHover, borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 11, position: 'relative', zIndex: 1 }}>
                                 {conn.database && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                         <span style={{ color: THEME.textMuted }}>database</span>
-                                        <span style={{ color: THEME.textDim }}>{conn.database}</span>
+                                        <span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.database}</span>
                                     </div>
                                 )}
                                 {conn.username && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                         <span style={{ color: THEME.textMuted }}>user</span>
-                                        <span style={{ color: THEME.textDim }}>{conn.username}</span>
+                                        <span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.username}</span>
                                     </div>
                                 )}
                                 {conn.replicaSet && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                         <span style={{ color: THEME.textMuted }}>replica set</span>
-                                        <span style={{ color: THEME.textDim }}>{conn.replicaSet}</span>
+                                        <span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.replicaSet}</span>
                                     </div>
                                 )}
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <span style={{ color: THEME.textMuted }}>ssl</span>
-                                    <span style={{ color: conn.ssl ? '#4ade80' : '#374151' }}>{conn.ssl ? 'on' : 'off'}</span>
+                                    <span style={{ color: conn.ssl ? '#4ade80' : '#6b7280', fontWeight: 500 }}>{conn.ssl ? 'enabled' : 'disabled'}</span>
                                 </div>
                                 {conn.sshEnabled && conn.sshHost && (
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, paddingTop: 4, borderTop: `1px solid ${THEME.glassBorder}` }}>
                                         <span style={{ color: THEME.textMuted }}>tunnel via</span>
-                                        <span style={{ color: '#00b874', fontSize: 11 }}>
+                                        <span style={{ color: '#00b874', fontWeight: 500 }}>
                                             {conn.sshUser ? `${conn.sshUser}@` : ''}{conn.sshHost}:{conn.sshPort || 22}
                                         </span>
                                     </div>
                                 )}
                             </div>
 
+                            {/* Test status */}
                             {conn.lastTested && (
                                 <div style={{
                                     display: 'flex', alignItems: 'center', gap: 6,
-                                    padding: '6px 10px', borderRadius: 6, marginBottom: 14,
-                                    background: conn.status === 'success' ? 'rgba(74,222,128,0.06)' : 'rgba(239,68,68,0.06)',
-                                    border: `1px solid ${conn.status === 'success' ? 'rgba(74,222,128,0.15)' : 'rgba(239,68,68,0.15)'}`,
+                                    padding: '8px 10px', borderRadius: 8, marginBottom: 14,
+                                    background: conn.status === 'success' ? 'rgba(74,222,128,0.08)' : 'rgba(239,68,68,0.08)',
+                                    border: `1px solid ${conn.status === 'success' ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                                    position: 'relative', zIndex: 1,
                                 }}>
                                     {conn.status === 'success'
                                         ? <CheckCircle size={13} color="#4ade80" />
                                         : <AlertCircle size={13} color="#ef4444" />}
                                     <span style={{ fontSize: 11, color: conn.status === 'success' ? '#4ade80' : '#ef4444', fontWeight: 600 }}>
-                                        {conn.status === 'success' ? 'Last test passed' : 'Last test failed'}
+                                        {conn.status === 'success' ? 'Test passed' : 'Test failed'}
                                     </span>
                                 </div>
                             )}
 
-                            {/* ✅ FIX 2 & 3: All 3 action buttons always enabled and clearly colored */}
-                            <div style={{ display: 'flex', gap: 8 }}>
+                            {/* Action buttons */}
+                            <div style={{ display: 'flex', gap: 8, position: 'relative', zIndex: 1 }}>
                                 {/* Test button */}
                                 <button
                                     onClick={() => testConnection(conn)}
                                     disabled={testingConnection === conn.id}
+                                    title="Test connection"
                                     style={{
-                                        ...S.btn('rgba(99,102,241,0.12)', 'rgba(99,102,241,0.25)', '#00b874'),
+                                        ...S.btn('rgba(99,102,241,0.12)', 'rgba(99,102,241,0.25)', '#6366f1'),
                                         flex: 1, justifyContent: 'center',
-                                        opacity: testingConnection === conn.id ? 0.5 : 1,
+                                        opacity: testingConnection === conn.id ? 0.6 : 1,
                                     }}
                                     onMouseEnter={e => testingConnection !== conn.id && (e.currentTarget.style.background = 'rgba(99,102,241,0.22)')}
                                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.12)'}
                                 >
                                     {testingConnection === conn.id
-                                        ? <><RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> Testing…</>
-                                        : <><LinkIcon size={12} /> Test</>}
+                                        ? <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} />
+                                        : <><Zap size={12} /> Test</>}
                                 </button>
 
-                                {/* Set Default button — only shown when not already default */}
+                                {/* Set Default button */}
                                 {!conn.isDefault && (
                                     <button
                                         onClick={() => setDefaultConnection(conn.id)}
+                                        title="Set as default"
                                         style={S.btn('rgba(74,222,128,0.1)', 'rgba(74,222,128,0.25)', '#4ade80')}
                                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,222,128,0.2)'}
                                         onMouseLeave={e => e.currentTarget.style.background = 'rgba(74,222,128,0.1)'}
-                                        title="Set as default"
                                     >
                                         <Check size={12} />
                                     </button>
                                 )}
 
-                                {/* Switch Active — connect all dashboards to this DB */}
+                                {/* Switch Active */}
                                 <button
                                     onClick={async () => {
                                         if (conn.id === activeConnectionId) return;
@@ -1067,45 +1334,45 @@ const ConnectionsTab = () => {
                                         } finally { setSwitchingId(null); }
                                     }}
                                     disabled={conn.id === activeConnectionId || switchingId === conn.id}
+                                    title={conn.id === activeConnectionId ? 'Currently active' : 'Switch dashboards to this DB'}
                                     style={{
                                         ...S.btn(
-                                            conn.id === activeConnectionId ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.08)',
-                                            'rgba(139,92,246,0.3)', '#00b874'
+                                            isActive ? 'rgba(139,92,246,0.18)' : 'rgba(139,92,246,0.08)',
+                                            'rgba(139,92,246,0.3)', '#a78bfa'
                                         ),
-                                        opacity: conn.id === activeConnectionId ? 0.6 : 1,
-                                        cursor: conn.id === activeConnectionId ? 'default' : 'pointer',
+                                        opacity: isActive ? 0.7 : 1,
+                                        cursor: isActive ? 'default' : 'pointer',
                                     }}
-                                    title={conn.id === activeConnectionId ? 'Currently active' : 'Switch dashboards to this DB'}
                                 >
                                     {switchingId === conn.id
                                         ? <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} />
-                                        : conn.id === activeConnectionId
+                                        : isActive
                                             ? <CheckCircle size={12} />
                                             : <LinkIcon size={12} />
                                     }
                                 </button>
 
-                                {/* ✅ FIX 2: Edit button — amber/yellow so it's clearly visible */}
+                                {/* Edit button */}
                                 <button
                                     onClick={() => openEdit(conn)}
+                                    title="Edit connection"
                                     style={S.btn('rgba(251,191,36,0.1)', 'rgba(251,191,36,0.3)', '#fbbf24')}
                                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(251,191,36,0.22)'}
                                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(251,191,36,0.1)'}
-                                    title="Edit connection"
                                 >
                                     <Edit size={12} />
                                 </button>
 
-                                {/* ✅ FIX 1: Delete button — always enabled, no disabled state */}
+                                {/* Delete button */}
                                 <button
                                     onClick={() => deleteConnection(conn.id)}
+                                    title="Delete connection"
                                     style={{
                                         ...S.btn('rgba(239,68,68,0.1)', 'rgba(239,68,68,0.25)', '#ef4444'),
                                         cursor: 'pointer',
                                     }}
                                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.22)'}
                                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
-                                    title="Delete connection"
                                 >
                                     <Trash2 size={12} />
                                 </button>
@@ -1114,30 +1381,28 @@ const ConnectionsTab = () => {
                     );
                 })}
 
+                {/* Empty state */}
                 {connections.length === 0 && !connectionsLoading && !refreshing && (
+                    <EmptyState onQuickStart={openNew} />
+                )}
+
+                {/* No search results */}
+                {connections.length > 0 && filteredConnections.length === 0 && (
                     <div style={{
-                        gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px',
+                        gridColumn: '1 / -1', textAlign: 'center', padding: '40px 20px',
                         background: THEME.surface, border: `1px dashed ${THEME.glassBorder}`,
-                        borderRadius: 10,
+                        borderRadius: 14,
                     }}>
-                        <div style={{ fontSize: 48, marginBottom: 16 }}>🔌</div>
-                        <h3 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>No connections yet</h3>
-                        <p style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 20 }}>
-                            Connect to PostgreSQL, MySQL, MongoDB.
+                        <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
+                        <h3 style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 6 }}>No matching connections</h3>
+                        <p style={{ fontSize: 12, color: THEME.textMuted }}>
+                            Try adjusting your search query
                         </p>
-                        <button
-                            onClick={openNew}
-                            style={S.btn(THEME.primary + '2E', THEME.primary + '66', THEME.primary)}
-                            onMouseEnter={e => e.currentTarget.style.background = THEME.primary + '4D'}
-                            onMouseLeave={e => e.currentTarget.style.background = THEME.primary + '2E'}
-                        >
-                            <Plus size={16} /> Add First Connection
-                        </button>
                     </div>
                 )}
             </div>
 
-            {/* ── ★ NEW HIGH: Connection Leak Detector ─────────────────────── */}
+            {/* ── Connection Leak Detector ─────────────────────── */}
             <LeakDetector />
 
             {/* ── Modal ── */}
@@ -1157,6 +1422,7 @@ const ConnectionsTab = () => {
                         borderRadius: 14, padding: 30, zIndex: 1000,
                         boxShadow: '0 40px 100px rgba(0,0,0,0.7)',
                         fontFamily: FONT_UI,
+                        animation: 'slideUp 0.3s ease-out',
                     }}>
                         {/* Modal header */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
@@ -1267,6 +1533,10 @@ const ConnectionsTab = () => {
 
             <style>{`
                 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes slideUp { from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)); } to { opacity: 1; transform: translate(-50%, -50%); } }
+                @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+                @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
                 * { box-sizing: border-box; }
                 ::-webkit-scrollbar { width: 6px; }
                 ::-webkit-scrollbar-track { background: transparent; }
