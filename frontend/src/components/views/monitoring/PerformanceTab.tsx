@@ -1832,7 +1832,7 @@ const PerformanceTab = () => {
                 </div>
             )}
 
-            {/* ════════════════════ DEEP INSIGHTS VIEW  ★ NEW ════════════════════ */}
+            {/* ════════════════════ DEEP INSIGHTS VIEW   ════════════════════ */}
             {activeView === 'insights' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     {/* Sub-view tabs */}

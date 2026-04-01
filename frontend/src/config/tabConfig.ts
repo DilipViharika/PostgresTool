@@ -82,7 +82,7 @@ export function buildTabConfig() {
             badge: null,
         },
 
-        // ── Overview & Health ────────────────────────────────────────
+        // ── Overview ─────────────────────────────────────────────────
         //    Top-level dashboards: fleet-wide health and single-DB overview
         { section: 'Overview', accent: DS.cyan },
         {
@@ -93,15 +93,6 @@ export function buildTabConfig() {
             badge: null,
         },
         { id: 'overview', icon: Activity, label: 'Database Overview', component: _components.OverviewTab, badge: null },
-        { id: 'performance', icon: Zap, label: 'Performance', component: _components.PerformanceTab, badge: null },
-        { id: 'resources', icon: HardDrive, label: 'Resources', component: _components.ResourcesTab, badge: null },
-        {
-            id: 'reliability',
-            icon: CheckCircle,
-            label: 'Reliability',
-            component: _components.ReliabilityTab,
-            badge: null,
-        },
 
         // ── Alerts & Rules ───────────────────────────────────────────
         //    All alerting in one place: active alerts, rule config, correlation
@@ -123,7 +114,7 @@ export function buildTabConfig() {
         },
 
         // ── Query Analysis ───────────────────────────────────────────
-        //    Query optimization, plan inspection, index management
+        //    Query optimization, plan inspection, index & performance tuning
         { section: 'Query Analysis', accent: DS.violet },
         {
             id: 'optimizer',
@@ -148,22 +139,15 @@ export function buildTabConfig() {
         },
         { id: 'indexes', icon: Layers, label: 'Indexes', component: _components.IndexesTab, badge: null },
         {
-            id: 'bloat',
-            icon: ScanSearch,
-            label: 'Bloat Analysis',
-            component: _components.BloatAnalysisTab,
-            badge: null,
-        },
-        {
-            id: 'Table',
-            icon: TableProperties,
-            label: 'Table Analysis',
-            component: _components.TableAnalytics,
+            id: 'ai-advisor',
+            icon: Brain,
+            label: 'AI Query Advisor',
+            component: _components.AIQueryAdvisorTab,
             badge: null,
         },
 
         // ── Schema & Data ────────────────────────────────────────────
-        //    Schema browsing, visualization, migrations, and charting
+        //    Schema browsing, visualization, migrations, and table structure
         { section: 'Schema & Data', accent: DS.amber },
         {
             id: 'schema-tree',
@@ -194,16 +178,17 @@ export function buildTabConfig() {
             badge: null,
         },
         {
-            id: 'chart-builder',
-            icon: BarChart3,
-            label: 'Chart Builder',
-            component: _components.ChartBuilder,
+            id: 'Table',
+            icon: TableProperties,
+            label: 'Table Analysis',
+            component: _components.TableAnalytics,
             badge: null,
         },
 
         // ── Infrastructure ───────────────────────────────────────────
-        //    Replication, maintenance, capacity
+        //    Resources, replication, maintenance, capacity, and bloat
         { section: 'Infrastructure', accent: DS.emerald },
+        { id: 'resources', icon: HardDrive, label: 'Resources', component: _components.ResourcesTab, badge: null },
         {
             id: 'pool-metrics',
             icon: Droplets,
@@ -233,6 +218,13 @@ export function buildTabConfig() {
             badge: null,
         },
         {
+            id: 'bloat',
+            icon: ScanSearch,
+            label: 'Bloat Analysis',
+            component: _components.BloatAnalysisTab,
+            badge: null,
+        },
+        {
             id: 'capacity',
             icon: BarChart2,
             label: 'Capacity Planning',
@@ -258,8 +250,16 @@ export function buildTabConfig() {
         },
 
         // ── Observability ────────────────────────────────────────────
-        //    Logs, tracing, external integrations, status
+        //    Performance, reliability, logs, tracing, external integrations
         { section: 'Observability', accent: DS.amber },
+        { id: 'performance', icon: Zap, label: 'Performance', component: _components.PerformanceTab, badge: null },
+        {
+            id: 'reliability',
+            icon: CheckCircle,
+            label: 'Reliability',
+            component: _components.ReliabilityTab,
+            badge: null,
+        },
         {
             id: 'observability-hub',
             icon: Eye,
@@ -284,7 +284,6 @@ export function buildTabConfig() {
         },
         { id: 'kubernetes', icon: Container, label: 'Kubernetes', component: _components.KubernetesTab, badge: null },
         { id: 'status-page', icon: Globe, label: 'Status Page', component: _components.StatusPageTab, badge: null },
-        { id: 'sdk-dashboard', icon: Blocks, label: 'SDK Integration', component: _components.SDKDashboardTab, badge: null },
         {
             id: 'ai-monitoring',
             icon: Brain,
@@ -294,17 +293,19 @@ export function buildTabConfig() {
         },
 
         // ── Developer Tools ──────────────────────────────────────────
+        //    SQL console, API tracing, SDK, charting, and repository
         { section: 'Developer Tools', accent: DS.violet },
         { id: 'sql', icon: Terminal, label: 'SQL Console', component: _components.SqlConsoleTab, badge: null },
         { id: 'api', icon: Cpu, label: 'API Tracing', component: _components.ApiQueriesTab, badge: null },
         { id: 'repository', icon: GitBranch, label: 'Repository', component: _components.RepositoryTab, badge: null },
         {
-            id: 'ai-advisor',
-            icon: Brain,
-            label: 'AI Query Advisor',
-            component: _components.AIQueryAdvisorTab,
+            id: 'chart-builder',
+            icon: BarChart3,
+            label: 'Chart Builder',
+            component: _components.ChartBuilder,
             badge: null,
         },
+        { id: 'sdk-dashboard', icon: Blocks, label: 'SDK Integration', component: _components.SDKDashboardTab, badge: null },
 
         // ── MySQL ────────────────────────────────────────────────────
         { section: 'MySQL', accent: DS.amber },
