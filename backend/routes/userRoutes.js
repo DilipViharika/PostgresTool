@@ -120,6 +120,21 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
     const router = Router();
     const guard  = [authenticate, requireRole('super_admin'), requireScreen('UserManagement')];
 
+    /* ── GET /api/debug/user-email/:id ──────────────────────────────────────
+       Diagnostic: directly reads a user's email from the database.
+       Remove after debugging.                                                */
+    router.get('/debug/user-email/:id', async (req, res) => {
+        try {
+            const id = parseInt(req.params.id);
+            const { rows } = await pool.query(
+                `SELECT id, username, email, name, updated_at FROM pgmonitoringtool.users WHERE id = $1`, [id]
+            );
+            res.json({ debug: true, user: rows[0] || null, timestamp: new Date().toISOString() });
+        } catch (err) {
+            res.status(500).json({ debug: true, error: err.message });
+        }
+    });
+
     /* ── GET /api/user/profile ─────────────────────────────────────────────
        Self-service: returns the authenticated user's own profile.            */
     router.get('/user/profile', authenticate, async (req, res) => {
@@ -294,9 +309,10 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
     router.put('/users/:id', ...guard, async (req, res) => {
         try {
             const id = parseInt(req.params.id);
-            const { email, name } = req.body;
 
-            log('INFO', 'User update request', { userId: id, fieldsReceived: Object.keys(req.body), email, name });
+            log('INFO', 'PUT /users/:id request body', { userId: id, body: JSON.stringify(req.body) });
+
+            const { email, name } = req.body;
 
             if (email && await emailExists(pool, email, id)) {
                 return res.status(409).json({ error: 'Email already in use' });
@@ -308,7 +324,7 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 return res.status(404).json({ error: 'User not found' });
             }
 
-            log('INFO', 'User updated successfully', { userId: id, newEmail: updated.email, newName: updated.name, by: req.user.username });
+            log('INFO', 'User updated — responding with', { userId: id, email: updated.email, name: updated.name });
             res.json(updated);
 
             // Fire-and-forget audit logging

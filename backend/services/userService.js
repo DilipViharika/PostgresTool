@@ -134,31 +134,42 @@ export async function updateUser(pool, id, data) {
         return null;
     }
 
-    console.log(`[updateUser] id=${id}, data.email=${data.email}, existing.email=${existing.email}, data.name=${data.name}, existing.name=${existing.name}`);
-
+    /* Build SET clause dynamically — only touch columns that were provided.
+       This avoids the COALESCE pattern which can mask issues when the pg
+       driver sends values that PostgreSQL treats as NULL.                     */
     const role = data.role ?? existing.role;
-    const { rows } = await pool.query(
-        `UPDATE ${S}.users SET
-            name            = COALESCE($1,  name),
-            email           = COALESCE($2,  email),
-            role            = $3,
-            access_level    = $4,
-            allowed_screens = COALESCE($5,  allowed_screens),
-            status          = COALESCE($6,  status),
-            department      = COALESCE($7,  department),
-            location        = COALESCE($8,  location),
-            mfa_enabled     = COALESCE($9,  mfa_enabled),
-            api_access      = COALESCE($10, api_access),
-            data_access     = COALESCE($11, data_access),
-            updated_at      = NOW()
-         WHERE id = $12 AND deleted_at IS NULL
-         RETURNING *`,
-        [data.name ?? null, data.email ?? null, role, accessLevelFor(role),
-            data.allowedScreens ?? null, data.status ?? null,
-            data.department ?? null, data.location ?? null,
-            data.mfa ?? null, data.apiAccess ?? null, data.dataAccess ?? null, id]
-    );
-    console.log(`[updateUser] rows returned: ${rows.length}, updatedEmail: ${rows[0]?.email}, updatedName: ${rows[0]?.name}`);
+    const sets  = [];
+    const vals  = [];
+
+    function add(col, val) {
+        if (val !== undefined) { vals.push(val); sets.push(`${col} = $${vals.length}`); }
+    }
+
+    add('name',            data.name);
+    add('email',           data.email);
+    // role & access_level always get set (either from data or existing)
+    vals.push(role);              sets.push(`role = $${vals.length}`);
+    vals.push(accessLevelFor(role)); sets.push(`access_level = $${vals.length}`);
+    add('allowed_screens', data.allowedScreens);
+    add('status',          data.status);
+    add('department',      data.department);
+    add('location',        data.location);
+    add('mfa_enabled',     data.mfa ?? data.mfaEnabled);
+    add('api_access',      data.apiAccess);
+    add('data_access',     data.dataAccess);
+    sets.push('updated_at = NOW()');
+
+    vals.push(id);
+    const idIdx = vals.length;
+
+    const sql = `UPDATE ${S}.users SET ${sets.join(', ')}
+                 WHERE id = $${idIdx} AND deleted_at IS NULL
+                 RETURNING *`;
+
+    console.log(`[updateUser] id=${id}, email=${data.email}, sql=${sql}, params=${JSON.stringify(vals)}`);
+
+    const { rows } = await pool.query(sql, vals);
+    console.log(`[updateUser] rows=${rows.length}, returnedEmail=${rows[0]?.email}`);
     return rows[0] ? toClient(rows[0]) : null;
 }
 
