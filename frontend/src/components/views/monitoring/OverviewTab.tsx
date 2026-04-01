@@ -2306,7 +2306,7 @@ const OverviewTab = () => {
         { name: 'Writes', value: writePct > 0 ? writePct : 1, color: THEME.secondary },
     ];
 
-    /* ── Hero metric cards (6 across — all real data, no sparklines or fake trends) ── */
+    /* ── Hero metric cards (all real data, no sparklines or fake trends) ── */
     const metricCards = [
         {
             label: 'Active Sessions',
@@ -2380,12 +2380,12 @@ const OverviewTab = () => {
                 </div>
             </div>
 
-            {/* ═══════ Row 1: 6 Hero Metric Cards ═══════ */}
-            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16 }}>
+            {/* ═══════ Row 1: Hero Metric Cards ═══════ */}
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 18 }}>
                 {metricCards.map((m, i) => (
                     <div
                         key={i}
-                        className={`ov-metric-card ${i >= 4 ? 'ov-glow-warn' : 'ov-glow'}`}
+                        className={`ov-metric-card ${!m.healthy ? 'ov-glow-warn' : 'ov-glow'}`}
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -2394,11 +2394,10 @@ const OverviewTab = () => {
                             borderRadius: 12,
                             background: THEME.glass,
                             backdropFilter: 'blur(14px)',
-                            border: `1px solid ${i >= 4 ? `${m.color}28` : THEME.glassBorder}`,
+                            border: `1px solid ${!m.healthy ? `${m.color}28` : THEME.glassBorder}`,
                             position: 'relative',
                             overflow: 'hidden',
-                            boxShadow:
-                                i >= 4
+                            boxShadow: !m.healthy
                                     ? `0 0 0 1px ${m.color}12, inset 0 1px 2px rgba(255,255,255,0.08)`
                                     : `0 0 0 1px ${THEME.glassBorder}, inset 0 1px 2px rgba(255,255,255,0.06)`,
                         }}
@@ -2476,7 +2475,7 @@ const OverviewTab = () => {
             </div>
 
             {/* ═══════ Row 2: Backup + LongTxns + Vacuum (new focused cards) ═══════ */}
-            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18 }}>
                 <BackupStatusCard lastBackup={backupData} />
                 <LongTxnCard data={longTxns.length > 0 ? longTxns : null} onNavigate={() => nav?.goToTab('performance')} />
                 <VacuumHealthCard data={vacuumData} onNavigate={() => nav?.goToTab('maintenance')} />
@@ -2856,7 +2855,7 @@ const OverviewTab = () => {
             </Panel>
 
             {/* ═══════ Row 5: Workload + Throughput + Ops ═══════ */}
-            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr 1.3fr', gap: 20 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr 1.3fr', gap: 18 }}>
                 {/* Workload Split */}
                 <Panel title="Workload Split" icon={BarChart3}>
                     <div
@@ -3117,7 +3116,7 @@ const OverviewTab = () => {
             </div>
 
             {/* ═══════ Row 6: System Resources ═══════ */}
-            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
                 {[
                     {
                         label: 'CPU Load',
@@ -3199,7 +3198,7 @@ const OverviewTab = () => {
             </div>
 
             {/* ═══════ Row 7: Replication + Tables + WAL ═══════ */}
-            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1.4fr 1.2fr', gap: 20 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1.4fr 1.2fr', gap: 18 }}>
                 {/* Replication & Locks */}
                 <Panel
                     title="Replication & Locks"
