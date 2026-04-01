@@ -1268,7 +1268,7 @@ const formatDuration = (totalSec) => {
     return `${m}m ${String(s).padStart(2, '0')}s`;
 };
 
-const LongTxnCard = ({ data }) => {
+const LongTxnCard = ({ data, onNavigate }) => {
     const txns = (Array.isArray(data) ? data : []).map(t => ({
         pid: t.pid,
         duration: t.duration || formatDuration(t.txn_duration_sec || t.query_duration_sec || 0),
@@ -1343,6 +1343,22 @@ const LongTxnCard = ({ data }) => {
                 <div style={{ fontSize: 10.5, color: THEME.textDim, textAlign: 'center', padding: '12px 0' }}>
                     No long-running transactions detected
                 </div>
+                {onNavigate && (
+                    <button
+                        onClick={onNavigate}
+                        style={{
+                            marginTop: 12, width: '100%', padding: '8px 0', borderRadius: 8,
+                            border: `1px solid ${THEME.primary}25`, background: `${THEME.primary}08`,
+                            color: THEME.primary, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                            transition: 'all 0.15s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = `${THEME.primary}18`; e.currentTarget.style.borderColor = `${THEME.primary}40`; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = `${THEME.primary}08`; e.currentTarget.style.borderColor = `${THEME.primary}25`; }}
+                    >
+                        Performance &amp; Queries <span style={{ fontSize: 13 }}>→</span>
+                    </button>
+                )}
             </div>
         );
     }
@@ -1483,6 +1499,22 @@ const LongTxnCard = ({ data }) => {
                     );
                 })}
             </div>
+            {onNavigate && (
+                <button
+                    onClick={onNavigate}
+                    style={{
+                        marginTop: 12, width: '100%', padding: '8px 0', borderRadius: 8,
+                        border: `1px solid ${THEME.primary}25`, background: `${THEME.primary}08`,
+                        color: THEME.primary, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = `${THEME.primary}18`; e.currentTarget.style.borderColor = `${THEME.primary}40`; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = `${THEME.primary}08`; e.currentTarget.style.borderColor = `${THEME.primary}25`; }}
+                >
+                    Performance &amp; Queries <span style={{ fontSize: 13 }}>→</span>
+                </button>
+            )}
         </div>
     );
 };
@@ -2312,15 +2344,6 @@ const OverviewTab = () => {
             detail: '',
             healthy: true,
         },
-        {
-            label: 'Long Txns',
-            value: String(longTxns.length),
-            sub: '> 1 min',
-            color: longTxns.length > 0 ? THEME.warning : THEME.success,
-            icon: Hourglass,
-            detail: longTxns.length > 0 ? `${longTxns.length} active` : 'None',
-            healthy: longTxns.length === 0,
-        },
     ];
 
     /* ══════════════════════════════════════════════════════════════════
@@ -2455,7 +2478,7 @@ const OverviewTab = () => {
             {/* ═══════ Row 2: Backup + LongTxns + Vacuum (new focused cards) ═══════ */}
             <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
                 <BackupStatusCard lastBackup={backupData} />
-                <LongTxnCard data={longTxns.length > 0 ? longTxns : null} />
+                <LongTxnCard data={longTxns.length > 0 ? longTxns : null} onNavigate={() => nav?.goToTab('performance')} />
                 <VacuumHealthCard data={vacuumData} onNavigate={() => nav?.goToTab('maintenance')} />
             </div>
 
