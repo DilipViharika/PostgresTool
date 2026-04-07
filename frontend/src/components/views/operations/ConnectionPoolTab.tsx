@@ -905,7 +905,7 @@ const ConnectionsTab = () => {
     const isEmpty = connections.length === 0 && !connectionsLoading && !refreshing;
 
     return (
-        <div style={{ ...S.root, padding: isEmpty ? '0' : '32px 28px', overflow: isEmpty ? 'hidden' : 'auto', minHeight: isEmpty ? 'auto' : '100vh', height: isEmpty ? '100vh' : 'auto' }}>
+        <div style={{ ...S.root, padding: isEmpty ? '0' : '32px 28px', overflow: isEmpty ? 'hidden' : 'auto', minHeight: isEmpty ? 'auto' : '100vh', height: isEmpty ? '100%' : 'auto' }}>
             {/* ── Keyframes ── */}
             <style>{`
                 @keyframes cpFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
@@ -937,7 +937,7 @@ const ConnectionsTab = () => {
             ═══════════════════════════════════════════════════════════════ */}
             {isEmpty && (
                 <div style={{
-                    height: '100vh', display: 'flex', flexDirection: 'column',
+                    height: 'calc(100vh - 56px)', display: 'flex', flexDirection: 'column',
                     alignItems: 'center', justifyContent: 'center',
                     background: THEME.bg, position: 'relative', overflow: 'hidden',
                     padding: '0 24px',
@@ -1108,7 +1108,7 @@ const ConnectionsTab = () => {
                             ].map((pill, i) => (
                                 <div key={i} style={{
                                     display: 'inline-flex', alignItems: 'center', gap: 6,
-                                    padding: '7px 14px', borderRadius: 20,
+                                    padding: '5px 12px', borderRadius: 20,
                                     background: `${pill.color}10`,
                                     border: `1px solid ${pill.color}20`,
                                     fontSize: 12, fontWeight: 600, color: pill.color,
