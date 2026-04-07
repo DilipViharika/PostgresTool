@@ -905,7 +905,7 @@ const ConnectionsTab = () => {
     const isEmpty = connections.length === 0 && !connectionsLoading && !refreshing;
 
     return (
-        <div style={{ ...S.root, padding: isEmpty ? '0' : '32px 28px', overflow: isEmpty ? 'hidden' : 'auto', minHeight: isEmpty ? 'auto' : '100vh', height: isEmpty ? '100%' : 'auto' }}>
+        <div style={{ ...S.root, padding: isEmpty ? '0' : '32px 28px', minHeight: isEmpty ? '100%' : '100vh', height: isEmpty ? '100%' : 'auto' }}>
             {/* ── Keyframes ── */}
             <style>{`
                 @keyframes cpFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
@@ -937,10 +937,11 @@ const ConnectionsTab = () => {
             ═══════════════════════════════════════════════════════════════ */}
             {isEmpty && (
                 <div style={{
-                    height: 'calc(100vh - 56px)', display: 'flex', flexDirection: 'column',
+                    height: '100%', minHeight: 'calc(100vh - 62px)',
+                    display: 'flex', flexDirection: 'column',
                     alignItems: 'center', justifyContent: 'center',
                     background: THEME.bg, position: 'relative', overflow: 'hidden',
-                    padding: '0 24px',
+                    padding: '0 24px', boxSizing: 'border-box',
                 }}>
                     {/* Ambient background grid */}
                     <div style={{
