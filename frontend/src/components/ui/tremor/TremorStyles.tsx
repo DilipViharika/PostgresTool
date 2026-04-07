@@ -1,6 +1,6 @@
 /**
- * Tremor-inspired CSS animations injected via <style> tag.
- * Import this component once at the top of any page using Tremor components.
+ * Advanced CSS animations & hover effects for Tremor components.
+ * Rich visual micro-interactions — glow, shimmer, elevation changes.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
@@ -13,8 +13,8 @@ const TremorStyles: React.FC = () => (
       to   { opacity: 1; transform: translateY(0); }
     }
     @keyframes tremorPulse {
-      0%, 100% { opacity: 1; }
-      50%      { opacity: 0.3; }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.85); }
     }
     @keyframes tremorPulseRing {
       0%   { transform: scale(0.8); opacity: 0.7; }
@@ -53,7 +53,11 @@ const TremorStyles: React.FC = () => (
     }
     @keyframes tremorGlowPulse {
       0%, 100% { box-shadow: 0 0 0px rgba(139,92,246,0); }
-      50%      { box-shadow: 0 2px 8px rgba(139,92,246,0.08); }
+      50%      { box-shadow: 0 2px 12px rgba(139,92,246,0.12); }
+    }
+    @keyframes tremorBorderGlow {
+      0%, 100% { border-color: rgba(255,255,255,0.08); }
+      50%      { border-color: rgba(255,255,255,0.14); }
     }
 
     /* ── Stagger children ─────────────────────────────────────────── */
@@ -73,13 +77,31 @@ const TremorStyles: React.FC = () => (
       animation: tremorBarGrow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
-    /* ── KPI card hover ───────────────────────────────────────────── */
-    .tremor-kpi:hover {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
-      transform: translateY(-1px);
-    }
+    /* ── KPI card hover — elevated with glow ─────────────────────── */
     .tremor-kpi {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .tremor-kpi:hover {
+      transform: translateY(-3px) !important;
+      box-shadow: ${THEME.shadowLg} !important;
+    }
+
+    /* ── Panel card hover ─────────────────────────────────────────── */
+    .tremor-panel {
+      transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .tremor-panel:hover {
+      box-shadow: ${THEME.shadowLg} !important;
+      border-color: ${THEME.glassBorderHover} !important;
+    }
+
+    /* ── Generic card hover ───────────────────────────────────────── */
+    .tremor-card {
+      transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .tremor-card:hover {
+      box-shadow: ${THEME.shadowLg} !important;
+      border-color: ${THEME.glassBorderHover} !important;
     }
 
     /* ── Notification slide ───────────────────────────────────────── */
@@ -98,13 +120,35 @@ const TremorStyles: React.FC = () => (
     .tremor-mono { font-family: ${THEME.fontMono} !important; }
     .tremor-display { font-family: ${THEME.fontBody} !important; }
 
-    /* ── Card shine overlay ───────────────────────────────────────── */
+    /* ── Card shine overlay — glass effect ────────────────────────── */
     .tremor-card-shine {
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%);
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.04) 0%,
+        rgba(255,255,255,0.01) 30%,
+        transparent 60%
+      );
       pointer-events: none;
       border-radius: inherit;
+      z-index: 0;
+    }
+
+    /* ── Scrollbar styling ────────────────────────────────────────── */
+    .tremor-panel ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .tremor-panel ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .tremor-panel ::-webkit-scrollbar-thumb {
+      background: ${THEME.glassBorder};
+      border-radius: 4px;
+    }
+    .tremor-panel ::-webkit-scrollbar-thumb:hover {
+      background: ${THEME.glassBorderHover};
     }
   `}</style>
 );
