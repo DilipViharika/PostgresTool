@@ -54,17 +54,13 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
 
     /**
      * Resolve the correct database pool for a request.
-     * Uses the user's active connection if reqPool is provided,
-     * falls back to the admin pool otherwise.
+     * Uses the user's active connection if reqPool is provided.
+     * Does NOT fall back to admin pool — schema routes must always
+     * query the user's connected database, never the tool's internal DB.
      */
     async function resolvePool(req) {
         if (reqPool) {
-            try {
-                return await reqPool(req);
-            } catch (e) {
-                log('WARN', 'Failed to resolve request pool, falling back to admin pool', { error: e.message });
-                return pool;
-            }
+            return await reqPool(req);   // Let errors propagate — no silent fallback
         }
         return pool;
     }
@@ -86,7 +82,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
                 FROM pg_class c
                 JOIN pg_namespace n ON c.relnamespace = n.oid
                 WHERE c.relkind = 'r'
-                  AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'pg_toast_temp_*')
+                  AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'pg_toast_temp_*', 'pgmonitoringtool')
                 ORDER BY n.oid, c.relname;
             `;
 
@@ -113,7 +109,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
                 JOIN pg_attribute a2 ON fk.confrelid = a2.attrelid
                     AND a2.attnum = ANY(fk.confkey)
                 WHERE fk.contype = 'f'
-                  AND ns1.nspname NOT IN ('pg_catalog', 'information_schema')
+                  AND ns1.nspname NOT IN ('pg_catalog', 'information_schema', 'pgmonitoringtool')
                 ORDER BY ns1.nspname, t1.relname, fk.conname;
             `;
 
@@ -132,7 +128,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
             }));
 
             const relationships = relationshipsResult.rows.map(row => ({
-                id: `${row.fromSchema}.${row.fromTable}→${row.toSchema}.${row.toTable}`,
+                id: `${row.fromSchema}.${row.fromTable}\u2192${row.toSchema}.${row.toTable}`,
                 from: `${row.fromSchema}.${row.fromTable}`,
                 to: `${row.toSchema}.${row.toTable}`,
                 fromColumn: row.fromColumn,
@@ -146,7 +142,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
             res.json({ tables, relationships });
         } catch (err) {
             log('ERROR', 'Failed to fetch schema relationships', { error: err.message });
-            res.json({ tables: [], relationships: [] });
+            res.status(500).json({ error: err.message, tables: [], relationships: [] });
         }
     });
 
@@ -173,7 +169,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
                 WHERE d.deptype IN ('n', 'a')
                   AND c1.relkind IN ('v', 'm')
                   AND c2.relkind = 'r'
-                  AND n1.nspname NOT IN ('pg_catalog', 'information_schema')
+                  AND n1.nspname NOT IN ('pg_catalog', 'information_schema', 'pgmonitoringtool')
                 GROUP BY n1.nspname, c1.relname, c1.relkind, n2.nspname, c2.relname
                 ORDER BY n1.nspname, c1.relname;
             `;
@@ -181,7 +177,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
             const connPool = await resolvePool(req);
             const result = await connPool.query(query);
             const dependencies = result.rows.map(row => ({
-                id: `${row.source}→${row.target}`,
+                id: `${row.source}\u2192${row.target}`,
                 source: row.source,
                 target: row.target,
                 dependencyType: row.dependencyType,
@@ -190,7 +186,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
             res.json({ dependencies });
         } catch (err) {
             log('ERROR', 'Failed to fetch schema dependencies', { error: err.message });
-            res.json({ dependencies: [] });
+            res.status(500).json({ error: err.message, dependencies: [] });
         }
     });
 
@@ -205,7 +201,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
             const schemasQuery = `
                 SELECT n.nspname AS schema_name
                 FROM pg_namespace n
-                WHERE n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'pg_toast_temp_*')
+                WHERE n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'pg_toast_temp_*', 'pgmonitoringtool')
                 ORDER BY n.nspname;
             `;
 
@@ -224,7 +220,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
                     ON c.table_name = tc.table_name
                     AND c.table_schema = tc.table_schema
                     AND c.column_name IN (SELECT column_name FROM information_schema.key_column_usage WHERE constraint_name = tc.constraint_name)
-                WHERE t.table_schema NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+                WHERE t.table_schema NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'pgmonitoringtool')
                 AND t.table_type = 'BASE TABLE'
                 ORDER BY t.table_schema, t.table_name, c.ordinal_position;
             `;
@@ -234,7 +230,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
                 SELECT table_schema, table_name
                 FROM information_schema.tables
                 WHERE table_type = 'VIEW'
-                AND table_schema NOT IN ('pg_catalog', 'information_schema', 'information_schema')
+                AND table_schema NOT IN ('pg_catalog', 'information_schema', 'pgmonitoringtool')
                 ORDER BY table_schema, table_name;
             `;
 
@@ -243,7 +239,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
                 SELECT n.nspname, p.proname
                 FROM pg_proc p
                 JOIN pg_namespace n ON p.pronamespace = n.oid
-                WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+                WHERE n.nspname NOT IN ('pg_catalog', 'information_schema', 'pgmonitoringtool')
                 AND p.prokind = 'f'
                 ORDER BY n.nspname, p.proname;
             `;
@@ -252,7 +248,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
             const sequencesQuery = `
                 SELECT sequence_schema, sequence_name
                 FROM information_schema.sequences
-                WHERE sequence_schema NOT IN ('pg_catalog', 'information_schema')
+                WHERE sequence_schema NOT IN ('pg_catalog', 'information_schema', 'pgmonitoringtool')
                 ORDER BY sequence_schema, sequence_name;
             `;
 
@@ -411,7 +407,7 @@ export default function schemaRoutes(pool, authenticate, reqPool) {
             res.json({ columns });
         } catch (err) {
             log('ERROR', 'Failed to fetch column details', { error: err.message });
-            res.json({ columns: [] });
+            res.status(500).json({ error: err.message, columns: [] });
         }
     });
 
