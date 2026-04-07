@@ -3028,28 +3028,28 @@ const Sidebar = ({
                         gap: 10,
                         padding: collapsed ? '8px 0' : '8px 10px',
                         marginBottom: 4,
-                        background: `${DS.cyan}08`,
+                        background: 'rgba(99,102,241,0.10)',
                         borderRadius: 8,
-                        border: `1px solid ${DS.cyan}12`,
+                        border: '1px solid rgba(99,102,241,0.18)',
                         cursor: 'pointer',
                         width: '100%',
                         textAlign: 'left',
                         transition: 'all 0.15s ease',
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.background = `${DS.cyan}15`;
-                        e.currentTarget.style.borderColor = `${DS.cyan}25`;
+                        e.currentTarget.style.background = 'rgba(99,102,241,0.18)';
+                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.30)';
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.background = `${DS.cyan}08`;
-                        e.currentTarget.style.borderColor = `${DS.cyan}12`;
+                        e.currentTarget.style.background = 'rgba(99,102,241,0.10)';
+                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.18)';
                     }}
                 >
                     {/* Avatar */}
                     <div style={{
                         width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-                        background: `linear-gradient(135deg, ${DS.cyan}30, ${DS.violet}25)`,
-                        border: `1px solid ${DS.cyan}20`,
+                        background: 'linear-gradient(135deg, rgba(99,102,241,0.35), rgba(139,92,246,0.3))',
+                        border: '1px solid rgba(99,102,241,0.25)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                         <User size={13} color={DS.cyan} />
@@ -3058,7 +3058,7 @@ const Sidebar = ({
                         <>
                             <div style={{ minWidth: 0, flex: 1 }}>
                                 <div style={{
-                                    fontSize: 11.5, fontWeight: 600, color: DS.textPrimary,
+                                    fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,0.9)',
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                     lineHeight: '15px',
                                 }}>
@@ -3098,18 +3098,18 @@ const Sidebar = ({
                                 title={tip}
                                 style={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    padding: '7px 0', background: active ? `${DS.cyan}12` : 'transparent',
+                                    padding: '7px 0', background: active ? 'rgba(99,102,241,0.15)' : 'transparent',
                                     border: 'none', borderRadius: 6, cursor: 'pointer', width: '100%',
-                                    color: active ? DS.cyan : DS.sidebarText,
+                                    color: active ? DS.cyan : 'rgba(255,255,255,0.6)',
                                     transition: 'all 0.15s ease',
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.color = danger ? DS.rose : DS.cyan;
-                                    e.currentTarget.style.background = danger ? `${DS.rose}10` : `${DS.cyan}12`;
+                                    e.currentTarget.style.background = danger ? 'rgba(251,113,133,0.12)' : 'rgba(99,102,241,0.15)';
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.color = active ? DS.cyan : DS.sidebarText;
-                                    e.currentTarget.style.background = active ? `${DS.cyan}12` : 'transparent';
+                                    e.currentTarget.style.color = active ? DS.cyan : 'rgba(255,255,255,0.6)';
+                                    e.currentTarget.style.background = active ? 'rgba(99,102,241,0.15)' : 'transparent';
                                 }}
                             >
                                 <Icon size={14} />
@@ -3133,22 +3133,22 @@ const Sidebar = ({
                                     style={{
                                         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         gap: 6, padding: '6px 8px',
-                                        background: active ? `${DS.cyan}12` : `${DS.sidebarText}06`,
-                                        border: active ? `1px solid ${DS.cyan}20` : `1px solid transparent`,
+                                        background: active ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.06)',
+                                        border: active ? '1px solid rgba(99,102,241,0.25)' : '1px solid rgba(255,255,255,0.08)',
                                         borderRadius: 6, cursor: 'pointer',
-                                        color: active ? DS.cyan : DS.sidebarText,
+                                        color: active ? DS.cyan : 'rgba(255,255,255,0.7)',
                                         fontSize: 11, fontWeight: active ? 600 : 500,
                                         fontFamily: DS.fontUI, transition: 'all 0.15s ease',
                                     }}
                                     onMouseEnter={(e) => {
-                                        e.currentTarget.style.background = `${DS.cyan}15`;
+                                        e.currentTarget.style.background = 'rgba(99,102,241,0.18)';
                                         e.currentTarget.style.color = DS.cyan;
-                                        e.currentTarget.style.borderColor = `${DS.cyan}20`;
+                                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.25)';
                                     }}
                                     onMouseLeave={(e) => {
-                                        e.currentTarget.style.background = active ? `${DS.cyan}12` : `${DS.sidebarText}06`;
-                                        e.currentTarget.style.color = active ? DS.cyan : DS.sidebarText;
-                                        e.currentTarget.style.borderColor = active ? `${DS.cyan}20` : 'transparent';
+                                        e.currentTarget.style.background = active ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.06)';
+                                        e.currentTarget.style.color = active ? DS.cyan : 'rgba(255,255,255,0.7)';
+                                        e.currentTarget.style.borderColor = active ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.08)';
                                     }}
                                 >
                                     <Icon size={12} />
@@ -3163,18 +3163,18 @@ const Sidebar = ({
                                 style={{
                                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     gap: 6, padding: '6px 8px',
-                                    background: `${DS.sidebarText}06`, border: '1px solid transparent',
-                                    borderRadius: 6, cursor: 'pointer', color: DS.sidebarText,
+                                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)',
+                                    borderRadius: 6, cursor: 'pointer', color: 'rgba(255,255,255,0.7)',
                                     fontSize: 11, fontWeight: 500, fontFamily: DS.fontUI,
                                     transition: 'all 0.15s ease',
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = `${DS.cyan}12`;
+                                    e.currentTarget.style.background = 'rgba(99,102,241,0.15)';
                                     e.currentTarget.style.color = DS.cyan;
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = `${DS.sidebarText}06`;
-                                    e.currentTarget.style.color = DS.sidebarText;
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                    e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
                                 }}
                             >
                                 <MessageSquarePlus size={12} />
@@ -3185,20 +3185,20 @@ const Sidebar = ({
                                 style={{
                                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     gap: 6, padding: '6px 8px',
-                                    background: `${DS.sidebarText}06`, border: '1px solid transparent',
-                                    borderRadius: 6, cursor: 'pointer', color: DS.sidebarText,
+                                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)',
+                                    borderRadius: 6, cursor: 'pointer', color: 'rgba(255,255,255,0.7)',
                                     fontSize: 11, fontWeight: 500, fontFamily: DS.fontUI,
                                     transition: 'all 0.15s ease',
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = `${DS.rose}10`;
+                                    e.currentTarget.style.background = 'rgba(251,113,133,0.12)';
                                     e.currentTarget.style.color = DS.rose;
-                                    e.currentTarget.style.borderColor = `${DS.rose}20`;
+                                    e.currentTarget.style.borderColor = 'rgba(251,113,133,0.2)';
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = `${DS.sidebarText}06`;
-                                    e.currentTarget.style.color = DS.sidebarText;
-                                    e.currentTarget.style.borderColor = 'transparent';
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                    e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
                                 }}
                             >
                                 <LogOut size={12} />
