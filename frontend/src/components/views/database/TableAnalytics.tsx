@@ -358,7 +358,7 @@ const FilterBar = React.memo(function FilterBar({ filter, setFilter, allTables, 
             </div>
             {hasFilter && (
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, paddingBottom: 2 }}>
-                    <div style={{ padding: '8px 12px', borderRadius: 8, background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}25`, fontSize: 12, color: THEME.primary, fontFamily: THEME.fontMono, fontWeight: 600, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ padding: '8px 12px', borderRadius: 8, background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}25`, fontSize: 12, color: THEME.primary, fontFamily: THEME.fontMono, fontWeight: 600, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>
                         {[filter.db, filter.schema, filter.table].filter(Boolean).join(' › ')}
                     </div>
                     <button className="ud-btn" onClick={() => setFilter({ db: '', schema: '', table: '' })}
@@ -1466,7 +1466,7 @@ function S_Indexes() {
                             <TRow key={i} cols="2fr 1fr 1fr 1fr 1fr 1.2fr" i={i}>
                                 <div>
                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 11, fontWeight: 600, color: THEME.textMain }}>{ix.name}</div>
-                                    {ix.definition && <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 240 }} title={ix.definition}>{ix.definition}</div>}
+                                    {ix.definition && <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 240, flex: 1, minWidth: 0 }} title={ix.definition}>{ix.definition}</div>}
                                     <div style={{ display: 'flex', gap: 5, marginTop: 4 }}>
                                         {ix.isPrimary && <Chip color={THEME.purple} size="sm">PK</Chip>}
                                         {ix.isUnique  && <Chip color={THEME.cyan}   size="sm">UQ</Chip>}
@@ -1624,7 +1624,7 @@ function S_QueryPerf() {
                         return (
                             <TRow key={i} cols="3fr 1fr 1fr 1fr 1fr 1fr" i={i}>
                                 <div>
-                                    <div style={{ fontFamily: THEME.fontMono, fontSize: 10, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 380 }} title={q.query}>{qShort}</div>
+                                    <div style={{ fontFamily: THEME.fontMono, fontSize: 10, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 380, flex: 1, minWidth: 0 }} title={q.query}>{qShort}</div>
                                     {mean > 100 && <div style={{ fontSize: 9, color: THEME.danger, marginTop: 3 }}>⚠ Slow query detected</div>}
                                 </div>
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted }}>{safeNum(q.calls).toLocaleString()}</span>

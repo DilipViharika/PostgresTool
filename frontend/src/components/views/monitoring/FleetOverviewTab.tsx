@@ -199,7 +199,7 @@ const DatabaseCard = ({ connection, health, isActive, onSwitch }) => {
         }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, paddingBottom: 12, borderBottom: `1px solid ${THEME.glassBorder}` }}>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flex: 1 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
                     <div style={{ width: 38, height: 38, borderRadius: 8, background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Database size={18} color={THEME.primary} />
                     </div>

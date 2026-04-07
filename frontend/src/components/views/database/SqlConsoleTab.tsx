@@ -328,7 +328,7 @@ const Notification = ({ notifications, onDismiss }) => (
         {notifications.map(n => (
             <div key={n.id} className="sql-notification" style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', borderRadius:8, background:n.type==='error'?`${THEME.danger}12`:`${THEME.success}08`, border:`1px solid ${n.type==='error'?THEME.danger:THEME.success}20`, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                 {n.type==='error' ? <XCircle size={13} color={THEME.danger}/> : <CheckCircle size={13} color={THEME.success}/>}
-                <span style={{ fontSize:11, fontWeight:600, color:n.type==='error'?THEME.danger:THEME.success, flex:1 }}>{n.msg}</span>
+                <span style={{ fontSize:11, fontWeight:600, color:n.type==='error'?THEME.danger:THEME.success, flex:1, minWidth:0 }}>{n.msg}</span>
                 <X size={11} color={THEME.textDim} style={{ cursor:'pointer', flexShrink:0 }} onClick={() => onDismiss(n.id)}/>
             </div>
         ))}
@@ -344,7 +344,7 @@ const CostMeter = ({ sql }) => {
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
                 <FlameKindling size={10} color={color}/>
                 <span style={{ fontSize:9, fontWeight:700, color:color, letterSpacing:'0.02em' }}>Query Cost Estimate</span>
-                <div style={{ flex:1, height:3, borderRadius:4, background:`${THEME.grid}25`, overflow:'hidden' }}>
+                <div style={{ flex:1, minWidth:0, height:3, borderRadius:4, background:`${THEME.grid}25`, overflow:'hidden' }}>
                     <div style={{ height:'100%', width:`${score}%`, background:`linear-gradient(90deg, ${THEME.success}, ${score>60?THEME.danger:THEME.warning})`, borderRadius:4, transition:'width 0.6s ease', transformOrigin:'left', animation:'sqlBarGrow 0.6s ease' }}/>
                 </div>
                 <span style={{ fontSize:9, color:color, fontWeight:700, fontVariantNumeric:'tabular-nums', width:30, textAlign:'right' }}>{score}/100</span>
@@ -443,7 +443,7 @@ const ChartView = ({ result }) => {
             </div>
 
             {/* Chart */}
-            <div style={{ flex:1, overflow:'hidden', position:'relative' }}>
+            <div style={{ flex:1, minWidth:0, overflow:'hidden', position:'relative' }}>
                 <svg width="100%" height="100%" style={{ overflow:'visible' }}>
                     {chartType === 'bar' && (() => {
                         const svgRef = React.createRef();
@@ -598,7 +598,7 @@ const DiffViewer = ({ leftRows, rightRows, leftFields, rightFields, leftLabel, r
                 <span style={{ color:THEME.success, fontWeight:700 }}>+{onlyRight} added</span>
                 <span style={{ color:THEME.textDim }}>={leftRows.filter(r=>rightSet.has(JSON.stringify(r))).length} shared</span>
             </div>
-            <div style={{ flex:1, overflow:'auto', display:'flex', gap:1 }} className="sql-scrollbar">
+            <div style={{ flex:1, minWidth:0, overflow:'auto', display:'flex', gap:1 }} className="sql-scrollbar">
                 {[{ rows:leftRows, set:rightSet, side:'left', label:leftLabel||'Left', isAdd:false },
                     { rows:rightRows, set:leftSet, side:'right', label:rightLabel||'Right', isAdd:true }].map(({ rows, set, side, label, isAdd }) => (
                     <div key={side} style={{ flex:1, minWidth:0 }}>
@@ -615,7 +615,7 @@ const DiffViewer = ({ leftRows, rightRows, leftFields, rightFields, leftLabel, r
                                 const inOther = set.has(serialized);
                                 return (
                                     <tr key={ri} className={inOther?'':(isAdd?'sql-diff-add':'sql-diff-remove')}>
-                                        {allKeys.map(k=><td key={k} style={{ padding:'5px 9px', fontSize:11, color:THEME.textMuted, fontFamily:'monospace', borderBottom:`1px solid ${THEME.grid}10`, maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{row[k]??<span style={{fontSize:9,opacity:.5}}>NULL</span>}</td>)}
+                                        {allKeys.map(k=><td key={k} style={{ padding:'5px 9px', fontSize:11, color:THEME.textMuted, fontFamily:'monospace', borderBottom:`1px solid ${THEME.grid}10`, flex:1, minWidth:0, maxWidth:'unset', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{row[k]??<span style={{fontSize:9,opacity:.5}}>NULL</span>}</td>)}
                                     </tr>
                                 );
                             })}
@@ -710,11 +710,11 @@ const SchemaBrowser = ({ onInsert, schema = {} }) => {
             <div style={{ padding:'7px 10px', borderBottom:`1px solid ${THEME.glassBorder}` }}>
                 <div style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 9px', borderRadius:6, background:THEME.surface, border:`1px solid ${THEME.grid}35`, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     <Search size={11} color={THEME.textDim}/>
-                    <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search tables, columns…" style={{ border:'none', background:'transparent', color:THEME.textMain, outline:'none', flex:1, fontSize:11, fontFamily:'inherit' }}/>
+                    <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search tables, columns…" style={{ border:'none', background:'transparent', color:THEME.textMain, outline:'none', flex:1, minWidth:0, fontSize:11, fontFamily:'inherit' }}/>
                     {search && <X size={10} style={{ cursor:'pointer', color:THEME.textDim }} onClick={()=>setSearch('')}/>}
                 </div>
             </div>
-            <div className="sql-scrollbar" style={{ flex:1, overflowY:'auto', padding:'6px 8px', gap:12 }}>
+            <div className="sql-scrollbar" style={{ flex:1, minHeight:0, overflowY:'auto', padding:'6px 8px', gap:12 }}>
                 {filtered.map(schema => (
                     <div key={schema.name}>
                         <div onClick={() => setExpanded(p=>({...p,[schema.name]:!p[schema.name]}))}
@@ -732,7 +732,7 @@ const SchemaBrowser = ({ onInsert, schema = {} }) => {
                                      onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                                     <ChevronRight size={9} color={THEME.textDim} style={{ transform:expandedTables[`${schema.name}.${table.name}`]?'rotate(90deg)':'none', transition:'transform 0.15s', flexShrink:0 }}/>
                                     <Table2 size={10} color={THEME.primary}/>
-                                    <span style={{ fontSize:11, color:THEME.textMain, flex:1 }}>{table.name}</span>
+                                    <span style={{ fontSize:11, color:THEME.textMain, flex:1, minWidth:0 }}>{table.name}</span>
                                     <button onMouseDown={e=>{e.stopPropagation();onInsert(`SELECT * FROM ${schema.name}.${table.name} LIMIT 50;`);}}
                                             style={{ padding:'1px 6px', borderRadius:3, border:'none', cursor:'pointer', background:`${THEME.primary}12`, color:THEME.primary, fontSize:8, fontWeight:700, opacity:0 }}
                                             className="sql-preview-btn"
@@ -746,7 +746,7 @@ const SchemaBrowser = ({ onInsert, schema = {} }) => {
                                          onMouseEnter={e=>e.currentTarget.style.background=`${THEME.primary}06`}
                                          onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                                         <Columns size={9} color={THEME.textDim}/>
-                                        <span style={{ fontSize:10, color:THEME.textMuted, fontFamily:'monospace', flex:1 }}>{col.n}</span>
+                                        <span style={{ fontSize:10, color:THEME.textMuted, fontFamily:'monospace', flex:1, minWidth:0 }}>{col.n}</span>
                                         <span style={{ fontSize:8, color:TYPE_COLOR_MAP[col.t]||THEME.textDim, fontFamily:'monospace', flexShrink:0 }}>{col.t}</span>
                                     </div>
                                 ))}
@@ -801,7 +801,7 @@ const AIAssistPanel = ({ sql, result, onSuggest }) => {
             )}
 
             {/* Conversation */}
-            <div className="sql-scrollbar" style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column', gap:6 }}>
+            <div className="sql-scrollbar" style={{ flex:1, minHeight:0, overflowY:'auto', display:'flex', flexDirection:'column', gap:6 }}>
                 {conversation.length === 0 && (
                     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', opacity:0.4, gap:8 }}>
                         <BrainCircuit size={24} color={THEME.secondary}/>
@@ -824,7 +824,7 @@ const AIAssistPanel = ({ sql, result, onSuggest }) => {
             {/* Input */}
             <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                 <input value={prompt} onChange={e=>setPrompt(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAsk()} placeholder="Ask about your query…"
-                       style={{ flex:1, padding:'6px 10px', borderRadius:7, border:`1px solid ${THEME.secondary}25`, background:`${THEME.secondary}06`, color:THEME.textMain, fontSize:11, outline:'none', fontFamily:'inherit' }}/>
+                       style={{ flex:1, minWidth:0, padding:'6px 10px', borderRadius:7, border:`1px solid ${THEME.secondary}25`, background:`${THEME.secondary}06`, color:THEME.textMain, fontSize:11, outline:'none', fontFamily:'inherit' }}/>
                 <button onClick={handleAsk} disabled={!prompt.trim()||loading} style={{ padding:'6px 12px', borderRadius:6, border:'none', cursor:'pointer', background:`${THEME.secondary}10`, color:THEME.secondary, fontSize:10, fontWeight:700, display:'flex', alignItems:'center', gap:4, opacity:(!prompt.trim()||loading)?0.4:1, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     {loading?<Spinner size={10} color={THEME.secondary}/>:<Sparkles size={10}/>} Ask
                 </button>
@@ -1371,7 +1371,7 @@ const SqlConsoleTab = () => {
                 </div>
             )}
 
-            <div style={{ display:'grid', gridTemplateColumns:`1fr ${sidebarCollapsed?'42px':'300px'}`, gap:14, flex:1, overflow:'hidden', padding:0 }}>
+            <div style={{ display:'grid', gridTemplateColumns:`1fr ${sidebarCollapsed?'42px':'300px'}`, gap:14, flex:1, minHeight:0, overflow:'hidden', padding:0 }}>
 
                 {/* ═════════ LEFT ═════════ */}
                 <div style={{ display:'flex', flexDirection:'column', gap:12, height:'100%', minWidth:0 }}>
@@ -1525,7 +1525,7 @@ const SqlConsoleTab = () => {
                             <div style={{ padding:'8px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, background:THEME.surface, display:'flex', alignItems:'center', gap:8, animation:'sqlSlideDown 0.15s ease' }}>
                                 <Bookmark size={11} color={THEME.secondary}/>
                                 <input value={saveLabel} onChange={e=>setSaveLabel(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveQuery()} placeholder="Query name…"
-                                       style={{ flex:1, padding:'4px 10px', borderRadius:6, border:`1px solid ${THEME.secondary}30`, background:THEME.surface, color:THEME.textMain, fontSize:11, outline:'none' }} autoFocus/>
+                                       style={{ flex:1, minWidth:0, padding:'4px 10px', borderRadius:6, border:`1px solid ${THEME.secondary}30`, background:THEME.surface, color:THEME.textMain, fontSize:11, outline:'none' }} autoFocus/>
                                 <button onClick={saveQuery} style={{ padding:'4px 12px', borderRadius:6, border:'none', cursor:'pointer', background:`${THEME.secondary}18`, color:THEME.secondary, fontSize:10, fontWeight:700 }}>Save</button>
                                 <button onClick={()=>setShowSaveDialog(false)} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, display:'flex' }}><X size={12}/></button>
                             </div>
@@ -1540,7 +1540,7 @@ const SqlConsoleTab = () => {
                                 ))}
                             </div>
                             {/* Textarea */}
-                            <div style={{ flex:1, position:'relative', overflow:'hidden' }}>
+                            <div style={{ flex:1, minWidth:0, position:'relative', overflow:'hidden' }}>
                                 <textarea
                                     ref={editorRef}
                                     value={currentTab.sql}
@@ -1667,7 +1667,7 @@ const SqlConsoleTab = () => {
                                     <div style={{ padding:18, animation:'sqlFadeIn 0.2s ease', overflow:'auto' }} className="sql-scrollbar">
                                         <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:'16px 18px', borderRadius:12, background:`${THEME.danger}06`, border:`1px solid ${THEME.danger}18` }}>
                                             <XCircle size={18} color={THEME.danger} style={{ flexShrink:0, marginTop:1 }}/>
-                                            <div style={{ flex:1 }}>
+                                            <div style={{ flex:1, minWidth:0 }}>
                                                 <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
                                                     <span style={{ fontSize:12, fontWeight:700, color:THEME.danger }}>Query Error</span>
                                                     {result.duration > 0 && <span style={{ fontSize:10, color:THEME.textDim }}>after {fmtMs(result.duration)}</span>}
@@ -1693,7 +1693,7 @@ const SqlConsoleTab = () => {
                                         </div>
 
                                         {/* Table */}
-                                        <div className="sql-scrollbar" style={{ flex:1, overflow:'auto' }}>
+                                        <div className="sql-scrollbar" style={{ flex:1, minHeight:0, overflow:'auto' }}>
                                             <table style={{ width:'100%', borderCollapse:'collapse' }}>
                                                 <thead>
                                                 <tr>
@@ -1734,7 +1734,7 @@ const SqlConsoleTab = () => {
                                                                     <td key={f.name}
                                                                         title={v===null?'NULL':String(v)}
                                                                         className={isPinned?'sql-frozen':''}
-                                                                        style={{ padding:`${(ROW_H-12)/2}px 12px`, fontSize:11.5, fontFamily:'monospace', borderBottom:`1px solid ${THEME.grid}08`, maxWidth:260, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', background:isPinned?`${THEME.primary}04`:undefined }}>
+                                                                        style={{ padding:`${(ROW_H-12)/2}px 12px`, fontSize:11.5, fontFamily:'monospace', borderBottom:`1px solid ${THEME.grid}08`, flex:1, minWidth:0, maxWidth:'unset', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', background:isPinned?`${THEME.primary}04`:undefined }}>
                                                                         <Cell value={v}/>
                                                                     </td>
                                                                 );
@@ -1899,7 +1899,7 @@ const SqlConsoleTab = () => {
                                                 <div key={h.id} style={{ display:'flex', alignItems:'center', gap:9, padding:'5px 10px', borderRadius:6, background:THEME.surface, border:`1px solid ${THEME.grid}18`, animation:'sqlSlideIn 0.12s ease' }}>
                                                     {h.success?<CheckCircle size={10} color={THEME.success} style={{flexShrink:0}}/>:<XCircle size={10} color={THEME.danger} style={{flexShrink:0}}/>}
                                                     <span style={{ fontSize:9, color:THEME.textDim, fontVariantNumeric:'tabular-nums', flexShrink:0, width:60, fontFamily:'monospace' }}>{fmtTime(h.ts)}</span>
-                                                    <span style={{ fontSize:11, color:h.success?THEME.textMuted:THEME.danger, flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontFamily:'monospace' }}>
+                                                    <span style={{ fontSize:11, color:h.success?THEME.textMuted:THEME.danger, flex:1, minWidth:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontFamily:'monospace' }}>
                                                         {h.success?`OK — ${fmtRows(h.rowCount)} rows · ${fmtMs(h.durationMs)}`:`ERR — ${h.error}`}
                                                     </span>
                                                     <button onClick={()=>{ setSql(h.sql); setActiveTab(h.tabId||activeTab); }} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, padding:'2px 5px', borderRadius:4, fontSize:9, fontWeight:600, flexShrink:0 }}>
@@ -1982,7 +1982,7 @@ const SqlConsoleTab = () => {
                                        <button onClick={()=>setSidebarCollapsed(true)} style={{ padding:4, borderRadius:6, border:'none', cursor:'pointer', background:'transparent', color:THEME.textDim, display:'flex' }}><PanelRightClose size={12}/></button>
                                    </div>
                                }
-                               style={{ flex:1, overflow:'hidden' }}
+                               style={{ flex:1, minHeight:0, overflow:'hidden' }}
                         >
                             {/* ── History panel ── */}
                             {activePanel === 'history' && (
@@ -1991,12 +1991,12 @@ const SqlConsoleTab = () => {
                                         <div style={{ display:'flex', alignItems:'center', gap:7, padding:'5px 9px', borderRadius:7, background:THEME.surface, border:`1px solid ${THEME.grid}50` }}>
                                             <Search size={11} color={THEME.textDim}/>
                                             <input value={historySearch} onChange={e=>setHistorySearch(e.target.value)} placeholder="Search history…"
-                                                   style={{ border:'none', background:'transparent', color:THEME.textMain, outline:'none', flex:1, fontSize:11, fontFamily:'inherit' }}/>
+                                                   style={{ border:'none', background:'transparent', color:THEME.textMain, outline:'none', flex:1, minWidth:0, fontSize:11, fontFamily:'inherit' }}/>
                                             {historySearch && <X size={10} color={THEME.textDim} style={{ cursor:'pointer' }} onClick={()=>setHistorySearch('')}/>}
                                         </div>
                                     </div>
 
-                                    <div className="sql-scrollbar" style={{ flex:1, overflowY:'auto' }}>
+                                    <div className="sql-scrollbar" style={{ flex:1, minHeight:0, overflowY:'auto' }}>
                                         {filteredHistory.length === 0 ? (
                                             <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'36px 14px', gap:8 }}>
                                                 <Clock size={22} color={THEME.textDim} style={{ opacity:0.25 }}/>

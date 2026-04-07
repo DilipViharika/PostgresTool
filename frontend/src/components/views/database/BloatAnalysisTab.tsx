@@ -292,7 +292,7 @@ const HealthGauge = ({ score }) => {
 const SparkBar = ({ value, max, color }) => {
     const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
     return (
-        <div style={{ flex: 1, height: 4, borderRadius: 2, background: THEME.grid, overflow: 'hidden' }}>
+        <div style={{ flex: 1, height: 4, borderRadius: 2, background: THEME.grid, overflow: 'hidden', minWidth: 0 }}>
             <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 2, transition: 'width .4s ease' }} />
         </div>
     );

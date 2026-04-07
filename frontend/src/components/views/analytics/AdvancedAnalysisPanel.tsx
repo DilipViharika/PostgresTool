@@ -178,7 +178,7 @@ const ExecTimeline = ({suggestions})=>{
         <div style={{display:'flex',flexDirection:'column',gap:3}}>
             {items.map((it,i)=>{const left=(it.start/total)*100,w=Math.max((it.duration/total)*100,6),col=sevColor(it.severity);return(<div key={it.id} style={{display:'flex',alignItems:'center',gap:7}}>
                 <span style={{fontSize:8,fontWeight:600,color:THEME.textDim,width:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0}}>{it.title.split(' ').slice(0,3).join(' ')}</span>
-                <div style={{flex:1,height:13,background:`${THEME.grid}10`,borderRadius:3,position:'relative',overflow:'hidden'}}><div style={{position:'absolute',left:`${left}%`,width:`${w}%`,height:'100%',background:`${col}28`,borderRadius:3,border:`1px solid ${col}35`,display:'flex',alignItems:'center',justifyContent:'center',animation:'vb .5s ease-out both',animationDelay:`${i*.07}s`}}><span style={{fontSize:6.5,fontWeight:700,color:col}}>{it.duration}m</span></div></div>
+                <div style={{flex:1,height:13,background:`${THEME.grid}10`,borderRadius:3,position:'relative',overflow:'hidden',minWidth:0}}><div style={{position:'absolute',left:`${left}%`,width:`${w}%`,height:'100%',background:`${col}28`,borderRadius:3,border:`1px solid ${col}35`,display:'flex',alignItems:'center',justifyContent:'center',animation:'vb .5s ease-out both',animationDelay:`${i*.07}s`}}><span style={{fontSize:6.5,fontWeight:700,color:col}}>{it.duration}m</span></div></div>
             </div>);})}
         </div>
         <div style={{fontSize:7.5,color:THEME.textDim,marginTop:5,fontStyle:'italic'}}>Total: ~{items.reduce((a,i)=>a+i.duration,0)}min sequential</div>

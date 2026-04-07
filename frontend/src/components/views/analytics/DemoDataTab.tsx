@@ -1891,7 +1891,7 @@ function OverviewPanels({ widgets, db }) {
               </div>
               <div style={{ fontSize: 9, color: THEME.textDim, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{txn.query}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ flex: 1, height: 4, borderRadius: 2, background: THEME.glassBorder, overflow: 'hidden' }}>
+                <div style={{ flex: 1, minWidth: 0, height: 4, borderRadius: 2, background: THEME.glassBorder, overflow: 'hidden' }}>
                   <div style={{ height: '100%', background: THEME.warning, width: `${txn.pct}%` }} />
                 </div>
                 <span style={{ fontSize: 9, color: THEME.textDim, minWidth: 30 }}>{txn.wait}</span>
@@ -2381,7 +2381,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, height: '100%' }}>
               {waitEventData.map((evt, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMain, marginBottom: 2 }}>{evt.name}</div>
                     <div style={{ width: '100%', height: 6, background: `${evt.color}15`, borderRadius: 10, overflow: 'hidden' }}>
                       <div style={{ width: `${(evt.value / 100) * 100}%`, height: '100%', background: evt.color, borderRadius: 3 }} />
@@ -2562,7 +2562,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0' }}>
                     <span style={{ fontSize: 10, color: THEME.textDim, width: 120 }}>{t}</span>
-                    <div style={{ flex: 1, height: 6, background: THEME.gridLine, borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, minWidth: 0, height: 6, background: THEME.gridLine, borderRadius: 2, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${bloatPct}%`, background: severityColor }}></div>
                     </div>
                     <span style={{ fontSize: 10, color: THEME.textMain, fontWeight: 600, width: 40 }}>{bloatPct}%</span>
@@ -2795,7 +2795,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
               <div style={{ fontSize: 28, fontWeight: 800, color: db.color, letterSpacing: '-0.02em' }}>34</div>
               <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 2 }}>Total configured</div>
               <div style={{ display: 'flex', gap: 4 }}>
-                <div style={{ flex: 1, height: 4, background: `${THEME.success}30`, borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ flex: 1, minWidth: 0, height: 4, background: `${THEME.success}30`, borderRadius: 2, overflow: 'hidden' }}>
                   <div style={{ width: '82%', height: '100%', background: THEME.success }} />
                 </div>
                 <span style={{ fontSize: 8, color: THEME.success, fontWeight: 600 }}>28</span>

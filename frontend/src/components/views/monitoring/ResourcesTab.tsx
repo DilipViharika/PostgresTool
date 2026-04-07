@@ -228,7 +228,7 @@ const ChartTooltip = ({ active, payload, label }) => {
             {payload.map((p, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                     <span style={{ width: 8, height: 3, borderRadius: 1, background: p.color }} />
-                    <span style={{ color: THEME.textMuted, flex: 1 }}>{p.name}:</span>
+                    <span style={{ color: THEME.textMuted, flex: 1, minWidth: 0 }}>{p.name}:</span>
                     <span style={{ fontWeight: 700, color: p.color, fontVariantNumeric: 'tabular-nums' }}>{typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</span>
                 </div>
             ))}
@@ -341,7 +341,7 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
                     })}
                 </div>
             </div>
-            <div style={{ flex: 1 }} />
+            <div style={{ flex: 1, minWidth: 0 }} />
             <button onClick={onRefresh} disabled={isRefreshing} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 padding: '5px 12px', borderRadius: 6, border: 'none', cursor: isRefreshing ? 'default' : 'pointer',
@@ -406,7 +406,7 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
                     {Object.values(checks).filter(Boolean).length} / {CHECKLIST.length} items confirmed{!allChecked && ' — check all items to proceed'}
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={onCancel} style={{ flex: 1, padding: '8px', borderRadius: 7, border: `1px solid ${THEME.grid}40`, background: 'transparent', color: THEME.textMuted, fontSize: 11, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>Cancel</button>
+                    <button onClick={onCancel} style={{ flex: 1, minWidth: 0, padding: '8px', borderRadius: 7, border: `1px solid ${THEME.grid}40`, background: 'transparent', color: THEME.textMuted, fontSize: 11, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>Cancel</button>
                     <button disabled={!allChecked} onClick={() => onConfirm(tableName, `Bloat fix verified & applied (was ${bloatPct}%)`)} style={{ flex: 2, padding: '8px', borderRadius: 7, border: 'none', fontSize: 11, fontWeight: 700, cursor: allChecked ? 'pointer' : 'not-allowed', background: allChecked ? `linear-gradient(135deg, ${THEME.success}, ${THEME.success}aa)` : `${THEME.grid}20`, color: allChecked ? '#fff' : THEME.textDim, boxShadow: allChecked ? '0 1px 3px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.04)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                         <CheckCircle size={12} />
                         {allChecked ? 'Confirmed — Mark as Done' : 'Check all items above first'}
@@ -519,14 +519,14 @@ const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
                                 {/* Reads bar */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <span style={{ fontSize: 9, color: THEME.textDim, width: 32, textAlign: 'right', flexShrink: 0 }}>Read</span>
-                                    <div style={{ flex: 1, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                    <div style={{ flex: 1, minWidth: 0, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
                                         <div className="res-bar-animate" style={{ width: `${readPct}%`, height: '100%', borderRadius: 10, background: THEME.primary, animationDelay: `${i * 0.08}s` }} />
                                     </div>
                                 </div>
                                 {/* Writes bar */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <span style={{ fontSize: 9, color: THEME.textDim, width: 32, textAlign: 'right', flexShrink: 0 }}>Write</span>
-                                    <div style={{ flex: 1, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                    <div style={{ flex: 1, minWidth: 0, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
                                         <div className="res-bar-animate" style={{ width: `${writePct}%`, height: '100%', borderRadius: 10, background: THEME.success, animationDelay: `${i * 0.08 + 0.04}s` }} />
                                     </div>
                                 </div>
@@ -588,7 +588,7 @@ const PartitionTreePanel = ({ partitions, refreshing }) => {
                                     {open ? <ChevronDown size={11} color={THEME.primary} /> : <ChevronRight size={11} color={THEME.primary} />}
                                 </div>
                                 <Layers size={12} color={THEME.primary} style={{ flexShrink: 0 }} />
-                                <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.textMain, flex: 1 }}>{p.parent}</span>
+                                <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.textMain, flex: 1, minWidth: 0 }}>{p.parent}</span>
                                 <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: 'monospace' }}>{p.strategy}</span>
                                 <span style={{ fontSize: 11, fontWeight: 700, color: THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{fmtSize(p.total_gb)}</span>
                                 <span style={{ fontSize: 10, color: THEME.textDim }}>{p.children.length} parts</span>
@@ -602,7 +602,7 @@ const PartitionTreePanel = ({ partitions, refreshing }) => {
                                         return (
                                             <div key={ci} className="res-tree-node res-row-hover" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 7, animationDelay: `${ci * 0.04}s` }}>
                                                 <div style={{ width: 4, height: 4, borderRadius: '50%', background: sm.color, flexShrink: 0 }} />
-                                                <span style={{ fontSize: 11.5, color: THEME.textMuted, flex: 1, fontFamily: 'monospace' }}>{c.name}</span>
+                                                <span style={{ fontSize: 11.5, color: THEME.textMuted, flex: 1, minWidth: 0, fontFamily: 'monospace' }}>{c.name}</span>
                                                 <StatusBadge label={sm.label} color={sm.color} />
                                                 <span style={{ fontSize: 11, color: THEME.textDim, fontVariantNumeric: 'tabular-nums' }}>{fmtNum(c.rows)} rows</span>
                                                 <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted, fontVariantNumeric: 'tabular-nums', minWidth: 52, textAlign: 'right' }}>{fmtSize(c.gb)}</span>
@@ -643,7 +643,7 @@ const FreezeUrgencyPanel = ({ data, refreshing }) => {
                         <div key={i} className={isCritical ? 'res-freeze-urgent' : ''} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <Zap size={11} color={color} style={{ flexShrink: 0, opacity: isCritical ? 1 : 0.6 }} />
                             <span style={{ fontSize: 11.5, color: THEME.textMuted, width: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>{d.table_name}</span>
-                            <div style={{ flex: 1, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                            <div style={{ flex: 1, minWidth: 0, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
                                 <div className="res-bar-animate" style={{ width: `${Math.min(pct, 100)}%`, height: '100%', borderRadius: 10, background: `linear-gradient(90deg, ${color}80, ${color})`, animationDelay: `${i * 0.05}s` }} />
                             </div>
                             <span style={{ fontSize: 10.5, fontWeight: 700, color, fontVariantNumeric: 'tabular-nums', minWidth: 50, textAlign: 'right' }}>{fmtXID(d.oldest_xid_age)}</span>
@@ -1471,7 +1471,7 @@ const ResourcesTab = () => {
                                         <span style={{ fontSize: 11, textAlign: 'right', color: THEME.secondary, fontVariantNumeric: 'tabular-nums' }}>{fmtSize(idx)}</span>
                                         <span style={{ fontSize: 11, textAlign: 'right', color: THEME.warning, fontVariantNumeric: 'tabular-nums' }}>{fmtSize(toast)}</span>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
-                                            <div style={{ flex: 1, height: 4, borderRadius: 2, background: `${THEME.grid}40`, overflow: 'hidden', maxWidth: 60 }}>
+                                            <div style={{ flex: 1, minWidth: 0, height: 4, borderRadius: 2, background: `${THEME.grid}40`, overflow: 'hidden', maxWidth: 60 }}>
                                                 <div className="res-bar-animate" style={{ width: `${Math.min(ratio / 2, 1) * 100}%`, height: '100%', borderRadius: 2, background: ratioColor, animationDelay: `${i * 0.04}s` }} />
                                             </div>
                                             <span style={{ fontSize: 11, fontWeight: 700, color: ratioColor, fontVariantNumeric: 'tabular-nums', minWidth: 36, textAlign: 'right' }}>{ratio.toFixed(2)}×</span>
@@ -1516,7 +1516,7 @@ const ResourcesTab = () => {
                                     {storageBreakdown.map((d, i) => (
                                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 0' }}>
                                             <span style={{ width: 8, height: 8, borderRadius: 2, background: d.color, flexShrink: 0 }} />
-                                            <span style={{ fontSize: 10.5, color: THEME.textMuted, flex: 1 }}>{d.name}</span>
+                                            <span style={{ fontSize: 10.5, color: THEME.textMuted, flex: 1, minWidth: 0 }}>{d.name}</span>
                                             <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.textMain, fontVariantNumeric: 'tabular-nums' }}>{d.value} GB</span>
                                         </div>
                                     ))}

@@ -68,6 +68,10 @@ const _DARK = {
     aiDark:  '#818cf8',
     aiLight: '#c7d2fe',
 
+    // ── Extra accent colours (used by TableAnalytics groups) ─────────────────
+    cyan:      '#818cf8',
+    purple:    '#a78bfa',
+
     // ── Structural accents ────────────────────────────────────────────────────
     grid:      '#0e2a3e',
     gridAlt:   '#133348',
@@ -173,6 +177,10 @@ const _LIGHT = {
     ai:      '#818cf8',
     aiDark:  '#6366f1',
     aiLight: '#a5b4fc',
+
+    // ── Extra accent colours (used by TableAnalytics groups) ─────────────────
+    cyan:      '#6366f1',
+    purple:    '#7c3aed',
 
     // ── Structural accents ────────────────────────────────────────────────────
     grid:      '#e0e2ef',

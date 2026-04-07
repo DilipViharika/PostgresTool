@@ -287,7 +287,7 @@ const Arc = ({value,max=100,color,size=88,label}) => {
 };
 
 const SegBar = ({pct,color,h=4}) =>
-    <div style={{height:h,background:C.border,borderRadius:2,overflow:'hidden',flex:1}}>
+    <div style={{height:h,background:C.border,borderRadius:2,overflow:'hidden',flex:1,minWidth:0}}>
         <div className="bar-g" style={{width:`${Math.min(100,pct)}%`,height:'100%',background:color,borderRadius:2}}/>
     </div>;
 
@@ -935,7 +935,7 @@ const RowDivPanel = ({data}) => !data||!data.length ? <Card><CH title="Row estim
             </div>
             {[{l:'Planner',v:row.plannerEst,c:C.accent},{l:'Actual',v:row.actualRows,c:C.err}].map(b=><div key={b.l} style={{display:'flex',gap:8,alignItems:'center',marginBottom:4}}>
                 <div style={{width:50,fontSize:10,color:C.textDim,fontFamily:THEME.fontBody}}>{b.l}</div>
-                <div style={{flex:1,height:4,background:C.border,borderRadius:2,overflow:'hidden'}}>
+                <div style={{flex:1,height:4,background:C.border,borderRadius:2,overflow:'hidden',minWidth:0}}>
                     <div style={{width:`${Math.max(2,(b.v/row.actualRows)*100)}%`,height:'100%',background:b.c,borderRadius:2,transformOrigin:'left',animation:'grow 1s cubic-bezier(.22,1,.36,1) both'}}/>
                 </div>
                 <div style={{width:70,fontSize:10,color:b.c,textAlign:'right',fontFamily:THEME.fontMono,fontWeight:500}}>{b.v.toLocaleString()}</div>

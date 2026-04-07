@@ -715,6 +715,31 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   FLEX OVERFLOW FIX — Prevent text cutoff across all flex layouts
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Flex children with flex:1 must have min-width:0 to allow text truncation */
+[style*='flex: 1'],
+[style*='flex:1'],
+[style*='flex: 1 1'] {
+    min-width: 0;
+}
+
+/* Flex column children also need min-height:0 */
+[style*='flexDirection: column'] > *,
+[style*='flex-direction: column'] > * {
+    min-height: 0;
+}
+
+/* Ensure text inside flex containers can truncate properly */
+.truncate-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    KEYFRAME ANIMATIONS
    ═══════════════════════════════════════════════════════════════════════════ */
 

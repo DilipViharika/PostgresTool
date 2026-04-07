@@ -438,7 +438,7 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                 gap: '16px',
             }}
         >
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
                 {/* Rule Header */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                     <div

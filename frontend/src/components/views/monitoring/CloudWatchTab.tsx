@@ -323,7 +323,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
 
     const SectionDivider = ({ label }) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ height: 1, flex: 1, background: T.glassBorder }} />
+            <div style={{ height: 1, flex: 1, background: T.glassBorder, minWidth: 0 }} />
             <span
                 style={{
                     fontSize: 11,
@@ -337,7 +337,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
             >
                 {label}
             </span>
-            <div style={{ height: 1, flex: 1, background: T.glassBorder }} />
+            <div style={{ height: 1, flex: 1, background: T.glassBorder, minWidth: 0 }} />
         </div>
     );
 

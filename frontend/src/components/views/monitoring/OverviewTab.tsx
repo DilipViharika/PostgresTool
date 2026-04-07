@@ -520,7 +520,7 @@ const ChartTooltip = ({ active, payload, label }) => {
             {payload.map((p, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                     <span style={{ width: 8, height: 3, borderRadius: 1, background: p.color || p.fill }} />
-                    <span style={{ color: THEME.textMuted, flex: 1 }}>{p.name}:</span>
+                    <span style={{ color: THEME.textMuted, flex: 1, minWidth: 0 }}>{p.name}:</span>
                     <span className="ov-mono" style={{ fontWeight: 700, color: p.color || p.fill }}>
                         {typeof p.value === 'number' ? p.value.toLocaleString() : p.value}
                     </span>
@@ -679,7 +679,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                             >
                                 <e.icon size={14} color={e.color} />
                             </div>
-                            <div style={{ flex: 1, textAlign: 'left' }}>
+                            <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
                                 <div
                                     style={{
                                         fontSize: 12,
@@ -1639,10 +1639,11 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                 <div
                     style={{
                         flex: 1,
+                        minWidth: 0,
                         height: '100%',
                         background: `${THEME.success}60`,
                         transition: 'width 0.9s ease 0.1s',
-                        
+
                     }}
                 />
             </div>
@@ -1747,7 +1748,7 @@ const ConnectionStatusBanner = () => {
                     <Database size={28} color={THEME.primary} />
                 </div>
                 {/* Text */}
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 17, fontWeight: 700, color: THEME.textMain, marginBottom: 6 }}>
                         Connect your first database
                     </div>
@@ -2547,13 +2548,13 @@ const OverviewTab = () => {
                                 color: THEME.secondary,
                             },
                         ].map((s, i) => (
-                            <div key={i} style={{ flex: 1 }}>
+                            <div key={i} style={{ flex: 1, minWidth: 0 }}>
                                 <div
                                     style={{
                                         fontSize: 9,
                                         color: THEME.textDim,
                                         fontWeight: 600,
-                                        
+
                                         letterSpacing: '0.04em',
                                         marginBottom: 3,
                                     }}
@@ -2585,7 +2586,7 @@ const OverviewTab = () => {
                                 secondaryValue={cacheHit}
                                 secondaryColor={cacheColor}
                             />
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {[
                                     { label: 'Cache Hit', value: `${cacheHit}%`, pct: cacheHit, color: cacheColor },
                                     { label: 'Conn Usage', value: `${connPct}%`, pct: connPct, color: connColor },
@@ -2646,7 +2647,7 @@ const OverviewTab = () => {
                     <Panel title="Connection Pool" icon={Network} accentColor={connColor}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                             <RingGauge value={connPct} color={connColor} size={68} strokeWidth={6} />
-                            <div style={{ flex: 1 }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                                     {[
                                         { label: 'Active', value: activeConns, color: THEME.primary },
@@ -2785,6 +2786,7 @@ const OverviewTab = () => {
                             key={i}
                             style={{
                                 flex: 1,
+                                minWidth: 0,
                                 paddingRight: 12,
                                 borderRight: i < 4 ? `1px solid ${THEME.glassBorder}` : 'none',
                                 paddingLeft: i > 0 ? 12 : 0,
@@ -2795,7 +2797,7 @@ const OverviewTab = () => {
                                     fontSize: 9,
                                     color: THEME.textDim,
                                     fontWeight: 600,
-                                    
+
                                     letterSpacing: '0.04em',
                                     marginBottom: 3,
                                 }}
@@ -3396,8 +3398,9 @@ const OverviewTab = () => {
                                             <div
                                                 style={{
                                                     flex: 1,
+                                                    minWidth: 0,
                                                     background: `linear-gradient(90deg, ${THEME.secondary}80, ${THEME.secondary})`,
-                                                    
+
                                                 }}
                                             />
                                         </div>

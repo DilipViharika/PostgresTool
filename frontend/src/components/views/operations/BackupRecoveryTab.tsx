@@ -193,7 +193,7 @@ export default function BackupRecoveryTab() {
                         ].map(({ label, value }) => (
                             <div key={label} className="br-setting-row">
                                 <span style={{ color:THEME.textMuted }}>{label}</span>
-                                <span style={{ color:THEME.textMain, fontWeight:600, fontFamily:THEME.fontMono, fontSize:12, maxWidth:220, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{String(value)}</span>
+                                <span style={{ color:THEME.textMain, fontWeight:600, fontFamily:THEME.fontMono, fontSize:12, maxWidth:220, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flex:1, minWidth:0 }}>{String(value)}</span>
                             </div>
                         ))}
                     </div>

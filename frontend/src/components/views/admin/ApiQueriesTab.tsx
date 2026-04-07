@@ -218,7 +218,7 @@ const PercentileBars = ({ p50, p95, p99 }) => {
             {bars.map(({ label, val, color }) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 9, fontWeight: 700, color: T.text3, width: 24 }}>{label}</span>
-                    <div style={{ flex: 1, height: 5, background: T.border, borderRadius: 10, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, height: 5, background: T.border, borderRadius: 10, overflow: 'hidden', minWidth: 0 }}>
                         <div className="span-bar" style={{ height: '100%', width: `${(val / max) * 100}%`, background: color, borderRadius: 3 }} />
                     </div>
                     <span style={{ fontSize: 10, fontWeight: 700, color, width: 40, textAlign: 'right' }}>{fmtMs(val)}</span>
@@ -367,7 +367,7 @@ const TraceWaterfall = ({ spans, totalMs }) => {
                                 <span style={{ animation: `tickIn 0.2s ease-out ${i * 0.04}s both` }}>{span.name}</span>
                             </div>
                             {/* Bar track */}
-                            <div style={{ flex: 1, height: 26, background: T.border, borderRadius: 14, position: 'relative', overflow: 'hidden' }}>
+                            <div style={{ flex: 1, height: 26, background: T.border, borderRadius: 14, position: 'relative', overflow: 'hidden', minWidth: 0 }}>
                                 <div className="span-bar" style={{
                                     position: 'absolute', left: `${l}%`, width: `${w}%`,
                                     height: '100%', background: `linear-gradient(90deg, ${color}80, ${color})`,

@@ -359,10 +359,10 @@ const PlanNode = ({ node, maxCost, totalTime, depth = 0, heatmapData, showHeatma
                     </div>
                 </div>
                 <div style={{ marginTop: 8, display: 'flex', gap: 3 }}>
-                    <div style={{ flex: 1, height: 3, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, minWidth: 0, height: 3, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ width: `${Math.min(100, costRatio * 100)}%`, height: '100%', background: color }} />
                     </div>
-                    <div style={{ flex: 1, height: 3, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, minWidth: 0, height: 3, background: `${THEME.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ width: `${Math.min(100, timeRatio * 100)}%`, height: '100%', background: showHeatmap ? `rgba(${Math.round(220 * heatRatio)},${Math.round(60*(1-heatRatio))},0,0.8)` : THEME.primary }} />
                     </div>
                 </div>
@@ -398,20 +398,20 @@ const CostBreakdownChart = ({ plan }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
                 <div style={{ width: 140 }} />
-                <div style={{ flex: 1, fontSize: 9, color: THEME.textDim, fontWeight: 700 }}>Cost</div>
-                <div style={{ flex: 1, fontSize: 9, color: THEME.textDim, fontWeight: 700 }}>Time</div>
+                <div style={{ flex: 1, minWidth: 0, fontSize: 9, color: THEME.textDim, fontWeight: 700 }}>Cost</div>
+                <div style={{ flex: 1, minWidth: 0, fontSize: 9, color: THEME.textDim, fontWeight: 700 }}>Time</div>
             </div>
             {nodes.slice(0, 8).map((n, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ width: 140, fontSize: 10, color: THEME.textMuted, textAlign: 'right', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.label}</div>
-                    <div style={{ flex: 1, display: 'flex', gap: 4, alignItems: 'center' }}>
-                        <div style={{ flex: 1, height: 10, background: `${THEME.grid}40`, borderRadius: 10, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: 4, alignItems: 'center' }}>
+                        <div style={{ flex: 1, minWidth: 0, height: 10, background: `${THEME.grid}40`, borderRadius: 10, overflow: 'hidden' }}>
                             <div style={{ width: `${(n.cost / maxCost) * 100}%`, height: '100%', background: getCostColor(n.cost / maxCost), borderRadius: 3 }} />
                         </div>
                         <span style={{ width: 48, fontSize: 9, color: THEME.textMuted, textAlign: 'right' }}>{n.cost.toFixed(1)}</span>
                     </div>
-                    <div style={{ flex: 1, display: 'flex', gap: 4, alignItems: 'center' }}>
-                        <div style={{ flex: 1, height: 10, background: `${THEME.grid}40`, borderRadius: 10, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', gap: 4, alignItems: 'center' }}>
+                        <div style={{ flex: 1, minWidth: 0, height: 10, background: `${THEME.grid}40`, borderRadius: 10, overflow: 'hidden' }}>
                             <div style={{ width: `${(n.time / maxTime) * 100}%`, height: '100%', background: THEME.primary, borderRadius: 3 }} />
                         </div>
                         <span style={{ width: 48, fontSize: 9, color: THEME.textMuted, textAlign: 'right' }}>{formatDuration(n.time)}</span>
@@ -1087,9 +1087,9 @@ const ParameterizationAdvisorPanel = ({ paramIssues = [] }) => {
                 </div>
             </div>
 
-            <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', overflow: 'hidden' }}>
                 {/* Query list */}
-                <div className="opt-scroll" style={{ flex: 1, overflowY: 'auto' }}>
+                <div className="opt-scroll" style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
                     {safeParamIssues.map((q, i) => (
                         <div key={q.id}
                              onClick={() => setSelected(selected === q.id ? null : q.id)}
@@ -1220,7 +1220,7 @@ const SlowQueryPanel = ({ onLoadQuery, slowQueries = [] }) => {
 
     return (
         <div style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: `1px solid ${THEME.grid}`, overflow: 'hidden' }}>
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', borderRight: `1px solid ${THEME.grid}`, overflow: 'hidden' }}>
                 <div style={{ padding: '8px 12px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0, flexWrap: 'wrap' }}>
                     <div style={{ position: 'relative', flex: 1, minWidth: 120 }}>
                         <Search size={11} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: THEME.textDim }} />
@@ -1752,9 +1752,9 @@ const ComparePanel = () => {
             )}
 
             {resultA && resultB ? (
-                <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', overflow: 'hidden' }}>
                     {[{ r: resultA }, { r: resultB }].map(({ r }, idx) => (
-                        <div key={idx} className="opt-scroll" style={{ flex: 1, overflowY: 'auto', padding: 14, borderRight: idx === 0 ? `1px solid ${THEME.grid}` : 'none' }}>
+                        <div key={idx} className="opt-scroll" style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: 14, borderRight: idx === 0 ? `1px solid ${THEME.grid}` : 'none' }}>
                             <PlanNode node={r.Plan} maxCost={r.Plan["Total Cost"]} totalTime={r.Plan["Actual Total Time"]} />
                         </div>
                     ))}
@@ -1960,7 +1960,7 @@ const QueryOptimizerTab = () => {
             )}
 
             {/* MAIN LAYOUT */}
-            <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', overflow: 'hidden' }}>
 
                 {/* LEFT: Editor */}
                 <div style={{ width: 380, flexShrink: 0, borderRight: `1px solid ${THEME.grid}`, display: 'flex', flexDirection: 'column' }}>
@@ -1974,7 +1974,7 @@ const QueryOptimizerTab = () => {
                         </div>
                     </div>
 
-                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden' }}>
                         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 36, background: `${THEME.surface}80`, borderRight: `1px solid ${THEME.grid}30`, display: 'flex', flexDirection: 'column', paddingTop: 14, userSelect: 'none', pointerEvents: 'none', zIndex: 1 }}>
                             {query.split('\n').map((_, i) => (
                                 <div key={i} style={{ fontSize: 9, color: `${THEME.textDim}55`, height: 22.4, lineHeight: '22.4px', textAlign: 'center', fontFamily: 'monospace' }}>{i + 1}</div>
@@ -2019,7 +2019,7 @@ const QueryOptimizerTab = () => {
                 </div>
 
                 {/* RIGHT: Results */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
                     {/* Main tab bar */}
                     <div style={{ flexShrink: 0, borderBottom: `1px solid ${THEME.grid}`, background: THEME.surface, display: 'flex', alignItems: 'center', paddingLeft: 12, overflowX: 'auto' }} className="opt-scroll">
@@ -2052,7 +2052,7 @@ const QueryOptimizerTab = () => {
                     {/* PLAN TAB */}
                     {activeTab === 'plan' && (
                         !result ? (
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: THEME.textDim }}>
+                            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: THEME.textDim }}>
                                 <div style={{ width: 72, height: 72, borderRadius: 18, background: `${THEME.grid}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
                                     <Layers size={36} opacity={0.3} />
                                 </div>
@@ -2065,11 +2065,11 @@ const QueryOptimizerTab = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                                 {/* KPI bar */}
                                 <div style={{ padding: '10px 16px', display: 'flex', gap: 10, borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0, alignItems: 'stretch' }}>
                                     <QueryScoreRing insights={insights} />
-                                    <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+                                    <div style={{ flex: 1, minWidth: 0, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
                                         {[
                                             { label: 'Total Cost', value: result.Plan["Total Cost"].toFixed(2), icon: TrendingUp, color: THEME.textMain },
                                             { label: 'Planning', value: formatDuration(result["Planning Time"] || 0), icon: Cpu, color: THEME.textDim },
@@ -2089,8 +2089,8 @@ const QueryOptimizerTab = () => {
                                 </div>
 
                                 {/* Plan tree + analysis sidebar */}
-                                <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                                <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
+                                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                                         <div style={{ padding: '8px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                                             <div style={{ fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}><Share2 size={12} /> Execution Plan Tree</div>
                                             <div style={{ display: 'flex', gap: 6 }}>

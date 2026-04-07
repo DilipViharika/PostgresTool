@@ -623,12 +623,12 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                 </div>
                                 <span style={{ fontSize: 10.5, color: i <= step ? T.textMain : T.textDim, fontWeight: i === step ? 700 : 500 }}>{i === 1 ? 'System Specs' : 'Recommendations'}</span>
                             </div>
-                            {i < 2 && <div style={{ flex: 1, height: 1, background: step > i ? T.primary : `${T.grid}40`, transition: 'background 0.4s' }} />}
+                            {i < 2 && <div style={{ flex: 1, minWidth: 0, height: 1, background: step > i ? T.primary : `${T.grid}40`, transition: 'background 0.4s' }} />}
                         </React.Fragment>
                     ))}
                 </div>
 
-                <div className="adm-scrollbar" style={{ padding: '24px 26px', overflowY: 'auto', flex: 1 }}>
+                <div className="adm-scrollbar" style={{ padding: '24px 26px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
                     {step === 1 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
@@ -655,7 +655,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                 <div style={{ display: 'flex', gap: 8 }}>
                                     {[{v:'ssd',l:'SSD',i:Zap,d:'Solid State'},{v:'nvme',l:'NVMe',i:Flame,d:'Ultra Fast'},{v:'hdd',l:'HDD',i:HardDrive,d:'Spinning Disk'}].map(t => (
                                         <button key={t.v} onClick={() => setInputs({...inputs, storage: t.v})} style={{
-                                            flex: 1, padding: '12px', borderRadius: 10, border: `1px solid ${inputs.storage === t.v ? T.primary : T.grid}50`,
+                                            flex: 1, minWidth: 0, padding: '12px', borderRadius: 10, border: `1px solid ${inputs.storage === t.v ? T.primary : T.grid}50`,
                                             background: inputs.storage === t.v ? `${T.primary}14` : 'transparent',
                                             cursor: 'pointer', transition: 'all 0.2s',
                                         }}>
@@ -769,7 +769,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                             </div>
 
                             <div style={{ display: 'flex', gap: 10 }}>
-                                <button onClick={() => setStep(1)} style={{ flex: 1, padding: '12px', background: 'transparent', border: `1px solid ${T.grid}50`, borderRadius: 10, color: T.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12 }}>
+                                <button onClick={() => setStep(1)} style={{ flex: 1, minWidth: 0, padding: '12px', background: 'transparent', border: `1px solid ${T.grid}50`, borderRadius: 10, color: T.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12 }}>
                                     <CornerUpLeft size={13} /> Back
                                 </button>
                                 <button onClick={() => onApply(safeRecommendations.filter(r => selected.has(r?.name)))} disabled={!selected.size} style={{ flex: 2, padding: '12px', background: selected.size ? `linear-gradient(135deg, ${T.success}, ${T.teal})` : T.grid, border: 'none', borderRadius: 10, color: selected.size ? '#000' : T.textDim, fontWeight: 800, cursor: selected.size ? 'pointer' : 'not-allowed', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: T.fontBody, boxShadow: selected.size ? `0 4px 16px ${T.success}40` : 'none' }}>
@@ -811,7 +811,7 @@ const ChangeLogModal = ({ onClose }) => (
                         <div style={{ width: 22, height: 22, borderRadius: '50%', background: `${T.primary}16`, border: `1px solid ${T.primary}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, zIndex: 1 }}>
                             <GitBranch size={10} color={T.primary} />
                         </div>
-                        <div style={{ flex: 1, padding: '12px 14px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 10 }}>
+                        <div style={{ flex: 1, minWidth: 0, padding: '12px 14px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 10 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                                 <span style={{ fontFamily: T.fontMono, fontSize: 12, fontWeight: 700, color: T.primary }}>{entry.param}</span>
                                 <span style={{ fontSize: 9.5, color: T.textDim }}>{new Date(entry.ts).toLocaleDateString()} {new Date(entry.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
@@ -884,7 +884,7 @@ const CacheView = ({ onClear }) => {
                         </div>
 
                         <div style={{ width: '100%', display: 'flex', gap: 8 }}>
-                            <button onClick={onClear} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '10px', background: `${T.danger}10`, color: T.danger, border: `1px solid ${T.danger}25`, borderRadius: 9, fontSize: 11, cursor: 'pointer', fontWeight: 700, transition: 'all 0.2s' }}>
+                            <button onClick={onClear} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '10px', background: `${T.danger}10`, color: T.danger, border: `1px solid ${T.danger}25`, borderRadius: 9, fontSize: 11, cursor: 'pointer', fontWeight: 700, transition: 'all 0.2s' }}>
                                 <Trash2 size={12} /> Clear Cache
                             </button>
                             <button style={{ padding: '10px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1170,10 +1170,10 @@ const ExtensionsView = ({ extData, onInstall }) => {
 
             {/* Toolbar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', borderRadius: 9, background: T.surface, border: `1px solid ${T.grid}60`, flex: 1, maxWidth: 300 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', borderRadius: 9, background: T.surface, border: `1px solid ${T.grid}60`, flex: 1, minWidth: 0, maxWidth: 300 }}>
                     <Search size={12} color={T.textDim} />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search extensions…"
-                           style={{ border: 'none', background: 'transparent', color: T.textMain, outline: 'none', flex: 1, fontSize: 12 }} />
+                           style={{ border: 'none', background: 'transparent', color: T.textMain, outline: 'none', flex: 1, minWidth: 0, fontSize: 12 }} />
                     {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={11} color={T.textDim} /></button>}
                 </div>
                 {['all','installed','available'].map(f => (
@@ -1200,7 +1200,7 @@ const ExtensionsView = ({ extData, onInstall }) => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                             <div style={{ width: 4, height: 16, borderRadius: 2, background: catColor }} />
                             <span style={{ fontSize: 10, fontWeight: 800, color: catColor,  letterSpacing: '0.02em', fontFamily: T.fontBody }}>{cat}</span>
-                            <div style={{ flex: 1, height: 1, background: `${catColor}15` }} />
+                            <div style={{ flex: 1, minWidth: 0, height: 1, background: `${catColor}15` }} />
                             <span style={{ fontSize: 9.5, color: T.textDim }}>{catItems.length} extension{catItems.length !== 1 ? 's' : ''}</span>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px,1fr))', gap: 12 }}>
@@ -1423,7 +1423,7 @@ const ExtDashboard = ({ extData = [] }) => {
                 {catEntries.slice(0,4).map(([cat,cnt],i)=>(
                     <div key={cat} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4, fontSize:11 }}>
                         <div style={{ width:6, height:6, borderRadius:2, background:clrs[i], flexShrink:0 }}/>
-                        <span style={{ color:T.textMuted, flex:1 }}>{cat}</span>
+                        <span style={{ color:T.textMuted, flex:1, minWidth: 0 }}>{cat}</span>
                         <span style={{ color:T.textMain, fontWeight:600 }}>{cnt}</span>
                     </div>
                 ))}
@@ -1638,10 +1638,10 @@ const SettingsView = ({
 
             {/* Toolbar */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 13px', borderRadius: 9, background: T.surface, border: `1px solid ${T.grid}60`, flex: 1, maxWidth: 360 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 13px', borderRadius: 9, background: T.surface, border: `1px solid ${T.grid}60`, flex: 1, minWidth: 0, maxWidth: 360 }}>
                     <Search size={12} color={T.textDim} />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search parameters…"
-                           style={{ border: 'none', background: 'transparent', color: T.textMain, outline: 'none', flex: 1, fontSize: 12 }} />
+                           style={{ border: 'none', background: 'transparent', color: T.textMain, outline: 'none', flex: 1, minWidth: 0, fontSize: 12 }} />
                     {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={11} color={T.textDim} /></button>}
                 </div>
 

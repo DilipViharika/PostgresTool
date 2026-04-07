@@ -478,6 +478,18 @@ const AppStyles = () => (
             font-size: 11px !important;
         }
 
+        /* ═══ FLEX OVERFLOW FIX — prevent text cutoff in flex layouts ═══ */
+        [style*="flex: 1"],
+        [style*="flex:1"] {
+            min-width: 0;
+        }
+
+        /* Ensure flex column children don't overflow vertically */
+        [style*="flexDirection: column"] > [style*="flex: 1"],
+        [style*="flex-direction: column"] > [style*="flex:1"] {
+            min-height: 0;
+        }
+
         /* ═══ SELECTION ═══ */
         ::selection {
             background: ${DS.cyan}25;
@@ -2771,7 +2783,7 @@ const Sidebar = ({
         return visibleGroups.map((g) => ({ type: 'section', ...g }));
     }, [visibleGroups]);
 
-    const W = collapsed ? 56 : 232;
+    const W = collapsed ? 56 : 256;
 
     return (
         <aside
@@ -2946,7 +2958,7 @@ const Sidebar = ({
                                 />
                                 {!collapsed && (
                                     <>
-                                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                             {tab.label}
                                         </span>
                                         {tab.badge && (
@@ -3011,7 +3023,11 @@ const Sidebar = ({
                                 fontFamily: DS.fontUI,
                                 color: hasActive ? accent : DS.sidebarText,
                                 flex: 1,
+                                minWidth: 0,
                                 textAlign: 'left',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
                             }}>
                                 {label}
                             </span>
@@ -3101,7 +3117,7 @@ const Sidebar = ({
                     </div>
                     {!collapsed && (
                         <>
-                            <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
                                 <div style={{
                                     fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,0.9)',
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',

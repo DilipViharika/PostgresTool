@@ -459,7 +459,7 @@ const ThreatMonitor = ({ search, threatLogs = [] }) => {
                             <ShieldAlert size={14} color={SEV_COLORS[log.severity]} />
                             <div>
                                 <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 2 }}>{log.type}</div>
-                                <div className="mono" style={{ fontSize: 10, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 280 }}>
+                                <div className="mono" style={{ fontSize: 10, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 280, minWidth: 0 }}>
                                     {log.query}
                                 </div>
                             </div>
@@ -762,7 +762,7 @@ const AuditTimeline = ({ auditEvents = [] }) => {
                         <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${color}15`, border: `1.5px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <Activity size={12} color={color} />
                         </div>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{ev.action}</span>
                                 <span className="mono" style={{ fontSize: 10, color: THEME.textDim }}>{ev.ts}</span>
@@ -864,7 +864,7 @@ const SuperuserMonitor = () => {
                                             </div>
                                         </td>
                                         <td className="mono" style={{ padding: '10px 10px', color: THEME.textDim }}>{r.db}</td>
-                                        <td className="mono" style={{ padding: '10px 10px', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: THEME.textMuted }}>
+                                        <td className="mono" style={{ padding: '10px 10px', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: THEME.textMuted, minWidth: 0 }}>
                                             {r.query}
                                         </td>
                                         <td className="mono" style={{ padding: '10px 10px', color: r.duration_sec > 10 ? THEME.warning : THEME.textDim }}>{r.duration_sec}s</td>
@@ -1008,7 +1008,7 @@ const ComplianceReportGenerator = () => {
                                 <div style={{ fontSize: 32, fontWeight: 800, color: fw.color }}>{pct}%</div>
                                 <div style={{ fontSize: 10, color: THEME.textDim }}>Compliance</div>
                             </div>
-                            <div style={{ flex: 1 }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: THEME.textDim, marginBottom: 6 }}>
                                     <span style={{ color: THEME.success }}>✓ Passed: {fw.passed}</span>
                                     <span style={{ color: THEME.danger }}>✗ Failed: {fw.checks - fw.passed}</span>

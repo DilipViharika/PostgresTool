@@ -1032,10 +1032,10 @@ const GanttChart = ({ queries }) => {
                     const color = row.duration > 5000 ? THEME.danger : row.duration > 1000 ? THEME.warning : THEME.primary;
                     return (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                            <div style={{ width: 170, fontSize: 10, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: THEME.fontMono, textAlign: 'right' }}>
+                            <div style={{ minWidth: 170, flex: 'none', fontSize: 10, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: THEME.fontMono, textAlign: 'right' }}>
                                 {row.query?.substring(0, 24) || `Query ${i + 1}`}…
                             </div>
-                            <div style={{ flex: 1, height: 22, background: `${THEME.grid}20`, borderRadius: 12, position: 'relative', overflow: 'hidden' }}>
+                            <div style={{ flex: 1, minWidth: 0, height: 22, background: `${THEME.grid}20`, borderRadius: 12, position: 'relative', overflow: 'hidden' }}>
                                 <div style={{
                                     position: 'absolute', left: `${left}%`, width: `${width}%`, height: '100%',
                                     background: `linear-gradient(90deg, ${color}80, ${color})`,
@@ -1084,7 +1084,7 @@ const LockWaitDetails = ({ lockBlocking }) => {
                         <span>on <span style={{ color: THEME.primary, fontFamily: THEME.fontMono }}>{chain.relation}</span></span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ flex: 1, padding: '10px 12px', borderRadius: 8, background: `${THEME.danger}08`, border: `1px solid ${THEME.danger}15` }}>
+                        <div style={{ flex: 1, minWidth: 0, padding: '10px 12px', borderRadius: 8, background: `${THEME.danger}08`, border: `1px solid ${THEME.danger}15` }}>
                             <div style={{ fontSize: 10, color: THEME.danger, fontWeight: 700, marginBottom: 4 }}>WAITING — PID {chain.waiter.pid} ({chain.waiter.waitTime})</div>
                             <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.waiter.query}</div>
                         </div>
@@ -1092,7 +1092,7 @@ const LockWaitDetails = ({ lockBlocking }) => {
                             <ArrowRight size={14} color={THEME.warning} />
                             <span style={{ fontSize: 9, color: THEME.textDim }}>blocked by</span>
                         </div>
-                        <div style={{ flex: 1, padding: '10px 12px', borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}15` }}>
+                        <div style={{ flex: 1, minWidth: 0, padding: '10px 12px', borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}15` }}>
                             <div style={{ fontSize: 10, color: THEME.warning, fontWeight: 700, marginBottom: 4 }}>HOLDING — PID {chain.holder.pid} ({chain.holder.application_name || 'app'})</div>
                             <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.holder.query || ''}</div>
                         </div>
@@ -1142,8 +1142,8 @@ const KillQueryModal = ({ query, onConfirm, onClose }) => {
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={onClose} style={{ flex: 1, padding: '10px', borderRadius: 8, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>Cancel</button>
-                        <button disabled={!reason || killing} onClick={() => { setKilling(true); setTimeout(() => { onConfirm(query, reason); onClose(); }, 1000); }} style={{ flex: 1, padding: '10px', borderRadius: 8, border: 'none', background: killing ? `${THEME.danger}50` : `${THEME.danger}`, color: '#fff', cursor: reason ? 'pointer' : 'not-allowed', fontWeight: 700, fontSize: 12, opacity: !reason ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                        <button onClick={onClose} style={{ flex: 1, minWidth: 0, padding: '10px', borderRadius: 8, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>Cancel</button>
+                        <button disabled={!reason || killing} onClick={() => { setKilling(true); setTimeout(() => { onConfirm(query, reason); onClose(); }, 1000); }} style={{ flex: 1, minWidth: 0, padding: '10px', borderRadius: 8, border: 'none', background: killing ? `${THEME.danger}50` : `${THEME.danger}`, color: '#fff', cursor: reason ? 'pointer' : 'not-allowed', fontWeight: 700, fontSize: 12, opacity: !reason ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                             {killing ? <RotateCcw size={13} className="perf-spin" /> : <XCircle size={13} />}
                             {killing ? 'Terminating…' : 'Terminate Query'}
                         </button>
@@ -1228,17 +1228,17 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                         </div>
                     </div>
 
-                    <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1.6fr 1fr', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '1.6fr 1fr', overflow: 'hidden' }}>
                         {/* Left */}
                         <div style={{ display: 'flex', flexDirection: 'column', borderRight: `1px solid ${THEME.glassBorder}`, overflow: 'hidden' }}>
                             <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${THEME.glassBorder}` }}>
                                 {panels.map(t => (
-                                    <button key={t.id} onClick={() => setActivePanel(t.id)} style={{ flex: 1, padding: '10px 12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 11, fontWeight: 600, background: activePanel === t.id ? `${THEME.primary}10` : 'transparent', color: activePanel === t.id ? THEME.primary : THEME.textDim, borderBottom: `2px solid ${activePanel === t.id ? THEME.primary : 'transparent'}` }}>
+                                    <button key={t.id} onClick={() => setActivePanel(t.id)} style={{ flex: 1, minWidth: 0, padding: '10px 12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 11, fontWeight: 600, background: activePanel === t.id ? `${THEME.primary}10` : 'transparent', color: activePanel === t.id ? THEME.primary : THEME.textDim, borderBottom: `2px solid ${activePanel === t.id ? THEME.primary : 'transparent'}` }}>
                                         <t.icon size={12} /> {t.label}
                                     </button>
                                 ))}
                             </div>
-                            <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+                            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 16 }}>
                                 {activePanel === 'diff' && (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                         <div>
@@ -1315,7 +1315,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
 
                         {/* Right sidebar */}
                         <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                            <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div>
                                     <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 10 }}>Root Cause</div>
                                     <div style={{ display: 'flex', gap: 10, padding: 14, borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}15` }}>
@@ -1338,7 +1338,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                         {[{ label: 'Before', value: opt.costBefore, max: opt.costBefore, color: THEME.danger, delay: 0 }, { label: 'After', value: opt.costAfter, max: opt.costBefore, color: THEME.success, delay: 0.3 }].map((bar, i) => (
                                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: i === 0 ? 12 : 14 }}>
                                                 <span style={{ width: 40, fontSize: 10, color: bar.color, fontWeight: 600, textAlign: 'right', flexShrink: 0 }}>{bar.label}</span>
-                                                <div style={{ flex: 1 }}><SeverityBar value={bar.value} max={bar.max} color={bar.color} delay={bar.delay} /></div>
+                                                <div style={{ flex: 1, minWidth: 0 }}><SeverityBar value={bar.value} max={bar.max} color={bar.color} delay={bar.delay} /></div>
                                                 <span style={{ width: 44, fontSize: 12, fontWeight: 800, color: bar.color, textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{bar.value.toLocaleString()}</span>
                                             </div>
                                         ))}
@@ -1673,7 +1673,7 @@ const PerformanceTab = () => {
                                    </div>
                                }
                     >
-                        <div style={{ flex: 1, width: '100%', minHeight: 180 }}>
+                        <div style={{ flex: 1, minWidth: 0, width: '100%', minHeight: 180 }}>
                             <ResponsiveContainer width="100%" height={180}>
                                 <AreaChart data={sessionTimeline} margin={{ top: 10, right: 12, bottom: 4, left: -16 }}>
                                     <CartesianGrid stroke={`${THEME.grid}40`} strokeDasharray="3 3" vertical={false} />
@@ -1703,7 +1703,7 @@ const PerformanceTab = () => {
                                }
                     >
                         <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                            <div style={{ display: 'flex', gap: 6, flex: 1, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 6, flex: 1, minWidth: 0, flexWrap: 'wrap' }}>
                                 <SubViewTab id="queries" label="Slow Queries" icon={List} stateKey={activitySubView} setState={setActivitySubView} />
                                 <SubViewTab id="gantt" label="Timeline" icon={Calendar} stateKey={activitySubView} setState={setActivitySubView} />
                                 <SubViewTab id="locks" label="Lock Waits" icon={Lock} stateKey={activitySubView} setState={setActivitySubView} />
@@ -1744,7 +1744,7 @@ const PerformanceTab = () => {
                             </div>
                         )}
 
-                        <div style={{ padding: activitySubView === 'queries' && !queryGroupMode ? 0 : 16, flex: 1 }}>
+                        <div style={{ padding: activitySubView === 'queries' && !queryGroupMode ? 0 : 16, flex: 1, minHeight: 0 }}>
                             {activitySubView === 'queries' && !queryGroupMode && (
                                 <DataTable columns={slowQueryCols} data={filteredSlowQueries} pageSize={7} compact />
                             )}
@@ -2023,6 +2023,7 @@ const PerformanceTab = () => {
                                         {/* Right: white panel with title + details */}
                                         <div style={{
                                             flex: 1,
+                                            minHeight: 0,
                                             background: THEME.surface,
                                             padding: '18px 18px',
                                             display: 'flex',
@@ -2057,7 +2058,7 @@ const PerformanceTab = () => {
 
                             <div className="perf-equal-row" style={{ gridTemplateColumns: '1.4fr 1fr' }}>
                                 <GlassCard title="Top Tables by I/O" noPad>
-                                    <div style={{ flex: 1, overflowY: 'auto', minHeight: 280 }}>
+                                    <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', height: 280 }}>
                                         {ioSparklines.length === 0 ? (
                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', minHeight: 200 }}>
                                                 <EmptyState icon={HardDrive} text="No IO data" />
@@ -2101,9 +2102,9 @@ const PerformanceTab = () => {
                                     </div>
                                 </GlassCard>
                                 <GlassCard title="Replication Status">
-                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', minHeight: 280 }}>
+                                    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto', height: 280 }}>
                                         {repl.length === 0 ? (
-                                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
+                                            <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
                                                 <EmptyState icon={Copy} text="Standalone Instance" />
                                             </div>
                                         ) : (

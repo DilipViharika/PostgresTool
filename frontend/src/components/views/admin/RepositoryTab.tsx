@@ -1122,7 +1122,7 @@ const RepositoryTab = () => {
                 ))}
             </div>
 
-            <div style={{ flex:1, minHeight:0, overflow:'hidden' }}>
+            <div style={{ flex:1, minHeight:0, overflow:'hidden', minWidth:0 }}>
                 {subView==='code' && <CodeView activeRepo={activeRepo}/>}
                 {subView==='insights' && <InsightsView activeRepo={activeRepo}/>}
                 {subView==='cicd' && <CICDView/>}

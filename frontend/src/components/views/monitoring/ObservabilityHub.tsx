@@ -588,6 +588,7 @@ export default function ObservabilityHub() {
                                 borderRadius: 8,
                                 color: T.text1,
                                 fontSize: 12,
+                                minWidth: 0,
                             }}
                         />
                         <select

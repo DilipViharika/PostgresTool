@@ -88,7 +88,7 @@ const MetricCard = ({ icon: Icon, label, value, unit = '', sub, color = THEME.pr
         >
             <Icon size={18} color={color} />
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '16px', fontWeight: 800, color: THEME.textMain, lineHeight: 1 }}>
                 {value}
                 {unit && <span style={{ fontSize: '11px', marginLeft: '4px', fontWeight: 600, color: THEME.textMuted }}>{unit}</span>}
