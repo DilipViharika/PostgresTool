@@ -105,20 +105,20 @@ const PulseDot = ({ color, size = 8 }) => (
 const SeverityBadge = ({ severity, small }) => {
   const s = SEVERITY[severity] || SEVERITY.info;
   return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: small ? '2px 6px' : '3px 8px', borderRadius: 10, background: s.bg, border: `1px solid ${s.color}30`, color: s.color, fontSize: small ? 9 : 10, fontFamily: THEME.fontMono, fontWeight: 700, letterSpacing: '0.02em' }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: small ? '2px 6px' : '3px 8px', borderRadius: 6, background: s.bg, border: `1px solid ${s.color}20`, color: s.color, fontSize: small ? 9 : 10, fontFamily: THEME.fontMono, fontWeight: 700, letterSpacing: '0.02em' }}>
       {s.label}
     </span>
   );
 };
 
 const Toggle = ({ on, onChange, accent = THEME.primary }) => (
-    <button onClick={onChange} style={{ width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', padding: 0, background: on ? accent : 'rgba(255,255,255,0.08)', position: 'relative', transition: 'background 0.25s', outline: 'none', flexShrink: 0 }} aria-checked={on} role="switch">
-      <span style={{ width: 14, height: 14, borderRadius: '50%', background: THEME.textMain, position: 'absolute', top: 3, left: on ? 19 : 3, transition: 'left 0.2s cubic-bezier(.4,0,.2,1)', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} />
+    <button onClick={onChange} style={{ width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', padding: 0, background: on ? accent : THEME.grid, position: 'relative', transition: 'background 0.25s', outline: 'none', flexShrink: 0 }} aria-checked={on} role="switch">
+      <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: on ? 19 : 3, transition: 'left 0.2s cubic-bezier(.4,0,.2,1)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} />
     </button>
 );
 
 const ChannelDot = ({ active, label }) => (
-    <span title={label} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 14, background: active ? `${THEME.primary}33` : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? `${THEME.primary}66` : 'rgba(255,255,255,0.06)'}`, fontSize: 8, fontWeight: 700, color: active ? THEME.primary : THEME.textMuted, fontFamily: THEME.fontMono, cursor: 'default', transition: 'all 0.2s' }}>
+    <span title={label} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 10, background: active ? `${THEME.primary}12` : THEME.grid, border: `1px solid ${active ? `${THEME.primary}40` : THEME.grid}`, fontSize: 8, fontWeight: 700, color: active ? THEME.primary : THEME.textMuted, fontFamily: THEME.fontMono, cursor: 'default', transition: 'all 0.2s' }}>
     {label.slice(0,2).toUpperCase()}
   </span>
 );
@@ -140,11 +140,11 @@ const MetricCard = ({ metricKey, data }) => {
   const pct = Math.min(100, (data.current / m.max) * 100);
   const color = pct > 85 ? SEVERITY.critical.color : pct > 65 ? SEVERITY.warning.color : SEVERITY.info.color;
   return (
-      <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${color}00, ${color}, ${color}00)`, opacity: 0.6 }} />
+      <div style={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, ${color}00, ${color}, ${color}00)`, opacity: 0.4 }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Icon size={13} color={color} />
+            <Icon size={12} color={color} />
             <span style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, letterSpacing: '0.04em' }}>{m.label.toUpperCase()}</span>
           </div>
           {data.trend === 'up' && <TrendingUp size={12} color={SEVERITY.warning.color} />}
@@ -152,13 +152,13 @@ const MetricCard = ({ metricKey, data }) => {
           {data.trend === 'stable' && <Minus size={12} color={THEME.textMuted} />}
         </div>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 22, fontWeight: 700, color, fontFamily: THEME.fontMono, lineHeight: 1 }}>
-            {data.current}<span style={{ fontSize: 11, color: '#4b5563', fontWeight: 400, marginLeft: 3 }}>{m.unit}</span>
+          <span style={{ fontSize: 20, fontWeight: 700, color, fontFamily: THEME.fontMono, lineHeight: 1 }}>
+            {data.current}<span style={{ fontSize: 10, color: THEME.textMuted, fontWeight: 400, marginLeft: 3 }}>{m.unit}</span>
           </span>
           <Sparkline data={data.data} color={color} />
         </div>
-        <div style={{ height: 3, background: THEME.grid, borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${color}80, ${color})`, borderRadius: 2, transition: 'width 0.5s ease' }} />
+        <div style={{ height: 2, background: THEME.grid, borderRadius: 1, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${color}70, ${color})`, borderRadius: 1, transition: 'width 0.5s ease' }} />
         </div>
       </div>
   );
@@ -341,29 +341,29 @@ const VIGILDashboard = () => {
   // Styles
   const css = {
     wrap:     { color: THEME.textMain, fontFamily: THEME.fontMono },
-    card:     { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8 },
-    input:    { background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 5, padding: '7px 10px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
-    label:    { display: 'block', fontSize: 10, color: '#6b7280', marginBottom: 5, fontWeight: 600, letterSpacing: '0.02em' },
-    tab:      (on) => ({ background: on ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${on ? 'rgba(99,102,241,0.3)' : 'transparent'}`, borderRadius: 6, padding: '7px 14px', color: on ? '${THEME.primary}' : '#6b7280', cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s', outline: 'none', letterSpacing: '0.02em', fontFamily: 'inherit' }),
-    btn:      (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 5, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.02em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: '#4f46e5', color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' } : v === 'success' ? { background: 'rgba(34,211,165,0.1)', color: '#22d3a5', border: '1px solid rgba(34,211,165,0.2)' } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.grid}` }) }),
-    modalBox: { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 10, width: 520, maxWidth: '95vw', padding: 24, boxShadow: '0 32px 64px rgba(0,0,0,0.6)', color: THEME.textMain, maxHeight: '90vh', overflowY: 'auto' },
-    sHdr:     { fontSize: 9, color: '#374151', letterSpacing: '0.02em',  marginBottom: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 },
+    card:     { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 12 },
+    input:    { background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '6px 10px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
+    label:    { display: 'block', fontSize: 11, color: THEME.textMuted, marginBottom: 5, fontWeight: 600, letterSpacing: '0.02em' },
+    tab:      (on) => ({ background: on ? 'rgba(99,102,241,0.08)' : 'transparent', border: `1px solid ${on ? 'rgba(99,102,241,0.2)' : 'transparent'}`, borderRadius: 8, padding: '6px 12px', color: on ? THEME.primary : THEME.textMuted, cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s', outline: 'none', letterSpacing: '0.02em', fontFamily: 'inherit' }),
+    btn:      (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.02em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: THEME.primary, color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.08)', color: SEVERITY.critical.color, border: `1px solid rgba(239,68,68,0.2)` } : v === 'success' ? { background: 'rgba(34,211,165,0.08)', color: SEVERITY.success.color, border: `1px solid rgba(34,211,165,0.2)` } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.grid}` }) }),
+    modalBox: { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 12, width: 520, maxWidth: '95vw', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', color: THEME.textMain, maxHeight: '90vh', overflowY: 'auto' },
+    sHdr:     { fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em',  marginBottom: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 },
   };
 
   // ─── RENDER: STATS ─────────────────────────────────────────────
   const renderStats = () => (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 }}>
         {[
-          { label: 'Total Alerts', val: stats.total,    sub: `${stats.unacked} unacknowledged`, color: '#e5e7eb' },
+          { label: 'Total Alerts', val: stats.total,    sub: `${stats.unacked} unacknowledged`, color: THEME.textMuted },
           { label: 'Critical',     val: stats.critical, sub: 'requires attention',              color: SEVERITY.critical.color },
           { label: 'Warning',      val: stats.warning,  sub: 'monitor closely',                 color: SEVERITY.warning.color },
-          { label: 'Active Rules', val: `${stats.activeRules}/${alertRules.length}`, sub: 'rules enabled', color: '${THEME.primary}' },
+          { label: 'Active Rules', val: `${stats.activeRules}/${alertRules.length}`, sub: 'rules enabled', color: THEME.primary },
         ].map((s, i) => (
-            <div key={i} style={{ ...css.card, padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', bottom: 0, right: 0, width: 60, height: 60, borderRadius: '50%', background: `radial-gradient(circle, ${s.color}12 0%, transparent 70%)` }} />
-              <div style={{ fontSize: 10, color: '#6b7280', letterSpacing: '0.02em',  marginBottom: 6 }}>{s.label}</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: s.color, lineHeight: 1, marginBottom: 4 }}>{s.val}</div>
-              <div style={{ fontSize: 10, color: '#4b5563' }}>{s.sub}</div>
+            <div key={i} style={{ ...css.card, padding: '12px 14px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', bottom: 0, right: 0, width: 60, height: 60, borderRadius: '50%', background: `radial-gradient(circle, ${s.color}08 0%, transparent 70%)` }} />
+              <div style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em',  marginBottom: 6 }}>{s.label}</div>
+              <div style={{ fontSize: 26, fontWeight: 700, color: s.color, lineHeight: 1, marginBottom: 4 }}>{s.val}</div>
+              <div style={{ fontSize: 11, color: THEME.textMuted }}>{s.sub}</div>
             </div>
         ))}
       </div>
@@ -371,41 +371,41 @@ const VIGILDashboard = () => {
 
   // ─── RENDER: LIVE METRICS ──────────────────────────────────────
   const renderLiveMetrics = () => (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, marginBottom: 16 }}>
         {Object.entries(liveMetrics).map(([k, v]) => <MetricCard key={k} metricKey={k} data={v} />)}
       </div>
   );
 
   // ─── RENDER: COMMENT PANEL ─────────────────────────────────────
   const renderCommentPanel = (alert) => (
-      <div style={{ background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '14px 16px 14px 56px' }}>
+      <div style={{ background: THEME.bg, borderTop: `1px solid ${THEME.grid}`, padding: '12px 14px 12px 48px' }}>
         <div style={{ ...css.sHdr, marginBottom: 10 }}>
-          <MessageSquare size={9} /> Incident Notes &amp; Comments ({alert.comments?.length || 0})
+          <MessageSquare size={10} /> Incident Notes &amp; Comments ({alert.comments?.length || 0})
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
           {(alert.comments || []).map(c => (
               <div key={c.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <Avatar initials={c.avatar} size={22} />
-                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 6, padding: '8px 12px' }}>
+                <div style={{ flex: 1, background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8, padding: '8px 12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                    <span style={{ fontSize: 10, color: '${THEME.primary}', fontWeight: 700 }}>{c.author}</span>
-                    <span style={{ fontSize: 9, color: '#374151' }}>{formatAge(c.timestamp)}</span>
+                    <span style={{ fontSize: 10, color: THEME.primary, fontWeight: 700 }}>{c.author}</span>
+                    <span style={{ fontSize: 9, color: THEME.textMuted }}>{formatAge(c.timestamp)}</span>
                   </div>
-                  <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: THEME.fontBody, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 12, color: THEME.textMain, fontFamily: THEME.fontBody, lineHeight: 1.5 }}>
                     {c.text.split(/(@\w+\.\w+)/g).map((part, i) =>
-                        part.startsWith('@') ? <span key={i} style={{ color: '${THEME.primary}', fontWeight: 600 }}>{part}</span> : part
+                        part.startsWith('@') ? <span key={i} style={{ color: THEME.primary, fontWeight: 600 }}>{part}</span> : part
                     )}
                   </div>
                 </div>
               </div>
           ))}
           {!(alert.comments?.length) && (
-              <div style={{ fontSize: 11, color: '#374151', fontFamily: THEME.fontBody }}>No comments yet. Add an incident note below.</div>
+              <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontBody }}>No comments yet. Add an incident note below.</div>
           )}
         </div>
         {/* Online team */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <span style={{ fontSize: 9, color: '#4b5563' }}>ONLINE:</span>
+          <span style={{ fontSize: 11, color: THEME.textMuted }}>ONLINE:</span>
           {TEAM_MEMBERS.filter(m => m.online).map(m => (
               <span key={m.id} title={`${m.name} — ${m.role}`}><Avatar initials={m.avatar} online={m.online} size={20} /></span>
           ))}
@@ -429,9 +429,9 @@ const VIGILDashboard = () => {
     const score = ir.severity_score;
     const scoreColor = score >= 8 ? SEVERITY.critical.color : score >= 5 ? SEVERITY.warning.color : SEVERITY.info.color;
     return (
-        <div style={{ background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '14px 16px 14px 56px' }}>
-          <div style={{ ...css.sHdr, marginBottom: 12 }}><GitMerge size={9} /> Impact Radius Estimator</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr', gap: 16, alignItems: 'center', marginBottom: 12 }}>
+        <div style={{ background: THEME.bg, borderTop: `1px solid ${THEME.grid}`, padding: '12px 14px 12px 48px' }}>
+          <div style={{ ...css.sHdr, marginBottom: 12 }}><GitMerge size={10} /> Impact Radius Estimator</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr', gap: 12, alignItems: 'center', marginBottom: 12 }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: 64, height: 64, borderRadius: '50%', border: `3px solid ${scoreColor}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `${scoreColor}10` }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: scoreColor, lineHeight: 1 }}>{score.toFixed(1)}</div>
@@ -446,15 +446,15 @@ const VIGILDashboard = () => {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em',  marginBottom: 6 }}>Affected Services</div>
+              <div style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em',  marginBottom: 6 }}>Affected Services</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {ir.services.map(s => <span key={s} style={{ fontSize: 9, color: '${THEME.primary}', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 10, padding: '2px 6px', fontFamily: THEME.fontMono }}>{s}</span>)}
+                {ir.services.map(s => <span key={s} style={{ fontSize: 9, color: THEME.primary, background: THEME.primary+'10', border: `1px solid ${THEME.primary}20`, borderRadius: 6, padding: '2px 6px', fontFamily: THEME.fontMono }}>{s}</span>)}
               </div>
             </div>
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em' }}>BLAST RADIUS</span>
+              <span style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em' }}>BLAST RADIUS</span>
               <span style={{ fontSize: 9, color: scoreColor }}>{score >= 8 ? 'CRITICAL — INCIDENT RESPONSE REQUIRED' : score >= 5 ? 'SIGNIFICANT — MONITOR CLOSELY' : 'CONTAINED — LOW RISK'}</span>
             </div>
             <div style={{ height: 6, background: THEME.grid, borderRadius: 10, overflow: 'hidden' }}>
@@ -470,11 +470,11 @@ const VIGILDashboard = () => {
     const pending = alert.pendingApproval || approvalState[alert.id];
     if (!pending || alert.acknowledged) return null;
     return (
-        <div style={{ margin: '0 16px 10px', padding: '10px 14px', background: 'rgba(255,170,0,0.07)', border: `1px solid ${SEVERITY.warning.color}30`, borderRadius: 6, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ margin: '0 14px 10px', padding: '10px 12px', background: SEVERITY.warning.color+'08', border: `1px solid ${SEVERITY.warning.color}20`, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
           <Lock size={13} color={SEVERITY.warning.color} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 11, color: SEVERITY.warning.color, fontWeight: 700, marginBottom: 2 }}>Approval Required</div>
-            <div style={{ fontSize: 10, color: '#6b7280' }}>Ack requested by <span style={{ color: '#9ca3af' }}>{pending.requestedBy || 'you'}</span></div>
+            <div style={{ fontSize: 11, color: THEME.textMuted }}>Ack requested by <span style={{ color: THEME.textMain }}>{pending.requestedBy || 'you'}</span></div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={() => approveAck(alert.id)} style={css.btn('success')}><CheckCircle size={11} /> Approve</button>
@@ -487,9 +487,9 @@ const VIGILDashboard = () => {
   // ─── RENDER: ACTIVE ALERTS ─────────────────────────────────────
   const renderActive = () => (
       <div>
-        <div style={{ ...css.card, padding: '12px 16px', marginBottom: 12, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ ...css.card, padding: '12px 14px', marginBottom: 12, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
-            <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#4b5563' }} />
+            <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: THEME.textMuted }} />
             <input style={{ ...css.input, paddingLeft: 30 }} placeholder="Search alerts, sources…" value={filters.search} onChange={e => setFilters(f => ({ ...f, search: e.target.value }))} />
           </div>
           {[
@@ -504,30 +504,30 @@ const VIGILDashboard = () => {
           <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', alignItems: 'center' }}>
             {selectedAlerts.size > 0 && (
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: '#6b7280' }}>{selectedAlerts.size} selected</span>
+                  <span style={{ fontSize: 11, color: THEME.textMuted }}>{selectedAlerts.size} selected</span>
                   <button style={css.btn('ghost')} onClick={acknowledgeMany}><Check size={12} /> Ack All</button>
                   <button style={css.btn('ghost')} onClick={clearSelection}><X size={12} /></button>
                 </div>
             )}
-            <button onClick={() => setMaintenanceMode(m => !m)} style={{ ...css.tab(maintenanceMode), borderColor: maintenanceMode ? SEVERITY.warning.color : 'transparent', color: maintenanceMode ? SEVERITY.warning.color : '#6b7280' }}>
-              <Shield size={13} /> {maintenanceMode ? 'MAINT ON' : 'MAINTENANCE'}
+            <button onClick={() => setMaintenanceMode(m => !m)} style={{ ...css.tab(maintenanceMode), borderColor: maintenanceMode ? SEVERITY.warning.color+'20' : 'transparent', color: maintenanceMode ? SEVERITY.warning.color : THEME.textMuted }}>
+              <Shield size={12} /> {maintenanceMode ? 'MAINT ON' : 'MAINTENANCE'}
             </button>
           </div>
         </div>
 
         {filteredAlerts.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 8, paddingLeft: 4 }}>
-              <input type="checkbox" checked={selectedAlerts.size === filteredAlerts.length && filteredAlerts.length > 0} onChange={e => e.target.checked ? selectAll() : clearSelection()} style={{ accentColor: '#6366f1', cursor: 'pointer' }} />
-              <span style={{ fontSize: 10, color: '#4b5563', letterSpacing: '0.02em' }}>{filteredAlerts.length} ALERT{filteredAlerts.length !== 1 ? 'S' : ''}</span>
+              <input type="checkbox" checked={selectedAlerts.size === filteredAlerts.length && filteredAlerts.length > 0} onChange={e => e.target.checked ? selectAll() : clearSelection()} style={{ accentColor: THEME.primary, cursor: 'pointer' }} />
+              <span style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em' }}>{filteredAlerts.length} ALERT{filteredAlerts.length !== 1 ? 'S' : ''}</span>
             </div>
         )}
 
         <div style={{ ...css.card, overflow: 'hidden' }}>
           {filteredAlerts.length === 0 ? (
-              <div style={{ padding: 48, textAlign: 'center', color: '#4b5563' }}>
+              <div style={{ padding: 40, textAlign: 'center', color: THEME.textMuted }}>
                 <CheckCircle2 size={32} style={{ display: 'block', margin: '0 auto 14px', color: THEME.success }} />
-                <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>All systems nominal</div>
-                <div style={{ fontSize: 10, color: '#374151' }}>No alerts match the current filters</div>
+                <div style={{ fontSize: 13, color: THEME.textMain, marginBottom: 6 }}>All systems nominal</div>
+                <div style={{ fontSize: 11, color: THEME.textMuted }}>No alerts match the current filters</div>
               </div>
           ) : (
               filteredAlerts.map((alert, idx) => {
@@ -542,42 +542,42 @@ const VIGILDashboard = () => {
                 return (
                     <div key={alert.id}>
                       {hasPending && renderApprovalBanner(alert)}
-                      <div style={{ padding: '14px 16px', borderBottom: idx < filteredAlerts.length - 1 || isDetail || isComments || isImpact ? '1px solid rgba(255,255,255,0.04)' : 'none', display: 'flex', gap: 14, alignItems: 'flex-start', background: isSelected ? 'rgba(99,102,241,0.05)' : alert.acknowledged ? 'rgba(255,255,255,0.01)' : 'transparent', borderLeft: `2px solid ${isSelected ? '#6366f1' : s.color}`, transition: 'background 0.15s' }}>
-                        <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(alert.id)} style={{ accentColor: '#6366f1', marginTop: 3, cursor: 'pointer', flexShrink: 0 }} />
+                      <div style={{ padding: '12px 14px', borderBottom: idx < filteredAlerts.length - 1 || isDetail || isComments || isImpact ? `1px solid ${THEME.grid}` : 'none', display: 'flex', gap: 12, alignItems: 'flex-start', background: isSelected ? `${THEME.primary}06` : alert.acknowledged ? THEME.bg : 'transparent', borderLeft: `2px solid ${isSelected ? THEME.primary : s.color}`, transition: 'background 0.15s' }}>
+                        <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(alert.id)} style={{ accentColor: THEME.primary, marginTop: 3, cursor: 'pointer', flexShrink: 0 }} />
                         <div style={{ marginTop: 2, flexShrink: 0 }}>
-                          {!alert.acknowledged ? <PulseDot color={s.color} size={8} /> : <Icon size={14} color="#4b5563" />}
+                          {!alert.acknowledged ? <PulseDot color={s.color} size={8} /> : <Icon size={13} color={THEME.textMuted} />}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 6 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
                               <SeverityBadge severity={alert.severity} />
-                              <span style={{ fontSize: 13, color: alert.acknowledged ? '#6b7280' : '#e5e7eb', fontFamily: THEME.fontBody, fontWeight: 500 }}>{alert.message}</span>
-                              {alert.count > 1 && <span style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', color: '${THEME.primary}', borderRadius: 10, padding: '1px 6px', fontSize: 10, fontWeight: 700 }}>×{alert.count}</span>}
+                              <span style={{ fontSize: 13, color: alert.acknowledged ? THEME.textMuted : THEME.textMain, fontFamily: THEME.fontBody, fontWeight: 500 }}>{alert.message}</span>
+                              {alert.count > 1 && <span style={{ background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, color: THEME.primary, borderRadius: 6, padding: '1px 6px', fontSize: 10, fontWeight: 700 }}>×{alert.count}</span>}
                             </div>
-                            <span style={{ fontSize: 10, color: '#4b5563', whiteSpace: 'nowrap', flexShrink: 0 }}>{formatAge(alert.timestamp)}</span>
+                            <span style={{ fontSize: 11, color: THEME.textMuted, whiteSpace: 'nowrap', flexShrink: 0 }}>{formatAge(alert.timestamp)}</span>
                           </div>
                           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: alert.acknowledged ? 0 : 10 }}>
-                            <span style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '2px 7px', fontSize: 10, color: '#9ca3af', fontFamily: THEME.fontMono }}>{alert.source}</span>
-                            <span style={{ fontSize: 10, color: '#4b5563',  letterSpacing: '0.04em' }}>{alert.category}</span>
-                            <span style={{ fontSize: 10, color: '#374151' }}>⟵ {alert.rule}</span>
-                            {alert.tags?.map(t => <span key={t} style={{ fontSize: 9, color: '#4b5563', borderRadius: 2, border: '1px solid rgba(255,255,255,0.05)', padding: '1px 5px' }}>#{t}</span>)}
-                            {alert.acknowledged && <span style={{ color: THEME.success, fontSize: 10 }}>✓ acked by {alert.acknowledged_by}</span>}
+                            <span style={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '2px 7px', fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{alert.source}</span>
+                            <span style={{ fontSize: 11, color: THEME.textMuted,  letterSpacing: '0.04em' }}>{alert.category}</span>
+                            <span style={{ fontSize: 11, color: THEME.textMuted }}>⟵ {alert.rule}</span>
+                            {alert.tags?.map(t => <span key={t} style={{ fontSize: 9, color: THEME.textMuted, borderRadius: 2, border: `1px solid ${THEME.grid}`, padding: '1px 5px' }}>#{t}</span>)}
+                            {alert.acknowledged && <span style={{ color: THEME.success, fontSize: 11 }}>✓ acked by {alert.acknowledged_by}</span>}
                           </div>
                           {!alert.acknowledged && (
                               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                                <button onClick={() => acknowledgeAlert(alert.id)} style={{ ...css.btn('ghost'), borderColor: hasPending ? SEVERITY.warning.color+'40' : `${THEME.success}40`, color: hasPending ? SEVERITY.warning.color : THEME.success }}>
+                                <button onClick={() => acknowledgeAlert(alert.id)} style={{ ...css.btn('ghost'), borderColor: hasPending ? SEVERITY.warning.color+'20' : `${THEME.success}20`, color: hasPending ? SEVERITY.warning.color : THEME.success }}>
                                   {hasPending ? <><Lock size={11} /> Pending Approval</> : <><Check size={11} /> Acknowledge</>}
                                 </button>
                                 <button onClick={() => snoozeAlert(alert.id)} style={css.btn('ghost')}><Clock size={11} /> Snooze 1h</button>
-                                <button onClick={() => escalateAlert(alert.id)} style={{ ...css.btn('ghost'), color: '#f87171', borderColor: 'rgba(248,113,113,0.2)' }}><ArrowUpRight size={11} /> Escalate</button>
+                                <button onClick={() => escalateAlert(alert.id)} style={{ ...css.btn('ghost'), color: SEVERITY.critical.color, borderColor: SEVERITY.critical.color+'20' }}><ArrowUpRight size={11} /> Escalate</button>
                                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 5 }}>
-                                  <button onClick={() => setShowImpactPanel(isImpact ? null : alert.id)} style={{ ...css.btn('ghost'), color: isImpact ? '${THEME.primary}' : '#6b7280', borderColor: isImpact ? 'rgba(139,92,246,0.25)' : 'transparent' }}>
+                                  <button onClick={() => setShowImpactPanel(isImpact ? null : alert.id)} style={{ ...css.btn('ghost'), color: isImpact ? THEME.primary : THEME.textMuted, borderColor: isImpact ? THEME.primary+'20' : 'transparent' }}>
                                     <GitMerge size={11} /> Impact
-                                    {alert.impactRadius?.users > 0 && <span style={{ fontSize: 9, background: 'rgba(139,92,246,0.15)', color: '${THEME.primary}', borderRadius: 2, padding: '1px 4px' }}>{alert.impactRadius.users >= 1000 ? `${(alert.impactRadius.users/1000).toFixed(0)}k` : alert.impactRadius.users}</span>}
+                                    {alert.impactRadius?.users > 0 && <span style={{ fontSize: 9, background: THEME.primary+'10', color: THEME.primary, borderRadius: 2, padding: '1px 4px' }}>{alert.impactRadius.users >= 1000 ? `${(alert.impactRadius.users/1000).toFixed(0)}k` : alert.impactRadius.users}</span>}
                                   </button>
-                                  <button onClick={() => setShowCommentPanel(isComments ? null : alert.id)} style={{ ...css.btn('ghost'), color: isComments ? '${THEME.primary}' : '#6b7280', borderColor: isComments ? 'rgba(99,102,241,0.3)' : 'transparent' }}>
+                                  <button onClick={() => setShowCommentPanel(isComments ? null : alert.id)} style={{ ...css.btn('ghost'), color: isComments ? THEME.primary : THEME.textMuted, borderColor: isComments ? THEME.primary+'20' : 'transparent' }}>
                                     <MessageSquare size={11} />
-                                    {commentCount > 0 && <span style={{ fontSize: 9, background: 'rgba(99,102,241,0.15)', color: '${THEME.primary}', borderRadius: 2, padding: '1px 4px' }}>{commentCount}</span>}
+                                    {commentCount > 0 && <span style={{ fontSize: 9, background: THEME.primary+'10', color: THEME.primary, borderRadius: 2, padding: '1px 4px' }}>{commentCount}</span>}
                                   </button>
                                   <button onClick={() => setShowDetailPanel(isDetail ? null : alert.id)} style={css.btn('ghost')}>
                                     <ChevronRight size={11} style={{ transform: isDetail ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} /> Details
@@ -586,14 +586,14 @@ const VIGILDashboard = () => {
                               </div>
                           )}
                           {alert.acknowledged && commentCount > 0 && (
-                              <button onClick={() => setShowCommentPanel(isComments ? null : alert.id)} style={{ ...css.btn('ghost'), marginTop: 6, fontSize: 10, color: '#4b5563' }}>
+                              <button onClick={() => setShowCommentPanel(isComments ? null : alert.id)} style={{ ...css.btn('ghost'), marginTop: 6, fontSize: 11, color: THEME.textMuted }}>
                                 <MessageSquare size={10} /> {commentCount} note{commentCount !== 1 ? 's' : ''}
                               </button>
                           )}
                         </div>
                       </div>
                       {isDetail && (
-                          <div style={{ background: 'rgba(0,0,0,0.25)', borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '16px 20px 16px 56px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
+                          <div style={{ background: THEME.bg, borderBottom: `1px solid ${THEME.grid}`, padding: '12px 14px 12px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
                             {[
                               { label: 'First Seen',  val: formatTime(alert.timestamp - (alert.count - 1) * 60000) },
                               { label: 'Last Seen',   val: formatTime(alert.timestamp) },
@@ -603,8 +603,8 @@ const VIGILDashboard = () => {
                               { label: 'Category',    val: alert.category },
                             ].map(item => (
                                 <div key={item.label}>
-                                  <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em',  marginBottom: 4 }}>{item.label}</div>
-                                  <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: THEME.fontMono }}>{item.val}</div>
+                                  <div style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em',  marginBottom: 4 }}>{item.label}</div>
+                                  <div style={{ fontSize: 12, color: THEME.textMain, fontFamily: THEME.fontMono }}>{item.val}</div>
                                 </div>
                             ))}
                           </div>
@@ -623,16 +623,16 @@ const VIGILDashboard = () => {
   const renderConfig = () => (
       <div>
         {/* Alert Rule Simulator */}
-        <div style={{ ...css.card, padding: 16, marginBottom: 16, borderColor: 'rgba(99,102,241,0.2)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div style={{ ...css.card, padding: 14, marginBottom: 16, borderColor: THEME.primary+'20' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Zap size={14} color="${THEME.primary}" />
+              <Zap size={13} color={THEME.primary} />
               <div>
-                <div style={{ fontSize: 12, color: '#e5e7eb', fontWeight: 700 }}>Alert Rule Simulator</div>
-                <div style={{ fontSize: 10, color: '#4b5563' }}>Fire a test alert without affecting production</div>
+                <div style={{ fontSize: 12, color: THEME.textMain, fontWeight: 700 }}>Alert Rule Simulator</div>
+                <div style={{ fontSize: 11, color: THEME.textMuted }}>Fire a test alert without affecting production</div>
               </div>
             </div>
-            <span style={{ fontSize: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '${THEME.primary}', borderRadius: 10, padding: '2px 8px', letterSpacing: '0.02em' }}>SANDBOX</span>
+            <span style={{ fontSize: 9, background: THEME.primary+'10', border: `1px solid ${THEME.primary}20`, color: THEME.primary, borderRadius: 6, padding: '2px 8px', letterSpacing: '0.02em' }}>SANDBOX</span>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 180 }}>
@@ -648,7 +648,7 @@ const VIGILDashboard = () => {
             </button>
           </div>
           {simState.result && (
-              <div style={{ marginTop: 12, padding: '12px 14px', background: simState.result.triggered ? 'rgba(255,59,92,0.07)' : 'rgba(34,211,165,0.07)', border: `1px solid ${simState.result.triggered ? SEVERITY.critical.color : SEVERITY.resolved.color}30`, borderRadius: 6 }}>
+              <div style={{ marginTop: 12, padding: '12px 14px', background: simState.result.triggered ? SEVERITY.critical.color+'08' : SEVERITY.success.color+'08', border: `1px solid ${simState.result.triggered ? SEVERITY.critical.color : SEVERITY.resolved.color}20`, borderRadius: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                   {simState.result.triggered
                       ? <AlertTriangle size={13} color={SEVERITY.critical.color} />
@@ -656,7 +656,7 @@ const VIGILDashboard = () => {
                   <span style={{ fontSize: 12, fontWeight: 700, color: simState.result.triggered ? SEVERITY.critical.color : SEVERITY.resolved.color }}>
                     {simState.result.triggered ? 'ALERT WOULD FIRE' : 'NO ALERT — BELOW THRESHOLD'}
                   </span>
-                  <span style={{ fontSize: 9, color: '#4b5563', marginLeft: 'auto' }}>evaluated in {simState.result.latency}ms</span>
+                  <span style={{ fontSize: 11, color: THEME.textMuted, marginLeft: 'auto' }}>evaluated in {simState.result.latency}ms</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
                   {[
@@ -666,8 +666,8 @@ const VIGILDashboard = () => {
                     { label: 'Channels Hit',     val: Object.entries(simState.result.channels || {}).filter(([,v]) => v).map(([k]) => k).join(', ') || 'none' },
                   ].map(item => (
                       <div key={item.label}>
-                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>{item.label.toUpperCase()}</div>
-                        <div style={{ fontSize: 11, color: '#9ca3af', fontFamily: THEME.fontMono }}>{item.val}</div>
+                        <div style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em', marginBottom: 3 }}>{item.label.toUpperCase()}</div>
+                        <div style={{ fontSize: 11, color: THEME.textMain, fontFamily: THEME.fontMono }}>{item.val}</div>
                       </div>
                   ))}
                 </div>
@@ -678,37 +678,37 @@ const VIGILDashboard = () => {
         {/* Alert Rules */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 13, color: '#e5e7eb', fontWeight: 700, marginBottom: 3 }}>Alert Rules</div>
-            <div style={{ fontSize: 10, color: '#4b5563' }}>{stats.activeRules} active / {alertRules.length} total</div>
+            <div style={{ fontSize: 13, color: THEME.textMain, fontWeight: 700, marginBottom: 3 }}>Alert Rules</div>
+            <div style={{ fontSize: 11, color: THEME.textMuted }}>{stats.activeRules} active / {alertRules.length} total</div>
           </div>
-          <button onClick={() => { setEditingRule(null); setShowCreateModal(true); }} style={css.btn('primary')}><Plus size={13} /> New Rule</button>
+          <button onClick={() => { setEditingRule(null); setShowCreateModal(true); }} style={css.btn('primary')}><Plus size={12} /> New Rule</button>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
           {alertRules.map(rule => {
             const s = SEVERITY[rule.severity] || SEVERITY.info;
             return (
-                <div key={rule.id} style={{ ...css.card, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, borderLeft: `2px solid ${rule.active ? s.color : 'rgba(255,255,255,0.06)'}`, opacity: rule.active ? 1 : 0.55 }}>
+                <div key={rule.id} style={{ ...css.card, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, borderLeft: `2px solid ${rule.active ? s.color : THEME.grid}`, opacity: rule.active ? 1 : 0.55 }}>
                   <Toggle on={rule.active} onChange={() => toggleRule(rule.id)} accent={s.color} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
-                      <span style={{ fontSize: 13, color: '#e5e7eb', fontWeight: 700 }}>{rule.name}</span>
+                      <span style={{ fontSize: 13, color: THEME.textMain, fontWeight: 700 }}>{rule.name}</span>
                       <SeverityBadge severity={rule.severity} small />
-                      <span style={{ fontSize: 9, color: '#4b5563',  letterSpacing: '0.04em' }}>{rule.category}</span>
+                      <span style={{ fontSize: 11, color: THEME.textMuted,  letterSpacing: '0.04em' }}>{rule.category}</span>
                     </div>
-                    <div style={{ fontSize: 11, color: '#6b7280', fontFamily: THEME.fontMono }}>
-                      <span style={{ color: '${THEME.primary}' }}>{METRICS[rule.metric]?.label || rule.metric}</span>
-                      <span style={{ color: '#4b5563' }}> {rule.condition === 'gt' ? '>' : rule.condition === 'lt' ? '<' : '='} </span>
-                      <span style={{ color: '#9ca3af' }}>{rule.threshold}{METRICS[rule.metric]?.unit}</span>
-                      <span style={{ color: '#4b5563' }}> for {rule.duration}m</span>
+                    <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono }}>
+                      <span style={{ color: THEME.primary }}>{METRICS[rule.metric]?.label || rule.metric}</span>
+                      <span style={{ color: THEME.textMuted }}> {rule.condition === 'gt' ? '>' : rule.condition === 'lt' ? '<' : '='} </span>
+                      <span style={{ color: THEME.textMain }}>{rule.threshold}{METRICS[rule.metric]?.unit}</span>
+                      <span style={{ color: THEME.textMuted }}> for {rule.duration}m</span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>FIRED</div>
-                      <div style={{ fontSize: 13, color: '#9ca3af', fontWeight: 700 }}>{rule.triggerCount}×</div>
+                      <div style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em', marginBottom: 3 }}>FIRED</div>
+                      <div style={{ fontSize: 13, color: THEME.textMain, fontWeight: 700 }}>{rule.triggerCount}×</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>CHANNELS</div>
+                      <div style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em', marginBottom: 3 }}>CHANNELS</div>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <ChannelDot active={rule.channels?.email} label="Email" />
                         <ChannelDot active={rule.channels?.slack} label="Slack" />
@@ -716,8 +716,8 @@ const VIGILDashboard = () => {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 4 }}>
-                      <button onClick={() => openEditRule(rule)} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer', padding: 4, borderRadius: 4 }} onMouseEnter={e => e.currentTarget.style.color='#9ca3af'} onMouseLeave={e => e.currentTarget.style.color='#4b5563'}><Edit3 size={14} /></button>
-                      <button onClick={() => deleteRule(rule.id)} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer', padding: 4, borderRadius: 4 }} onMouseEnter={e => e.currentTarget.style.color='#f87171'} onMouseLeave={e => e.currentTarget.style.color='#4b5563'}><Trash2 size={14} /></button>
+                      <button onClick={() => openEditRule(rule)} style={{ background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 4, borderRadius: 4 }} onMouseEnter={e => e.currentTarget.style.color=THEME.textMain} onMouseLeave={e => e.currentTarget.style.color=THEME.textMuted}><Edit3 size={14} /></button>
+                      <button onClick={() => deleteRule(rule.id)} style={{ background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 4, borderRadius: 4 }} onMouseEnter={e => e.currentTarget.style.color=SEVERITY.critical.color} onMouseLeave={e => e.currentTarget.style.color=THEME.textMuted}><Trash2 size={14} /></button>
                     </div>
                   </div>
                 </div>
@@ -729,33 +729,33 @@ const VIGILDashboard = () => {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div>
-              <div style={{ fontSize: 13, color: '#e5e7eb', fontWeight: 700, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Shield size={12} color="#6b7280" /> Suppression Windows
+              <div style={{ fontSize: 13, color: THEME.textMain, fontWeight: 700, marginBottom: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Shield size={12} color={THEME.textMuted} /> Suppression Windows
               </div>
-              <div style={{ fontSize: 10, color: '#4b5563' }}>Schedule maintenance windows to suppress expected alerts</div>
+              <div style={{ fontSize: 11, color: THEME.textMuted }}>Schedule maintenance windows to suppress expected alerts</div>
             </div>
             <button onClick={() => showToast('Window creation coming soon', 'info')} style={css.btn('ghost')}><Plus size={12} /> New Window</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {suppressionWindows.map(sw => (
-                <div key={sw.id} style={{ ...css.card, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, opacity: sw.active ? 1 : 0.6 }}>
+                <div key={sw.id} style={{ ...css.card, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, opacity: sw.active ? 1 : 0.6 }}>
                   <Toggle on={sw.active} onChange={() => setSuppressionWindows(prev => prev.map(w => w.id === sw.id ? { ...w, active: !w.active } : w))} accent={SEVERITY.warning.color} />
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: 12, color: '#e5e7eb', fontWeight: 700 }}>{sw.name}</span>
-                      {sw.active && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}30`, color: SEVERITY.warning.color, borderRadius: 10, padding: '1px 6px', letterSpacing: '0.02em' }}>ACTIVE</span>}
+                      <span style={{ fontSize: 12, color: THEME.textMain, fontWeight: 700 }}>{sw.name}</span>
+                      {sw.active && <span style={{ fontSize: 9, background: SEVERITY.warning.color+'08', border: `1px solid ${SEVERITY.warning.color}20`, color: SEVERITY.warning.color, borderRadius: 6, padding: '1px 6px', letterSpacing: '0.02em' }}>ACTIVE</span>}
                     </div>
-                    <div style={{ fontSize: 10, color: '#6b7280', fontFamily: THEME.fontMono, marginBottom: 4 }}>
+                    <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, marginBottom: 4 }}>
                       <Clock size={10} style={{ display: 'inline', marginRight: 4 }} />{sw.schedule}
-                      <span style={{ color: '#374151', marginLeft: 12 }}>Next: {sw.nextRun}</span>
+                      <span style={{ color: THEME.textMuted, marginLeft: 12 }}>Next: {sw.nextRun}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {sw.rules.map(r => <span key={r} style={{ fontSize: 9, color: '#4b5563', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '1px 6px' }}>{r}</span>)}
+                      {sw.rules.map(r => <span key={r} style={{ fontSize: 9, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '1px 6px' }}>{r}</span>)}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>SUPPRESSED</div>
-                    <div style={{ fontSize: 14, color: '#9ca3af', fontWeight: 700 }}>{sw.suppressCount}×</div>
+                    <div style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em', marginBottom: 3 }}>SUPPRESSED</div>
+                    <div style={{ fontSize: 14, color: THEME.textMain, fontWeight: 700 }}>{sw.suppressCount}×</div>
                   </div>
                 </div>
             ))}
@@ -768,8 +768,8 @@ const VIGILDashboard = () => {
   const renderHistory = () => (
       <div>
         {/* Notification Channel Health */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ ...css.sHdr, marginBottom: 12 }}><Wifi size={9} /> Notification Channel Health</div>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ ...css.sHdr, marginBottom: 12 }}><Wifi size={10} /> Notification Channel Health</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
             {CHANNEL_STATUS.map(ch => {
               const statusColor = ch.status === 'operational' ? SEVERITY.resolved.color : ch.status === 'degraded' ? SEVERITY.warning.color : SEVERITY.critical.color;
@@ -779,21 +779,21 @@ const VIGILDashboard = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                         <span style={{ fontSize: 14 }}>{ch.icon}</span>
-                        <span style={{ fontSize: 12, color: '#e5e7eb', fontWeight: 700 }}>{ch.name}</span>
+                        <span style={{ fontSize: 12, color: THEME.textMain, fontWeight: 700 }}>{ch.name}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <PulseDot color={statusColor} size={6} />
-                        <span style={{ fontSize: 9, color: statusColor, letterSpacing: '0.02em', fontWeight: 700 }}>{ch.status.toUpperCase()}</span>
+                        <span style={{ fontSize: 11, color: statusColor, letterSpacing: '0.02em', fontWeight: 700 }}>{ch.status.toUpperCase()}</span>
                       </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: ch.quota ? 8 : 0 }}>
                       <div>
-                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>DELIVERY</div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: ch.deliveryRate >= 98 ? SEVERITY.resolved.color : ch.deliveryRate >= 90 ? SEVERITY.warning.color : SEVERITY.critical.color, fontFamily: THEME.fontMono }}>{ch.deliveryRate}%</div>
+                        <div style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em', marginBottom: 3 }}>DELIVERY</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: ch.deliveryRate >= 98 ? SEVERITY.resolved.color : ch.deliveryRate >= 90 ? SEVERITY.warning.color : SEVERITY.critical.color, fontFamily: THEME.fontMono }}>{ch.deliveryRate}%</div>
                       </div>
                       <div>
-                        <div style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', marginBottom: 3 }}>LATENCY</div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: ch.latency < 500 ? '#9ca3af' : SEVERITY.warning.color, fontFamily: THEME.fontMono }}>
+                        <div style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em', marginBottom: 3 }}>LATENCY</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: ch.latency < 500 ? THEME.textMuted : SEVERITY.warning.color, fontFamily: THEME.fontMono }}>
                           {ch.latency < 1000 ? ch.latency + 'ms' : (ch.latency/1000).toFixed(1) + 's'}
                         </div>
                       </div>
@@ -801,8 +801,8 @@ const VIGILDashboard = () => {
                     {ch.quota && (
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <span style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em' }}>API QUOTA</span>
-                            <span style={{ fontSize: 9, color: quotaPct > 0.85 ? SEVERITY.warning.color : '#6b7280', fontFamily: THEME.fontMono }}>
+                            <span style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em' }}>API QUOTA</span>
+                            <span style={{ fontSize: 11, color: quotaPct > 0.85 ? SEVERITY.warning.color : THEME.textMuted, fontFamily: THEME.fontMono }}>
                               {ch.quota.used.toLocaleString()} / {ch.quota.limit.toLocaleString()}
                             </span>
                           </div>
@@ -810,12 +810,12 @@ const VIGILDashboard = () => {
                             <div style={{ height: '100%', width: `${quotaPct * 100}%`, background: quotaPct > 0.85 ? `linear-gradient(90deg, ${SEVERITY.warning.color}80, ${SEVERITY.warning.color})` : 'linear-gradient(90deg, ${THEME.primary}80, ${THEME.primary})', borderRadius: 2, transition: 'width 0.5s' }} />
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: 9, color: '#374151' }}>{ch.quota.unit}</span>
-                            {quotaPct > 0.85 && <span style={{ fontSize: 9, color: SEVERITY.warning.color }}>⚠ {Math.round((1 - quotaPct) * 100)}% remaining</span>}
+                            <span style={{ fontSize: 11, color: THEME.textMuted }}>{ch.quota.unit}</span>
+                            {quotaPct > 0.85 && <span style={{ fontSize: 11, color: SEVERITY.warning.color }}>⚠ {Math.round((1 - quotaPct) * 100)}% remaining</span>}
                           </div>
                         </div>
                     )}
-                    <div style={{ fontSize: 9, color: '#374151', marginTop: 6 }}>Last delivery {formatAge(ch.lastAlert)}</div>
+                    <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 6 }}>Last delivery {formatAge(ch.lastAlert)}</div>
                   </div>
               );
             })}
@@ -823,31 +823,31 @@ const VIGILDashboard = () => {
         </div>
 
         {/* History filter */}
-        <div style={{ marginBottom: 14 }}>
+        <div style={{ marginBottom: 12 }}>
           <div style={{ position: 'relative', maxWidth: 360 }}>
-            <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#4b5563' }} />
+            <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: THEME.textMuted }} />
             <input style={{ ...css.input, paddingLeft: 30 }} placeholder="Filter history…" value={histFilter} onChange={e => setHistFilter(e.target.value)} />
           </div>
         </div>
         <div style={{ ...css.card, overflow: 'hidden' }}>
-          <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'grid', gridTemplateColumns: '80px 1fr 80px 90px 100px', gap: 16, alignItems: 'center' }}>
+          <div style={{ padding: '10px 14px', borderBottom: `1px solid ${THEME.grid}`, display: 'grid', gridTemplateColumns: '80px 1fr 80px 90px 100px', gap: 12, alignItems: 'center' }}>
             {['SEVERITY', 'MESSAGE', 'DURATION', 'RULE', 'RESOLVED AT'].map(h => (
-                <div key={h} style={{ fontSize: 9, color: '#4b5563', letterSpacing: '0.02em', fontWeight: 700 }}>{h}</div>
+                <div key={h} style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em', fontWeight: 700 }}>{h}</div>
             ))}
           </div>
           {filteredHistory.map((item, i) => (
-              <div key={item.id} style={{ padding: '12px 16px', borderBottom: i < filteredHistory.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', display: 'grid', gridTemplateColumns: '80px 1fr 80px 90px 100px', gap: 16, alignItems: 'center' }}>
+              <div key={item.id} style={{ padding: '12px 14px', borderBottom: i < filteredHistory.length - 1 ? `1px solid ${THEME.grid}` : 'none', display: 'grid', gridTemplateColumns: '80px 1fr 80px 90px 100px', gap: 12, alignItems: 'center' }}>
                 <SeverityBadge severity={item.severity} small />
                 <div>
-                  <div style={{ fontSize: 12, color: '#9ca3af', fontFamily: THEME.fontBody, marginBottom: 3 }}>{item.message}</div>
-                  <div style={{ fontSize: 10, color: '#374151' }}>resolved by <span style={{ color: '#4b5563' }}>{item.resolvedBy}</span></div>
+                  <div style={{ fontSize: 12, color: THEME.textMain, fontFamily: THEME.fontBody, marginBottom: 3 }}>{item.message}</div>
+                  <div style={{ fontSize: 11, color: THEME.textMuted }}>resolved by <span style={{ color: THEME.textMuted }}>{item.resolvedBy}</span></div>
                 </div>
-                <div style={{ fontSize: 11, color: '#6b7280', fontFamily: THEME.fontMono }}>{item.duration}</div>
-                <div style={{ fontSize: 10, color: '#4b5563', fontFamily: THEME.fontMono }}>{item.rule}</div>
-                <div style={{ fontSize: 10, color: '#4b5563', fontFamily: THEME.fontMono }}>{formatTime(item.timestamp)}</div>
+                <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{item.duration}</div>
+                <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{item.rule}</div>
+                <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{formatTime(item.timestamp)}</div>
               </div>
           ))}
-          {filteredHistory.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: '#4b5563', fontSize: 12 }}>No historical alerts found</div>}
+          {filteredHistory.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: THEME.textMuted, fontSize: 12 }}>No historical alerts found</div>}
         </div>
       </div>
   );
@@ -856,15 +856,15 @@ const VIGILDashboard = () => {
   const renderModal = () => (
       <div style={css.modal} onClick={e => e.target === e.currentTarget && setShowCreateModal(false)}>
         <div style={css.modalBox}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#e5e7eb', marginBottom: 3 }}>{editingRule ? 'Edit Alert Rule' : 'Create Alert Rule'}</div>
-              <div style={{ fontSize: 10, color: '#4b5563' }}>Define conditions to trigger alerts and notifications</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain, marginBottom: 3 }}>{editingRule ? 'Edit Alert Rule' : 'Create Alert Rule'}</div>
+              <div style={{ fontSize: 11, color: THEME.textMuted }}>Define conditions to trigger alerts and notifications</div>
             </div>
-            <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', padding: 4 }}><X size={18} /></button>
+            <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 4 }}><X size={18} /></button>
           </div>
           <form onSubmit={handleCreateRule}>
-            <div style={{ display: 'grid', gap: 16 }}>
+            <div style={{ display: 'grid', gap: 14 }}>
               <div>
                 <label style={css.label}>Rule Name *</label>
                 <input required style={css.input} placeholder="e.g., Database High CPU" value={newRule.name} onChange={e => setNewRule(r => ({ ...r, name: e.target.value }))} />
@@ -891,39 +891,39 @@ const VIGILDashboard = () => {
                   {Object.entries(METRICS).map(([k, v]) => <option key={k} value={k}>{v.label} ({v.unit})</option>)}
                 </select>
               </div>
-              <div style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 6, padding: '12px 14px' }}>
+              <div style={{ background: THEME.bg, border: `1px solid ${THEME.primary}20`, borderRadius: 8, padding: '12px 14px' }}>
                 <label style={{ ...css.label, marginBottom: 10 }}>Trigger Condition</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 11, color: '#6b7280' }}>If</span>
-                  <span style={{ fontSize: 11, color: '${THEME.primary}', fontWeight: 700 }}>{METRICS[newRule.metric]?.label}</span>
+                  <span style={{ fontSize: 11, color: THEME.textMuted }}>If</span>
+                  <span style={{ fontSize: 11, color: THEME.primary, fontWeight: 700 }}>{METRICS[newRule.metric]?.label}</span>
                   <select style={{ ...css.input, width: 60 }} value={newRule.condition} onChange={e => setNewRule(r => ({ ...r, condition: e.target.value }))}>
                     <option value="gt">&gt;</option>
                     <option value="lt">&lt;</option>
                     <option value="eq">=</option>
                   </select>
                   <input type="number" style={{ ...css.input, width: 80 }} value={newRule.threshold} onChange={e => setNewRule(r => ({ ...r, threshold: e.target.value }))} />
-                  <span style={{ fontSize: 11, color: '#4b5563' }}>{METRICS[newRule.metric]?.unit}</span>
-                  <span style={{ fontSize: 11, color: '#6b7280', marginLeft: 6 }}>for</span>
+                  <span style={{ fontSize: 11, color: THEME.textMuted }}>{METRICS[newRule.metric]?.unit}</span>
+                  <span style={{ fontSize: 11, color: THEME.textMuted, marginLeft: 6 }}>for</span>
                   <input type="number" style={{ ...css.input, width: 60 }} value={newRule.duration} onChange={e => setNewRule(r => ({ ...r, duration: e.target.value }))} />
-                  <span style={{ fontSize: 11, color: '#4b5563' }}>min</span>
+                  <span style={{ fontSize: 11, color: THEME.textMuted }}>min</span>
                 </div>
-                <div style={{ marginTop: 10, padding: '8px 10px', background: 'rgba(99,102,241,0.06)', borderRadius: 14, fontSize: 11, color: '#6b7280', fontFamily: THEME.fontBody }}>
-                  Alert fires when <strong style={{ color: '${THEME.primary}' }}>{METRICS[newRule.metric]?.label}</strong> is {newRule.condition === 'gt' ? 'above' : newRule.condition === 'lt' ? 'below' : 'equal to'} <strong style={{ color: '#9ca3af' }}>{newRule.threshold}{METRICS[newRule.metric]?.unit}</strong> for <strong style={{ color: '#9ca3af' }}>{newRule.duration} minutes</strong>
+                <div style={{ marginTop: 10, padding: '8px 10px', background: THEME.primary+'08', borderRadius: 8, fontSize: 11, color: THEME.textMain, fontFamily: THEME.fontBody }}>
+                  Alert fires when <strong style={{ color: THEME.primary }}>{METRICS[newRule.metric]?.label}</strong> is {newRule.condition === 'gt' ? 'above' : newRule.condition === 'lt' ? 'below' : 'equal to'} <strong style={{ color: THEME.textMuted }}>{newRule.threshold}{METRICS[newRule.metric]?.unit}</strong> for <strong style={{ color: THEME.textMuted }}>{newRule.duration} minutes</strong>
                 </div>
               </div>
               <div>
                 <label style={css.label}>Notification Channels</label>
                 <div style={{ display: 'flex', gap: 12 }}>
                   {[{ key: 'email', label: 'Email', icon: '✉' }, { key: 'slack', label: 'Slack', icon: '#' }, { key: 'pagerduty', label: 'PagerDuty', icon: '⚡' }].map(ch => (
-                      <label key={ch.key} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 12px', background: newRule.channels[ch.key] ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${newRule.channels[ch.key] ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.07)'}`, borderRadius: 6, transition: 'all 0.15s' }}>
-                        <input type="checkbox" checked={!!newRule.channels[ch.key]} style={{ accentColor: '#6366f1' }} onChange={e => setNewRule(r => ({ ...r, channels: { ...r.channels, [ch.key]: e.target.checked } }))} />
-                        <span style={{ fontSize: 12, color: newRule.channels[ch.key] ? '${THEME.primary}' : '#6b7280' }}>{ch.icon} {ch.label}</span>
+                      <label key={ch.key} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 12px', background: newRule.channels[ch.key] ? THEME.primary+'10' : THEME.surface, border: `1px solid ${newRule.channels[ch.key] ? THEME.primary+'20' : THEME.grid}`, borderRadius: 6, transition: 'all 0.15s' }}>
+                        <input type="checkbox" checked={!!newRule.channels[ch.key]} style={{ accentColor: THEME.primary }} onChange={e => setNewRule(r => ({ ...r, channels: { ...r.channels, [ch.key]: e.target.checked } }))} />
+                        <span style={{ fontSize: 12, color: newRule.channels[ch.key] ? THEME.primary : THEME.textMuted }}>{ch.icon} {ch.label}</span>
                       </label>
                   ))}
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20, paddingTop: 16, borderTop: `1px solid ${THEME.grid}` }}>
               <button type="button" onClick={() => setShowCreateModal(false)} style={css.btn('ghost')}>Cancel</button>
               <button type="submit" style={css.btn('primary')}><Check size={13} /> {editingRule ? 'Save Changes' : 'Create Rule'}</button>
             </div>
@@ -934,7 +934,7 @@ const VIGILDashboard = () => {
 
   // ─── RENDER: TOAST ─────────────────────────────────────────────
   const renderToast = () => toast && (
-      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 2000, background: '#111827', border: `1px solid ${toast.type === 'warning' ? SEVERITY.warning.color : toast.type === 'info' ? SEVERITY.info.color : SEVERITY.resolved.color}40`, borderRadius: 8, padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 12px 24px rgba(0,0,0,0.4)', animation: 'slideUp 0.2s ease', fontSize: 12, color: '#e5e7eb', fontFamily: THEME.fontMono }}>
+      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 2000, background: THEME.surface, border: `1px solid ${toast.type === 'warning' ? SEVERITY.warning.color : toast.type === 'info' ? SEVERITY.info.color : SEVERITY.resolved.color}20`, borderRadius: 8, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', animation: 'slideUp 0.2s ease', fontSize: 12, color: THEME.textMain, fontFamily: THEME.fontMono }}>
         {toast.type === 'warning' ? <AlertTriangle size={14} color={SEVERITY.warning.color} /> : toast.type === 'info' ? <Info size={14} color={SEVERITY.info.color} /> : <Check size={14} color={SEVERITY.resolved.color} />}
         {toast.msg}
       </div>
@@ -959,26 +959,26 @@ const VIGILDashboard = () => {
         `}</style>
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <Terminal size={16} color="${THEME.primary}" />
-              <span style={{ fontSize: 16, fontWeight: 700, color: '#e5e7eb', letterSpacing: '0.02em' }}>VIGIL</span>
-              <span style={{ fontSize: 9, color: '#4b5563', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '2px 6px', letterSpacing: '0.02em' }}>v3.0</span>
-              {maintenanceMode && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.1)', border: `1px solid ${SEVERITY.warning.color}40`, color: SEVERITY.warning.color, borderRadius: 10, padding: '2px 8px', letterSpacing: '0.02em', fontWeight: 700 }}>MAINTENANCE WINDOW</span>}
+              <Terminal size={16} color={THEME.primary} />
+              <span style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, letterSpacing: '0.02em' }}>VIGIL</span>
+              <span style={{ fontSize: 9, color: THEME.textMuted, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '2px 6px', letterSpacing: '0.02em' }}>v3.0</span>
+              {maintenanceMode && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.06)', border: `1px solid ${SEVERITY.warning.color}20`, color: SEVERITY.warning.color, borderRadius: 6, padding: '2px 8px', letterSpacing: '0.02em', fontWeight: 700 }}>MAINTENANCE WINDOW</span>}
             </div>
-            <div style={{ fontSize: 10, color: '#4b5563', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontSize: 11, color: THEME.textMuted, display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ display: 'flex', alignItems: 'center' }}><PulseDot color={SEVERITY.resolved.color} size={6} /><span style={{ marginLeft: 6 }}>Connected · Last sync {formatAge(Date.now() - 8000)}</span></span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Users size={9} />
+                <Users size={10} />
                 <span>{TEAM_MEMBERS.filter(m => m.online).length}/{TEAM_MEMBERS.length} online</span>
                 {TEAM_MEMBERS.filter(m => m.online).slice(0, 3).map(m => <Avatar key={m.id} initials={m.avatar} online={m.online} size={16} />)}
               </span>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button onClick={() => setSoundEnabled(s => !s)} title={soundEnabled ? 'Mute alerts' : 'Enable sounds'} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 5, color: '#4b5563', cursor: 'pointer', padding: '6px 8px' }}>
-              {soundEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
+            <button onClick={() => setSoundEnabled(s => !s)} title={soundEnabled ? 'Mute alerts' : 'Enable sounds'} style={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, color: THEME.textMuted, cursor: 'pointer', padding: '6px 8px' }}>
+              {soundEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
             </button>
             <button style={css.btn('ghost')}><RefreshCw size={12} /> Refresh</button>
           </div>
@@ -992,10 +992,10 @@ const VIGILDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 6, paddingBottom: 16, borderBottom: `1px solid ${THEME.grid}`, marginBottom: 18 }}>
+        <div style={{ display: 'flex', gap: 6, paddingBottom: 12, borderBottom: `1px solid ${THEME.grid}`, marginBottom: 16 }}>
           <button onClick={() => setActiveTab('active')} style={css.tab(activeTab === 'active')}>
             <Bell size={12} /> ACTIVE
-            {stats.unacked > 0 && <span style={{ background: SEVERITY.critical.color, color: '#fff', borderRadius: 10, padding: '1px 5px', fontSize: 9, fontWeight: 700 }}>{stats.unacked}</span>}
+            {stats.unacked > 0 && <span style={{ background: SEVERITY.critical.color, color: '#fff', borderRadius: 6, padding: '1px 5px', fontSize: 9, fontWeight: 700 }}>{stats.unacked}</span>}
           </button>
           <button onClick={() => setActiveTab('config')} style={css.tab(activeTab === 'config')}>
             <SlidersHorizontal size={12} /> CONFIG

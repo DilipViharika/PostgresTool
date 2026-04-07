@@ -42,13 +42,14 @@ const OptimizerStyles = () => (
 
         .opt-card {
             background: ${THEME.surface};
-            backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid ${THEME.glassBorder};
+            border: 1px solid ${THEME.grid};
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .opt-card:hover {
-            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
-            border-color: ${THEME.primary}35;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-color: ${THEME.primary}30;
         }
         .opt-tab-btn { transition: all 0.18s; cursor: pointer; }
         .opt-tab-btn:hover { opacity: 1 !important; }
@@ -64,7 +65,7 @@ const OptimizerStyles = () => (
             width: 2px;
             background: linear-gradient(180deg, ${THEME.grid}80, transparent);
         }
-        .stat-bar-bg { background: ${THEME.surface}; border-radius: 4px; overflow: hidden; height: 6px; }
+        .stat-bar-bg { background: ${THEME.grid}; border-radius: 3px; overflow: hidden; height: 4px; }
         .stat-bar-fill {
             height: 100%; border-radius: 4px;
             animation: optGrow 0.8s cubic-bezier(0.4,0,0.2,1) forwards;
@@ -108,7 +109,7 @@ const OptimizerStyles = () => (
         }
         .config-row-changed { background: ${THEME.warning}08 !important; }
         .tag-pill {
-            padding: 1px 7px; border-radius: 10px; font-size: 9px; font-weight: 700;
+            padding: 2px 6px; border-radius: 6px; font-size: 9px; font-weight: 700;
             cursor: pointer; transition: all 0.15s;
         }
         .tag-pill:hover { filter: brightness(1.2); }

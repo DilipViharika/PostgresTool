@@ -343,65 +343,13 @@ const AppStyles = () => (
 
         /* ── Header: clean bar ── */
         header {
-            background: ${DS._dark ? THEME.bgAlt : 'rgba(255,255,255,0.88)'} !important;
-            box-shadow: ${DS._dark ? '0 1px 0 rgba(255,255,255,0.04)' : 'none'} !important;
-            border-bottom: 1px solid ${DS.border} !important;
-            backdrop-filter: ${DS._dark ? 'none' : 'blur(12px)'} !important;
+            background: ${DS._dark ? THEME.bgAlt : '#ffffff'} !important;
+            box-shadow: ${DS._dark ? '0 1px 0 rgba(255,255,255,0.04)' : '0 1px 0 rgba(0,0,0,0.06)'} !important;
         }
 
         header::after {
             display: none;
         }
-
-        /* ═══ LIGHT THEME GLOBAL VISUAL OVERHAUL ═══ */
-        ${!DS._dark ? `
-        /* Force all inline dark backgrounds to light */
-        [style*="background: #0"], [style*="background:#0"],
-        [style*="background: #1"], [style*="background:#1"],
-        [style*="background: rgb(1"], [style*="background: rgb(0"],
-        [style*="background: rgba(1"], [style*="background: rgba(0"] {
-            background: #ffffff !important;
-        }
-
-        /* Force dark background pages */
-        [style*="background: #0f1923"], [style*="background:#0f1923"],
-        [style*="background: #0b1a24"], [style*="background:#0b1a24"],
-        [style*="background: #131f2e"], [style*="background:#131f2e"],
-        [style*="background: #1a2736"], [style*="background:#1a2736"] {
-            background: #f8f9fb !important;
-        }
-
-        /* Force surface colors */
-        [style*="background: #1f2f40"], [style*="background:#1f2f40"],
-        [style*="background: #243848"], [style*="background:#243848"],
-        [style*="background: #0e2a3e"], [style*="background:#0e2a3e"],
-        [style*="background: #133348"], [style*="background:#133348"] {
-            background: #ffffff !important;
-            border-color: rgba(0,0,0,0.07) !important;
-        }
-
-        /* Force light text on dark-intended elements */
-        [style*="color: #f0f4ff"], [style*="color:#f0f4ff"] {
-            color: #111827 !important;
-        }
-        [style*="color: #8b9ab8"], [style*="color:#8b9ab8"] {
-            color: #4b5563 !important;
-        }
-        [style*="color: #4a5e7a"], [style*="color:#4a5e7a"],
-        [style*="color: #5a6e84"], [style*="color:#5a6e84"] {
-            color: #9ca3af !important;
-        }
-
-        /* Remove all box-shadow neon glows */
-        [style*="box-shadow"][style*="rgba(0,184,116"] {
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-        }
-
-        /* Clean border overrides */
-        [style*="border"][style*="rgba(255,255,255"] {
-            border-color: rgba(0,0,0,0.07) !important;
-        }
-        ` : ''}
 
         /* ── Nav items: clean interactions ── */
         .nav-item {

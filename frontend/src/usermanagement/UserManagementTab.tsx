@@ -210,7 +210,7 @@ const GlobalStylesInjector = () => (
     .um-revalidating-bar { position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, ${T.primary || '#00b874'}, transparent); background-size:200% 100%; animation:umShimmer 1s infinite linear; border-radius:2px; z-index:10; }
     .um-live-dot { width:8px; height:8px; border-radius:50%; background:#2EE89C; animation:umLivePulse 2s ease-in-out infinite; display:inline-block; flex-shrink:0; }
     
-    .um-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; border:none; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s ease; font-family:inherit; line-height:1; }
+    .um-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; border:none; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s ease; font-family:inherit; line-height:1; }
     .um-btn:disabled { opacity:.5; cursor:not-allowed; }
     .um-btn-primary  { background:${T.primary || '#00b874'}; color:${T.textInverse || '#07030D'}; }
     .um-btn-primary:hover:not(:disabled) { filter:brightness(1.1); transform:translateY(-1px); }
@@ -221,12 +221,12 @@ const GlobalStylesInjector = () => (
     .um-btn-sm   { padding:5px 10px; font-size:12px; }
     .um-btn-icon { padding:6px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; }
 
-    .um-tab { display:inline-flex; align-items:center; gap:6px; padding:12px 18px; border:none; background:transparent; color:${T.textMuted || '#9888B4'}; font-size:13px; font-weight:500; cursor:pointer; transition:color .15s; font-family:inherit; position:relative; }
+    .um-tab { display:inline-flex; align-items:center; gap:6px; padding:12px 16px; border:none; background:transparent; color:${T.textMuted || '#9888B4'}; font-size:12px; font-weight:500; cursor:pointer; transition:color .15s; font-family:inherit; position:relative; }
     .um-tab:hover  { color:${T.textMain || '#F0ECF8'}; }
     .um-tab.active { color:${T.primary || '#00b874'}; font-weight:700; }
 
-    .um-grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-    .um-grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+    .um-grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .um-grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
     @media(max-width:900px){ .um-grid-4{ grid-template-columns:repeat(2,1fr); } }
     @media(max-width:600px){ .um-grid-4,.um-grid-2{ grid-template-columns:1fr; } }
     .um-scroll { overflow-y:auto; scrollbar-width:thin; scrollbar-color:${T.grid || '#1A0E2B'} transparent; }
@@ -272,14 +272,14 @@ const ConfirmDialog = memo(({ title, message, confirmLabel, variant = 'danger', 
             onClick={e => e.target === e.currentTarget && onCancel()}
             style={{ position:'fixed', inset:0, zIndex:500, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,.55)', backdropFilter:'blur(4px)' }}
         >
-            <div style={{ background:T.surface || '#12121f', border:`1px solid ${T.border || '#2a2a3e'}`, borderRadius:16, padding:'28px 32px', maxWidth:420, width:'90vw', boxShadow:'0 24px 80px rgba(0,0,0,.5)', animation:'umSlideUp .2s ease' }}>
-                <div style={{ display:'flex', alignItems:'flex-start', gap:14, marginBottom:20 }}>
-                    <div style={{ width:40, height:40, borderRadius:10, flexShrink:0, background:variant === 'danger' ? `${T.danger || '#ef4444'}18` : `${T.primary || '#6366f1'}18`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                        <Ico name={variant === 'danger' ? 'alert' : 'check'} size={20} color={variant === 'danger' ? (T.danger || '#ef4444') : (T.primary || '#6366f1')} />
+            <div style={{ background:T.surface || '#12121f', border:`1px solid ${T.border || '#2a2a3e'}`, borderRadius:12, padding:'24px 28px', maxWidth:420, width:'90vw', boxShadow:'0 1px 3px rgba(0,0,0,0.04)', animation:'umSlideUp .2s ease' }}>
+                <div style={{ display:'flex', alignItems:'flex-start', gap:12, marginBottom:18 }}>
+                    <div style={{ width:38, height:38, borderRadius:8, flexShrink:0, background:variant === 'danger' ? `${T.danger || '#ef4444'}18` : `${T.primary || '#6366f1'}18`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <Ico name={variant === 'danger' ? 'alert' : 'check'} size={18} color={variant === 'danger' ? (T.danger || '#ef4444') : (T.primary || '#6366f1')} />
                     </div>
                     <div>
-                        <div style={{ fontSize:16, fontWeight:700, color:T.text || '#e2e4eb' }}>{title}</div>
-                        <div style={{ fontSize:13, color:T.textDim || '#8b8fa3', marginTop:6, lineHeight:1.6 }}>{message}</div>
+                        <div style={{ fontSize:15, fontWeight:700, color:T.text || '#e2e4eb' }}>{title}</div>
+                        <div style={{ fontSize:12, color:T.textDim || '#8b8fa3', marginTop:6, lineHeight:1.6 }}>{message}</div>
                     </div>
                 </div>
                 <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
@@ -296,7 +296,7 @@ const ConfirmDialog = memo(({ title, message, confirmLabel, variant = 'danger', 
 ═══════════════════════════════════════════════════════════════════════════ */
 const TabPanel = memo(({ activeTab, children }) => {
     return (
-        <div role="tabpanel" style={{ padding:24, animation: 'umFade 0.2s ease-out' }}>
+        <div role="tabpanel" style={{ padding:20, animation: 'umFade 0.2s ease-out' }}>
             {children}
         </div>
     );
@@ -388,49 +388,49 @@ const UserManagementTab = ({ initialUsers = [] }) => {
 
     return (
         <UserMgmtContext.Provider value={contextValue}>
-            <div className="um-root" style={{ padding:'28px 28px 48px', position:'relative' }}>
+            <div className="um-root" style={{ padding:'24px 24px 40px', position:'relative' }}>
                 <GlobalStylesInjector />
                 <ToastContainer toasts={toasts} />
                 {isRevalidating && <div className="um-revalidating-bar" />}
 
                 {/* Header */}
-                <header style={{ marginBottom:28, display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:16 }}>
+                <header style={{ marginBottom:24, display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:16 }}>
                     <div>
-                        <h1 style={{ fontSize:26, fontWeight:900, color:T.text || '#e2e4eb', margin:0, display:'flex', alignItems:'center', gap:10 }}>
+                        <h1 style={{ fontSize:24, fontWeight:900, color:T.text || '#e2e4eb', margin:0, display:'flex', alignItems:'center', gap:10 }}>
                             User Management
                             {isLive && <span className="um-live-dot" title="Live sync enabled" />}
                         </h1>
-                        <div style={{ fontSize:13, color:T.textDim || '#8b8fa3', marginTop:4 }}>
+                        <div style={{ fontSize:12, color:T.textDim || '#8b8fa3', marginTop:4 }}>
                             Manage access, permissions, and security across your organization
                             {lastSynced && <span style={{ marginLeft: '8px' }}>• Last synced {formatTimeAgo(lastSynced)} ago</span>}
                         </div>
                     </div>
                     <div style={{ display:'flex', gap:10, alignItems:'center' }}>
-                        <div style={{ fontSize:12, color:T.textDim || '#8b8fa3', padding:'6px 12px', background:T.surfaceHigh || '#1a1a2e', borderRadius:8, border:`1px solid ${T.border || '#2a2a3e'}`, display:'flex', alignItems:'center', gap:8 }}>
+                        <div style={{ fontSize:11, color:T.textDim || '#8b8fa3', padding:'6px 12px', background:T.surfaceHigh || '#1a1a2e', borderRadius:8, border:`1px solid ${T.border || '#2a2a3e'}`, display:'flex', alignItems:'center', gap:8, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                             <span style={{ width:6, height:6, borderRadius:'50%', background: activeCount > 0 ? '#22c55e' : (T.textMuted || '#6b6f82'), display:'inline-block' }} />
                             {users.length} users · {activeCount} active
                         </div>
-                        <button className="um-btn um-btn-ghost" onClick={revalidate} disabled={loading || isRevalidating}>
-                            <Ico name="refresh" size={14} style={loading ? { animation:'umSpin 1s linear infinite' } : {}} />
+                        <button className="um-btn um-btn-ghost" onClick={revalidate} disabled={loading || isRevalidating} style={{ boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
+                            <Ico name="refresh" size={13} style={loading ? { animation:'umSpin 1s linear infinite' } : {}} />
                             {loading || isRevalidating ? 'Loading' : 'Refresh'}
                         </button>
-                        <button className="um-btn um-btn-primary" onClick={() => dispatch({ type:'OPEN_MODAL', modal:MODAL.EDIT(null) })}>
-                            <Ico name="plus" size={15} color="#fff" /> New User
+                        <button className="um-btn um-btn-primary" onClick={() => dispatch({ type:'OPEN_MODAL', modal:MODAL.EDIT(null) })} style={{ boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
+                            <Ico name="plus" size={14} color="#fff" /> New User
                         </button>
                     </div>
                 </header>
 
                 {/* Error Block */}
                 {error && (
-                    <div role="alert" style={{ marginBottom:20, padding:'14px 18px', borderRadius:12, background:`${T.danger || '#ef4444'}08`, border:`1px solid ${T.danger || '#ef4444'}30`, display:'flex', alignItems:'center', gap:12, color:T.danger || '#ef4444' }}>
+                    <div role="alert" style={{ marginBottom:18, padding:'12px 16px', borderRadius:12, background:`${T.danger || '#ef4444'}08`, border:`1px solid ${T.danger || '#ef4444'}30`, display:'flex', alignItems:'center', gap:12, color:T.danger || '#ef4444', boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                         <Ico name="alert" size={16} color={T.danger || '#ef4444'} />
                         <div style={{ flex:1 }}>{error}</div>
                     </div>
                 )}
 
                 {/* Main Card */}
-                <div style={{ background:T.surface || '#12121f', border:`1px solid ${T.border || '#2a2a3e'}`, borderRadius:16, overflow:'visible', position:'relative' }}>
-                    <div style={{ display:'flex', borderBottom:`1px solid ${T.border || '#2a2a3e'}`, paddingLeft:8, background:T.surfaceHigh || '#1a1a2e', borderRadius:'16px 16px 0 0' }}>
+                <div style={{ background:T.surface || '#12121f', border:`1px solid ${T.border || '#2a2a3e'}`, borderRadius:12, overflow:'visible', position:'relative', boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
+                    <div style={{ display:'flex', borderBottom:`1px solid ${T.border || '#2a2a3e'}`, paddingLeft:8, background:T.surfaceHigh || '#1a1a2e', borderRadius:'12px 12px 0 0' }}>
                         {TABS.map(t => (
                             <button key={t.id} className={`um-tab${activeTab === t.id ? ' active' : ''}`} onClick={() => dispatch({ type:'SET_TAB', tab:t.id })}>
                                 <Ico name={t.id === 'users' ? 'users' : t.id === 'matrix' ? 'shield' : t.id === 'audit' ? 'activity' : 'lock'} size={14} />

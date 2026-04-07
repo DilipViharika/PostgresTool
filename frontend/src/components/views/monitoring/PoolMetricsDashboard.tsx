@@ -15,8 +15,8 @@ const Styles = () => (
     <style>{`
         @keyframes pmdFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pmdSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .pmd-card { background: ${THEME.surface}; border: 1px solid ${THEME.grid}; border-radius: 12px; padding: 20px; animation: pmdFade 0.3s ease; }
-        .pmd-metric { display: flex; align-items: center; gap: 12px; padding: 12px; background: ${THEME.surface}; border: 1px solid ${THEME.grid}; border-radius: 10px; }
+        .pmd-card { background: ${THEME.surface}; border: 1px solid ${THEME.grid}; border-radius: 12px; padding: 16px; animation: pmdFade 0.3s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .pmd-metric { display: flex; align-items: center; gap: 12px; padding: 12px; background: ${THEME.surface}; border: 1px solid ${THEME.grid}; border-radius: 12px; }
         .pmd-spin { animation: pmdSpin 1s linear infinite; }
         .pmd-slider { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: ${THEME.grid}; outline: none; cursor: pointer; }
         .pmd-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${THEME.primary}; cursor: pointer; }
@@ -65,9 +65,9 @@ const MetricCard = ({ icon: Icon, label, value, unit = '', sub, color = THEME.pr
             <Icon size={18} color={color} />
         </div>
         <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '18px', fontWeight: 800, color: THEME.textMain, lineHeight: 1 }}>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: THEME.textMain, lineHeight: 1 }}>
                 {value}
-                {unit && <span style={{ fontSize: '12px', marginLeft: '4px', fontWeight: 600, color: THEME.textMuted }}>{unit}</span>}
+                {unit && <span style={{ fontSize: '11px', marginLeft: '4px', fontWeight: 600, color: THEME.textMuted }}>{unit}</span>}
             </div>
             <div style={{ fontSize: '11px', color: THEME.textMuted, marginTop: 4, fontWeight: 600,  letterSpacing: '0.5px' }}>
                 {label}
@@ -132,12 +132,12 @@ const PoolConfigSection = ({ config, onUpdate }) => {
         <div className="pmd-card">
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
                 <Settings size={18} color={THEME.primary} />
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: THEME.textMain, margin: 0 }}>
+                <h3 style={{ fontSize: '13px', fontWeight: 700, color: THEME.textMain, margin: 0 }}>
                     Pool Configuration
                 </h3>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
                 {/* Min Size */}
                 <div>
                     <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, marginBottom: '8px', display: 'block' }}>

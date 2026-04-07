@@ -107,11 +107,11 @@ const OvStyles = () => (
         }
         @keyframes ovGlowPulse {
             0%, 100% { box-shadow: 0 0 0px rgba(139,92,246,0); }
-            50%      { box-shadow: 0 0 22px rgba(139,92,246,0.18); }
+            50%      { box-shadow: 0 2px 8px rgba(139,92,246,0.08); }
         }
         @keyframes ovGlowPulseWarn {
             0%, 100% { box-shadow: 0 0 0px rgba(251,146,60,0); }
-            50%      { box-shadow: 0 0 20px rgba(251,146,60,0.2); }
+            50%      { box-shadow: 0 2px 8px rgba(251,146,60,0.08); }
         }
         @keyframes ovSweep {
             0%   { left: -40%; }
@@ -188,7 +188,7 @@ const OvStyles = () => (
         }
 
         .ov-metric-card:hover {
-            box-shadow: ${THEME.shadowMd} !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
             transform: translateY(-1px);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -205,7 +205,15 @@ const OvStyles = () => (
         .ov-card-shine {
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%);
+            pointer-events: none;
+            border-radius: inherit;
+        }
+        .ov-card-shine::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.015) 0%, transparent 60%);
             pointer-events: none;
             border-radius: inherit;
         }
@@ -220,7 +228,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
         style={{
             background: THEME.surface,
             border: `1px solid ${THEME.glassBorder}`,
-            borderRadius: 14,
+            borderRadius: 12,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -251,7 +259,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                background: accentColor ? `${accentColor}12` : `${THEME.textDim}10`,
+                                background: accentColor ? `${accentColor}08` : `${THEME.primary}08`,
                             }}
                         >
                             <TIcon size={13} color={accentColor || THEME.textMuted} />
@@ -2329,7 +2337,7 @@ const OverviewTab = () => {
        RENDER
        ══════════════════════════════════════════════════════════════════ */
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '12px 0 48px 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '8px 0 40px 0' }}>
             <OvStyles />
 
             {/* ═══════ Connection Status / Onboarding Banner ═══════ */}
@@ -2360,7 +2368,7 @@ const OverviewTab = () => {
             </div>
 
             {/* ═══════ Row 1: Hero Metric Cards ═══════ */}
-            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 18 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 12 }}>
                 {metricCards.map((m, i) => (
                     <div
                         key={i}
@@ -2368,9 +2376,9 @@ const OverviewTab = () => {
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: 10,
-                            padding: '16px 18px',
-                            borderRadius: 14,
+                            gap: 8,
+                            padding: '12px 14px',
+                            borderRadius: 12,
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
                             position: 'relative',
@@ -2397,11 +2405,11 @@ const OverviewTab = () => {
                         <div>
                             <div
                                 style={{
-                                    fontSize: 11,
+                                    fontSize: 10,
                                     color: THEME.textMuted,
                                     fontWeight: 500,
                                     lineHeight: 1,
-                                    marginBottom: 5,
+                                    marginBottom: 4,
                                 }}
                             >
                                 {m.label}
@@ -2410,7 +2418,7 @@ const OverviewTab = () => {
                                 <span
                                     className="ov-mono"
                                     style={{
-                                        fontSize: 24,
+                                        fontSize: 20,
                                         fontWeight: 700,
                                         color: THEME.textMain,
                                         lineHeight: 1,

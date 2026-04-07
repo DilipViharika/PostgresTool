@@ -299,7 +299,7 @@ const Spinner = ({ size=14, color=THEME.primary }) => (
 );
 
 const Badge = ({ label, color, pulse, size='sm', onClick }) => (
-    <span onClick={onClick} style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:size==='xs'?9:10, fontWeight:700, padding:size==='xs'?'2px 7px':'3px 9px', borderRadius:5, background:`${color}12`, color, border:`1px solid ${color}20`, lineHeight:1.2, whiteSpace:'nowrap', cursor:onClick?'pointer':'default' }}>
+    <span onClick={onClick} style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:size==='xs'?9:10, fontWeight:700, padding:size==='xs'?'2px 7px':'3px 8px', borderRadius:5, background:`${color}12`, color, border:`1px solid ${color}20`, lineHeight:1.2, whiteSpace:'nowrap', cursor:onClick?'pointer':'default' }}>
         <span className={pulse?'sql-badge-pulse':''} style={{ width:5, height:5, borderRadius:'50%', background:color, flexShrink:0 }}/>
         {label}
     </span>
@@ -318,7 +318,7 @@ const Pill = ({ label, color=THEME.textDim, onRemove }) => (
 
 const IconBtn = ({ icon:Icon, onClick, active, disabled, title, color, size=12 }) => (
     <button onClick={onClick} disabled={disabled} title={title} className="sql-icon-btn sql-tooltip" data-tip={title}
-            style={{ display:'inline-flex', alignItems:'center', padding:'5px', borderRadius:6, border:'none', cursor:disabled?'not-allowed':'pointer', background:active?`${THEME.primary}14`:`${THEME.textDim}06`, color:active?THEME.primary:(color||THEME.textDim), transition:'all 0.15s', outline:active?`1px solid ${THEME.primary}22`:'none', opacity:disabled?0.4:1 }}>
+            style={{ display:'inline-flex', alignItems:'center', padding:'4px', borderRadius:6, border:'none', cursor:disabled?'not-allowed':'pointer', background:active?`${THEME.primary}12`:`${THEME.textDim}04`, color:active?THEME.primary:(color||THEME.textDim), transition:'all 0.15s', outline:active?`1px solid ${THEME.primary}20`:'none', opacity:disabled?0.4:1 }}>
         <Icon size={size}/>
     </button>
 );
@@ -326,8 +326,8 @@ const IconBtn = ({ icon:Icon, onClick, active, disabled, title, color, size=12 }
 const Notification = ({ notifications, onDismiss }) => (
     <div style={{ position:'fixed', bottom:24, right:24, zIndex:600, display:'flex', flexDirection:'column', gap:6, maxWidth:340 }}>
         {notifications.map(n => (
-            <div key={n.id} className="sql-notification" style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:10, background:n.type==='error'?`${THEME.danger}14`:`${THEME.success}10`, border:`1px solid ${n.type==='error'?THEME.danger:THEME.success}25` }}>
-                {n.type==='error' ? <XCircle size={14} color={THEME.danger}/> : <CheckCircle size={14} color={THEME.success}/>}
+            <div key={n.id} className="sql-notification" style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', borderRadius:8, background:n.type==='error'?`${THEME.danger}12`:`${THEME.success}08`, border:`1px solid ${n.type==='error'?THEME.danger:THEME.success}20`, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
+                {n.type==='error' ? <XCircle size={13} color={THEME.danger}/> : <CheckCircle size={13} color={THEME.success}/>}
                 <span style={{ fontSize:11, fontWeight:600, color:n.type==='error'?THEME.danger:THEME.success, flex:1 }}>{n.msg}</span>
                 <X size={11} color={THEME.textDim} style={{ cursor:'pointer', flexShrink:0 }} onClick={() => onDismiss(n.id)}/>
             </div>
@@ -340,11 +340,11 @@ const CostMeter = ({ sql }) => {
     if (!sql.trim() || warnings.length === 0) return null;
     const color = score > 60 ? THEME.danger : score > 30 ? THEME.warning : THEME.success;
     return (
-        <div style={{ padding:'6px 14px', borderTop:`1px solid ${THEME.glassBorder}`, background:THEME.surface, animation:'sqlSlideDown 0.2s ease' }}>
+        <div style={{ padding:'6px 12px', borderTop:`1px solid ${THEME.glassBorder}`, background:THEME.surface, animation:'sqlSlideDown 0.2s ease' }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
                 <FlameKindling size={10} color={color}/>
                 <span style={{ fontSize:9, fontWeight:700, color:color, letterSpacing:'0.02em' }}>Query Cost Estimate</span>
-                <div style={{ flex:1, height:3, borderRadius:4, background:`${THEME.grid}30`, overflow:'hidden' }}>
+                <div style={{ flex:1, height:3, borderRadius:4, background:`${THEME.grid}25`, overflow:'hidden' }}>
                     <div style={{ height:'100%', width:`${score}%`, background:`linear-gradient(90deg, ${THEME.success}, ${score>60?THEME.danger:THEME.warning})`, borderRadius:4, transition:'width 0.6s ease', transformOrigin:'left', animation:'sqlBarGrow 0.6s ease' }}/>
                 </div>
                 <span style={{ fontSize:9, color:color, fontWeight:700, fontVariantNumeric:'tabular-nums', width:30, textAlign:'right' }}>{score}/100</span>
@@ -353,7 +353,7 @@ const CostMeter = ({ sql }) => {
                 {warnings.map((w,i) => (
                     <div key={i} style={{ display:'flex', alignItems:'center', gap:5 }}>
                         <span style={{ fontSize:8, width:4, height:4, borderRadius:'50%', background:w.level==='danger'?THEME.danger:w.level==='warn'?THEME.warning:THEME.textDim, flexShrink:0 }}/>
-                        <span style={{ fontSize:9.5, color:w.level==='danger'?THEME.danger:w.level==='warn'?THEME.warning:THEME.textDim }}>{w.msg}</span>
+                        <span style={{ fontSize:10, color:w.level==='danger'?THEME.danger:w.level==='warn'?THEME.warning:THEME.textDim }}>{w.msg}</span>
                     </div>
                 ))}
             </div>
@@ -365,17 +365,17 @@ const CostMeter = ({ sql }) => {
    PANEL
    ═══════════════════════════════════════════════════════════════════════════ */
 const Panel = ({ title, icon:TIcon, rightNode, noPad, children, style={} }) => (
-    <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden', ...style }}>
+    <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:12, display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,0.04)', ...style }}>
         {title && (
-            <div style={{ padding:'11px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, minHeight:42 }}>
+            <div style={{ padding:'10px 14px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, minHeight:40 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                    {TIcon && <TIcon size={12} color={THEME.textDim}/>}
+                    {TIcon && <TIcon size={11} color={THEME.textDim}/>}
                     <span style={{ fontSize:11, fontWeight:700, color:THEME.textMuted, letterSpacing:'0.02em' }}>{title}</span>
                 </div>
                 {rightNode}
             </div>
         )}
-        <div style={{ flex:1, minHeight:0, padding:noPad?0:'13px 16px', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        <div style={{ flex:1, minHeight:0, padding:noPad?0:'12px 14px', display:'flex', flexDirection:'column', overflow:'hidden' }}>
             {children}
         </div>
     </div>
@@ -420,20 +420,20 @@ const ChartView = ({ result }) => {
     const maxY = chartData.length > 0 ? Math.max(...chartData.map(d => d.y)) : 1;
 
     return (
-        <div style={{ display:'flex', flexDirection:'column', height:'100%', padding:'12px 14px', gap:10 }}>
+        <div style={{ display:'flex', flexDirection:'column', height:'100%', padding:'10px 12px', gap:10 }}>
             {/* Controls */}
             <div style={{ display:'flex', gap:10, alignItems:'center', flexShrink:0 }}>
                 <span style={{ fontSize:10, color:THEME.textDim }}>X:</span>
-                <select value={xCol} onChange={e=>setXCol(e.target.value)} style={{ padding:'3px 8px', borderRadius:5, border:`1px solid ${THEME.grid}50`, background:THEME.surface, color:THEME.textMain, fontSize:10, outline:'none' }}>
+                <select value={xCol} onChange={e=>setXCol(e.target.value)} style={{ padding:'3px 8px', borderRadius:5, border:`1px solid ${THEME.grid}40`, background:THEME.surface, color:THEME.textMain, fontSize:10, outline:'none', boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     {fields.map(f => <option key={f.name} value={f.name}>{f.name}</option>)}
                 </select>
                 <span style={{ fontSize:10, color:THEME.textDim }}>Y:</span>
-                <select value={yCol} onChange={e=>setYCol(e.target.value)} style={{ padding:'3px 8px', borderRadius:5, border:`1px solid ${THEME.grid}50`, background:THEME.surface, color:THEME.textMain, fontSize:10, outline:'none' }}>
+                <select value={yCol} onChange={e=>setYCol(e.target.value)} style={{ padding:'3px 8px', borderRadius:5, border:`1px solid ${THEME.grid}40`, background:THEME.surface, color:THEME.textMain, fontSize:10, outline:'none', boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     {fields.map(f => <option key={f.name} value={f.name}>{f.name}</option>)}
                 </select>
                 <Divider vertical/>
                 {[{id:'bar',icon:<BarChart3 size={11}/>},{id:'line',icon:<LineChart size={11}/>},{id:'pie',icon:<span style={{fontSize:10}}>◉</span>}].map(t => (
-                    <button key={t.id} onClick={()=>setChartType(t.id)} style={{ padding:'3px 8px', borderRadius:5, border:'none', cursor:'pointer', background:chartType===t.id?`${THEME.primary}18`:`${THEME.textDim}08`, color:chartType===t.id?THEME.primary:THEME.textDim, fontSize:10, fontWeight:600 }}>
+                    <button key={t.id} onClick={()=>setChartType(t.id)} style={{ padding:'3px 8px', borderRadius:5, border:'none', cursor:'pointer', background:chartType===t.id?`${THEME.primary}12`:`${THEME.textDim}06`, color:chartType===t.id?THEME.primary:THEME.textDim, fontSize:10, fontWeight:600, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                         {t.icon}
                     </button>
                 ))}
@@ -552,7 +552,7 @@ const ExplainNode = ({ node, depth=0, maxTime }) => {
 
     return (
         <div style={{ marginLeft:depth*20, animation:'sqlFadeIn 0.15s ease' }}>
-            <div onClick={() => setExpanded(!expanded)} style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 12px', borderRadius:8, cursor:'pointer', background:isExpensive?`${THEME.danger}05`:THEME.surface, border:`1px solid ${isExpensive?`${THEME.danger}20`:`${THEME.grid}35`}`, marginBottom:3, transition:'all 0.12s', position:'relative', overflow:'hidden' }}>
+            <div onClick={() => setExpanded(!expanded)} style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 11px', borderRadius:7, cursor:'pointer', background:isExpensive?`${THEME.danger}04`:THEME.surface, border:`1px solid ${isExpensive?`${THEME.danger}18`:`${THEME.grid}30`}`, marginBottom:3, transition:'all 0.12s', position:'relative', overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                 {pctOfTotal > 0 && (
                     <div style={{ position:'absolute', left:0, top:0, bottom:0, width:`${pctOfTotal}%`, background:`${nodeColor}06`, pointerEvents:'none', transformOrigin:'left', animation:'sqlBarGrow 0.6s ease' }}/>
                 )}
@@ -591,7 +591,7 @@ const DiffViewer = ({ leftRows, rightRows, leftFields, rightFields, leftLabel, r
 
     return (
         <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:16, padding:'7px 14px', borderBottom:`1px solid ${THEME.grid}25`, fontSize:10, flexShrink:0 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:14, padding:'6px 12px', borderBottom:`1px solid ${THEME.grid}20`, fontSize:10, flexShrink:0 }}>
                 <span style={{ color:THEME.danger, fontWeight:700 }}>−{onlyLeft} removed</span>
                 <span style={{ color:THEME.success, fontWeight:700 }}>+{onlyRight} added</span>
                 <span style={{ color:THEME.textDim }}>={leftRows.filter(r=>rightSet.has(JSON.stringify(r))).length} shared</span>
@@ -600,12 +600,12 @@ const DiffViewer = ({ leftRows, rightRows, leftFields, rightFields, leftLabel, r
                 {[{ rows:leftRows, set:rightSet, side:'left', label:leftLabel||'Left', isAdd:false },
                     { rows:rightRows, set:leftSet, side:'right', label:rightLabel||'Right', isAdd:true }].map(({ rows, set, side, label, isAdd }) => (
                     <div key={side} style={{ flex:1, minWidth:0 }}>
-                        <div style={{ padding:'6px 12px', background:THEME.surface, fontSize:10, fontWeight:700, color:THEME.textDim, letterSpacing:'0.02em', borderBottom:`1px solid ${THEME.grid}30`, position:'sticky', top:0, zIndex:2 }}>
+                        <div style={{ padding:'5px 10px', background:THEME.surface, fontSize:10, fontWeight:700, color:THEME.textDim, letterSpacing:'0.02em', borderBottom:`1px solid ${THEME.grid}25`, position:'sticky', top:0, zIndex:2 }}>
                             {label} ({rows.length} rows)
                         </div>
                         <table style={{ width:'100%', borderCollapse:'collapse' }}>
                             <thead>
-                            <tr>{allKeys.map(k=><th key={k} style={{ padding:'6px 10px', fontSize:9, fontWeight:700, color:THEME.textDim, textAlign:'left', position:'sticky', top:28, background:THEME.surface, borderBottom:`1px solid ${THEME.grid}30` }}>{k}</th>)}</tr>
+                            <tr>{allKeys.map(k=><th key={k} style={{ padding:'5px 9px', fontSize:10, fontWeight:700, color:THEME.textDim, textAlign:'left', position:'sticky', top:28, background:THEME.surface, borderBottom:`1px solid ${THEME.grid}25` }}>{k}</th>)}</tr>
                             </thead>
                             <tbody>
                             {rows.map((row,ri)=>{
@@ -613,7 +613,7 @@ const DiffViewer = ({ leftRows, rightRows, leftFields, rightFields, leftLabel, r
                                 const inOther = set.has(serialized);
                                 return (
                                     <tr key={ri} className={inOther?'':(isAdd?'sql-diff-add':'sql-diff-remove')}>
-                                        {allKeys.map(k=><td key={k} style={{ padding:'5px 10px', fontSize:11, color:THEME.textMuted, fontFamily:'monospace', borderBottom:`1px solid ${THEME.grid}12`, maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{row[k]??<span style={{fontSize:9,opacity:.5}}>NULL</span>}</td>)}
+                                        {allKeys.map(k=><td key={k} style={{ padding:'5px 9px', fontSize:11, color:THEME.textMuted, fontFamily:'monospace', borderBottom:`1px solid ${THEME.grid}10`, maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{row[k]??<span style={{fontSize:9,opacity:.5}}>NULL</span>}</td>)}
                                     </tr>
                                 );
                             })}
@@ -635,12 +635,12 @@ const AutoComplete = ({ suggestions, onSelect, anchorRect }) => {
     if (!suggestions.length) return null;
     return (
         <div className="sql-suggest-box" style={{ position:'fixed', zIndex:600, top:(anchorRect?.top||0)+20, left:(anchorRect?.left||0), background:THEME.surface, border:`1px solid ${THEME.primary}25`, borderRadius:10, overflow:'hidden', minWidth:220, maxWidth:360, boxShadow:`0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${THEME.primary}12` }}>
-            <div style={{ padding:'4px 10px', borderBottom:`1px solid ${THEME.grid}30`, fontSize:9, color:THEME.textDim, fontWeight:600, letterSpacing:'0.02em' }}>
+            <div style={{ padding:'4px 10px', borderBottom:`1px solid ${THEME.grid}25`, fontSize:9, color:THEME.textDim, fontWeight:600, letterSpacing:'0.02em' }}>
                 {suggestions.length} completions · Tab to accept
             </div>
             {suggestions.slice(0,8).map((s,i) => (
                 <div key={s} onMouseDown={e=>{ e.preventDefault(); onSelect(s); }}
-                     style={{ padding:'6px 12px', fontSize:12, cursor:'pointer', color:i===idx?THEME.primary:THEME.textMuted, background:i===idx?`${THEME.primary}10`:'transparent', fontFamily:'monospace', fontWeight:i===idx?700:500, display:'flex', alignItems:'center', gap:6 }}>
+                     style={{ padding:'6px 11px', fontSize:12, cursor:'pointer', color:i===idx?THEME.primary:THEME.textMuted, background:i===idx?`${THEME.primary}08`:'transparent', fontFamily:'monospace', fontWeight:i===idx?700:500, display:'flex', alignItems:'center', gap:6, borderRadius:4 }}>
                     <Code size={9} style={{ opacity:0.4 }}/> {s}
                     <span style={{ fontSize:9, color:THEME.textDim, marginLeft:'auto' }}>keyword</span>
                 </div>
@@ -662,7 +662,7 @@ const ParamEditor = ({ sql, params, onChange }) => {
     }, [sql]);
     if (paramMatches.length === 0) return null;
     return (
-        <div style={{ padding:'8px 14px', borderTop:`1px solid ${THEME.glassBorder}`, background:THEME.surface, display:'flex', flexWrap:'wrap', gap:8, alignItems:'center', animation:'sqlSlideDown 0.2s ease' }}>
+        <div style={{ padding:'7px 12px', borderTop:`1px solid ${THEME.glassBorder}`, background:THEME.surface, display:'flex', flexWrap:'wrap', gap:8, alignItems:'center', animation:'sqlSlideDown 0.2s ease', boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
             <Variable size={11} color={THEME.warning}/>
             <span style={{ fontSize:10, fontWeight:700, color:THEME.warning }}>Parameters</span>
             <Divider vertical/>
@@ -671,11 +671,11 @@ const ParamEditor = ({ sql, params, onChange }) => {
                     <span style={{ fontSize:10, fontWeight:700, color:THEME.warning, fontFamily:'monospace' }}>:{p}</span>
                     <span style={{ fontSize:10, color:THEME.textDim }}>=</span>
                     <input value={params[p]||''} onChange={e => onChange({ ...params, [p]:e.target.value })} placeholder="value"
-                           style={{ padding:'3px 8px', borderRadius:5, border:`1px solid ${THEME.warning}25`, background:`${THEME.warning}06`, color:THEME.textMain, fontSize:11, outline:'none', fontFamily:'monospace', width:90 }}/>
+                           style={{ padding:'3px 8px', borderRadius:5, border:`1px solid ${THEME.warning}20`, background:`${THEME.warning}04`, color:THEME.textMain, fontSize:11, outline:'none', fontFamily:'monospace', width:90, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}/>
                 </div>
             ))}
             {Object.keys(params).length > 0 && (
-                <button onClick={()=>onChange({})} style={{ padding:'2px 7px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.danger}10`, color:THEME.danger, fontSize:9, fontWeight:700 }}>Clear</button>
+                <button onClick={()=>onChange({})} style={{ padding:'2px 7px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.danger}08`, color:THEME.danger, fontSize:9, fontWeight:700, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>Clear</button>
             )}
         </div>
     );
@@ -705,18 +705,18 @@ const SchemaBrowser = ({ onInsert, schema = {} }) => {
     }, [search, schema]);
     return (
         <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
-            <div style={{ padding:'8px 10px', borderBottom:`1px solid ${THEME.glassBorder}` }}>
-                <div style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 9px', borderRadius:7, background:THEME.surface, border:`1px solid ${THEME.grid}50` }}>
+            <div style={{ padding:'7px 10px', borderBottom:`1px solid ${THEME.glassBorder}` }}>
+                <div style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 9px', borderRadius:6, background:THEME.surface, border:`1px solid ${THEME.grid}35`, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     <Search size={11} color={THEME.textDim}/>
                     <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search tables, columns…" style={{ border:'none', background:'transparent', color:THEME.textMain, outline:'none', flex:1, fontSize:11, fontFamily:'inherit' }}/>
                     {search && <X size={10} style={{ cursor:'pointer', color:THEME.textDim }} onClick={()=>setSearch('')}/>}
                 </div>
             </div>
-            <div className="sql-scrollbar" style={{ flex:1, overflowY:'auto', padding:'6px 8px' }}>
+            <div className="sql-scrollbar" style={{ flex:1, overflowY:'auto', padding:'6px 8px', gap:12 }}>
                 {filtered.map(schema => (
                     <div key={schema.name}>
                         <div onClick={() => setExpanded(p=>({...p,[schema.name]:!p[schema.name]}))}
-                             style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', cursor:'pointer', borderRadius:6, marginBottom:2 }}>
+                             style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', cursor:'pointer', borderRadius:6, marginBottom:2, boxShadow:'0 1px 3px rgba(0,0,0,0.02)' }}>
                             <ChevronRight size={10} color={THEME.textDim} style={{ transform:expanded[schema.name]?'rotate(90deg)':'none', transition:'transform 0.15s' }}/>
                             <Database size={11} color={THEME.secondary}/>
                             <span style={{ fontSize:11, fontWeight:700, color:THEME.textMuted }}>{schema.name}</span>
@@ -823,7 +823,7 @@ const AIAssistPanel = ({ sql, result, onSuggest }) => {
             <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                 <input value={prompt} onChange={e=>setPrompt(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAsk()} placeholder="Ask about your query…"
                        style={{ flex:1, padding:'6px 10px', borderRadius:7, border:`1px solid ${THEME.secondary}25`, background:`${THEME.secondary}06`, color:THEME.textMain, fontSize:11, outline:'none', fontFamily:'inherit' }}/>
-                <button onClick={handleAsk} disabled={!prompt.trim()||loading} style={{ padding:'6px 12px', borderRadius:7, border:'none', cursor:'pointer', background:`${THEME.secondary}14`, color:THEME.secondary, fontSize:10, fontWeight:700, display:'flex', alignItems:'center', gap:4, opacity:(!prompt.trim()||loading)?0.4:1 }}>
+                <button onClick={handleAsk} disabled={!prompt.trim()||loading} style={{ padding:'6px 12px', borderRadius:6, border:'none', cursor:'pointer', background:`${THEME.secondary}10`, color:THEME.secondary, fontSize:10, fontWeight:700, display:'flex', alignItems:'center', gap:4, opacity:(!prompt.trim()||loading)?0.4:1, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     {loading?<Spinner size={10} color={THEME.secondary}/>:<Sparkles size={10}/>} Ask
                 </button>
             </div>
@@ -1341,11 +1341,11 @@ const SqlConsoleTab = () => {
 
             {/* ── Transaction banner ── */}
             {txActive && (
-                <div style={{ padding:'6px 16px', background:`${THEME.warning}10`, borderBottom:`1px solid ${THEME.warning}22`, display:'flex', alignItems:'center', gap:10, animation:'sqlSlideDown 0.2s ease', flexShrink:0 }}>
+                <div style={{ padding:'6px 14px', background:`${THEME.warning}08`, borderBottom:`1px solid ${THEME.warning}18`, display:'flex', alignItems:'center', gap:10, animation:'sqlSlideDown 0.2s ease', flexShrink:0, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     <Circle size={9} color={THEME.warning} fill={THEME.warning} style={{ animation:'sqlPulse 1.5s infinite' }}/>
                     <span style={{ fontSize:11, fontWeight:700, color:THEME.warning }}>Transaction Active</span>
                     <Divider vertical/>
-                    <button onClick={()=>handleTx('COMMIT')} style={{ padding:'3px 10px', borderRadius:5, border:'none', cursor:'pointer', background:`${THEME.success}14`, color:THEME.success, fontSize:10, fontWeight:700 }}>COMMIT</button>
+                    <button onClick={()=>handleTx('COMMIT')} style={{ padding:'3px 10px', borderRadius:5, border:'none', cursor:'pointer', background:`${THEME.success}10`, color:THEME.success, fontSize:10, fontWeight:700, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>COMMIT</button>
                     <button onClick={()=>handleTx('ROLLBACK')} style={{ padding:'3px 10px', borderRadius:5, border:'none', cursor:'pointer', background:`${THEME.danger}12`, color:THEME.danger, fontSize:10, fontWeight:700 }}>ROLLBACK</button>
                     <button onClick={()=>handleTx('SAVEPOINT sp1')} style={{ padding:'3px 10px', borderRadius:5, border:'none', cursor:'pointer', background:`${THEME.textDim}08`, color:THEME.textDim, fontSize:10, fontWeight:700 }}>SAVEPOINT</button>
                 </div>
@@ -1353,16 +1353,16 @@ const SqlConsoleTab = () => {
 
             {/* ── Read-only banner ── */}
             {readOnly && (
-                <div className="sql-readonly-banner" style={{ padding:'5px 16px', background:`${THEME.danger}07`, borderBottom:`1px solid ${THEME.danger}15`, display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+                <div className="sql-readonly-banner" style={{ padding:'5px 14px', background:`${THEME.danger}06`, borderBottom:`1px solid ${THEME.danger}12`, display:'flex', alignItems:'center', gap:8, flexShrink:0, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     <Lock size={11} color={THEME.danger}/>
                     <span style={{ fontSize:11, fontWeight:600, color:THEME.danger }}>Read-only mode — write operations are blocked</span>
-                    <button onClick={()=>setReadOnly(false)} style={{ marginLeft:'auto', padding:'2px 8px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.danger}14`, color:THEME.danger, fontSize:9, fontWeight:700 }}>Disable</button>
+                    <button onClick={()=>setReadOnly(false)} style={{ marginLeft:'auto', padding:'2px 8px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.danger}10`, color:THEME.danger, fontSize:9, fontWeight:700, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>Disable</button>
                 </div>
             )}
 
             {/* ── Live refresh banner ── */}
             {liveTimerRef.current && (
-                <div style={{ padding:'5px 16px', background:`${THEME.success}07`, borderBottom:`1px solid ${THEME.success}15`, display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+                <div style={{ padding:'5px 14px', background:`${THEME.success}06`, borderBottom:`1px solid ${THEME.success}12`, display:'flex', alignItems:'center', gap:8, flexShrink:0, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     <RefreshCcw size={11} color={THEME.success} style={{ animation:'sqlSpin 2s linear infinite' }}/>
                     <span style={{ fontSize:11, fontWeight:600, color:THEME.success }}>Live refresh every {liveRefreshSecs}s</span>
                     <button onClick={stopLiveRefresh} style={{ marginLeft:'auto', padding:'2px 8px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.danger}12`, color:THEME.danger, fontSize:9, fontWeight:700 }}>Stop</button>
@@ -1401,7 +1401,7 @@ const SqlConsoleTab = () => {
                                 </button>
                                 {tabs.length >= 2 && (
                                     <button onClick={()=>{setShowDiff(!showDiff);if(!showDiff)setDiffTabIds([tabs[0].id,tabs[1].id]);setActiveResultTab('diff');}}
-                                            style={{ padding:'4px 8px', borderRadius:5, border:'none', cursor:'pointer', background:showDiff?`${THEME.secondary}18`:`${THEME.secondary}08`, color:showDiff?THEME.secondary:THEME.textDim, fontSize:10, fontWeight:600, display:'flex', alignItems:'center', gap:4 }}>
+                                            style={{ padding:'4px 8px', borderRadius:5, border:'none', cursor:'pointer', background:showDiff?`${THEME.secondary}12`:`${THEME.secondary}06`, color:showDiff?THEME.secondary:THEME.textDim, fontSize:10, fontWeight:600, display:'flex', alignItems:'center', gap:4, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                                         <Diff size={10}/> Diff
                                     </button>
                                 )}
@@ -1410,7 +1410,7 @@ const SqlConsoleTab = () => {
 
                         {/* Shortcut hints */}
                         {showShortcuts && (
-                            <div style={{ padding:'7px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, background:THEME.surface, display:'flex', flexWrap:'wrap', gap:10, animation:'sqlFadeIn 0.15s ease' }}>
+                            <div style={{ padding:'6px 14px', borderBottom:`1px solid ${THEME.glassBorder}`, background:THEME.surface, display:'flex', flexWrap:'wrap', gap:8, animation:'sqlFadeIn 0.15s ease', boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                                 {[['Ctrl+Enter','Execute'],['Ctrl+Shift+Enter','Explain'],['Ctrl+Shift+F','Format SQL'],['Ctrl+S','Save'],['Tab','Indent / Accept autocomplete'],['Esc','Dismiss suggestions']].map(([k,a])=>(
                                     <span key={k} style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:10, color:THEME.textDim }}>
                                         <kbd className="sql-kbd">{k}</kbd> {a}
@@ -1427,11 +1427,11 @@ const SqlConsoleTab = () => {
                                     if (!items.length) return null;
                                     return (
                                         <div key={group}>
-                                            <div style={{ padding:'5px 16px 3px', fontSize:9, fontWeight:700, color:THEME.textDim, letterSpacing:'0.02em' }}>{group}</div>
-                                            <div style={{ display:'flex', flexWrap:'wrap', gap:4, padding:'0 12px 7px' }}>
+                                            <div style={{ padding:'5px 14px 3px', fontSize:9, fontWeight:700, color:THEME.textDim, letterSpacing:'0.02em' }}>{group}</div>
+                                            <div style={{ display:'flex', flexWrap:'wrap', gap:4, padding:'0 12px 6px' }}>
                                                 {items.map((t,i)=>(
                                                     <button key={i} onClick={()=>{ setSql(t.sql); setShowTemplates(false); editorRef.current?.focus(); }}
-                                                            style={{ padding:'5px 10px', borderRadius:7, border:'none', cursor:'pointer', background:`${THEME.secondary}07`, color:THEME.textMuted, outline:`1px solid ${THEME.secondary}12`, fontSize:10.5, fontWeight:600, display:'flex', alignItems:'center', gap:5, transition:'all 0.12s' }}
+                                                            style={{ padding:'5px 10px', borderRadius:6, border:'none', cursor:'pointer', background:`${THEME.secondary}05`, color:THEME.textMuted, outline:`1px solid ${THEME.secondary}10`, fontSize:10.5, fontWeight:600, display:'flex', alignItems:'center', gap:5, transition:'all 0.12s', boxShadow:'0 1px 3px rgba(0,0,0,0.02)' }}
                                                             onMouseEnter={e=>{e.currentTarget.style.background=`${THEME.secondary}16`;e.currentTarget.style.color=THEME.secondary;}}
                                                             onMouseLeave={e=>{e.currentTarget.style.background=`${THEME.secondary}07`;e.currentTarget.style.color=THEME.textMuted;}}>
                                                         <t.icon size={10}/>{t.label}

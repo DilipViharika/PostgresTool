@@ -12,8 +12,8 @@ const Styles = () => (
         @keyframes rwSpin  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes rwFade  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes rwPulse { 0%,100%{opacity:1} 50%{opacity:.35} }
-        .rw-card  { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:rwFade .3s ease; }
-        .rw-metric{ background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
+        .rw-card  { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:16px; animation:rwFade .3s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .rw-metric{ background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:12px; }
         .rw-row   { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid ${THEME.grid}30; font-size:12px; }
         .rw-row:last-child { border-bottom:none; }
         .rw-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:5px; font-size:10px; font-weight:700; }
@@ -46,7 +46,7 @@ const MetricCard = ({ icon:Icon, label, value, sub, color=THEME.primary, warn })
             <Icon size={20} color={color}/>
         </div>
         <div>
-            <div style={{fontSize:22,fontWeight:800,color:THEME.textMain,lineHeight:1}}>{value}</div>
+            <div style={{fontSize:18,fontWeight:800,color:THEME.textMain,lineHeight:1}}>{value}</div>
             <div style={{fontSize:11,color:THEME.textMuted,marginTop:3,fontWeight:600,letterSpacing:'0.02em'}}>{label}</div>
             {sub && <div style={{fontSize:11,color:warn?THEME.warning:THEME.textDim,marginTop:2}}>{sub}</div>}
         </div>
@@ -154,7 +154,7 @@ export default function ReplicationWALTab() {
             {error && <div style={{padding:14,background:`${THEME.danger}10`,border:`1px solid ${THEME.danger}30`,borderRadius:10,color:THEME.danger,fontSize:13,display:'flex',alignItems:'center',gap:8}}><AlertCircle size={16}/> {error}</div>}
 
             {/* Metric cards */}
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14}}>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
                 <MetricCard icon={Server} label="Streaming Replicas" value={replicaCount} sub={replicaCount===0?'No replicas connected':'Active connections'} color={replicaCount>0?THEME.success:THEME.textDim}/>
                 <MetricCard icon={Activity} label="Max Replay Lag" value={fmtLag(maxLagSec)} sub={fmtBytes(maxLagBytes)} color={lagWarn?THEME.danger:THEME.success} warn={lagWarn}/>
                 <MetricCard icon={Layers} label="Replication Slots" value={slots.length} sub={inactiveSlots>0?`⚠ ${inactiveSlots} inactive`:'All active'} color={inactiveSlots>0?THEME.warning:THEME.primary}/>
@@ -293,7 +293,7 @@ export default function ReplicationWALTab() {
 
             {/* WAL Settings tab */}
             {activeTab==='wal' && (
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
                     <div className="rw-card">
                         <div style={{fontSize:13,fontWeight:700,color:THEME.textMain,marginBottom:14,display:'flex',alignItems:'center',gap:8}}>
                             <Zap size={15} color={THEME.secondary}/> WAL Configuration

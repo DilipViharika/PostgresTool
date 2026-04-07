@@ -109,7 +109,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
     <div style={{
         background: THEME.surface,
         border: `1px solid ${refreshing ? `${THEME.primary}40` : THEME.glassBorder}`,
-        borderRadius: 16,
+        borderRadius: 12,
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
         transition: 'border-color 0.3s',
@@ -117,22 +117,22 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
     }}>
         {title && (
             <div style={{
-                padding: '13px 20px',
+                padding: '11px 16px',
                 borderBottom: `1px solid ${THEME.glassBorder}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                flexShrink: 0, minHeight: 46,
+                flexShrink: 0, minHeight: 42,
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {TIcon && <TIcon size={13} color={refreshing ? THEME.primary : THEME.textDim} style={{ transition: 'color 0.3s' }} />}
-                    <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMuted,  letterSpacing: '0.02em' }}>{title}</span>
+                    {TIcon && <TIcon size={12} color={refreshing ? THEME.primary : THEME.textDim} style={{ transition: 'color 0.3s' }} />}
+                    <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted,  letterSpacing: '0.02em' }}>{title}</span>
                     {refreshing && (
-                        <span style={{ fontSize: 9, color: THEME.primary, fontWeight: 700, animation: 'resPulse 1s ease-in-out infinite' }}>UPDATING</span>
+                        <span style={{ fontSize: 8, color: THEME.primary, fontWeight: 700, animation: 'resPulse 1s ease-in-out infinite' }}>UPDATING</span>
                     )}
                 </div>
                 {rightNode}
             </div>
         )}
-        <div style={{ flex: 1, minHeight: 0, padding: noPad ? 0 : '16px 20px' }}>
+        <div style={{ flex: 1, minHeight: 0, padding: noPad ? 0 : '14px 16px' }}>
             {children}
         </div>
     </div>
@@ -144,7 +144,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
 const StatusBadge = ({ label, color }) => (
     <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
-        fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 6,
+        fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 5,
         background: `${color}12`, color, border: `1px solid ${color}20`,
         lineHeight: 1.2, whiteSpace: 'nowrap',
     }}>
@@ -199,7 +199,7 @@ const RingGauge = ({ value, color, size = 44, strokeWidth = 4 }) => {
 const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px', fontSize: 11, backdropFilter: 'blur(8px)' }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px', fontSize: 11, backdropFilter: 'blur(8px)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <div style={{ fontWeight: 700, color: THEME.textMain, marginBottom: 6 }}>{label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
@@ -284,9 +284,10 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
     return (
         <div style={{
             display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8,
-            padding: '9px 16px', borderRadius: 10,
+            padding: '8px 14px', borderRadius: 8,
             border: `1px solid ${error ? `${THEME.danger}30` : THEME.glassBorder}`,
             fontSize: 11,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 {error ? <WifiOff size={11} color={THEME.danger} /> : <Wifi size={11} color={THEME.success} />}
@@ -308,9 +309,9 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
                             <button key={opt.value} onClick={() => onIntervalChange(opt.value)} style={{
                                 padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
                                 fontSize: 10, fontWeight: 700, transition: 'all 0.15s',
-                                background: active ? `${THEME.primary}20` : 'transparent',
+                                background: active ? `${THEME.primary}15` : 'transparent',
                                 color: active ? THEME.primary : THEME.textDim,
-                                outline: active ? `1px solid ${THEME.primary}30` : 'none',
+                                outline: active ? `1px solid ${THEME.primary}25` : 'none',
                             }}>{opt.label}</button>
                         );
                     })}
@@ -319,13 +320,14 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
             <div style={{ flex: 1 }} />
             <button onClick={onRefresh} disabled={isRefreshing} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '5px 12px', borderRadius: 7, border: 'none', cursor: isRefreshing ? 'default' : 'pointer',
+                padding: '5px 12px', borderRadius: 6, border: 'none', cursor: isRefreshing ? 'default' : 'pointer',
                 fontWeight: 700, fontSize: 11,
-                background: isRefreshing ? `${THEME.primary}10` : `${THEME.primary}18`,
+                background: isRefreshing ? `${THEME.primary}10` : `${THEME.primary}12`,
                 color: THEME.primary, transition: 'all 0.15s', opacity: isRefreshing ? 0.7 : 1,
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
             }}
-                    onMouseEnter={e => { if (!isRefreshing) e.currentTarget.style.background = `${THEME.primary}28`; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = isRefreshing ? `${THEME.primary}10` : `${THEME.primary}18`; }}>
+                    onMouseEnter={e => { if (!isRefreshing) e.currentTarget.style.background = `${THEME.primary}20`; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = isRefreshing ? `${THEME.primary}10` : `${THEME.primary}12`; }}>
                 <RefreshCw size={11} className={isRefreshing ? 'res-refresh-spin' : ''} />
                 {isRefreshing ? 'Refreshing…' : 'Refresh Now'}
             </button>
@@ -346,20 +348,20 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
         { key: 'perf',  label: 'No errors or lock timeouts were reported during execution' },
     ];
     return (
-        <div style={{ background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.glassBorder}`, overflow: 'hidden' }}>
-            <div style={{ padding: '13px 18px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.glassBorder}`, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+            <div style={{ padding: '11px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: 7, background: `${THEME.warning}15`, border: `1px solid ${THEME.warning}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <ShieldAlert size={13} color={THEME.warning} />
+                    <div style={{ width: 24, height: 24, borderRadius: 6, background: `${THEME.warning}15`, border: `1px solid ${THEME.warning}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <ShieldAlert size={12} color={THEME.warning} />
                     </div>
                     <div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>Verify Before Marking Done</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMain }}>Verify Before Marking Done</div>
                         <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>{tableName} · {bloatPct}% bloat</div>
                     </div>
                 </div>
-                <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, display: 'flex', padding: 4 }}><X size={13} /></button>
+                <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, display: 'flex', padding: 4 }}><X size={12} /></button>
             </div>
-            <div style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ padding: '8px 12px', borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}18`, fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>
                     ⚠ Marking without actually applying the fix will hide this issue from the bloat list until the next DB refresh reveals it again.
                 </div>
@@ -367,11 +369,11 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
                     {CHECKLIST.map(({ key, label }) => {
                         const checked = checks[key];
                         return (
-                            <div key={key} onClick={() => toggle(key)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', background: checked ? `${THEME.success}08` : THEME.surface, border: `1px solid ${checked ? `${THEME.success}25` : `${THEME.grid}40`}`, transition: 'all 0.15s' }}>
-                                <div style={{ width: 16, height: 16, borderRadius: 14, flexShrink: 0, marginTop: 1, border: `2px solid ${checked ? THEME.success : THEME.grid}`, background: checked ? THEME.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                            <div key={key} onClick={() => toggle(key)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 11px', borderRadius: 7, cursor: 'pointer', background: checked ? `${THEME.success}08` : THEME.surface, border: `1px solid ${checked ? `${THEME.success}25` : `${THEME.grid}40`}`, transition: 'all 0.15s' }}>
+                                <div style={{ width: 16, height: 16, borderRadius: 12, flexShrink: 0, marginTop: 1, border: `2px solid ${checked ? THEME.success : THEME.grid}`, background: checked ? THEME.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
                                     {checked && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke={THEME.textMain} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                 </div>
-                                <span style={{ fontSize: 12, color: checked ? THEME.textMain : THEME.textMuted, lineHeight: 1.5, transition: 'color 0.15s' }}>{label}</span>
+                                <span style={{ fontSize: 11, color: checked ? THEME.textMain : THEME.textMuted, lineHeight: 1.5, transition: 'color 0.15s' }}>{label}</span>
                             </div>
                         );
                     })}
@@ -380,9 +382,9 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
                     {Object.values(checks).filter(Boolean).length} / {CHECKLIST.length} items confirmed{!allChecked && ' — check all items to proceed'}
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={onCancel} style={{ flex: 1, padding: '9px', borderRadius: 8, border: `1px solid ${THEME.grid}50`, background: 'transparent', color: THEME.textMuted, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                    <button disabled={!allChecked} onClick={() => onConfirm(tableName, `Bloat fix verified & applied (was ${bloatPct}%)`)} style={{ flex: 2, padding: '9px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 700, cursor: allChecked ? 'pointer' : 'not-allowed', background: allChecked ? `linear-gradient(135deg, ${THEME.success}, ${THEME.success}bb)` : `${THEME.grid}30`, color: allChecked ? '#fff' : THEME.textDim, boxShadow: allChecked ? `0 3px 12px ${THEME.success}40` : 'none', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                        <CheckCircle size={13} />
+                    <button onClick={onCancel} style={{ flex: 1, padding: '8px', borderRadius: 7, border: `1px solid ${THEME.grid}40`, background: 'transparent', color: THEME.textMuted, fontSize: 11, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>Cancel</button>
+                    <button disabled={!allChecked} onClick={() => onConfirm(tableName, `Bloat fix verified & applied (was ${bloatPct}%)`)} style={{ flex: 2, padding: '8px', borderRadius: 7, border: 'none', fontSize: 11, fontWeight: 700, cursor: allChecked ? 'pointer' : 'not-allowed', background: allChecked ? `linear-gradient(135deg, ${THEME.success}, ${THEME.success}aa)` : `${THEME.grid}20`, color: allChecked ? '#fff' : THEME.textDim, boxShadow: allChecked ? '0 1px 3px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.04)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                        <CheckCircle size={12} />
                         {allChecked ? 'Confirmed — Mark as Done' : 'Check all items above first'}
                     </button>
                 </div>
@@ -1098,14 +1100,14 @@ const ResourcesTab = () => {
     /* ────────────────────── LOADING ────────────────────── */
     if (loading) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 24px 40px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '0 18px 32px' }}>
                 <ResStyles />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
                     {[0, 1, 2, 3].map(i => (
                         <div key={i} style={{ height: 96, borderRadius: 14, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.4, animation: 'resPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />
                     ))}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 20 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 16 }}>
                     {[0, 1].map(i => (
                         <div key={i} style={{ height: 340, borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.25, animation: 'resPulse 1.5s ease-in-out infinite', animationDelay: `${0.5 + i * 0.15}s` }} />
                     ))}
@@ -1126,7 +1128,7 @@ const ResourcesTab = () => {
        RENDER
        ═══════════════════════════════════════════════════════════════ */
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 24px 40px 24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '0 18px 32px 18px' }}>
             <ResStyles />
 
             {/* ── Refresh status bar ── */}
@@ -1180,7 +1182,7 @@ const ResourcesTab = () => {
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'inventory' && (
                 <div className="res-stagger" style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 20, alignItems: 'start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
                         {/* Table inventory — with TOAST/Index ratio column */}
                         <Panel title="Table Inventory" icon={Database} noPad refreshing={refreshingPanels.has('inventory')}
@@ -1415,14 +1417,14 @@ const ResourcesTab = () => {
                 ANALYTICS VIEW — NEW TAB
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'analytics' && (
-                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
                     {/* Table growth rate chart */}
                     {tableGrowthRate && (
                         <TableGrowthRateChart growthRateData={tableGrowthRate} refreshing={refreshingPanels.has('analytics')} />
                     )}
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                         {/* Partition tree */}
                         <PartitionTreePanel partitions={partitions} refreshing={refreshingPanels.has('inventory')} />
 
@@ -1478,9 +1480,9 @@ const ResourcesTab = () => {
                 STORAGE & I/O VIEW
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'storage' && (
-                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 20 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 16 }}>
                         {/* Storage Donut */}
                         <Panel title="Storage Breakdown" icon={PieIcon} refreshing={refreshingPanels.has('storage')}
                                rightNode={<span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{totalStorageGB.toFixed(0)} GB</span>}
@@ -1544,7 +1546,7 @@ const ResourcesTab = () => {
                     {/* NEW: Tablespace I/O */}
                     <TablespaceIOPanel tablespaceData={tablespaceIO} refreshing={refreshingPanels.has('io')} />
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 20 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16 }}>
                         {/* Disk I/O */}
                         <Panel title="Disk I/O Throughput" icon={Activity} refreshing={refreshingPanels.has('io')}
                                rightNode={
@@ -1613,7 +1615,7 @@ const ResourcesTab = () => {
                                 );
                             })}
                         </div>
-                        <div style={{ display: 'flex', gap: 20, padding: '10px 20px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim }}>
+                        <div style={{ display: 'flex', gap: 14, padding: '8px 16px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.primary }} /> Data</span>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.secondary }} /> Indexes</span>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.warning }} /> TOAST</span>
@@ -1627,7 +1629,7 @@ const ResourcesTab = () => {
                 DEAD CODE VIEW — NEW TAB
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'deadcode' && (
-                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
                     {/* Summary banner */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
@@ -1636,7 +1638,7 @@ const ResourcesTab = () => {
                             { label: 'Unused Columns',    value: deadCode.columns.length, sub: 'potential dead fields',  color: THEME.warning,  icon: Eye },
                             { label: 'Space Reclaimable', value: fmtSize(deadCode.tables.reduce((s, t) => s + t.size_gb, 0)), sub: 'if all unused tables dropped', color: THEME.success, icon: HardDrive },
                         ].map((m, i) => (
-                            <div key={i} style={{ padding: '14px', borderRadius: 12, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                            <div key={i} style={{ padding: '12px', borderRadius: 10, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
                                 <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
                                     <m.icon size={18} color={m.color} />
                                 </div>
@@ -1652,7 +1654,7 @@ const ResourcesTab = () => {
                     <DeadCodeDetector deadCode={deadCode} refreshing={refreshingPanels.has('inventory')} />
 
                     {/* Safety notice */}
-                    <div style={{ padding: '14px 18px', borderRadius: 10, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}15`, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{ padding: '12px 14px', borderRadius: 8, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}15`, display: 'flex', alignItems: 'flex-start', gap: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
                         <ShieldAlert size={16} color={THEME.warning} style={{ flexShrink: 0, marginTop: 1 }} />
                         <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>
                             <strong style={{ color: THEME.warning }}>Before archiving or dropping:</strong> Verify with application owners, check for indirect reads through ORMs, background workers, or reporting pipelines. Zero-read in the past 90 days does not guarantee zero-use — some tables are queried rarely but are still critical (e.g., configuration, audit, disaster-recovery). Use <code style={{ background: `${THEME.grid}30`, padding: '1px 5px', borderRadius: 10, fontSize: 11 }}>pg_stat_user_tables</code> to confirm.
@@ -1666,7 +1668,7 @@ const ResourcesTab = () => {
                 RETENTION POLICY VIEW — NEW TAB
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'retention' && (
-                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
                     <RetentionPolicyManager refreshing={refreshingPanels.has('logs')} />
 
