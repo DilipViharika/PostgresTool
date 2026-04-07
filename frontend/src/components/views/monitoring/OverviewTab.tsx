@@ -2340,6 +2340,14 @@ const OverviewTab = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '8px 0 40px 0' }}>
             <OvStyles />
 
+            {/* TEST BANNER — remove after confirming deployment works */}
+            <div style={{
+                background: '#ef4444', color: '#fff', padding: '12px 20px',
+                borderRadius: 8, fontWeight: 700, fontSize: 16, textAlign: 'center',
+            }}>
+                REDESIGN v2 — If you see this red banner, the deployment is working!
+            </div>
+
             {/* ═══════ Connection Status / Onboarding Banner ═══════ */}
             <ConnectionStatusBanner />
 
