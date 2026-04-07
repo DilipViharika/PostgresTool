@@ -44,7 +44,7 @@ const Styles = () => (
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
         }
-        .oh-container { padding:20px; max-width:1600px; }
+        .oh-container { padding:0 0 20px 0; }
         .oh-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
         .oh-title { font-size:24px; font-weight:700; color:${T.text1}; }
         .oh-subtitle { font-size:12px; color:${T.text2}; text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px; }

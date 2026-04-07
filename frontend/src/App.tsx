@@ -4142,7 +4142,7 @@ const DashboardInner = ({ onLogout }) => {
 
                         <div
                             style={{
-                                padding: isDemoFullPage ? 0 : '24px 28px',
+                                padding: isDemoFullPage ? 0 : '16px 20px',
                                 width: '100%',
                                 minHeight: '100%',
                                 position: 'relative',

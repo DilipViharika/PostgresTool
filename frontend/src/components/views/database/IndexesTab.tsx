@@ -1029,7 +1029,7 @@ export default function IndexIntelligence() {
     return (
         <div style={{background:C.bg,minHeight:'100vh',fontFamily:THEME.fontBody}}>
             <Styles/>
-            <div style={{maxWidth:1400,margin:'0 auto',padding:'0 24px 48px'}}>
+            <div style={{padding:'0 0 48px 0'}}>
 
                 {/* TOPBAR */}
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',

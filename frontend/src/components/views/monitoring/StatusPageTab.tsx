@@ -135,7 +135,7 @@ export default function StatusPageTab() {
         : THEME.danger;
 
     return (
-        <div style={{ padding:'20px', maxWidth:'1400px' }}>
+        <div style={{ padding:'0 0 20px 0' }}>
             <Styles />
 
             {error && (

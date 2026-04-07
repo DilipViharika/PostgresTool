@@ -318,7 +318,7 @@ const CapacityPlanningTab = () => {
     const connHeadroom = Math.round(((200 - peakConn) / 200) * 100);
 
     return (
-        <div style={{ padding: '0 24px 40px', maxWidth: 1600, margin: '0 auto' }}>
+        <div style={{ padding: '0 0 40px 0' }}>
             <CapStyles />
 
             {/* ── Header ── */}

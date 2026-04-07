@@ -232,7 +232,7 @@ export default function MySQLReplicationTab() {
     return (
         <>
             <Styles />
-            <div style={{ padding: 20, maxWidth: 1400, margin: '0 auto' }}>
+            <div style={{ padding:'0 0 20px 0' }}>
                 {/* Error Banner */}
                 {error && (
                     <div className="mysql-error">
