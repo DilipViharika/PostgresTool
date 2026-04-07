@@ -1557,6 +1557,234 @@ export const GlobalStyles = () => (
       background: ${THEME.primary}35;
       color: ${THEME.textMain};
     }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       CLEAN LIGHT THEME OVERRIDES — Applied globally to all screens
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    [data-theme="light"] body,
+    [data-theme="light"] #root {
+      background: #f8f9fb !important;
+      color: #111827 !important;
+    }
+
+    /* ── All cards: clean white, subtle border, no neon ── */
+    [data-theme="light"] .glass-card,
+    [data-theme="light"] .glass-card-heavy,
+    [data-theme="light"] .glass-card-teal,
+    [data-theme="light"] .glass-card-gold,
+    [data-theme="light"] .glass-card-abyss {
+      background: #ffffff !important;
+      border: 1px solid rgba(0,0,0,0.07) !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    [data-theme="light"] .glass-card::before,
+    [data-theme="light"] .glass-card-heavy::before,
+    [data-theme="light"] .glass-card-teal::before,
+    [data-theme="light"] .glass-card-gold::before,
+    [data-theme="light"] .glass-card-abyss::after {
+      display: none !important;
+    }
+
+    [data-theme="light"] .glass-card:hover,
+    [data-theme="light"] .glass-card-heavy:hover,
+    [data-theme="light"] .glass-card-teal:hover,
+    [data-theme="light"] .glass-card-gold:hover {
+      border-color: rgba(0,0,0,0.12) !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    /* ── Remove all neon text effects ── */
+    [data-theme="light"] .neon-text-primary,
+    [data-theme="light"] .neon-text-gold,
+    [data-theme="light"] .neon-text-success,
+    [data-theme="light"] .neon-text-danger,
+    [data-theme="light"] .neon-text-ai,
+    [data-theme="light"] .neon-text-phosphor {
+      text-shadow: none !important;
+    }
+
+    /* ── Remove neon borders ── */
+    [data-theme="light"] .neon-border-teal,
+    [data-theme="light"] .neon-border-gold,
+    [data-theme="light"] .neon-border-ai,
+    [data-theme="light"] .neon-border-success,
+    [data-theme="light"] .neon-border-danger {
+      box-shadow: none !important;
+      border-color: rgba(0,0,0,0.08) !important;
+    }
+
+    /* ── Clean buttons ── */
+    [data-theme="light"] .btn-neon {
+      background: #00b87410 !important;
+      border-color: #00b87430 !important;
+      box-shadow: none !important;
+    }
+    [data-theme="light"] .btn-neon:hover {
+      background: #00b87420 !important;
+      border-color: #00b87450 !important;
+      box-shadow: 0 2px 8px rgba(0,184,116,0.12) !important;
+      transform: translateY(-1px) !important;
+    }
+    [data-theme="light"] .btn-neon::after { display: none !important; }
+
+    [data-theme="light"] .btn-neon-gold {
+      background: #00b87410 !important;
+      border-color: #00b87430 !important;
+      box-shadow: none !important;
+    }
+    [data-theme="light"] .btn-neon-gold::after { display: none !important; }
+
+    [data-theme="light"] .btn-glow,
+    [data-theme="light"] .btn-glow-gold {
+      box-shadow: none !important;
+    }
+    [data-theme="light"] .btn-glow:hover,
+    [data-theme="light"] .btn-glow-gold:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    }
+
+    /* ── Clean inputs ── */
+    [data-theme="light"] .input-neon {
+      background: #f4f5f7 !important;
+      border-color: rgba(0,0,0,0.10) !important;
+      box-shadow: none !important;
+      color: #111827 !important;
+    }
+    [data-theme="light"] .input-neon:focus {
+      border-color: #00b87460 !important;
+      box-shadow: 0 0 0 3px rgba(0,184,116,0.08) !important;
+      background: #ffffff !important;
+    }
+
+    /* ── Clean data tables ── */
+    [data-theme="light"] .data-table th {
+      background: #f4f5f7 !important;
+      color: #4b5563 !important;
+      border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+      text-shadow: none !important;
+    }
+    [data-theme="light"] .data-table td {
+      border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+      color: #111827 !important;
+    }
+    [data-theme="light"] .data-table tr:hover td {
+      background: #f8f9fb !important;
+    }
+
+    /* ── Clean badges ── */
+    [data-theme="light"] .badge-neon {
+      box-shadow: none !important;
+    }
+
+    /* ── Remove scanlines and overlays ── */
+    [data-theme="light"] .scanline-overlay,
+    [data-theme="light"] .scanline-moving::after,
+    [data-theme="light"] .depth-vignette,
+    [data-theme="light"] .grain-overlay::after {
+      display: none !important;
+    }
+
+    /* ── Remove background orbs ── */
+    [data-theme="light"] .bg-orb,
+    [data-theme="light"] .bg-orb-teal,
+    [data-theme="light"] .bg-orb-gold,
+    [data-theme="light"] .bg-orb-ai,
+    [data-theme="light"] .bg-orb-deep {
+      display: none !important;
+    }
+
+    /* ── Clean progress bars ── */
+    [data-theme="light"] .progress-neon {
+      background: #f1f3f6 !important;
+      box-shadow: none !important;
+    }
+    [data-theme="light"] .progress-neon-fill {
+      box-shadow: none !important;
+    }
+
+    /* ── Clean stat cards ── */
+    [data-theme="light"] .stat-card {
+      background: #ffffff !important;
+      border: 1px solid rgba(0,0,0,0.07) !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+    }
+    [data-theme="light"] .stat-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+    }
+
+    /* ── Clean tooltips ── */
+    [data-theme="light"] .tooltip-neon {
+      background: #ffffff !important;
+      border: 1px solid rgba(0,0,0,0.10) !important;
+      color: #111827 !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
+    }
+
+    /* ── Scrollbar ── */
+    [data-theme="light"] .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f3f6 !important;
+    }
+    [data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb {
+      background: #d1d5db !important;
+      border: 2px solid #f1f3f6 !important;
+    }
+    [data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af !important;
+    }
+
+    /* ── Clean dividers ── */
+    [data-theme="light"] .divider-glow,
+    [data-theme="light"] .divider-glow-teal,
+    [data-theme="light"] .divider-glow-gold,
+    [data-theme="light"] .divider-double {
+      box-shadow: none !important;
+      opacity: 0.15 !important;
+    }
+
+    /* ── Surface/raised elements ── */
+    [data-theme="light"] .surface-raised {
+      background: #ffffff !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+    }
+    [data-theme="light"] .surface-inset {
+      background: #f4f5f7 !important;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.03) !important;
+    }
+
+    /* ── Ring accents ── */
+    [data-theme="light"] .ring-teal { box-shadow: 0 0 0 2px rgba(0,184,116,0.15) !important; }
+    [data-theme="light"] .ring-gold { box-shadow: 0 0 0 2px rgba(0,184,116,0.15) !important; }
+
+    /* ── Skeleton loading ── */
+    [data-theme="light"] .skeleton,
+    [data-theme="light"] .skeleton-teal {
+      background: linear-gradient(90deg, #f1f3f6, #e5e7eb, #f1f3f6) !important;
+      background-size: 300% 100% !important;
+    }
+
+    /* ── Remove neon glow from status dots ── */
+    [data-theme="light"] .status-dot::after {
+      display: none !important;
+    }
+
+    /* ── Fix gradient text for light mode ── */
+    [data-theme="light"] .gradient-text,
+    [data-theme="light"] .gradient-text-abyss,
+    [data-theme="light"] .gradient-text-warm,
+    [data-theme="light"] .gradient-text-gold {
+      filter: brightness(0.85) !important;
+    }
+
+    /* ── Make modals clean ── */
+    [data-theme="light"] [style*="z-index: 999"],
+    [data-theme="light"] [style*="zIndex: 999"] {
+      backdrop-filter: blur(4px) !important;
+    }
   `}</style>
 );
 
