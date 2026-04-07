@@ -925,7 +925,7 @@ const ConnectionsTab = () => {
             )}
 
             {/* ── Header with Stats & Controls ── */}
-            <div style={{ marginBottom: 32 }}>
+            <div style={{ marginBottom: connections.length === 0 ? 20 : 32 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
                     <div>
                         <h2 style={{ fontSize: 26, fontWeight: 800, color: THEME.textMain, margin: 0, letterSpacing: '-0.02em' }}>
@@ -933,7 +933,10 @@ const ConnectionsTab = () => {
                         </h2>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
                             <p style={{ fontSize: 13, color: THEME.textMuted, margin: 0, fontWeight: 500 }}>
-                                {connections.length} connection{connections.length !== 1 ? 's' : ''} · Encrypted at rest
+                                {connections.length === 0
+                                    ? 'Get started by adding your first database'
+                                    : `${connections.length} connection${connections.length !== 1 ? 's' : ''} · Encrypted at rest`
+                                }
                             </p>
                             {connections.length > 0 && (
                                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -1223,17 +1226,166 @@ const ConnectionsTab = () => {
                     );
                 })}
 
-                {/* Empty state — no connections, just prompt to use + button */}
+                {/* Empty state — rich onboarding experience */}
                 {connections.length === 0 && !connectionsLoading && !refreshing && (
                     <div style={{
-                        gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px',
-                        animation: 'fadeUp 0.4s ease-out',
+                        gridColumn: '1 / -1',
+                        animation: 'fadeUp 0.5s ease-out',
                     }}>
-                        <Database size={48} color={THEME.textMuted} style={{ marginBottom: 16, opacity: 0.4 }} />
-                        <h3 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>No connections yet</h3>
-                        <p style={{ fontSize: 13, color: THEME.textMuted }}>
-                            Click <strong>+ New Connection</strong> to add your first database
-                        </p>
+                        {/* Hero card */}
+                        <div style={{
+                            textAlign: 'center',
+                            padding: '52px 32px 40px',
+                            background: `linear-gradient(135deg, ${THEME.surface} 0%, ${THEME.primary}08 100%)`,
+                            border: `1px solid ${THEME.glassBorder}`,
+                            borderRadius: 20,
+                            position: 'relative',
+                            overflow: 'hidden',
+                        }}>
+                            {/* Decorative gradient orb */}
+                            <div style={{
+                                position: 'absolute', top: -60, right: -60,
+                                width: 200, height: 200, borderRadius: '50%',
+                                background: `radial-gradient(circle, ${THEME.primary}15 0%, transparent 70%)`,
+                                pointerEvents: 'none',
+                            }} />
+                            <div style={{
+                                position: 'absolute', bottom: -40, left: -40,
+                                width: 160, height: 160, borderRadius: '50%',
+                                background: `radial-gradient(circle, ${DB_TYPES.postgresql.accent}10 0%, transparent 70%)`,
+                                pointerEvents: 'none',
+                            }} />
+
+                            {/* Animated icon stack */}
+                            <div style={{
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                width: 80, height: 80, borderRadius: 20,
+                                background: `linear-gradient(135deg, ${THEME.primary}20 0%, ${THEME.primary}08 100%)`,
+                                border: `1px solid ${THEME.primary}30`,
+                                marginBottom: 24, position: 'relative',
+                            }}>
+                                <Database size={36} color={THEME.primary} strokeWidth={1.5} />
+                                <div style={{
+                                    position: 'absolute', bottom: -4, right: -4,
+                                    width: 24, height: 24, borderRadius: '50%',
+                                    background: THEME.primary, display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: `0 2px 8px ${THEME.primary}40`,
+                                }}>
+                                    <Plus size={14} color="#fff" strokeWidth={2.5} />
+                                </div>
+                            </div>
+
+                            <h3 style={{
+                                fontSize: 22, fontWeight: 800, color: THEME.textMain,
+                                marginBottom: 10, letterSpacing: '-0.02em',
+                            }}>
+                                Connect Your Database
+                            </h3>
+                            <p style={{
+                                fontSize: 14, color: THEME.textMuted, maxWidth: 420,
+                                margin: '0 auto 28px', lineHeight: 1.6,
+                            }}>
+                                Add your first database connection to start monitoring
+                                performance, queries, and health in real time.
+                            </p>
+
+                            <button
+                                onClick={() => openNew()}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                                    padding: '12px 28px', borderRadius: 12, border: 'none',
+                                    background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primary}cc)`,
+                                    color: '#fff', fontSize: 14, fontWeight: 700,
+                                    cursor: 'pointer', transition: 'all 0.2s',
+                                    boxShadow: `0 4px 16px ${THEME.primary}40`,
+                                    letterSpacing: '0.01em',
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = `0 6px 24px ${THEME.primary}50`;
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = `0 4px 16px ${THEME.primary}40`;
+                                }}
+                            >
+                                <Plus size={18} strokeWidth={2.5} />
+                                New Connection
+                            </button>
+                        </div>
+
+                        {/* Supported databases row */}
+                        <div style={{
+                            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14,
+                            marginTop: 18,
+                        }}>
+                            {Object.entries(DB_TYPES).map(([key, db], i) => (
+                                <div
+                                    key={key}
+                                    onClick={() => openNew()}
+                                    style={{
+                                        padding: '20px 16px', borderRadius: 14, cursor: 'pointer',
+                                        background: THEME.surface,
+                                        border: `1px solid ${THEME.glassBorder}`,
+                                        borderTop: `2px solid ${db.accent}44`,
+                                        transition: 'all 0.2s', textAlign: 'center',
+                                        animation: `fadeUp 0.4s ease-out ${0.15 + i * 0.08}s backwards`,
+                                    }}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.borderTopColor = db.accent;
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                        e.currentTarget.style.boxShadow = `0 4px 20px ${db.accent}18`;
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.borderTopColor = db.accent + '44';
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }}
+                                >
+                                    <div style={{ fontSize: 28, marginBottom: 10 }}>{db.icon}</div>
+                                    <div style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>
+                                        {db.label}
+                                    </div>
+                                    <div style={{ fontSize: 11, color: THEME.textMuted }}>
+                                        Port {db.defaultPort}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Quick info row */}
+                        <div style={{
+                            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14,
+                            marginTop: 14,
+                        }}>
+                            {[
+                                { icon: <Lock size={16} color={THEME.primary} />, title: 'Encrypted', desc: 'All credentials encrypted at rest' },
+                                { icon: <Zap size={16} color="#f5a623" />, title: 'Real-time', desc: 'Live monitoring & instant alerts' },
+                                { icon: <ShieldCheck size={16} color={THEME.success} />, title: 'Secure', desc: 'SSH tunneling & SSL support' },
+                            ].map((item, i) => (
+                                <div key={i} style={{
+                                    display: 'flex', alignItems: 'center', gap: 12,
+                                    padding: '14px 16px', borderRadius: 12,
+                                    background: `${THEME.surface}80`,
+                                    border: `1px solid ${THEME.glassBorder}60`,
+                                    animation: `fadeUp 0.4s ease-out ${0.3 + i * 0.08}s backwards`,
+                                }}>
+                                    <div style={{
+                                        width: 34, height: 34, borderRadius: 9,
+                                        background: `${THEME.surfaceHover}`,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        flexShrink: 0,
+                                    }}>
+                                        {item.icon}
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{item.title}</div>
+                                        <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.3 }}>{item.desc}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
