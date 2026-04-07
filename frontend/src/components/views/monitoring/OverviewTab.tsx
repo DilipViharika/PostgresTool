@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { GlassCard, LiveStatusBadge } from '../../ui/SharedComponents';
 import { fetchData } from '../../../utils/api';
 import { useConnection } from '../../../context/ConnectionContext';
@@ -2030,7 +2030,7 @@ const OverviewTab = () => {
     const [loading, setLoading] = useState(!cachedOv?.data);
     const [refreshing, setRefreshing] = useState(false);
     const [tick, setTick] = useState(0);
-    const [refreshInterval, setRefreshInterval] = useState(5000);
+    const [refreshInterval, setRefreshInterval] = useState(30000);
     // Environment switcher removed — data comes from the real connected database
     const intervalRef = useRef(null);
     const [longTxns, setLongTxns] = useState(cachedOv?.longTxns ?? []);
@@ -2144,6 +2144,8 @@ const OverviewTab = () => {
             setTick((t) => t + 1);
         }
     }, [activeConnection]);
+
+    useGlobalRefresh(React.useCallback(() => load(true), [load]));
 
     useEffect(() => {
         if (activeConnection) {
@@ -2345,30 +2347,6 @@ const OverviewTab = () => {
 
 {/* ═══════ Connection Status / Onboarding Banner ═══════ */}
             <ConnectionStatusBanner />
-
-            {/* ═══════ Top Bar: Refresh Control Only ═══════ */}
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-end',
-                    flexWrap: 'wrap',
-                    gap: 10,
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span className="ov-mono" style={{ fontSize: 10, color: THEME.textDim, opacity: 0.5 }}>
-                        #{tick}
-                    </span>
-                    <RefreshControl
-                        interval={refreshInterval}
-                        setInterval={setRefreshInterval}
-                        onManualRefresh={() => load(true)}
-                        loading={refreshing}
-                    />
-                    <NotificationBell />
-                </div>
-            </div>
 
             {/* ═══════ Row 1: Hero Metric Cards ═══════ */}
             <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 16 }}>

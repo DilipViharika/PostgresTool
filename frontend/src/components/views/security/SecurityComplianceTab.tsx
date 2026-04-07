@@ -2,7 +2,7 @@
 //  VIGIL — Security & Compliance Center (v2.0)
 // ==========================================================================
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 
 import {
@@ -773,6 +773,8 @@ const SuperuserMonitor = () => {
         } finally { setLoading(false); }
     };
 
+    useGlobalRefresh(fetchActivity);
+
     useEffect(() => { fetchActivity(); }, []);
 
     const safeRows = Array.isArray(rows) ? rows : [];
@@ -795,10 +797,6 @@ const SuperuserMonitor = () => {
             <div className="card" style={{ padding: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <SectionHeader icon={UserCog} title="Superuser Activity Log" iconColor={THEME.danger} />
-                    <button onClick={fetchActivity} disabled={loading}
-                        style={{ background: 'rgba(100,215,255,0.1)', border: '1px solid rgba(100,215,255,0.25)', color: THEME.primary, padding: '6px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontFamily: THEME.fontBody, display: 'flex', gap: 6, alignItems: 'center' }}>
-                        <RefreshCw size={12} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} /> Refresh
-                    </button>
                 </div>
 
                 <div style={{ overflowX: 'auto' }}>

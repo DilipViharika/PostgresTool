@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -296,6 +296,8 @@ export default function PoolMetricsDashboard() {
         }
     }, [autoRefresh, loadMetrics]);
 
+    useGlobalRefresh(loadMetrics);
+
     if (loading && !metrics) {
         return (
             <div style={{ padding: '20px', textAlign: 'center', color: THEME.textMuted }}>
@@ -345,33 +347,6 @@ export default function PoolMetricsDashboard() {
                             <option value="30">30s</option>
                         </select>
                     </div>
-                    <button
-                        onClick={loadMetrics}
-                        style={{
-                            padding: '8px 12px',
-                            background: THEME.primary,
-                            color: THEME.void,
-                            border: 'none',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            transition: 'all 0.2s ease',
-                            fontFamily: THEME.fontBody,
-                        }}
-                        onMouseEnter={(e) => {
-                            e.target.style.boxShadow = `0 0 12px ${THEME.primary}40`;
-                        }}
-                        onMouseLeave={(e) => {
-                            e.target.style.boxShadow = 'none';
-                        }}
-                    >
-                        <RefreshCw size={14} />
-                        Refresh
-                    </button>
                 </div>
             </div>
 

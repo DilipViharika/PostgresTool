@@ -3,7 +3,7 @@
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { fetchData, postData } from '../../utils/api';
-import { THEME, useAdaptiveTheme } from '../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../utils/theme';
 
 import {
     AlertTriangle, AlertCircle, CheckCircle, Bell, BellRing, BellOff,
@@ -944,6 +944,8 @@ const ReliabilityTab = () => {
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }, [refreshInterval, fetchAll]);
 
+    useGlobalRefresh(React.useCallback(() => fetchAll(false), [fetchAll]));
+
     const handleAcknowledge = useCallback(async (id) => {
         // Optimistic update
         setAlerts(prev => prev.map(a => a.id === id ? { ...a, acknowledged: true } : a));
@@ -1047,8 +1049,6 @@ const ReliabilityTab = () => {
 
             {/* Refresh bar */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <RefreshBar lastRefreshed={lastRefreshed} isRefreshing={isRefreshing} intervalSec={refreshInterval} onIntervalChange={setRefreshInterval} onRefresh={() => { if (!isRefreshing) fetchAll(false); }} error={refreshError} />
-                <CountdownBar intervalSec={refreshInterval} lastRefreshed={lastRefreshed} />
             </div>
 
             {/* Tab row */}

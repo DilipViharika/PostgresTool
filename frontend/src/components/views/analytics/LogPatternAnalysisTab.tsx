@@ -12,6 +12,7 @@ import {
     Zap,
     Shield,
 } from 'lucide-react';
+import { useGlobalRefresh } from '../../../utils/theme';
 import {
     BarChart,
     Bar,
@@ -752,6 +753,8 @@ export default function LogPatternAnalysisTab() {
         return () => clearInterval(interval);
     }, [autoRefresh, loadData]);
 
+    useGlobalRefresh(loadData);
+
     const lockWaitsCount = data?.lockWaits?.length || 0;
     const waitEventTypesCount = new Set(
         (data?.waitEvents || []).map((e) => e.wait_event_type)
@@ -806,49 +809,6 @@ export default function LogPatternAnalysisTab() {
                         <Clock size={14} />
                         Last refresh: {lastRefresh.toLocaleTimeString()}
                     </div>
-                    <button
-                        onClick={loadData}
-                        style={{
-                            background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`,
-                            border: 'none',
-                            color: '#000',
-                            padding: '8px 16px',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.3s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                        }}
-                    >
-                        <RefreshCw size={14} />
-                        Refresh
-                    </button>
-                    <select
-                        value={autoRefresh}
-                        onChange={(e) => setAutoRefresh(e.target.value)}
-                        style={{
-                            background: THEME.surface,
-                            border: `1px solid ${THEME.glassBorder}`,
-                            color: THEME.textMain,
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        <option value="off">Auto-Refresh: Off</option>
-                        <option value="30s">Auto-Refresh: 30s</option>
-                        <option value="1m">Auto-Refresh: 1m</option>
-                    </select>
                 </div>
             </div>
 

@@ -10,7 +10,7 @@ import {
   Download, Upload, Moon, Sun, SlidersHorizontal, MessageSquare,
   Users, AtSign, Send, Lock, GitMerge, CheckCircle, XCircle
 } from 'lucide-react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { fetchData, postData } from '../../../utils/api';
 
 /* ─────────────────────────────────────────────────────────────────
@@ -169,6 +169,7 @@ const MetricCard = ({ metricKey, data }) => {
 // ─────────────────────────────────────────────────────────────────
 const VIGILDashboard = () => {
   useAdaptiveTheme();
+  // Note: useGlobalRefresh will be added after loadAlerts is defined
   const [activeTab, setActiveTab]               = useState('active');
   const [showCreateModal, setShowCreateModal]   = useState(false);
   const [showDetailPanel, setShowDetailPanel]   = useState(null);
@@ -219,6 +220,8 @@ const VIGILDashboard = () => {
       setAlertsRefreshing(false);
     }
   }, []);
+
+  useGlobalRefresh(() => loadAlerts(true));
 
   useEffect(() => { loadAlerts(false); }, [loadAlerts]);
 
@@ -980,7 +983,6 @@ const VIGILDashboard = () => {
             <button onClick={() => setSoundEnabled(s => !s)} title={soundEnabled ? 'Mute alerts' : 'Enable sounds'} style={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, color: THEME.textMuted, cursor: 'pointer', padding: '6px 8px' }}>
               {soundEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
             </button>
-            <button style={css.btn('ghost')}><RefreshCw size={12} /> Refresh</button>
           </div>
         </div>
 

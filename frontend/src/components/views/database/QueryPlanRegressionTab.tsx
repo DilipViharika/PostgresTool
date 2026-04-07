@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { fetchData, postData, deleteData } from '../../../utils/api';
 import {
     TrendingUp, RefreshCw, AlertTriangle, CheckCircle, Play, Trash2,
@@ -399,6 +399,8 @@ export default function QueryPlanRegressionTab() {
         }
     }, []);
 
+    useGlobalRefresh(loadBaselines);
+
     useEffect(() => { loadBaselines(); }, [loadBaselines]);
 
     // ── Auto-watcher tick ───────────────────────────────────────────────────
@@ -533,9 +535,6 @@ export default function QueryPlanRegressionTab() {
                         </span>
                     )}
                 </div>
-                <button onClick={loadBaselines} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8, border: `1px solid ${THEME.primary}40`, background: `${THEME.primary}10`, color: THEME.primary, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-                    <RefreshCw size={13} /> Refresh
-                </button>
             </div>
 
             {/* ── Metric cards ── */}

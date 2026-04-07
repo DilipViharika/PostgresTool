@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import DOMPurify from 'dompurify';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 
 import {
@@ -803,36 +803,40 @@ const SchemaVersioningTab = () => {
 
     const debouncedSearch = useDebounce(searchQuery, 300);
 
-    // Fetch schema migrations from API
-    useEffect(() => {
-        const loadMigrations = async () => {
-            try {
-                const data = await fetchData('/api/schema/migrations');
-                // Validate API response is an object with expected structure
-                if (!data || typeof data !== 'object') {
-                    console.error('Invalid API response:', data);
-                    setMigrations([]);
-                    setPendingMigrations([]);
-                    setSchemaMessage('Invalid response from server.');
-                    return;
-                }
-                // Ensure migrations and pending are arrays
-                const safeData = Array.isArray(data.migrations) ? data.migrations : [];
-                const safePending = Array.isArray(data.pending) ? data.pending : [];
-                setMigrations(safeData);
-                setPendingMigrations(safePending);
-                if (data.message && typeof data.message === 'string') {
-                    setSchemaMessage(data.message);
-                }
-            } catch (err) {
-                console.error('Failed to load migrations:', err);
+    // Load migrations function
+    const loadMigrations = useCallback(async () => {
+        try {
+            const data = await fetchData('/api/schema/migrations');
+            // Validate API response is an object with expected structure
+            if (!data || typeof data !== 'object') {
+                console.error('Invalid API response:', data);
                 setMigrations([]);
                 setPendingMigrations([]);
-                setSchemaMessage('Failed to load schema migrations.');
+                setSchemaMessage('Invalid response from server.');
+                return;
             }
-        };
-        loadMigrations();
+            // Ensure migrations and pending are arrays
+            const safeData = Array.isArray(data.migrations) ? data.migrations : [];
+            const safePending = Array.isArray(data.pending) ? data.pending : [];
+            setMigrations(safeData);
+            setPendingMigrations(safePending);
+            if (data.message && typeof data.message === 'string') {
+                setSchemaMessage(data.message);
+            }
+        } catch (err) {
+            console.error('Failed to load migrations:', err);
+            setMigrations([]);
+            setPendingMigrations([]);
+            setSchemaMessage('Failed to load schema migrations.');
+        }
     }, []);
+
+    useGlobalRefresh(loadMigrations);
+
+    // Fetch schema migrations from API
+    useEffect(() => {
+        loadMigrations();
+    }, [loadMigrations]);
 
     // Fetch schema dependencies from API
     useEffect(() => {
@@ -1274,7 +1278,6 @@ const SchemaVersioningTab = () => {
                             <button className={diffSqlMode ? 'sv-btn-primary' : 'sv-btn-secondary'} onClick={() => setDiffSqlMode(v => !v)}>
                                 <Code size={13} /> {diffSqlMode ? 'SQL View' : 'SQL View'}
                             </button>
-                            <button className="sv-btn-secondary"><RefreshCw size={13} /> Refresh</button>
                             <button className="sv-btn-primary"><Code size={13} /> Generate Sync Script</button>
                         </div>
                     </div>

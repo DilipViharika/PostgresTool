@@ -20,7 +20,7 @@ import {
     GitBranch,
 } from 'lucide-react';
 import { fetchData } from '../../../utils/api';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 
 // ============================================================================
 // STYLES COMPONENT (Keyframes)
@@ -106,6 +106,8 @@ export default function AlertCorrelationTab() {
         const timer = setInterval(fetchCorrelationData, autoRefreshInterval * 1000);
         return () => clearInterval(timer);
     }, [autoRefreshInterval, fetchCorrelationData]);
+
+    useGlobalRefresh(fetchCorrelationData);
 
     // ====== COMPUTED VALUES ======
     const summaryStats = useMemo(() => {
@@ -275,55 +277,8 @@ export default function AlertCorrelationTab() {
           <span style={{ color: THEME.textMuted, fontSize: '12px' }}>
             Last refresh: {lastRefresh.toLocaleTimeString('en-US', { hour12: false })}
           </span>
-                    <button
-                        onClick={fetchCorrelationData}
-                        disabled={loading}
-                        style={{
-                            padding: '6px 12px',
-                            background: THEME.primary,
-                            color: THEME.bg,
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            opacity: loading ? 0.6 : 1,
-                        }}
-                    >
-                        <RefreshCw
-                            size={14}
-                            style={{
-                                animation: loading ? 'spin 1s linear infinite' : 'none',
-                            }}
-                        />
-                        Refresh
-                    </button>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ color: THEME.textMuted, fontSize: '12px' }}>Auto-refresh:</span>
-                    <select
-                        value={autoRefreshInterval}
-                        onChange={(e) => setAutoRefreshInterval(parseInt(e.target.value, 10))}
-                        style={{
-                            padding: '4px 8px',
-                            background: THEME.surface,
-                            color: THEME.textMain,
-                            border: `1px solid ${THEME.glassBorder}`,
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        <option value="15">15s</option>
-                        <option value="30">30s</option>
-                        <option value="60">1m</option>
-                        <option value="0">Off</option>
-                    </select>
-                </div>
             </div>
         </div>
     );

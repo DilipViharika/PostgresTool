@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import DemoLayout, {
     Panel,
     StatusBadge,
@@ -86,6 +86,9 @@ import {
 
 function DemoPostgresTab({ tabId }) {
     useAdaptiveTheme();
+    useGlobalRefresh(() => {
+        // Demo tab - no-op refresh
+    });
     const [perfTab, setPerfTab] = useState('activity');
     const [alertsTab, setAlertsTab] = useState('active');
     const [queryTab, setQueryTab] = useState('optimizer');
@@ -2730,22 +2733,6 @@ function DemoPostgresTab({ tabId }) {
                                     ))}
                                 </span>
                             </div>
-                        </div>
-                        <div
-                            style={{
-                                padding: '6px 14px',
-                                borderRadius: 6,
-                                background: THEME.surface,
-                                border: `1px solid ${THEME.glassBorder}`,
-                                fontSize: 11,
-                                color: THEME.textMuted,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                cursor: 'pointer',
-                            }}
-                        >
-                            <RefreshCw size={12} /> Refresh
                         </div>
                     </div>
 

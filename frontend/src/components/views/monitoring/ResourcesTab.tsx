@@ -2,7 +2,7 @@
 //  VIGIL — ResourcesTab  (v5 — Full Analytics Suite)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { GlassCard, ResourceGauge, NeonProgressBar, EmptyState } from '../../ui/SharedComponents';
 import { fetchData } from '../../../utils/api';
 
@@ -990,6 +990,8 @@ const ResourcesTab = () => {
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }, [refreshInterval, fetchAll]);
 
+    useGlobalRefresh(useCallback(() => fetchAll(false), [fetchAll]));
+
     /* ── Resolved optimization tracking ── */
     const [resolvedOptimizations, setResolvedOptimizations] = useState({});
     const [confirmPending, setConfirmPending] = useState(null);
@@ -1132,18 +1134,6 @@ const ResourcesTab = () => {
             <ResStyles />
 
             {/* ── Refresh status bar ── */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <RefreshBar
-                    lastRefreshed={lastRefreshed}
-                    isRefreshing={isRefreshing}
-                    intervalSec={refreshInterval}
-                    onIntervalChange={setRefreshInterval}
-                    onRefresh={() => { if (!isRefreshing) fetchAll(false); }}
-                    error={refreshError}
-                />
-                <CountdownBar intervalSec={refreshInterval} lastRefreshed={lastRefreshed} />
-            </div>
-
             {/* ── Tabs ── */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

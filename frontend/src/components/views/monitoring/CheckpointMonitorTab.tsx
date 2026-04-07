@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import {
@@ -106,6 +106,8 @@ export default function CheckpointMonitorTab() {
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }, [autoRfsh, load]);
 
+    useGlobalRefresh(React.useCallback(() => load(), [load]));
+
     /* ── Derived ────────────────────────────────────────────────────────── */
     const bg  = data?.bgwriter  || {};
     const wal = data?.wal       || {};
@@ -164,10 +166,6 @@ export default function CheckpointMonitorTab() {
                         <option value={60}>1m</option>
                         <option value={0}>Off</option>
                     </select>
-                    <button onClick={() => load(false)} disabled={refreshing}
-                        style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 14px', borderRadius:8, border:`1px solid ${THEME.primary}40`, background:`${THEME.primary}10`, color:THEME.primary, cursor:'pointer', fontSize:13, fontWeight:600 }}>
-                        <RefreshCw size={13} style={{ animation: refreshing ? 'cmSpin 1s linear infinite' : 'none' }}/> Refresh
-                    </button>
                 </div>
             </div>
 

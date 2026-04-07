@@ -3,7 +3,7 @@
  * SDK Integration Hub for VIGIL — register apps, ingest events, view metrics.
  */
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import {
     Activity, AlertTriangle, Clock, Layers, Plus, RefreshCw,
     Copy, CheckCircle, ArrowLeft, Loader2, AlertCircle, Trash2
@@ -218,6 +218,8 @@ export default function SDKDashboardTab() {
         }
     }, []);
 
+    useGlobalRefresh(fetchApps);
+
     const handleDelete = useCallback(async (appId) => {
         setDeletingId(appId);
         try {
@@ -270,10 +272,6 @@ export default function SDKDashboardTab() {
                     <p style={{ margin:0, fontSize:13, color:sub }}>Monitor all registered SDK applications and their event data</p>
                 </div>
                 <div style={{ display:'flex', gap:12 }}>
-                    <button onClick={() => { setRefreshing(true); fetchApps().finally(() => setRefreshing(false)); }}
-                        style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 16px', borderRadius:8, border:`1px solid ${border}`, background:'transparent', color:accent, fontSize:13, fontWeight:700, cursor:'pointer', opacity:refreshing?0.6:1 }}>
-                        <RefreshCw size={16} style={{ animation:refreshing?'spin 1s linear infinite':'none' }} /> Refresh
-                    </button>
                     <button onClick={() => setShowModal(true)}
                         style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 16px', borderRadius:8, border:'none', background:accent, color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer' }}>
                         <Plus size={16}/> Register App

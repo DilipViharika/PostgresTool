@@ -726,6 +726,51 @@ const StatusPill = ({ connected }) => (
    THEME TOGGLE — uses ThemeContext as single source of truth and
    also keeps the mutable DS object in sync for legacy consumers
    ───────────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────
+   GLOBAL REFRESH BUTTON — dispatches 'vigil-refresh' CustomEvent
+   that individual tabs listen for to trigger their own data reload.
+   ───────────────────────────────────────────────────────────────── */
+const GlobalRefreshButton = () => {
+    const [spinning, setSpinning] = React.useState(false);
+
+    const handleRefresh = () => {
+        setSpinning(true);
+        window.dispatchEvent(new CustomEvent('vigil-refresh'));
+        setTimeout(() => setSpinning(false), 900);
+    };
+
+    return (
+        <button
+            onClick={handleRefresh}
+            aria-label="Refresh data"
+            title="Refresh current view"
+            style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                background: 'rgba(99,102,241,0.08)',
+                border: '1px solid rgba(99,102,241,0.18)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.background = 'rgba(99,102,241,0.14)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; }}
+        >
+            <RefreshCw
+                size={15}
+                color={DS.cyan}
+                style={{
+                    transition: 'transform 0.6s cubic-bezier(0.4,0,0.2,1)',
+                    transform: spinning ? 'rotate(360deg)' : 'rotate(0deg)',
+                }}
+            />
+        </button>
+    );
+};
+
 const ThemeToggle = () => {
     const { isDark, toggleTheme } = useTheme();
 
@@ -4080,12 +4125,13 @@ const DashboardInner = ({ onLogout }) => {
                             )}
                         </div>
 
-                        {/* Right: connection switcher + status + bell + theme */}
+                        {/* Right: connection switcher + status + refresh + bell + theme */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                             <Suspense fallback={<ConnectionSelector />}>
                                 <ConnectionSwitcherLazy />
                             </Suspense>
                             <div style={{ width: 1, height: 24, background: DS.border }} />
+                            <GlobalRefreshButton />
                             <ThemeToggle />
                             <StatusPill connected={connected} />
                             <NotificationCenter

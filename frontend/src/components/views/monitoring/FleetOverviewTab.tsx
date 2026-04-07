@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import { useConnection } from '../../../context/ConnectionContext';
 import { useNavigation } from '../../../context/NavigationContext';
@@ -299,11 +299,11 @@ const FleetOverviewTab = () => {
         return () => { if (refreshTimer.current) clearInterval(refreshTimer.current); };
     }, [fetchAll]);
 
-    const handleRefresh = useCallback(async () => {
+    useGlobalRefresh(React.useCallback(async () => {
         setRefreshing(true);
         await fetchAll();
         setRefreshing(false);
-    }, [fetchAll]);
+    }, [fetchAll]));
 
     const handleSwitch = useCallback(async (connId) => {
         try { await switchConnection(connId); goToTab('overview'); }
@@ -372,12 +372,6 @@ const FleetOverviewTab = () => {
                     <h2 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: THEME.textMain }}>Fleet Overview</h2>
                     <p style={{ margin: 0, fontSize: 12, color: THEME.textMuted }}>Monitor all connected databases</p>
                 </div>
-                <button onClick={handleRefresh} disabled={refreshing} style={{
-                    display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 8,
-                    color: THEME.primary, fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: refreshing ? 0.6 : 1,
-                }}>
-                    <RefreshCw size={14} style={{ animation: refreshing ? 'fleetSpin 1s linear infinite' : 'none' }} /> Refresh
-                </button>
             </div>
 
             {/* ── Status Badges ── */}

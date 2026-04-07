@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import {
@@ -98,6 +98,8 @@ export default function ReplicationWALTab() {
         return ()=>{ if(intervalRef.current) clearInterval(intervalRef.current); };
     },[autoRfsh,load]);
 
+    useGlobalRefresh(React.useCallback(() => load(), [load]));
+
     const replicas    = data?.replicas    || [];
     const slots       = data?.slots       || [];
     const walReceiver = data?.walReceiver || null;
@@ -145,9 +147,6 @@ export default function ReplicationWALTab() {
                     <select value={autoRfsh} onChange={e=>setAutoRfsh(+e.target.value)} style={{background:THEME.surface,border:`1px solid ${THEME.grid}`,color:THEME.textMain,borderRadius:6,padding:'4px 8px',fontSize:12}}>
                         <option value={5}>5s</option><option value={10}>10s</option><option value={30}>30s</option><option value={0}>Off</option>
                     </select>
-                    <button onClick={()=>load(false)} disabled={refreshing} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 14px',borderRadius:8,border:`1px solid ${THEME.primary}40`,background:`${THEME.primary}10`,color:THEME.primary,cursor:'pointer',fontSize:13,fontWeight:600}}>
-                        <RefreshCw size={13} style={{animation:refreshing?'rwSpin 1s linear infinite':'none'}}/> Refresh
-                    </button>
                 </div>
             </div>
 

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import React, { useState, useEffect, useCallback } from 'react';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { API_BASE } from '../../../utils/api';
 import { useConnection } from '../../../context/ConnectionContext';
 import { encryptConnectionFields } from '../../../utils/cryptoUtils';
@@ -679,9 +679,7 @@ const ConnectionsTab = () => {
 
     const getAuthToken = () => localStorage.getItem('vigil_token') || localStorage.getItem('authToken');
 
-    useEffect(() => { fetchConnections(); }, []);
-
-    const fetchConnections = async () => {
+    const fetchConnections = useCallback(async () => {
         // If we already have cached connections, show a subtle refresh indicator instead of full loading
         if (connections.length > 0) {
             setRefreshing(true);
@@ -705,7 +703,11 @@ const ConnectionsTab = () => {
             setConnectionsLoading(false);
             setRefreshing(false);
         }
-    };
+    }, [connections.length]);
+
+    useEffect(() => { fetchConnections(); }, [fetchConnections]);
+
+    useGlobalRefresh(fetchConnections);
 
     const validateForm = () => {
         const errors = {};
@@ -1087,11 +1089,6 @@ const ConnectionsTab = () => {
                                 </div>
                             </div>
                             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                                <button onClick={() => fetchConnections()} disabled={refreshing}
-                                    style={{ ...S.btn(THEME.surfaceHover, THEME.glassBorder, THEME.textMuted), opacity: refreshing ? 0.6 : 1 }}
-                                    title="Refresh connections">
-                                    <RefreshCw size={14} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-                                </button>
                                 <button onClick={() => openNew()}
                                     style={S.btn(THEME.primary + '2E', THEME.primary + '66', THEME.primary)}
                                     onMouseEnter={e => e.currentTarget.style.background = THEME.primary + '4D'}

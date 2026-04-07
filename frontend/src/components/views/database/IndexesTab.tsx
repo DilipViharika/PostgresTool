@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import DOMPurify from 'dompurify';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import { fetchData } from '../../../utils/api';
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -1005,6 +1005,8 @@ export default function IndexIntelligence() {
 
     const { data, loading, error, refresh } = useIndexData(live);
 
+    useGlobalRefresh(refresh);
+
     useEffect(()=>{
         const h=e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();setCmd(p=>!p);}};
         document.addEventListener('keydown',h);
@@ -1124,7 +1126,6 @@ export default function IndexIntelligence() {
                                     </div>}
                                 </div>
                                 <div style={{display:'flex',gap:8}}>
-                                    <button onClick={refresh} className="btn" style={{padding:'5px 12px',background:C.surface,border:`1px solid ${C.border}`,borderRadius:5,color:C.textSub,fontSize:11}}>Refresh</button>
                                     <button onClick={()=>rows[0]&&setApply(rows[0])} style={{padding:'5px 14px',background:C.accent,border:'none',borderRadius:5,color:'#fff',fontSize:11,fontWeight:600,cursor:'pointer'}}>Apply top priority</button>
                                 </div>
                             </div>

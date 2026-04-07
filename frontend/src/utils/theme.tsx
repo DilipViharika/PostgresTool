@@ -240,6 +240,17 @@ export const useAdaptiveTheme = () => {
     return THEME;
 };
 
+// ── Hook: listen for global refresh events from the header button ────────────
+// Tabs call useGlobalRefresh(callback) to reload their data when the user
+// clicks the single refresh button in the header.
+export const useGlobalRefresh = (callback: () => void) => {
+    React.useEffect(() => {
+        const handler = () => callback();
+        window.addEventListener('vigil-refresh', handler);
+        return () => window.removeEventListener('vigil-refresh', handler);
+    }, [callback]);
+};
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // SVG DEFS — Gradients, Filters, Patterns
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
