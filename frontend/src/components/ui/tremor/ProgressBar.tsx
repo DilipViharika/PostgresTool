@@ -1,6 +1,5 @@
 /**
- * Advanced ProgressBar with glow effect and animated shimmer.
- * Rich visual feedback — colored shadow, rounded edges, inset track.
+ * Premium ProgressBar — animated shimmer sweep, neon glow, inset track.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
@@ -63,13 +62,27 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             width: `${pct}%`,
             height: '100%',
             borderRadius: height,
-            background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+            background: `linear-gradient(90deg, ${color}cc, ${color})`,
             transformOrigin: 'left',
             transition: animate ? 'width 1s cubic-bezier(0.22, 1, 0.36, 1)' : undefined,
-            boxShadow: pct > 0 ? `0 0 8px ${color}40, 0 0 3px ${color}30` : undefined,
+            boxShadow: pct > 0 ? `0 0 10px ${color}45, 0 0 4px ${color}35` : undefined,
             position: 'relative',
+            overflow: 'hidden',
           }}
-        />
+        >
+          {/* Shimmer sweep */}
+          {pct > 5 && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%)`,
+                backgroundSize: '200% 100%',
+                animation: 'tremorShimmer 2.5s ease-in-out infinite',
+              }}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

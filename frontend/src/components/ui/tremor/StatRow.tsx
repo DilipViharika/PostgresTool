@@ -1,11 +1,10 @@
 /**
- * Advanced stat display components.
- * Rich typography, glass effects, colored accents.
+ * Premium stat display — neon text glow, glass panels, gradient accents.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
 
-/* ── Stat Strip (horizontal row of mini-stats) ──────────────────────── */
+/* ── Stat Strip ──────────────────────────────────────────────────────── */
 
 interface StatItem {
   label: string;
@@ -45,11 +44,11 @@ export const StatStrip: React.FC<StatStripProps> = ({ items, dividers = false })
       >
         <div
           style={{
-            fontSize: 11,
+            fontSize: 10.5,
             color: THEME.textDim,
             fontWeight: 600,
             marginBottom: 5,
-            letterSpacing: '0.02em',
+            letterSpacing: '0.04em',
             textTransform: 'uppercase',
           }}
         >
@@ -62,7 +61,7 @@ export const StatStrip: React.FC<StatStripProps> = ({ items, dividers = false })
             color: s.color || THEME.textMain,
             lineHeight: 1,
             fontFamily: THEME.fontMono,
-            textShadow: s.color ? `0 0 12px ${s.color}25` : undefined,
+            textShadow: s.color ? `0 0 14px ${s.color}30, 0 0 4px ${s.color}18` : undefined,
           }}
         >
           {s.value}
@@ -72,7 +71,7 @@ export const StatStrip: React.FC<StatStripProps> = ({ items, dividers = false })
   </div>
 );
 
-/* ── Mini Stat Box ──────────────────────────────────────────────────── */
+/* ── Mini Stat Box (glass panel with neon accent) ────────────────────── */
 
 interface MiniStatProps {
   label: string;
@@ -84,26 +83,41 @@ export const MiniStat: React.FC<MiniStatProps> = ({ label, value, color }) => (
   <div
     style={{
       padding: '12px 16px',
-      borderRadius: 10,
-      background: THEME.bgAlt || THEME.surface,
+      borderRadius: 12,
+      background: `linear-gradient(135deg, ${THEME.bgAlt || THEME.surface}, ${THEME.surface})`,
       border: `1px solid ${THEME.glassBorder}`,
-      boxShadow: THEME.shadowSm,
+      boxShadow: `${THEME.shadowSm}, 0 0 12px ${color || THEME.primary}06`,
       position: 'relative',
       overflow: 'hidden',
     }}
   >
-    {/* Subtle left accent */}
+    {/* Left neon accent bar */}
     {color && (
       <div
         style={{
           position: 'absolute',
           left: 0,
-          top: '20%',
-          bottom: '20%',
-          width: 2.5,
+          top: '15%',
+          bottom: '15%',
+          width: 3,
           borderRadius: 2,
-          background: color,
-          opacity: 0.6,
+          background: `linear-gradient(180deg, ${color}, ${color}80)`,
+          boxShadow: `0 0 8px ${color}40`,
+        }}
+      />
+    )}
+    {/* Mini orb glow */}
+    {color && (
+      <div
+        style={{
+          position: 'absolute',
+          top: -15,
+          right: -15,
+          width: 50,
+          height: 50,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${color}0a, transparent 60%)`,
+          pointerEvents: 'none',
         }}
       />
     )}
@@ -113,8 +127,10 @@ export const MiniStat: React.FC<MiniStatProps> = ({ label, value, color }) => (
         color: THEME.textDim,
         fontWeight: 600,
         marginBottom: 5,
-        letterSpacing: '0.03em',
+        letterSpacing: '0.04em',
         textTransform: 'uppercase',
+        position: 'relative',
+        zIndex: 1,
       }}
     >
       {label}
@@ -126,6 +142,9 @@ export const MiniStat: React.FC<MiniStatProps> = ({ label, value, color }) => (
         color: color || THEME.textMain,
         lineHeight: 1,
         fontFamily: THEME.fontMono,
+        textShadow: color ? `0 0 10px ${color}25` : undefined,
+        position: 'relative',
+        zIndex: 1,
       }}
     >
       {value}

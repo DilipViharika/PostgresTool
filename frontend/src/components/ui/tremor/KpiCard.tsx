@@ -1,6 +1,6 @@
 /**
- * Advanced KPI / Metric Card with rich visual styling.
- * Colored left accent border, glass morphism, glow effects, gradient overlays.
+ * Premium KPI / Metric Card — neon accent glow, gradient overlays,
+ * frosted glass, animated shimmer, deep layered shadows.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
@@ -35,43 +35,60 @@ const KpiCard: React.FC<KpiCardProps> = ({
   <div
     className="tremor-kpi"
     style={{
-      padding: '20px 20px 20px 24px',
-      borderRadius: 14,
-      background: THEME.surface,
+      padding: '22px 22px 22px 26px',
+      borderRadius: 16,
+      background: `linear-gradient(135deg, ${THEME.surface} 0%, ${THEME.bgAlt || THEME.surface} 100%)`,
       border: `1px solid ${THEME.glassBorder}`,
-      borderLeft: `3.5px solid ${color}`,
+      borderLeft: `4px solid ${color}`,
       position: 'relative',
       overflow: 'hidden',
-      boxShadow: THEME.shadowMd,
-      transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+      boxShadow: `${THEME.shadowMd}, 0 0 20px ${color}08`,
+      backdropFilter: 'blur(8px)',
     }}
   >
-    {/* Gradient overlay — top right glow */}
+    {/* ── Large radial glow — colored orb top-right ── */}
     <div
       style={{
         position: 'absolute',
-        top: -30,
-        right: -30,
-        width: 100,
-        height: 100,
+        top: -40,
+        right: -40,
+        width: 130,
+        height: 130,
         borderRadius: '50%',
-        background: `radial-gradient(circle, ${color}12 0%, transparent 70%)`,
+        background: `radial-gradient(circle, ${color}15 0%, ${color}06 40%, transparent 70%)`,
         pointerEvents: 'none',
       }}
     />
 
-    {/* Subtle glass shine */}
+    {/* ── Bottom-left subtle secondary orb ── */}
+    <div
+      style={{
+        position: 'absolute',
+        bottom: -50,
+        left: -30,
+        width: 100,
+        height: 100,
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${color}06 0%, transparent 60%)`,
+        pointerEvents: 'none',
+      }}
+    />
+
+    {/* ── Shimmer sweep overlay ── */}
+    <div className="tremor-shimmer-sweep" />
+
+    {/* ── Glass shine ── */}
     <div className="tremor-card-shine" />
 
-    {/* Top row: label + icon */}
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+    {/* ── Top row: label + icon ── */}
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, position: 'relative', zIndex: 1 }}>
       <span
         style={{
-          fontSize: 12,
+          fontSize: 11.5,
           color: THEME.textMuted,
           fontWeight: 600,
           lineHeight: 1,
-          letterSpacing: '0.03em',
+          letterSpacing: '0.05em',
           textTransform: 'uppercase',
         }}
       >
@@ -79,30 +96,32 @@ const KpiCard: React.FC<KpiCardProps> = ({
       </span>
       <div
         style={{
-          width: 32,
-          height: 32,
-          borderRadius: 9,
-          background: `${color}14`,
+          width: 34,
+          height: 34,
+          borderRadius: 10,
+          background: `linear-gradient(135deg, ${color}18, ${color}08)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          border: `1px solid ${color}20`,
+          border: `1px solid ${color}25`,
+          boxShadow: `0 0 12px ${color}12, inset 0 1px 0 rgba(255,255,255,0.05)`,
         }}
       >
-        <Icon size={16} color={color} strokeWidth={2} />
+        <Icon size={16} color={color} strokeWidth={2.2} />
       </div>
     </div>
 
-    {/* Value */}
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: sub ? 4 : 0 }}>
+    {/* ── Value ── */}
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: sub ? 4 : 0, position: 'relative', zIndex: 1 }}>
       <span
+        className="tremor-mono"
         style={{
-          fontSize: 32,
+          fontSize: 34,
           fontWeight: 800,
           color: THEME.textMain,
           lineHeight: 1,
           letterSpacing: '-0.03em',
-          fontFamily: THEME.fontBody,
+          textShadow: `0 0 30px ${color}15`,
         }}
       >
         {value}
@@ -114,70 +133,61 @@ const KpiCard: React.FC<KpiCardProps> = ({
       )}
     </div>
 
-    {/* Sparkline slot */}
-    {sparkline && <div style={{ marginTop: 12 }}>{sparkline}</div>}
+    {/* ── Sparkline ── */}
+    {sparkline && <div style={{ marginTop: 12, position: 'relative', zIndex: 1 }}>{sparkline}</div>}
 
-    {/* Detail / delta row */}
+    {/* ── Detail / delta footer ── */}
     {(detail || delta) && (
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          marginTop: 14,
+          marginTop: 16,
           paddingTop: 14,
           borderTop: `1px solid ${THEME.glassBorder}`,
+          position: 'relative',
+          zIndex: 1,
         }}
       >
-        {/* Delta badge with glow */}
-        {delta && (
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 3,
-              fontSize: 11.5,
-              fontWeight: 700,
-              fontFamily: THEME.fontMono,
-              color: deltaType === 'increase'
-                ? (healthy !== false ? THEME.success : THEME.danger)
-                : deltaType === 'decrease'
-                  ? (healthy !== false ? THEME.danger : THEME.success)
-                  : THEME.textDim,
-              padding: '3px 10px',
-              borderRadius: 8,
-              background: deltaType === 'increase'
-                ? (healthy !== false ? `${THEME.success}18` : `${THEME.danger}18`)
-                : deltaType === 'decrease'
-                  ? (healthy !== false ? `${THEME.danger}18` : `${THEME.success}18`)
-                  : `${THEME.textDim}15`,
-              border: `1px solid ${
-                deltaType === 'increase'
-                  ? (healthy !== false ? `${THEME.success}25` : `${THEME.danger}25`)
-                  : deltaType === 'decrease'
-                    ? (healthy !== false ? `${THEME.danger}25` : `${THEME.success}25`)
-                    : `${THEME.textDim}20`
-              }`,
-              boxShadow: deltaType !== 'unchanged'
-                ? `0 0 8px ${
-                    deltaType === 'increase'
-                      ? (healthy !== false ? `${THEME.success}15` : `${THEME.danger}15`)
-                      : (healthy !== false ? `${THEME.danger}15` : `${THEME.success}15`)
-                  }`
-                : 'none',
-            }}
-          >
-            {deltaType === 'increase' && <ArrowUpRight size={13} strokeWidth={2.5} />}
-            {deltaType === 'decrease' && <ArrowDownRight size={13} strokeWidth={2.5} />}
-            {delta}
-          </span>
-        )}
+        {delta && (() => {
+          const isUp = deltaType === 'increase';
+          const isDown = deltaType === 'decrease';
+          const pill = isUp
+            ? (healthy !== false ? THEME.success : THEME.danger)
+            : isDown
+              ? (healthy !== false ? THEME.danger : THEME.success)
+              : THEME.textDim;
+          return (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 3,
+                fontSize: 11.5,
+                fontWeight: 700,
+                fontFamily: THEME.fontMono,
+                color: pill,
+                padding: '3px 10px',
+                borderRadius: 8,
+                background: `${pill}15`,
+                border: `1px solid ${pill}25`,
+                boxShadow: `0 0 10px ${pill}12, inset 0 1px 0 rgba(255,255,255,0.04)`,
+              }}
+            >
+              {isUp && <ArrowUpRight size={13} strokeWidth={2.5} />}
+              {isDown && <ArrowDownRight size={13} strokeWidth={2.5} />}
+              {delta}
+            </span>
+          );
+        })()}
         {detail && (
           <span
             style={{
               fontSize: 12,
               fontWeight: 600,
               color: healthy ? THEME.success : healthy === false ? THEME.warning : THEME.textDim,
+              textShadow: healthy ? `0 0 8px ${THEME.success}20` : undefined,
             }}
           >
             {detail}
