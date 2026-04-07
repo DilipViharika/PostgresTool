@@ -905,7 +905,7 @@ const ConnectionsTab = () => {
     const isEmpty = connections.length === 0 && !connectionsLoading && !refreshing;
 
     return (
-        <div style={{ ...S.root, padding: isEmpty ? '0' : '32px 28px' }}>
+        <div style={{ ...S.root, padding: isEmpty ? '0' : '32px 28px', overflow: isEmpty ? 'hidden' : 'auto', minHeight: isEmpty ? 'auto' : '100vh', height: isEmpty ? '100vh' : 'auto' }}>
             {/* ── Keyframes ── */}
             <style>{`
                 @keyframes cpFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
@@ -937,10 +937,10 @@ const ConnectionsTab = () => {
             ═══════════════════════════════════════════════════════════════ */}
             {isEmpty && (
                 <div style={{
-                    minHeight: '100vh', display: 'flex', flexDirection: 'column',
+                    height: '100vh', display: 'flex', flexDirection: 'column',
                     alignItems: 'center', justifyContent: 'center',
                     background: THEME.bg, position: 'relative', overflow: 'hidden',
-                    padding: '40px 24px',
+                    padding: '0 24px',
                 }}>
                     {/* Ambient background grid */}
                     <div style={{
@@ -987,13 +987,13 @@ const ConnectionsTab = () => {
                         {/* Hero icon */}
                         <div style={{
                             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                            width: 96, height: 96, borderRadius: 28,
+                            width: 80, height: 80, borderRadius: 24,
                             background: `linear-gradient(135deg, ${THEME.primary}22, ${THEME.primary}08)`,
                             border: `2px solid ${THEME.primary}30`,
-                            marginBottom: 28, position: 'relative',
+                            marginBottom: 20, position: 'relative',
                             boxShadow: `0 0 60px ${THEME.primary}15`,
                         }}>
-                            <Database size={44} color={THEME.primary} strokeWidth={1.5} />
+                            <Database size={38} color={THEME.primary} strokeWidth={1.5} />
                             <div style={{
                                 position: 'absolute', bottom: -6, right: -6,
                                 width: 30, height: 30, borderRadius: '50%',
@@ -1007,14 +1007,14 @@ const ConnectionsTab = () => {
                         </div>
 
                         <h1 style={{
-                            fontSize: 32, fontWeight: 800, color: THEME.textMain,
-                            margin: '0 0 12px', letterSpacing: '-0.03em', lineHeight: 1.2,
+                            fontSize: 28, fontWeight: 800, color: THEME.textMain,
+                            margin: '0 0 8px', letterSpacing: '-0.03em', lineHeight: 1.2,
                         }}>
                             Connect Your First Database
                         </h1>
                         <p style={{
-                            fontSize: 16, color: THEME.textMuted, maxWidth: 400,
-                            margin: '0 auto 36px', lineHeight: 1.7, fontWeight: 400,
+                            fontSize: 14, color: THEME.textMuted, maxWidth: 400,
+                            margin: '0 auto 24px', lineHeight: 1.6, fontWeight: 400,
                         }}>
                             Monitor performance, analyze queries, and get real-time
                             alerts — all from one dashboard.
@@ -1025,7 +1025,7 @@ const ConnectionsTab = () => {
                             onClick={() => openNew()}
                             style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 10,
-                                padding: '14px 36px', borderRadius: 14, border: 'none',
+                                padding: '12px 32px', borderRadius: 14, border: 'none',
                                 background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primary}bb)`,
                                 color: '#fff', fontSize: 16, fontWeight: 700,
                                 cursor: 'pointer', transition: 'all 0.25s',
@@ -1047,15 +1047,15 @@ const ConnectionsTab = () => {
 
                         {/* Database type cards */}
                         <div style={{
-                            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14,
-                            marginTop: 48,
+                            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12,
+                            marginTop: 28,
                         }}>
                             {Object.entries(DB_TYPES).map(([key, db], i) => (
                                 <div
                                     key={key}
                                     onClick={() => { openNew(); handleDbTypeChange(key); }}
                                     style={{
-                                        padding: '24px 16px 20px', borderRadius: 16, cursor: 'pointer',
+                                        padding: '18px 14px 16px', borderRadius: 16, cursor: 'pointer',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
                                         transition: 'all 0.25s', textAlign: 'center',
@@ -1079,7 +1079,7 @@ const ConnectionsTab = () => {
                                         background: `linear-gradient(90deg, transparent, ${db.accent}66, transparent)`,
                                     }} />
                                     <div style={{
-                                        fontSize: 36, marginBottom: 12,
+                                        fontSize: 30, marginBottom: 8,
                                         filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))',
                                     }}>{db.icon}</div>
                                     <div style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>
@@ -1097,8 +1097,8 @@ const ConnectionsTab = () => {
 
                         {/* Feature pills */}
                         <div style={{
-                            display: 'flex', gap: 10, justifyContent: 'center',
-                            marginTop: 32, flexWrap: 'wrap',
+                            display: 'flex', gap: 8, justifyContent: 'center',
+                            marginTop: 20, flexWrap: 'wrap',
                         }}>
                             {[
                                 { icon: <Lock size={13} />, text: 'Encrypted at rest', color: THEME.primary },
