@@ -936,7 +936,7 @@ const ConnectionsTab = () => {
             {isEmpty && (
                 <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    height: 'calc(100vh - 62px)', overflow: 'hidden',
+                    height: 'calc(100vh - 130px)', overflow: 'hidden',
                     background: THEME.bg, position: 'relative',
                 }}>
                     {/* Subtle radial glow behind center */}
