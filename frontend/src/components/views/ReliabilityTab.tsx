@@ -62,11 +62,9 @@ const RelStyles = () => (
         .rel-tab-btn{transition:all 0.2s}
         .rel-tab-btn:hover{opacity:0.85}
         .rel-card{background:${THEME.surface};border:1px solid ${THEME.glassBorder};border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all 0.3s ease;text-align:center}
-        .rel-card:hover{box-shadow:0 0 0 3px ${THEME.primary}15, 0 8px 24px rgba(0,0,0,0.06)}
-        .rel-card-metric{padding:24px 18px 12px;background:radial-gradient(ellipse at center, ${THEME.primary}06 0%, transparent 70%)}
+        .rel-card:hover{box-shadow:0 0 0 3px rgba(99,102,241,0.08), 0 8px 24px rgba(0,0,0,0.06)}
+        .rel-card-metric{padding:24px 18px 12px;background:radial-gradient(ellipse at center, rgba(99,102,241,0.03) 0%, transparent 70%)}
         .rel-card-footer{padding:12px 18px 16px;border-top:1px solid ${THEME.glassBorder};font-size:12px;color:${THEME.textMuted}}
-        * { font-family: ${THEME.fontBody}; }
-        code, .mono { font-family: ${THEME.fontMono} !important; }
     `}</style>
 );
 
@@ -82,8 +80,10 @@ const REFRESH_INTERVALS = [
 /* ─── Panel ─────────────────────────────────────────────────────────────── */
 const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, refreshing, accent }) => (
     <div style={{
+        background: THEME.surface,
         border: `1px solid ${accent ? `${accent}25` : refreshing ? `${THEME.primary}35` : THEME.glassBorder}`,
         borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
         transition: 'border-color 0.3s', ...style,
     }}>
         {title && (
@@ -1030,10 +1030,10 @@ const ReliabilityTab = () => {
 
     if (loading) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 24px 40px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 40 }}>
                 <RelStyles />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-                    {[0, 1, 2, 3].map(i => <div key={i} style={{ height: 96, borderRadius: 14, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.4, animation: 'relPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />)}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+                    {[0, 1, 2, 3, 4].map(i => <div key={i} style={{ height: 96, borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.4, animation: 'relPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />)}
                 </div>
             </div>
         );
@@ -1048,12 +1048,8 @@ const ReliabilityTab = () => {
     ];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '0 24px 40px 24px', background: THEME.bg, minHeight: '100vh' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingBottom: 40 }}>
             <RelStyles />
-
-            {/* Refresh bar */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            </div>
 
             {/* Tab row */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
