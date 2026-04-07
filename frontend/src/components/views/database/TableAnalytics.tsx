@@ -32,34 +32,95 @@ const FilterCtx = createContext({ db: '', schema: '', table: '' });
    GLOBAL CSS
 ───────────────────────────────────────────────────────────────── */
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:${THEME.textMuted}1a;border-radius:4px}
 @keyframes ud-spin  {to{transform:rotate(360deg)}}
-@keyframes ud-rise  {from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ud-rise  {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ud-pulse {0%,100%{opacity:1}50%{opacity:.45}}
-@keyframes ud-glow  {0%,100%{box-shadow:0 0 0 0 var(--glow)}60%{box-shadow:0 0 0 5px transparent}}
 @keyframes ud-shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes ud-typewriter{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ai-glow{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,.0)}50%{box-shadow:0 0 20px 4px rgba(139,92,246,.18)}}
-.ud-rise {animation:ud-rise .32s cubic-bezier(.2,0,0,1) both}
-.ud-card {border:1px solid ${THEME.grid};border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05);transition:all 0.25s ease}
-.ud-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.08)}
-.ud-card-header {height:28px;background:${THEME.textMain}0a;display:flex;align-items:center;padding:0 12px;gap:6px;border-bottom:1px solid ${THEME.glassBorder}}
-.ud-card-dot {width:8px;height:8px;border-radius:50%}
-.ud-card-title {font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;color:${THEME.textMuted};margin-left:8px;letter-spacing:0.03em}
-.ud-card-body {padding:16px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.02)}
-.ud-card.legacy {padding:20px;background:${THEME.surface};border:1px solid ${THEME.grid};border-radius:12px;transition:all 0.25s ease}
-.ud-navitem{transition:all .16s}
-.ud-navitem:hover{background:rgba(255,255,255,.06)!important;color:#fff!important}
+.ud-rise {animation:ud-rise .3s cubic-bezier(.2,0,0,1) both}
+.ud-card {
+    background:${THEME.surface};
+    border:1px solid ${THEME.grid};
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 1px 4px rgba(0,0,0,0.04);
+    transition:all 0.2s ease;
+}
+.ud-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.07)}
+.ud-card-header {
+    height:30px;
+    background:${THEME.textMain}08;
+    display:flex;
+    align-items:center;
+    padding:0 14px;
+    gap:6px;
+    border-bottom:1px solid ${THEME.glassBorder};
+}
+.ud-card-dot {width:7px;height:7px;border-radius:50%}
+.ud-card-title {
+    font-family:'JetBrains Mono','Fira Code',monospace;
+    font-size:11px;
+    color:${THEME.textMuted};
+    margin-left:8px;
+    letter-spacing:0.03em;
+}
+.ud-card-body {padding:16px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.02)}
+.ud-navitem{transition:all .15s}
+.ud-navitem:hover{background:${THEME.primary}08!important}
 .ud-row{transition:background .14s}
-.ud-row:hover{background:rgba(255,255,255,.04)!important}
-.ud-btn{transition:all .16s;cursor:pointer}
-.ud-btn:hover{opacity:.8}
+.ud-row:hover{background:${THEME.primary}04!important}
+.ud-btn{transition:all .15s;cursor:pointer}
+.ud-btn:hover{opacity:.85}
 .ai-thinking{background:linear-gradient(90deg,${THEME.primary}10 25%,${THEME.primary}30 50%,${THEME.primary}10 75%);background-size:200% 100%;animation:ud-shimmer 1.6s ease-in-out infinite}
 .ai-token{animation:ud-typewriter .15s ease both}
+.ud-group-tab{
+    padding:6px 14px;
+    border-radius:8px;
+    border:1px solid transparent;
+    cursor:pointer;
+    background:transparent;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    font-weight:600;
+    color:${THEME.textDim};
+    transition:all .2s;
+    white-space:nowrap;
+}
+.ud-group-tab:hover{background:${THEME.primary}08;color:${THEME.textMuted}}
+.ud-group-tab.active{
+    background:${THEME.primary}10;
+    color:${THEME.primary};
+    border-color:${THEME.primary}25;
+    font-weight:700;
+}
+.ud-sub-tab{
+    padding:5px 12px;
+    border-radius:6px;
+    border:none;
+    cursor:pointer;
+    background:transparent;
+    font-size:11px;
+    font-weight:500;
+    color:${THEME.textDim};
+    transition:all .15s;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+}
+.ud-sub-tab:hover{background:${THEME.primary}06;color:${THEME.textMuted}}
+.ud-sub-tab.active{
+    background:${THEME.surface};
+    color:${THEME.textMain};
+    font-weight:700;
+    box-shadow:0 1px 4px rgba(0,0,0,0.08);
+}
 button{outline:none;font-family:inherit}
 select,option{font-family:inherit}
 `;
@@ -161,28 +222,35 @@ const Chip = ({ children, color, size = 'md' }) => (
 const Card = ({ children, accent, style = {}, className = '' }) => (
     <div className={`ud-card ${className}`} style={{
         background: THEME.surface,
-        border: `1px solid ${THEME.glassBorder}`,
-        borderRadius: 12,
-        overflow: 'hidden',
-        ...(accent ? { borderTop: `2px solid ${accent}` } : {}),
         ...style,
-    }}>{children}</div>
+    }}>
+        {accent && (
+            <div className="ud-card-header">
+                <div className="ud-card-dot" style={{ background: '#ff5f57' }} />
+                <div className="ud-card-dot" style={{ background: '#febc2e' }} />
+                <div className="ud-card-dot" style={{ background: '#28c840' }} />
+            </div>
+        )}
+        <div className={accent ? "ud-card-body" : ""} style={accent ? {} : { padding: (style as any).padding || 0 }}>
+            {children}
+        </div>
+    </div>
 );
 
 const SecHead = ({ Icon, title, sub, accent, right }) => {
     const ac = accent || THEME.primary;
     return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: `${ac}12`, border: `1px solid ${ac}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Icon size={18} color={ac} strokeWidth={1.8} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, paddingBottom: 14, borderBottom: `1px solid ${THEME.glassBorder}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${ac}10`, border: `1px solid ${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon size={15} color={ac} strokeWidth={2} />
                 </div>
                 <div>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: THEME.textMain, letterSpacing: '-.02em' }}>{title}</div>
-                    <div style={{ fontSize: 12, color: THEME.textDim, marginTop: 3 }}>{sub}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain, letterSpacing: '-.01em' }}>{title}</div>
+                    {sub && <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 2 }}>{sub}</div>}
                 </div>
             </div>
-            {right && <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>{right}</div>}
+            {right && <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>{right}</div>}
         </div>
     );
 };
@@ -2361,135 +2429,63 @@ export default function UnifiedDashboard() {
     const Preview     = activeItem?.component;
     const activeGroup = visibleGroups.find(g => g.items.some(s => s.id === activeItem?.id));
 
-    const toggleGroup = id => setCollapsed(p => ({ ...p, [id]: !p[id] }));
-
     return (
         <FilterCtx.Provider value={filter}>
             <style>{CSS}</style>
-            <div style={{ display: 'flex', height: '100%', width: '100%', background: THEME.bg, fontFamily: "'Plus Jakarta Sans', 'Outfit', system-ui, sans-serif", color: THEME.textMain, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', fontFamily: THEME.fontBody, color: THEME.textMain, overflow: 'hidden' }}>
 
-                {/* ── SIDEBAR ─────────────────────────────────── */}
-                <aside style={{ width: 244, flexShrink: 0, background: THEME.surface, borderRight: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <div style={{ padding: '18px 16px 14px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 34, height: 34, borderRadius: 9, background: `${THEME.primary}20`, border: `1px solid ${THEME.primary}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17 }}>🐘</div>
-                            <div>
-                                <div style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, letterSpacing: '-.03em' }}>TableScope</div>
-                                <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>Analytics Dashboard</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style={{ padding: '9px 14px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.success,  animation: 'ud-pulse 2s infinite' }} />
-                            <span style={{ fontSize: 11, color: THEME.textMuted }}>Live data</span>
-                        </div>
-                        <LiveClock />
-                    </div>
-
-                    {(filter.schema || filter.table) && (
-                        <div style={{ margin: '10px 12px 0', padding: '8px 12px', borderRadius: 8, background: `${THEME.primary}0f`, border: `1px solid ${THEME.primary}22` }}>
-                            <div style={{ fontSize: 9, fontWeight: 700, color: THEME.primary,  letterSpacing: '.07em', fontFamily: THEME.fontMono, marginBottom: 4 }}>Scope</div>
-                            {filter.schema && <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{filter.schema}</div>}
-                            {filter.table  && <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, fontFamily: THEME.fontMono, marginTop: 2 }}>{filter.table}</div>}
-                        </div>
-                    )}
-
-                    <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 0 16px' }}>
+                {/* ── TOP BAR: Group tabs ── */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px', borderBottom: `1px solid ${THEME.glassBorder}`, background: THEME.surface, flexShrink: 0, gap: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'auto' }}>
                         {visibleGroups.map(g => {
+                            const isActive = activeGroup?.id === g.id;
                             const gColor = g.color();
-                            const isOpen = !collapsed[g.id];
-                            const isAI   = g.id === 'ai';
                             return (
-                                <div key={g.id}>
-                                    <button onClick={() => toggleGroup(g.id)}
-                                            style={{ width: '100%', padding: '7px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: isAI ? `${THEME.purple}06` : 'transparent', border: 'none', cursor: 'pointer' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                            <g.Icon size={11} color={gColor} />
-                                            <span style={{ fontSize: 10, fontWeight: 700,  letterSpacing: '.08em', color: gColor, fontFamily: THEME.fontMono }}>{g.label}</span>
-                                            {isAI && <span style={{ fontSize: 8, fontWeight: 700, color: THEME.purple, background: `${THEME.purple}20`, padding: '1px 5px', borderRadius: 10, letterSpacing: '.04em' }}>NEW</span>}
-                                        </div>
-                                        <ChevronDown size={11} color={THEME.textDim} style={{ transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform .2s' }} />
-                                    </button>
-
-                                    {isOpen && g.items.map(s => {
-                                        const isActive  = activeItem?.id === s.id;
-                                        const isNewItem = ['queryPerf','locks','conns','autovacuum','ai-analysis'].includes(s.id);
-                                        return (
-                                            <button key={s.id} onClick={() => setActiveId(s.id)} className={isActive ? '' : 'ud-navitem'}
-                                                    style={{
-                                                        width: '100%', padding: '8px 14px 8px 30px',
-                                                        display: 'flex', alignItems: 'center', gap: 10,
-                                                        background: isActive ? `${gColor}14` : 'transparent',
-                                                        border: 'none', cursor: 'pointer',
-                                                        borderLeft: `3px solid ${isActive ? gColor : 'transparent'}`,
-                                                        transition: 'all .16s',
-                                                    }}>
-                                                <s.Icon size={13} color={isActive ? gColor : THEME.textDim} strokeWidth={isActive ? 2 : 1.5} />
-                                                <div style={{ textAlign: 'left', flex: 1 }}>
-                                                    <div style={{ fontSize: 12, fontWeight: isActive ? 700 : 500, color: isActive ? THEME.textMain : THEME.textMuted, lineHeight: 1.3, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                        {s.label}
-                                                        {isNewItem && <span style={{ fontSize: 8, fontWeight: 700, color: gColor, background: `${gColor}20`, padding: '1px 4px', borderRadius: 3 }}>★</span>}
-                                                    </div>
-                                                    <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>{s.sub}</div>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                    <div style={{ height: 6 }} />
-                                </div>
+                                <button
+                                    key={g.id}
+                                    className={`ud-group-tab ${isActive ? 'active' : ''}`}
+                                    onClick={() => setActiveId(g.items[0].id)}
+                                    style={isActive ? { background: `${gColor}10`, color: gColor, borderColor: `${gColor}25` } : {}}
+                                >
+                                    <g.Icon size={13} />
+                                    {g.label}
+                                    {g.id === 'ai' && <span style={{ fontSize: 8, fontWeight: 700, color: THEME.purple, background: `${THEME.purple}20`, padding: '1px 5px', borderRadius: 10 }}>AI</span>}
+                                </button>
                             );
                         })}
-                    </nav>
-
-                    <div style={{ padding: '10px 14px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono, display: 'flex', justifyContent: 'space-between' }}>
-                        <span>TableScope v3</span>
-                        <span>{allItems.length} sections</span>
                     </div>
-                </aside>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                        {filter.table && <Chip color={THEME.success} size="sm">{filter.table}</Chip>}
+                        {filter.schema && !filter.table && <Chip color={THEME.primary} size="sm">{filter.schema}</Chip>}
+                    </div>
+                </div>
 
-                {/* ── MAIN CONTENT ──────────────────────────── */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <header style={{ padding: '0 26px', height: 54, borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: THEME.surface, flexShrink: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            {activeItem && (
-                                <>
-                                    {activeGroup && (
-                                        <>
-                                            <span style={{ fontSize: 12, color: THEME.textDim }}>{activeGroup.label}</span>
-                                            <ArrowRight size={12} color={THEME.textDim} />
-                                        </>
-                                    )}
-                                    <activeItem.Icon size={15} color={activeGroup ? activeGroup.color() : THEME.primary} />
-                                    <span style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>{activeItem.label}</span>
-                                    <span style={{ fontSize: 12, color: THEME.textDim }}>· {activeItem.sub}</span>
-                                </>
-                            )}
-                        </div>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                            {filter.db     && <Chip color={THEME.cyan}    size="sm">db: {filter.db}</Chip>}
-                            {filter.schema && <Chip color={THEME.primary} size="sm">schema: {filter.schema}</Chip>}
-                            {filter.table  && <Chip color={THEME.success} size="sm">table: {filter.table}</Chip>}
-                            <button className="ud-btn" onClick={() => activeItem?.reload?.()}
-                                    style={{ width: 30, height: 30, borderRadius: 7, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <RefreshCw size={13} color={THEME.textDim} />
-                            </button>
-                        </div>
-                    </header>
+                {/* ── SUB-NAV: Section tabs for active group ── */}
+                {activeGroup && activeGroup.items.length > 1 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '8px 24px', background: `${THEME.surface}80`, borderBottom: `1px solid ${THEME.glassBorder}80`, flexShrink: 0, overflowX: 'auto' }}>
+                        {activeGroup.items.map(s => {
+                            const isActive = activeItem?.id === s.id;
+                            return (
+                                <button
+                                    key={s.id}
+                                    className={`ud-sub-tab ${isActive ? 'active' : ''}`}
+                                    onClick={() => setActiveId(s.id)}
+                                >
+                                    <s.Icon size={12} />
+                                    {s.label}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
 
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '22px 26px', display: 'flex', flexDirection: 'column', gap: 18 }}>
-                        <FilterBar filter={filter} setFilter={handleFilter} allTables={allTables} dbRaw={dbRaw} />
+                {/* ── MAIN CONTENT ── */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <FilterBar filter={filter} setFilter={handleFilter} allTables={allTables} dbRaw={dbRaw} />
 
-                        <div key={`${activeItem?.id}-${filter.db}-${filter.schema}-${filter.table}`} className="ud-rise"
-                             style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 14, padding: 24, minHeight: 280 }}>
-                            {Preview && <Preview />}
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 2px', borderTop: `1px solid ${THEME.glassBorder}` }}>
-                            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>TableScope v3 · Unified Dashboard</span>
-                            <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{filter.table ? `Scoped: ${filter.table}` : 'Global view'} · {allItems.length} sections</span>
-                        </div>
+                    <div key={`${activeItem?.id}-${filter.db}-${filter.schema}-${filter.table}`} className="ud-rise"
+                         style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 14, padding: 22, minHeight: 280 }}>
+                        {Preview && <Preview />}
                     </div>
                 </div>
 
