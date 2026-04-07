@@ -101,10 +101,10 @@ const ConnectionSwitcher = () => {
 
     const getDBTypeIcon = (dbType) => {
         switch ((dbType || 'postgresql').toLowerCase()) {
-            case 'mysql': return <Database size={14} color="#00b874" />;
-            case 'mongodb': return <Server size={14} color="#00b874" />;
+            case 'mysql': return <Database size={14} color="#6366f1" />;
+            case 'mongodb': return <Server size={14} color="#6366f1" />;
             case 'postgresql':
-            default: return <Database size={14} color="#00b874" />;
+            default: return <Database size={14} color="#6366f1" />;
         }
     };
 
@@ -359,7 +359,7 @@ const styles = {
         width: '20px',
         height: '20px',
         borderRadius: '4px',
-        background: `rgba(0, 184, 116, 0.08)`,
+        background: `rgba(99, 102, 241, 0.08)`,
         flexShrink: 0,
     },
     buttonLabel: {
@@ -429,7 +429,7 @@ const styles = {
         textAlign: 'left',
     },
     itemActive: {
-        background: `rgba(0, 184, 116, 0.08)`,
+        background: `rgba(99, 102, 241, 0.08)`,
         border: `1px solid ${THEME.primary}`,
     },
     itemLeft: {
@@ -445,7 +445,7 @@ const styles = {
         width: '28px',
         height: '28px',
         borderRadius: '6px',
-        background: `rgba(0, 184, 116, 0.06)`,
+        background: `rgba(99, 102, 241, 0.06)`,
         flexShrink: 0,
     },
     itemTextContent: {

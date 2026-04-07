@@ -203,7 +203,6 @@ import {
     Globe,
     Download,
     Clock,
-    Database,
 } from 'lucide-react';
 import { WebSocketStatus, AlertBanner } from './components/ui/SharedComponents';
 
@@ -332,8 +331,8 @@ const AppStyles = () => (
 
         /* ── Sidebar: clean background ── */
         aside {
-            background: ${DS._dark ? THEME.bgAlt : '#ffffff'} !important;
-            border-right: 1px solid ${DS.border} !important;
+            background: ${DS._dark ? THEME.bgAlt : DS.sidebarBg} !important;
+            border-right: 1px solid ${DS.sidebarBorder} !important;
             box-shadow: none !important;
         }
 
@@ -343,7 +342,7 @@ const AppStyles = () => (
 
         /* ── Header: clean bar ── */
         header {
-            background: ${DS._dark ? THEME.bgAlt : '#ffffff'} !important;
+            background: ${DS._dark ? THEME.bgAlt : DS.headerBg} !important;
             box-shadow: ${DS._dark ? '0 1px 0 rgba(255,255,255,0.04)' : '0 1px 0 rgba(0,0,0,0.06)'} !important;
         }
 
@@ -364,7 +363,7 @@ const AppStyles = () => (
         }
 
         .nav-item[aria-selected="true"] {
-            background: ${DS._dark ? 'rgba(0,184,116,0.1)' : 'rgba(0,184,116,0.06)'} !important;
+            background: ${DS._dark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)'} !important;
         }
 
         .section-btn {
@@ -429,15 +428,15 @@ const AppStyles = () => (
 
         button[style*="background: linear-gradient"],
         button[style*="background:linear-gradient"],
-        button[style*="background: #00b874"],
-        button[style*="background:#00b874"] {
-            box-shadow: 0 2px 8px rgba(0,184,116,0.2) !important;
+        button[style*="background: #6366f1"],
+        button[style*="background:#6366f1"] {
+            box-shadow: 0 2px 8px rgba(99,102,241,0.25) !important;
             border-radius: 10px !important;
         }
 
         button[style*="background: linear-gradient"]:hover,
         button[style*="background:linear-gradient"]:hover {
-            box-shadow: 0 4px 16px rgba(0,184,116,0.25) !important;
+            box-shadow: 0 4px 16px rgba(99,102,241,0.3) !important;
             transform: translateY(-1px) !important;
         }
 
@@ -537,8 +536,8 @@ const AppStyles = () => (
         /* ── Scrollbar styling (sidebar + main content) ── */
         .sidebar-nav::-webkit-scrollbar { width: 3px; }
         .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: ${DS.border}; border-radius: 2px; }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(0,184,116,0.6); }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: ${DS.sidebarBorder}; border-radius: 2px; }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.6); }
 
         /* Main content scrollbar — thin overlay style */
         .main-scroll::-webkit-scrollbar { width: 6px; }
@@ -553,15 +552,15 @@ const AppStyles = () => (
         /* ── Notification panel ── */
         .notif-panel { animation: slideDown 0.22s cubic-bezier(0.34,1.4,0.64,1) both; }
         .notif-item { transition: background 0.15s ease; }
-        .notif-item:hover { background: rgba(0,184,116,0.05) !important; }
+        .notif-item:hover { background: rgba(99,102,241,0.08) !important; }
 
         /* ── Feedback overlay ── */
         .feedback-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease-out; }
         .feedback-modal   { animation: slideUp 0.3s cubic-bezier(0.34,1.4,0.64,1) both; }
-        .fb-input:focus   { border-color: rgba(0,184,116,0.5) !important; box-shadow: 0 0 0 3px rgba(0,184,116,0.1) !important; }
+        .fb-input:focus   { border-color: rgba(99,102,241,0.5) !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important; }
         .fb-tab:hover     { opacity: 1 !important; }
         .fb-prio:hover    { opacity: 1 !important; }
-        .fb-opt:hover     { background: rgba(0,184,116,0.06) !important; }
+        .fb-opt:hover     { background: rgba(99,102,241,0.08) !important; }
         .fb-submit:not(:disabled):hover { filter: brightness(1.12); transform: translateY(-1px); }
         .fb-submit:not(:disabled):active { transform: translateY(0); }
 
@@ -747,8 +746,8 @@ const ThemeToggle = () => {
                 width: 38,
                 height: 38,
                 borderRadius: 10,
-                background: isDark ? 'rgba(251,191,36,0.08)' : 'rgba(0,184,116,0.08)',
-                border: `1px solid ${isDark ? 'rgba(251,191,36,0.25)' : 'rgba(0,184,116,0.3)'}`,
+                background: isDark ? 'rgba(251,191,36,0.08)' : 'rgba(99,102,241,0.08)',
+                border: `1px solid ${isDark ? 'rgba(251,191,36,0.25)' : 'rgba(99,102,241,0.3)'}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -762,7 +761,7 @@ const ThemeToggle = () => {
                 e.currentTarget.style.transform = 'scale(1)';
             }}
         >
-            {isDark ? <Sun size={16} color="rgba(251,191,36,0.9)" /> : <Moon size={16} color="rgba(0,184,116,0.9)" />}
+            {isDark ? <Sun size={16} color="rgba(251,191,36,0.9)" /> : <Moon size={16} color="rgba(99,102,241,0.9)" />}
         </button>
     );
 };
@@ -1811,7 +1810,7 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                             fontFamily: DS.fontUI,
                             transition: 'filter 0.2s, transform 0.15s, box-shadow 0.2s',
                             opacity: submitting ? 0.7 : 1,
-                            boxShadow: ready ? '0 4px 20px rgba(0,184,116,0.22)' : 'none',
+                            boxShadow: ready ? '0 4px 20px rgba(99,102,241,0.22)' : 'none',
                         }}
                     >
                         {submitting ? (
@@ -2343,7 +2342,7 @@ const ProfileModal = ({ user, onClose, onSave }) => {
                             fontFamily: DS.fontUI,
                             transition: 'all 0.2s',
                             opacity: saving ? 0.7 : 1,
-                            boxShadow: '0 4px 20px rgba(0,184,116,0.22)',
+                            boxShadow: '0 4px 20px rgba(99,102,241,0.22)',
                         }}
                     >
                         {saved ? (
@@ -2757,7 +2756,7 @@ const Sidebar = ({
                     justifyContent: collapsed ? 'center' : 'flex-start',
                     padding: collapsed ? 0 : '0 16px',
                     gap: 10,
-                    borderBottom: `1px solid ${DS.border}`,
+                    borderBottom: `1px solid ${DS.sidebarBorder}`,
                 }}
             >
                 {/* Icon mark */}
@@ -2861,7 +2860,7 @@ const Sidebar = ({
                                 onMouseEnter={(e) => {
                                     if (!isActive) {
                                         e.currentTarget.style.background = DS.sidebarHover;
-                                        e.currentTarget.style.color = DS.textSub;
+                                        e.currentTarget.style.color = DS.sidebarText;
                                     }
                                 }}
                                 onMouseLeave={(e) => {
@@ -4143,7 +4142,7 @@ const DashboardInner = ({ onLogout }) => {
 
                         <div
                             style={{
-                                padding: isDemoFullPage ? 0 : '20px 24px',
+                                padding: isDemoFullPage ? 0 : '24px 28px',
                                 width: '100%',
                                 minHeight: '100%',
                                 position: 'relative',

@@ -125,7 +125,7 @@ const ConnectionStringParser = ({ onChange, onError }) => {
       width: '100%',
       padding: '12px',
       borderRadius: '8px',
-      border: `1px solid rgba(0, 184, 116, 0.15)`,
+      border: `1px solid rgba(99, 102, 241, 0.15)`,
       background: THEME.surfaceHover,
       color: THEME.textMain,
       fontSize: '12px',
@@ -137,9 +137,9 @@ const ConnectionStringParser = ({ onChange, onError }) => {
       boxSizing: 'border-box',
     },
     textareaFocus: {
-      borderColor: '#00b874',
+      borderColor: '#6366f1',
       background: THEME.surface,
-      boxShadow: '0 0 0 3px rgba(0, 184, 116, 0.1)',
+      boxShadow: '0 0 0 3px rgba(99, 102, 241, 0.1)',
       outline: 'none',
     },
     errorBox: {
@@ -164,8 +164,8 @@ const ConnectionStringParser = ({ onChange, onError }) => {
     fieldCard: {
       padding: '12px',
       borderRadius: '8px',
-      background: 'rgba(0, 184, 116, 0.05)',
-      border: '1px solid rgba(0, 184, 116, 0.12)',
+      background: 'rgba(99, 102, 241, 0.05)',
+      border: '1px solid rgba(99, 102, 241, 0.12)',
       display: 'flex',
       flexDirection: 'column',
       gap: '6px',
@@ -190,7 +190,7 @@ const ConnectionStringParser = ({ onChange, onError }) => {
     copyButton: {
       background: 'none',
       border: 'none',
-      color: 'rgba(0, 184, 116, 0.6)',
+      color: 'rgba(99, 102, 241, 0.6)',
       cursor: 'pointer',
       padding: '4px',
       borderRadius: '4px',
@@ -200,8 +200,8 @@ const ConnectionStringParser = ({ onChange, onError }) => {
       flexShrink: 0,
     },
     copyButtonHover: {
-      background: 'rgba(0, 184, 116, 0.1)',
-      color: '#00b874',
+      background: 'rgba(99, 102, 241, 0.1)',
+      color: '#6366f1',
     },
     successText: {
       fontSize: '11px',

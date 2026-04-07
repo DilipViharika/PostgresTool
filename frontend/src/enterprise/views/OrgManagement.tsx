@@ -10,8 +10,8 @@ import { useOrg } from '../context/OrgContext';
 import { postData, deleteData, patchData } from '../../utils/api';
 
 const ROLE_CONFIG = {
-    owner: { label: 'Owner', color: '#00e5a0' },
-    admin: { label: 'Admin', color: '#00b874' },
+    owner: { label: 'Owner', color: '#818cf8' },
+    admin: { label: 'Admin', color: '#6366f1' },
     member: { label: 'Member', color: '#94a3b8' },
     viewer: { label: 'Viewer', color: '#64748b' },
 };
@@ -153,7 +153,7 @@ const OrgManagement = () => {
         value: {
             fontSize: '14px',
             fontWeight: '600',
-            color: '#00b874',
+            color: '#6366f1',
             margin: '0',
         },
         form: {
@@ -191,8 +191,8 @@ const OrgManagement = () => {
             justifyContent: 'center',
             gap: '8px',
             padding: '10px 16px',
-            backgroundColor: '#00b874',
-            color: '#0a0e27',
+            backgroundColor: '#6366f1',
+            color: '#fff',
             border: 'none',
             borderRadius: '6px',
             fontSize: '13px',

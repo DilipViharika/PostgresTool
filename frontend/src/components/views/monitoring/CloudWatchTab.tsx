@@ -26,13 +26,13 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
    THEME
    ───────────────────────────────────────────────────────────────── */
 const buildTheme = (isDark) => ({
-    primary: isDark ? '#00b874' : '#00b874',
-    secondary: isDark ? '#00b874' : '#10b981',
+    primary: isDark ? '#6366f1' : '#6366f1',
+    secondary: isDark ? '#6366f1' : '#10b981',
     success: isDark ? '#2EE89C' : '#22c55e',
     danger: isDark ? '#FF4560' : '#ef4444',
     warning: isDark ? '#FFB520' : '#f59e0b',
     info: isDark ? '#5BB8F5' : '#3b82f6',
-    ai: isDark ? '#B88BFF' : '#00b874',
+    ai: isDark ? '#B88BFF' : '#6366f1',
     bg: isDark ? '#07030D' : '#f0f4f8',
     surface: isDark ? '#120A1F' : '#ffffff',
     surfaceHover: isDark ? '#1A1029' : '#f1f5f9',

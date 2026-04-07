@@ -228,48 +228,51 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
         style={{
             background: THEME.surface,
             border: `1px solid ${THEME.glassBorder}`,
-            borderRadius: 12,
+            borderRadius: 16,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
             position: 'relative',
-            boxShadow: THEME.shadowSm,
+            boxShadow: THEME.shadowMd,
             ...style,
         }}
     >
+        {/* Accent top strip */}
+        {title && <div style={{ height: 3, background: accentColor || THEME.primary, opacity: 0.7 }} />}
         {title && (
             <div
                 style={{
-                    padding: '12px 18px',
+                    padding: '14px 20px',
                     borderBottom: `1px solid ${THEME.glassBorder}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     flexShrink: 0,
-                    minHeight: 44,
+                    minHeight: 48,
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     {TIcon && (
                         <div
                             style={{
-                                width: 24,
-                                height: 24,
+                                width: 28,
+                                height: 28,
                                 borderRadius: 8,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                background: accentColor ? `${accentColor}08` : `${THEME.primary}08`,
+                                background: accentColor ? `${accentColor}14` : `${THEME.primary}14`,
                             }}
                         >
-                            <TIcon size={13} color={accentColor || THEME.textMuted} />
+                            <TIcon size={14} color={accentColor || THEME.primary} />
                         </div>
                     )}
                     <span
                         style={{
-                            fontSize: 13,
-                            fontWeight: 600,
+                            fontSize: 13.5,
+                            fontWeight: 650,
                             color: THEME.textMain,
+                            letterSpacing: '-0.01em',
                         }}
                     >
                         {title}
@@ -278,7 +281,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
                 {rightNode}
             </div>
         )}
-        <div style={{ flex: 1, minHeight: 0, padding: noPad ? 0 : '16px 18px' }}>{children}</div>
+        <div style={{ flex: 1, minHeight: 0, padding: noPad ? 0 : '18px 20px' }}>{children}</div>
     </div>
 );
 
@@ -713,7 +716,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 /* Alerts are fetched from /api/overview/alerts — no mock data */
 
-const SEVERITY_COLOR = { critical: '#ef4444', warning: '#f59e0b', info: '#00b874' };
+const SEVERITY_COLOR = { critical: '#ef4444', warning: '#f59e0b', info: '#6366f1' };
 const SEVERITY_ICON = { critical: AlertCircle, warning: AlertTriangle, info: Info };
 
 const NotificationBell = () => {
@@ -1891,8 +1894,8 @@ const ConnectionStatusBanner = () => {
                         <span
                             style={{
                                 fontSize: 10,
-                                color: '#00e5a0',
-                                background: '#00e5a018',
+                                color: '#818cf8',
+                                background: '#818cf818',
                                 padding: '1px 7px',
                                 borderRadius: 20,
                                 fontFamily: 'monospace',
@@ -2337,7 +2340,7 @@ const OverviewTab = () => {
        RENDER
        ══════════════════════════════════════════════════════════════════ */
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '8px 0 40px 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '8px 0 40px 0' }}>
             <OvStyles />
 
 {/* ═══════ Connection Status / Onboarding Banner ═══════ */}
@@ -2368,87 +2371,88 @@ const OverviewTab = () => {
             </div>
 
             {/* ═══════ Row 1: Hero Metric Cards ═══════ */}
-            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 12 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 16 }}>
                 {metricCards.map((m, i) => (
                     <div
                         key={i}
                         className="ov-metric-card"
                         style={{
                             display: 'flex',
-                            flexDirection: 'column',
-                            gap: 8,
-                            padding: '12px 14px',
-                            borderRadius: 12,
+                            flexDirection: 'row',
+                            gap: 14,
+                            padding: '18px 20px',
+                            borderRadius: 16,
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
+                            borderLeft: `4px solid ${m.color}`,
                             position: 'relative',
                             overflow: 'hidden',
-                            boxShadow: THEME.shadowSm,
+                            boxShadow: THEME.shadowMd,
                         }}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div
-                                style={{
-                                    width: 36,
-                                    height: 36,
-                                    borderRadius: 10,
-                                    flexShrink: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    background: `${m.color}12`,
-                                }}
-                            >
-                                <m.icon size={15} color={m.color} />
-                            </div>
+                        <div
+                            style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 12,
+                                flexShrink: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: `${m.color}14`,
+                            }}
+                        >
+                            <m.icon size={20} color={m.color} />
                         </div>
-                        <div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                             <div
                                 style={{
-                                    fontSize: 10,
+                                    fontSize: 11,
                                     color: THEME.textMuted,
-                                    fontWeight: 500,
+                                    fontWeight: 600,
                                     lineHeight: 1,
-                                    marginBottom: 4,
+                                    marginBottom: 6,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
                                 }}
                             >
                                 {m.label}
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
                                 <span
                                     className="ov-mono"
                                     style={{
-                                        fontSize: 20,
-                                        fontWeight: 700,
+                                        fontSize: 26,
+                                        fontWeight: 800,
                                         color: THEME.textMain,
                                         lineHeight: 1,
-                                        letterSpacing: '-0.02em',
+                                        letterSpacing: '-0.03em',
                                     }}
                                 >
                                     {m.value}
                                 </span>
-                                <span style={{ fontSize: 10, color: THEME.textDim }}>{m.sub}</span>
+                                <span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 500 }}>{m.sub}</span>
                             </div>
+                            {m.detail && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6 }}>
+                                    {m.healthy ? (
+                                        <CheckCircle size={12} color={THEME.success} />
+                                    ) : (
+                                        <AlertTriangle size={12} color={THEME.warning} />
+                                    )}
+                                    <span
+                                        className="ov-mono"
+                                        style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            color: m.healthy ? THEME.success : THEME.warning,
+                                        }}
+                                    >
+                                        {m.detail}
+                                    </span>
+                                </div>
+                            )}
                         </div>
-                        {m.detail && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                                {m.healthy ? (
-                                    <CheckCircle size={10} color={THEME.success} />
-                                ) : (
-                                    <AlertTriangle size={10} color={THEME.warning} />
-                                )}
-                                <span
-                                    className="ov-mono"
-                                    style={{
-                                        fontSize: 10,
-                                        fontWeight: 700,
-                                        color: m.healthy ? THEME.success : THEME.warning,
-                                    }}
-                                >
-                                    {m.detail}
-                                </span>
-                            </div>
-                        )}
                     </div>
                 ))}
             </div>

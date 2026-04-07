@@ -276,14 +276,14 @@ const TEMPLATES = {
 };
 
 const SECTION_METADATA = {
-    overview: { icon: Database, label: 'Overview KPIs', color: '#00b874' },
-    performance: { icon: Zap, label: 'Performance Metrics', color: '#00b874' },
+    overview: { icon: Database, label: 'Overview KPIs', color: '#6366f1' },
+    performance: { icon: Zap, label: 'Performance Metrics', color: '#6366f1' },
     resources: { icon: HardDrive, label: 'Resource Utilization', color: '#2EE89C' },
     query: { icon: TrendingUp, label: 'Query Analysis', color: '#B88BFF' },
     alerts: { icon: AlertTriangle, label: 'Alert Summary', color: '#FFB520' },
     replication: { icon: CheckCircle, label: 'Replication Status', color: '#5BB8F5' },
     security: { icon: Lock, label: 'Security & Compliance', color: '#FF4560' },
-    capacity: { icon: TrendingUp, label: 'Capacity Planning', color: '#00b874' },
+    capacity: { icon: TrendingUp, label: 'Capacity Planning', color: '#6366f1' },
     reliability: { icon: CheckCircle, label: 'Reliability', color: '#10B981' },
 };
 

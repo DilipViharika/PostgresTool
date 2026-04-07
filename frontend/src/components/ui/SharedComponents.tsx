@@ -181,10 +181,10 @@ const KEYFRAMES = `
 ::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,0.4); }
 
 /* Selection */
-::selection { background: rgba(0,184,116,0.2); color: inherit; }
+::selection { background: rgba(99,102,241,0.2); color: inherit; }
 
 /* Focus ring override */
-:focus-visible { outline: 1px solid rgba(0,184,116,0.4); outline-offset: 2px; }
+:focus-visible { outline: 1px solid rgba(99,102,241,0.4); outline-offset: 2px; }
 `;
 
 let _injected = false;

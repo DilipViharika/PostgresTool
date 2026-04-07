@@ -307,9 +307,9 @@ const ConnectionWizard = () => {
       transition: 'all 0.2s',
     },
     stepDotActive: {
-      background: 'linear-gradient(135deg, #00b874, #00b874)',
+      background: 'linear-gradient(135deg, #6366f1, #6366f1)',
       color: '#ffffff',
-      boxShadow: '0 4px 12px rgba(0, 184, 116, 0.3)',
+      boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
     },
     stepDotInactive: {
       background: THEME.surfaceHover,
@@ -358,10 +358,10 @@ const ConnectionWizard = () => {
       textAlign: 'center',
     },
     typeCardHover: {
-      borderColor: '#00b874',
-      background: 'rgba(0, 184, 116, 0.04)',
+      borderColor: '#6366f1',
+      background: 'rgba(99, 102, 241, 0.04)',
       transform: 'translateY(-3px)',
-      boxShadow: '0 8px 24px rgba(0, 184, 116, 0.12)',
+      boxShadow: '0 8px 24px rgba(99, 102, 241, 0.12)',
     },
     typeIcon: {
       fontSize: '36px',
@@ -405,9 +405,9 @@ const ConnectionWizard = () => {
       boxSizing: 'border-box',
     },
     formInputFocus: {
-      borderColor: '#00b874',
+      borderColor: '#6366f1',
       background: THEME.surface,
-      boxShadow: '0 0 0 3px rgba(0, 184, 116, 0.1)',
+      boxShadow: '0 0 0 3px rgba(99, 102, 241, 0.1)',
       outline: 'none',
     },
     formGrid: {
@@ -450,7 +450,7 @@ const ConnectionWizard = () => {
       paddingRight: '3px',
     },
     toggleActive: {
-      background: 'linear-gradient(135deg, #00b874, #00b874)',
+      background: 'linear-gradient(135deg, #6366f1, #6366f1)',
       paddingRight: 'auto',
       paddingLeft: '3px',
     },
@@ -482,9 +482,9 @@ const ConnectionWizard = () => {
       color: THEME.danger,
     },
     testStatusLoading: {
-      background: 'rgba(0, 184, 116, 0.06)',
-      border: '1px solid rgba(0, 184, 116, 0.2)',
-      color: '#00b874',
+      background: 'rgba(99, 102, 241, 0.06)',
+      border: '1px solid rgba(99, 102, 241, 0.2)',
+      color: '#6366f1',
     },
     successScreen: {
       textAlign: 'center',
@@ -519,19 +519,19 @@ const ConnectionWizard = () => {
       color: THEME.textMuted,
     },
     buttonSecondaryHover: {
-      borderColor: '#00b874',
+      borderColor: '#6366f1',
       color: THEME.textMain,
-      background: 'rgba(0, 184, 116, 0.04)',
+      background: 'rgba(99, 102, 241, 0.04)',
     },
     buttonPrimary: {
-      background: 'linear-gradient(135deg, #00b874, #00a066)',
+      background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
       border: 'none',
       color: '#ffffff',
-      boxShadow: '0 2px 8px rgba(0, 184, 116, 0.25)',
+      boxShadow: '0 2px 8px rgba(99, 102, 241, 0.25)',
     },
     buttonPrimaryHover: {
-      background: 'linear-gradient(135deg, #00a066, #6d28d9)',
-      boxShadow: '0 4px 16px rgba(0, 184, 116, 0.35)',
+      background: 'linear-gradient(135deg, #4f46e5, #6d28d9)',
+      boxShadow: '0 4px 16px rgba(99, 102, 241, 0.35)',
       transform: 'translateY(-2px)',
     },
   };
@@ -561,7 +561,7 @@ const ConnectionWizard = () => {
         <div style={{ ...styles.card, marginBottom: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: THEME.textMain, fontFamily: THEME.fontBody }}>
-              <Database size={16} style={{ marginRight: 8, verticalAlign: -2, color: '#00b874' }} />
+              <Database size={16} style={{ marginRight: 8, verticalAlign: -2, color: '#6366f1' }} />
               Connections
             </h3>
             <button
@@ -569,7 +569,7 @@ const ConnectionWizard = () => {
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 14px', borderRadius: 8,
-                background: showWizard ? `${THEME.grid}40` : 'linear-gradient(135deg, #00b874, #00a066)',
+                background: showWizard ? `${THEME.grid}40` : 'linear-gradient(135deg, #6366f1, #4f46e5)',
                 color: showWizard ? THEME.textMuted : '#fff',
                 border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                 transition: 'all 0.2s',
@@ -607,7 +607,7 @@ const ConnectionWizard = () => {
                         <span style={{
                           fontSize: 9, fontWeight: 700, 
                           padding: '2px 7px', borderRadius: 6,
-                          background: '#00b87420', color: '#00b874',
+                          background: '#6366f120', color: '#6366f1',
                         }}>Active</span>
                       )}
                     </div>
@@ -906,7 +906,7 @@ const ConnectionWizard = () => {
             </div>
 
             {formData.sshTunnel && (
-              <div style={{ ...styles.formSection, paddingLeft: '16px', borderLeft: '2px solid rgba(0, 184, 116, 0.2)' }}>
+              <div style={{ ...styles.formSection, paddingLeft: '16px', borderLeft: '2px solid rgba(99, 102, 241, 0.2)' }}>
                 <div style={styles.formGrid}>
                   <div>
                     <label style={styles.formLabel}>SSH Host</label>
@@ -974,8 +974,8 @@ const ConnectionWizard = () => {
                 style={{
                   ...styles.formSection,
                   padding: '16px',
-                  background: 'rgba(0, 184, 116, 0.03)',
-                  border: '1px solid rgba(0, 184, 116, 0.1)',
+                  background: 'rgba(99, 102, 241, 0.03)',
+                  border: '1px solid rgba(99, 102, 241, 0.1)',
                   borderRadius: '8px',
                 }}
               >

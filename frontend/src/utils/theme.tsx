@@ -31,19 +31,19 @@ const _DARK = {
     textDim:     '#4a5e7a',
     textInverse: '#0b1a24',
 
-    // ── Green — primary accent ───────────────────────────────────────────────
-    primary:      '#00b874',
-    primaryDark:  '#00a066',
-    primaryLight: '#00e5a0',
-    primaryFaint: 'rgba(0, 184, 116, 0.07)',
+    // ── Indigo — primary accent ───────────────────────────────────────────────
+    primary:      '#818cf8',
+    primaryDark:  '#6366f1',
+    primaryLight: '#a5b4fc',
+    primaryFaint: 'rgba(99, 102, 241, 0.10)',
 
-    // ── Green — secondary (unified accent) ──────────────────────────────────
-    secondary:      '#00b874',
-    secondaryDark:  '#00a066',
-    secondaryLight: '#00e5a0',
-    secondaryFaint: 'rgba(0, 184, 116, 0.07)',
+    // ── Indigo — secondary (unified accent) ──────────────────────────────────
+    secondary:      '#818cf8',
+    secondaryDark:  '#6366f1',
+    secondaryLight: '#a5b4fc',
+    secondaryFaint: 'rgba(99, 102, 241, 0.10)',
 
-    // ── Emerald Pulse — success ───────────────────────────────────────────────
+    // ── Emerald — success ───────────────────────────────────────────────────────
     success:      '#2EE89C',
     successDark:  '#18C47A',
     successLight: '#70FFBD',
@@ -64,9 +64,9 @@ const _DARK = {
     infoLight: '#90D4FF',
 
     // ── AI/system ─────────────────────────────────────────────────────────────
-    ai:      '#00e5a0',
-    aiDark:  '#00b874',
-    aiLight: '#70FFBD',
+    ai:      '#a5b4fc',
+    aiDark:  '#818cf8',
+    aiLight: '#c7d2fe',
 
     // ── Structural accents ────────────────────────────────────────────────────
     grid:      '#0e2a3e',
@@ -74,8 +74,8 @@ const _DARK = {
     pearl:     '#e0e4f0',
     deepTeal:  '#081218',
     inkBlack:  '#081218',
-    phosphor:  '#00b874',    // primary alias for shimmer animations (green)
-    biolume:   '#00b874',    // secondary alias for glow animations (green)
+    phosphor:  '#818cf8',    // primary alias for shimmer animations (indigo)
+    biolume:   '#818cf8',    // secondary alias for glow animations (indigo)
     mariana:   '#091620',
 
     // ── Shadows — subtle elevation (modern clean) ──────────────────────────────
@@ -86,8 +86,8 @@ const _DARK = {
     shadowInner:  'inset 0 1px 4px rgba(0,0,0,0.3)',
     shadowNeon:       (color) => `0 0 4px ${color}30, 0 0 12px ${color}15`,
     shadowNeonStrong: (color) => `0 0 6px ${color}50, 0 0 18px ${color}25`,
-    shadowGold:   '0 2px 8px rgba(0,184,116,0.2), 0 0 16px rgba(0,184,116,0.1)',
-    shadowTeal:   '0 2px 8px rgba(0,184,116,0.25), 0 0 16px rgba(0,184,116,0.12)',
+    shadowGold:   '0 2px 8px rgba(99,102,241,0.2), 0 0 16px rgba(99,102,241,0.1)',
+    shadowTeal:   '0 2px 8px rgba(99,102,241,0.25), 0 0 16px rgba(99,102,241,0.12)',
     shadowDeep:   '0 16px 48px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3)',
 
     // ── Border Radius ─────────────────────────────────────────────────────────
@@ -118,11 +118,11 @@ const _DARK = {
 
 // ── Internal light-mode token set ────────────────────────────────────────────
 const _LIGHT = {
-    // ── Backgrounds — Airy white ────────────────────────────────────────────────
-    bg:            '#f8f9fb',
-    bgAlt:         '#f1f3f6',
+    // ── Backgrounds — Airy blue-gray ────────────────────────────────────────────────
+    bg:            '#f5f5f9',
+    bgAlt:         '#eef0f6',
     surface:       '#ffffff',
-    surfaceHover:  '#f4f5f7',
+    surfaceHover:  '#f0f1f7',
     surfaceRaised: '#ffffff',
 
     // ── Glass ─────────────────────────────────────────────────────────────────
@@ -137,22 +137,22 @@ const _LIGHT = {
     textDim:     '#9ca3af',
     textInverse: '#ffffff',
 
-    // ── Green — primary accent ───────────────────────────────────────────────
-    primary:      '#00b874',
-    primaryDark:  '#00a066',
-    primaryLight: '#00e5a0',
-    primaryFaint: 'rgba(0, 184, 116, 0.05)',
+    // ── Indigo — primary accent ───────────────────────────────────────────────
+    primary:      '#6366f1',
+    primaryDark:  '#4f46e5',
+    primaryLight: '#818cf8',
+    primaryFaint: 'rgba(99, 102, 241, 0.07)',
 
-    // ── Green — secondary (unified accent) ──────────────────────────────────
-    secondary:      '#00b874',
-    secondaryDark:  '#00a066',
-    secondaryLight: '#00e5a0',
-    secondaryFaint: 'rgba(0, 184, 116, 0.05)',
+    // ── Indigo — secondary (unified accent) ──────────────────────────────────
+    secondary:      '#6366f1',
+    secondaryDark:  '#4f46e5',
+    secondaryLight: '#818cf8',
+    secondaryFaint: 'rgba(99, 102, 241, 0.07)',
 
-    // ── Success ───────────────────────────────────────────────────────────────
-    success:      '#16a34a',
-    successDark:  '#15803d',
-    successLight: '#4ade80',
+    // ── Success — Emerald ──────────────────────────────────────────────────────
+    success:      '#10b981',
+    successDark:  '#059669',
+    successLight: '#34d399',
 
     // ── Danger ────────────────────────────────────────────────────────────────
     danger:      '#dc2626',
@@ -170,19 +170,19 @@ const _LIGHT = {
     infoLight: '#38bdf8',
 
     // ── AI/system ─────────────────────────────────────────────────────────────
-    ai:      '#00e5a0',
-    aiDark:  '#00b874',
-    aiLight: '#70FFBD',
+    ai:      '#818cf8',
+    aiDark:  '#6366f1',
+    aiLight: '#a5b4fc',
 
     // ── Structural accents ────────────────────────────────────────────────────
-    grid:      '#e5e7eb',
+    grid:      '#e0e2ef',
     gridAlt:   '#d1d5db',
     pearl:     '#111827',
     deepTeal:  '#f1f3f6',
     inkBlack:  '#f4f5f7',
-    phosphor:  '#00b874',
-    biolume:   '#00b874',
-    mariana:   '#f8f9fb',
+    phosphor:  '#6366f1',
+    biolume:   '#6366f1',
+    mariana:   '#f5f5f9',
 
     // ── Shadows — minimal, soft ────────────────────────────────────────────────
     shadowSm:     '0 1px 2px rgba(0,0,0,0.03)',
@@ -192,9 +192,9 @@ const _LIGHT = {
     shadowInner:  'inset 0 1px 2px rgba(0,0,0,0.03)',
     shadowNeon:       (color) => `0 0 2px ${color}15`,
     shadowNeonStrong: (color) => `0 0 4px ${color}20`,
-    shadowGold:   '0 1px 4px rgba(0,184,116,0.08)',
-    shadowTeal:   '0 1px 4px rgba(0,184,116,0.10)',
-    shadowDeep:   '0 10px 30px rgba(0,0,0,0.06)',
+    shadowGold:   '0 1px 4px rgba(99,102,241,0.08)',
+    shadowTeal:   '0 1px 4px rgba(99,102,241,0.10)',
+    shadowDeep:   '0 12px 36px rgba(0,0,0,0.08)',
 
     // ── Border Radius (same) ──────────────────────────────────────────────────
     radiusXs:   '4px',
@@ -250,7 +250,7 @@ export const ChartDefs = () => (
 
             {/* ── Glow Filters ── */}
 
-            {/* Violet glow — primary #00b874 */}
+            {/* Indigo glow — primary #6366f1 */}
             <filter id="tealGlow" height="300%" width="300%" x="-100%" y="-100%">
                 <feGaussianBlur stdDeviation="5" result="blur" />
                 <feColorMatrix type="matrix"
@@ -259,7 +259,7 @@ export const ChartDefs = () => (
                 <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
 
-            {/* Cyan glow — secondary #00b874 */}
+            {/* Indigo glow — secondary #6366f1 */}
             <filter id="goldGlow" height="300%" width="300%" x="-100%" y="-100%">
                 <feGaussianBlur stdDeviation="5" result="blur" />
                 <feColorMatrix type="matrix"

@@ -263,7 +263,7 @@ const LoginPage = () => {
             <div style={{
                 position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden',
                 background: `
-                    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0,184,116,0.06), transparent 50%),
+                    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,102,241,0.06), transparent 50%),
                     radial-gradient(ellipse 70% 50% at 80% 90%, rgba(59,139,219,0.05), transparent 50%),
                     radial-gradient(ellipse 60% 40% at 60% 30%, rgba(124,92,196,0.035), transparent 50%),
                     #eceef4`,
@@ -276,7 +276,7 @@ const LoginPage = () => {
                 }} />
                 {/* Floating shapes */}
                 {[
-                    { w: 400, top: -100, left: -50, bg: 'rgba(0,184,116,0.1)', dur: '14s', delay: '0s' },
+                    { w: 400, top: -100, left: -50, bg: 'rgba(99,102,241,0.1)', dur: '14s', delay: '0s' },
                     { w: 350, bottom: -80, right: -60, bg: 'rgba(59,139,219,0.08)', dur: '18s', delay: '-4s' },
                     { w: 250, top: '40%', right: '20%', bg: 'rgba(124,92,196,0.06)', dur: '16s', delay: '-8s' },
                 ].map((s, i) => (
@@ -316,7 +316,7 @@ const LoginPage = () => {
                         <div style={{
                             position: 'absolute', inset: 0, pointerEvents: 'none',
                             background: `
-                                radial-gradient(ellipse 60% 50% at 20% 20%, rgba(0,229,160,0.12), transparent 60%),
+                                radial-gradient(ellipse 60% 50% at 20% 20%, rgba(129,140,248,0.12), transparent 60%),
                                 radial-gradient(ellipse 50% 40% at 80% 80%, rgba(71,179,255,0.08), transparent 60%)`,
                         }} />
 
@@ -326,9 +326,9 @@ const LoginPage = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
                                 <div style={{
                                     width: 42, height: 42, borderRadius: 12,
-                                    background: 'linear-gradient(135deg, #00e5a0, #00b87a)',
+                                    background: 'linear-gradient(135deg, #818cf8, #6366f1)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    boxShadow: '0 8px 32px rgba(0,229,160,0.3)', position: 'relative',
+                                    boxShadow: '0 8px 32px rgba(129,140,248,0.3)', position: 'relative',
                                 }}>
                                     <Server size={20} color="#fff" strokeWidth={1.5} style={{ position: 'relative', zIndex: 1 }} />
                                     <div style={{
@@ -338,7 +338,7 @@ const LoginPage = () => {
                                 </div>
                                 <span style={{
                                     fontWeight: 800, fontSize: '1.3rem', letterSpacing: 3,
-                                    background: 'linear-gradient(135deg, #00e5a0, #47b3ff)',
+                                    background: 'linear-gradient(135deg, #818cf8, #47b3ff)',
                                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                 }}>VIGIL</span>
                             </div>
@@ -351,7 +351,7 @@ const LoginPage = () => {
                                 animation: 'textIn 0.8s ease-out 0.3s both',
                             }}>
                                 Your databases, <span style={{
-                                    background: 'linear-gradient(135deg, #00e5a0, rgba(0,229,160,0.6))',
+                                    background: 'linear-gradient(135deg, #818cf8, rgba(129,140,248,0.6))',
                                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                 }}>under control.</span>
                             </h1>
@@ -380,7 +380,7 @@ const LoginPage = () => {
                                     <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                                         <div style={{
                                             width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                                            background: 'rgba(0,229,160,0.08)', border: '1px solid rgba(0,229,160,0.12)',
+                                            background: 'rgba(129,140,248,0.08)', border: '1px solid rgba(129,140,248,0.12)',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             fontSize: '0.85rem',
                                         }}>{f.icon}</div>
@@ -522,7 +522,7 @@ const LoginPage = () => {
                                     background: rememberMe ? accent : '#f3f4f8',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
-                                    boxShadow: rememberMe ? `0 2px 8px rgba(0,184,116,0.15)` : '0 1px 3px rgba(0,0,0,0.04)',
+                                    boxShadow: rememberMe ? `0 2px 8px rgba(99,102,241,0.15)` : '0 1px 3px rgba(0,0,0,0.04)',
                                 }}>
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"
                                         style={{ opacity: rememberMe ? 1 : 0, transform: rememberMe ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s ease' }}>
@@ -542,7 +542,7 @@ const LoginPage = () => {
                                 fontFamily: fontDisplay, fontWeight: 700, fontSize: '0.95rem',
                                 letterSpacing: 0.3, cursor: canSubmit ? 'pointer' : 'not-allowed',
                                 transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)', position: 'relative', overflow: 'hidden',
-                                boxShadow: canSubmit ? '0 4px 16px rgba(0,184,116,0.15), 0 1px 3px rgba(0,0,0,0.04)' : 'none',
+                                boxShadow: canSubmit ? '0 4px 16px rgba(99,102,241,0.15), 0 1px 3px rgba(0,0,0,0.04)' : 'none',
                                 animation: 'textIn 0.6s ease-out 0.56s both',
                             }}>
                                 {authLoading ? (
@@ -577,7 +577,7 @@ const LoginPage = () => {
                             }}>
                                 <div style={{
                                     width: 76, height: 76, borderRadius: '50%',
-                                    background: 'rgba(0,184,116,0.08)', border: '2px solid rgba(0,184,116,0.15)',
+                                    background: 'rgba(99,102,241,0.08)', border: '2px solid rgba(99,102,241,0.15)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     marginBottom: 20, animation: 'successPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
                                 }}>
@@ -620,7 +620,7 @@ const LoginPage = () => {
                             {resetMessage && (
                                 <div style={{
                                     padding: '10px 12px', borderRadius: 10,
-                                    background: resetMessage.includes('failed') || resetMessage.includes('Unable') ? 'rgba(229,62,92,0.07)' : 'rgba(0,184,116,0.07)',
+                                    background: resetMessage.includes('failed') || resetMessage.includes('Unable') ? 'rgba(229,62,92,0.07)' : 'rgba(99,102,241,0.07)',
                                     color: resetMessage.includes('failed') || resetMessage.includes('Unable') ? THEME.danger : accent, fontSize: 12,
                                 }}>
                                     {resetMessage}

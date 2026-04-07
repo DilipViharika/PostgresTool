@@ -201,7 +201,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                         id={`chk-${f}`}
                         checked={!!formData[f]}
                         onChange={e => setFormData(p => ({ ...p, [f]: e.target.checked }))}
-                        style={{ cursor: 'pointer', accentColor: '#00b874', width: 16, height: 16 }}
+                        style={{ cursor: 'pointer', accentColor: '#6366f1', width: 16, height: 16 }}
                     />
                     <label htmlFor={`chk-${f}`} style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: THEME.textDim }}>
                         {meta.label}
@@ -346,9 +346,9 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                 onMouseEnter={e => e.currentTarget.style.background = formData.sshEnabled ? '#6366f114' : THEME.surface}
                 onMouseLeave={e => e.currentTarget.style.background = formData.sshEnabled ? '#6366f108' : THEME.surfaceHover}
             >
-                <Terminal size={15} color={formData.sshEnabled ? '#00b874' : THEME.textMuted} />
+                <Terminal size={15} color={formData.sshEnabled ? '#6366f1' : THEME.textMuted} />
                 <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: formData.sshEnabled ? '#00b874' : THEME.textMain }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: formData.sshEnabled ? '#6366f1' : THEME.textMain }}>
                         SSH Tunnel
                     </div>
                     <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 1 }}>
@@ -385,11 +385,11 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                         background: '#6366f108', border: '1px solid #6366f130',
                         fontSize: 12, color: THEME.textMuted, lineHeight: 1.5,
                     }}>
-                        <Lock size={13} color="#00b874" style={{ flexShrink: 0, marginTop: 1 }} />
+                        <Lock size={13} color="#6366f1" style={{ flexShrink: 0, marginTop: 1 }} />
                         <span>
                             Traffic is routed through your bastion/jump host via local port forwarding.
                             The DB host below should be the <strong style={{ color: THEME.textDim }}>private</strong> address
-                            reachable from the bastion (e.g. <code style={{ fontFamily: 'monospace', color: '#00b874' }}>db.internal</code> or <code style={{ fontFamily: 'monospace', color: '#00b874' }}>10.0.1.5</code>).
+                            reachable from the bastion (e.g. <code style={{ fontFamily: 'monospace', color: '#6366f1' }}>db.internal</code> or <code style={{ fontFamily: 'monospace', color: '#6366f1' }}>10.0.1.5</code>).
                         </span>
                     </div>
 
@@ -444,7 +444,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                                         cursor: 'pointer', transition: 'all 0.15s',
                                         background: formData.sshAuthType === val ? '#6366f122' : THEME.surfaceHover,
                                         border: `1px solid ${formData.sshAuthType === val ? '#6366f166' : THEME.glassBorder}`,
-                                        color: formData.sshAuthType === val ? '#00b874' : THEME.textMuted,
+                                        color: formData.sshAuthType === val ? '#6366f1' : THEME.textMuted,
                                     }}
                                 >{label}</button>
                             ))}
@@ -1161,7 +1161,7 @@ const ConnectionsTab = () => {
                                                     <span style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain }}>{conn.name}</span>
                                                     {conn.isDefault && <span style={S.badge('#4ade80')}>DEFAULT</span>}
                                                     {isActive && <span style={S.badge(dbMeta.accent)}>ACTIVE</span>}
-                                                    {conn.sshEnabled && <span style={{ ...S.badge('#00b874'), display: 'inline-flex', alignItems: 'center', gap: 4 }}><Terminal size={10} /> SSH</span>}
+                                                    {conn.sshEnabled && <span style={{ ...S.badge('#6366f1'), display: 'inline-flex', alignItems: 'center', gap: 4 }}><Terminal size={10} /> SSH</span>}
                                                 </div>
                                                 <div style={{ fontSize: 12, color: THEME.textMuted, marginTop: 4 }}>
                                                     <span style={{ color: dbMeta.accent, fontWeight: 600 }}>{dbMeta.label}</span>
@@ -1176,7 +1176,7 @@ const ConnectionsTab = () => {
                                         {conn.username && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>user</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.username}</span></div>}
                                         {conn.replicaSet && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>replica set</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.replicaSet}</span></div>}
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.textMuted }}>ssl</span><span style={{ color: conn.ssl ? '#4ade80' : '#6b7280', fontWeight: 500 }}>{conn.ssl ? 'enabled' : 'disabled'}</span></div>
-                                        {conn.sshEnabled && conn.sshHost && <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, paddingTop: 4, borderTop: `1px solid ${THEME.glassBorder}` }}><span style={{ color: THEME.textMuted }}>tunnel via</span><span style={{ color: '#00b874', fontWeight: 500 }}>{conn.sshUser ? `${conn.sshUser}@` : ''}{conn.sshHost}:{conn.sshPort || 22}</span></div>}
+                                        {conn.sshEnabled && conn.sshHost && <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, paddingTop: 4, borderTop: `1px solid ${THEME.glassBorder}` }}><span style={{ color: THEME.textMuted }}>tunnel via</span><span style={{ color: '#6366f1', fontWeight: 500 }}>{conn.sshUser ? `${conn.sshUser}@` : ''}{conn.sshHost}:{conn.sshPort || 22}</span></div>}
                                     </div>
 
                                     {conn.lastTested && (
@@ -1353,7 +1353,7 @@ const ConnectionsTab = () => {
                                         id="isDefault"
                                         checked={formData.isDefault}
                                         onChange={e => setFormData(p => ({ ...p, isDefault: e.target.checked }))}
-                                        style={{ cursor: 'pointer', accentColor: '#00b874', width: 16, height: 16 }}
+                                        style={{ cursor: 'pointer', accentColor: '#6366f1', width: 16, height: 16 }}
                                     />
                                     <label htmlFor="isDefault" style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: THEME.textDim }}>
                                         Set as default connection

@@ -38,11 +38,11 @@ const SortDesc     = ({ size, color }) => <ChevronDown size={size} color={color}
    ═══════════════════════════════════════════════════════════════════════════ */
 const T = {
     get primary()     { return THEME.primary     || '#3b82f6'; },
-    get secondary()   { return THEME.secondary   || '#00b874'; },
+    get secondary()   { return THEME.secondary   || '#6366f1'; },
     get success()     { return THEME.success     || '#10b981'; },
     get warning()     { return THEME.warning     || '#f59e0b'; },
     get danger()      { return THEME.danger      || '#ef4444'; },
-    get info()        { return THEME.info        || '#00b874'; },
+    get info()        { return THEME.info        || '#6366f1'; },
     get teal()        { return THEME.primary     || '#14b8a6'; },
     get glass()       { return THEME.surface       || 'rgba(255,255,255,0.04)'; },
     get glassBorder() { return THEME.glassBorder || 'rgba(255,255,255,0.08)'; },

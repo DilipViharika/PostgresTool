@@ -166,7 +166,7 @@ const LicenseManagement = () => {
         value: {
             fontSize: '14px',
             fontWeight: '600',
-            color: '#00b874',
+            color: '#6366f1',
             margin: '0',
             wordBreak: 'break-all',
         },
@@ -192,8 +192,8 @@ const LicenseManagement = () => {
             justifyContent: 'center',
             gap: '8px',
             padding: '10px 16px',
-            backgroundColor: '#00b874',
-            color: '#0a0e27',
+            backgroundColor: '#6366f1',
+            color: '#fff',
             border: 'none',
             borderRadius: '6px',
             fontSize: '13px',
@@ -236,7 +236,7 @@ const LicenseManagement = () => {
         },
         tierColumn: {
             fontWeight: '600',
-            color: '#00b874',
+            color: '#6366f1',
         },
         checkIcon: {
             color: '#10b981',

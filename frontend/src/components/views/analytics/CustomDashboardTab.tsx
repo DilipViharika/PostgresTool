@@ -21,7 +21,7 @@ const Styles = () => (
         .cd-input:focus { outline:none; border-color:${THEME.primary}; }
         .cd-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
         .cd-widget { background:${THEME.grid}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px; position:relative; animation:cdFade .3s ease; cursor:grab; transition:all .2s ease; }
-        .cd-widget:hover { border-color:${THEME.primary}40; box-shadow: 0 4px 16px rgba(0, 184, 116, 0.08); }
+        .cd-widget:hover { border-color:${THEME.primary}40; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08); }
         .cd-widget.dragging { opacity:0.7; }
         .cd-widget-drag-handle { cursor:grab; padding:8px; position:absolute; top:8px; left:8px; color:${THEME.textDim}; }
         .cd-widget-toolbar { position:absolute; top:8px; right:8px; display:flex; gap:8px; }
