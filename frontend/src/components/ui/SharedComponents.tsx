@@ -454,7 +454,7 @@ export const GlassCard = ({
         elevated: { bg: _AT.surfaceRaised, border: _AT.glassBorderHover },
         ghost: { bg: _AT.glass, border: _AT.glassBorder },
         solid: { bg: _AT.surface, border: _AT.glassBorder },
-        aurora: { bg: 'rgba(0, 255, 136, 0.04)', border: 'rgba(0,255,136,0.12)' },
+        aurora: { bg: 'rgba(99, 102, 241, 0.04)', border: 'rgba(99,102,241,0.12)' },
         danger: { bg: 'rgba(255, 45, 120, 0.05)', border: 'rgba(255,45,120,0.15)' },
         neon: { bg: 'rgba(123, 47, 255, 0.06)', border: 'rgba(123,47,255,0.18)' },
     };
@@ -481,6 +481,8 @@ export const GlassCard = ({
                 ...style,
             }}
         >
+            {/* Accent top strip */}
+            {title && <div style={{ height: 3, background: accent, opacity: 0.6, flexShrink: 0 }} />}
 
             {/* Header */}
             {(title || rightNode || onClose || maximizable) && (
@@ -494,7 +496,6 @@ export const GlassCard = ({
                         position: 'relative',
                         zIndex: 2,
                         cursor: draggable ? 'grab' : 'default',
-                        background: _AT.surfaceHover,
                     }}
                 >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -809,15 +810,17 @@ export const ResourceGauge = ({
             >
                 <ResponsiveContainer width="100%" height="100%">
                     <RadialBarChart
-                        innerRadius="60%"
-                        outerRadius="88%"
-                        barSize={10}
+                        innerRadius="62%"
+                        outerRadius="86%"
+                        barSize={8}
                         data={data}
                         startAngle={210}
                         endAngle={-30}
+                        cx="50%"
+                        cy="50%"
                     >
                         <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                        <RadialBar background={{ fill: _AT.grid }} clockWise dataKey="value" cornerRadius={5}>
+                        <RadialBar background={{ fill: `${_AT.glassBorder}` }} clockWise dataKey="value" cornerRadius={5}>
                             {data.map((_, i) => (
                                 <Cell key={i} fill={resolvedColor} />
                             ))}
@@ -1120,7 +1123,7 @@ const SEVERITY_CONFIG = {
     critical: { color: _AT.danger, icon: XCircle, bg: 'rgba(255,45,120,0.07)', label: 'CRITICAL' },
     warning: { color: _AT.warning, icon: AlertTriangle, bg: 'rgba(255,170,0,0.07)', label: 'WARNING' },
     info: { color: _AT.info, icon: Info, bg: 'rgba(77,159,255,0.07)', label: 'INFO' },
-    success: { color: _AT.success, icon: CheckCircle, bg: 'rgba(0,255,136,0.07)', label: 'SUCCESS' },
+    success: { color: _AT.success, icon: CheckCircle, bg: 'rgba(16,185,129,0.07)', label: 'SUCCESS' },
 };
 
 export const SeverityBadge = ({ severity }) => {
@@ -3636,12 +3639,12 @@ export const HeatCell = ({ value, max, color = _AT.primary, size = 24, label }) 
     const intensity = Math.min(value / (max || 1), 1);
     const [hovered, hoverProps] = useHover();
     const rgbMap = {
-        [_AT.primary]: '0,245,255',
+        [_AT.primary]: '99,102,241',
         [_AT.danger]: '255,45,120',
-        [_AT.success]: '0,255,136',
+        [_AT.success]: '16,185,129',
         [_AT.warning]: '255,170,0',
     };
-    const rgb = rgbMap[color] || '0,245,255';
+    const rgb = rgbMap[color] || '99,102,241';
     return (
         <div
             {...hoverProps}
