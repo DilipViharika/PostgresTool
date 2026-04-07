@@ -1131,8 +1131,6 @@ export default function IndexIntelligence() {
                             </div>
                             <IndexTable rows={rows} view={view} onSelect={setDetail}/>
                         </Card>
-
-                        <TrendPanel rows={rows} view={view}/>
                     </div>
 
                     {/* RIGHT */}

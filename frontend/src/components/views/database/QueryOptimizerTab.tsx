@@ -2216,14 +2216,8 @@ const QueryOptimizerTab = () => {
                             {!result
                                 ? <div style={{ textAlign: 'center', color: THEME.textDim, paddingTop: 60, fontSize: 13 }}>Run a query first to see the flamegraph</div>
                                 : (
-                                    <div>
-                                        <div className="opt-card" style={{ padding: 20, borderRadius: 10, marginBottom: 20 }}>
-                                            <FlameGraph plan={result} />
-                                        </div>
-                                        <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
-                                            <h3 style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  margin: '0 0 14px', letterSpacing: '0.02em' }}>Node-by-Node Cost & Time</h3>
-                                            <CostBreakdownChart plan={result} />
-                                        </div>
+                                    <div className="opt-card" style={{ padding: 20, borderRadius: 10 }}>
+                                        <FlameGraph plan={result} />
                                     </div>
                                 )
                             }

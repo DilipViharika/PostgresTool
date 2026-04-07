@@ -133,7 +133,6 @@ export default function KubernetesTab() {
     if (!k8sDetected) {
         return (
             <div style={{ padding:'40px 20px', textAlign:'center' }}>
-                <Styles />
                 <AlertTriangle size={48} color={THEME.warning} style={{ margin:'0 auto 16px' }} />
                 <div style={{ fontSize:16, fontWeight:700, color:THEME.textMain, marginBottom:8 }}>
                     Not Detected

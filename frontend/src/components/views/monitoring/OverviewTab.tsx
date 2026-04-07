@@ -2172,7 +2172,6 @@ const OverviewTab = () => {
     if (!activeConnection && !connectionsLoading) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 80, minHeight: 400 }}>
-                <OvStyles />
                 <div style={{ textAlign: 'center', maxWidth: 480 }}>
                     <Database size={48} color={THEME.primary} style={{ marginBottom: 16, opacity: 0.7 }} />
                     <div style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>Welcome to VIGIL</div>
@@ -2232,7 +2231,6 @@ const OverviewTab = () => {
     if (!data) {
         return (
             <div style={{ padding: 40, textAlign: 'center' }}>
-                <OvStyles />
                 <AlertTriangle size={32} color={THEME.warning} style={{ opacity: 0.5, marginBottom: 12 }} />
                 <div style={{ fontSize: 14, color: THEME.textMuted, marginBottom: 16 }}>
                     Unable to load dashboard data.

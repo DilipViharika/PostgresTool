@@ -361,7 +361,6 @@ const FleetOverviewTab = () => {
     if (!loading && !connectionsLoading && connections.length === 0) {
         return (
             <div style={{ padding: 24, minHeight: '100vh', background: THEME.bg }}>
-                <FleetStyles />
                 <NoConnectionBanner title="No Databases Connected" description="Add your first database connection to view the fleet overview." showAddButton />
             </div>
         );
