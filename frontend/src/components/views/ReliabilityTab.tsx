@@ -1150,9 +1150,6 @@ const ReliabilityTab = () => {
 
                     {/* Right sidebar */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        <OnCallWidget />
-                        <NoiseReductionPanel alerts={alerts} />
-
                         {/* Alert trend */}
                         <Panel title="Alert Trend (24h)" icon={BarChart3} refreshing={refreshingPanels.has('trend')} rightNode={
                             <div style={{ display: 'flex', gap: 10, fontSize: 10, color: THEME.textDim }}>
@@ -1291,11 +1288,6 @@ const ReliabilityTab = () => {
                         </Panel>
                     </div>
 
-                    {/* MTTR trend */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 18 }}>
-                        <MttrTrendPanel data={mttrData} />
-                        <AlertFatiguePanel data={fatigueData} />
-                    </div>
                 </div>
             )}
 
