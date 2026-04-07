@@ -120,60 +120,6 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
     const router = Router();
     const guard  = [authenticate, requireRole('super_admin'), requireScreen('UserManagement')];
 
-    /* ── GET /api/debug/user-email/:id ──────────────────────────────────────
-       Diagnostic: directly reads a user's email from the database.
-       Remove after debugging.                                                */
-    router.get('/debug/user-email/:id', async (req, res) => {
-        try {
-            const id = parseInt(req.params.id);
-            const { rows } = await pool.query(
-                `SELECT id, username, email, name, updated_at FROM pgmonitoringtool.users WHERE id = $1`, [id]
-            );
-            res.json({ debug: true, user: rows[0] || null, timestamp: new Date().toISOString() });
-        } catch (err) {
-            res.status(500).json({ debug: true, error: err.message });
-        }
-    });
-
-    /* ── GET /api/debug/test-update/:id?email=xxx ─────────────────────────
-       Full round-trip test: reads → updates → reads again. No auth needed.
-       Usage: /api/debug/test-update/1?email=newemail@test.com
-       Remove after debugging.                                                */
-    router.get('/debug/test-update/:id', async (req, res) => {
-        try {
-            const id = parseInt(req.params.id);
-            const newEmail = req.query.email;
-            if (!newEmail) return res.json({ error: 'Pass ?email=xxx' });
-
-            // Step 1: Read current state
-            const before = await pool.query(
-                `SELECT id, email, name, updated_at FROM pgmonitoringtool.users WHERE id = $1`, [id]
-            );
-
-            // Step 2: Direct UPDATE (no service layer, no COALESCE)
-            const update = await pool.query(
-                `UPDATE pgmonitoringtool.users SET email = $1, updated_at = NOW()
-                 WHERE id = $2 AND deleted_at IS NULL RETURNING id, email, updated_at`, [newEmail, id]
-            );
-
-            // Step 3: Read back
-            const after = await pool.query(
-                `SELECT id, email, name, updated_at FROM pgmonitoringtool.users WHERE id = $1`, [id]
-            );
-
-            res.json({
-                test: 'direct-update',
-                before: before.rows[0] || null,
-                updateReturned: update.rows[0] || null,
-                after: after.rows[0] || null,
-                success: after.rows[0]?.email === newEmail,
-                timestamp: new Date().toISOString()
-            });
-        } catch (err) {
-            res.status(500).json({ error: err.message, stack: err.stack });
-        }
-    });
-
     /* ── GET /api/user/profile ─────────────────────────────────────────────
        Self-service: returns the authenticated user's own profile.            */
     router.get('/user/profile', authenticate, async (req, res) => {
@@ -367,22 +313,8 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 return res.status(404).json({ error: 'User not found' });
             }
 
-            // Verify directly from DB that the update actually persisted
-            const { rows: verifyRows } = await pool.query(
-                `SELECT id, email, name, updated_at FROM pgmonitoringtool.users WHERE id = $1`, [id]
-            );
-            const dbState = verifyRows[0];
-            log('INFO', '=== DB VERIFY AFTER UPDATE ===', {
-                userId: id,
-                requestedEmail: email,
-                updateReturnedEmail: updated.email,
-                directDbEmail: dbState?.email,
-                directDbUpdatedAt: dbState?.updated_at,
-                match: email === dbState?.email
-            });
-
-            // Return the updated user along with debug info
-            res.json({ ...updated, _debug: { dbEmail: dbState?.email, requestedEmail: email, match: email === dbState?.email } });
+            log('INFO', 'User updated', { userId: id, email: updated.email, name: updated.name });
+            res.json(updated);
 
             // Fire-and-forget audit logging
             writeAudit(pool, {

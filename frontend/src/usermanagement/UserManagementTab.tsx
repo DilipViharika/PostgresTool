@@ -149,20 +149,19 @@ function useUsers(initialUsers = []) {
     }, [getAuthHeaders]);
 
     const updateUser = useCallback(async (id, formData) => {
-        console.log('[updateUser] SENDING PUT', { id, email: formData.email, name: formData.name, allKeys: Object.keys(formData) });
+        const numId = Number(id);
+        if (isNaN(numId)) { throw new Error(`Invalid user ID: ${id}`); }
+        console.log('[updateUser] SENDING PUT', { id: numId, email: formData.email });
         const prev = users;
-        setUsers(u => u.map(x => x.id === id ? { ...x, ...formData } : x));
+        setUsers(u => u.map(x => x.id === numId ? { ...x, ...formData, id: numId } : x));
         try {
-            const res = await fetch(`${API_BASE}/api/users/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(formData) });
+            const res = await fetch(`${API_BASE}/api/users/${numId}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(formData) });
             if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `HTTP ${res.status}`); }
             const updated = await res.json();
-            console.log('[updateUser] PUT RESPONSE', { email: updated.email, _debug: updated._debug });
-            setUsers(u => u.map(x => x.id == id ? (updated.user || updated) : x));
+            console.log('[updateUser] PUT RESPONSE', { id: updated.id, email: updated.email });
+            setUsers(u => u.map(x => x.id === numId ? (updated.user || updated) : x));
             // Re-fetch the full user list to ensure UI reflects database state
-            setTimeout(async () => {
-                await fetchUsers();
-                console.log('[updateUser] RE-FETCH COMPLETE');
-            }, 500);
+            setTimeout(() => fetchUsers(), 500);
         } catch (err) { console.error('[updateUser] ERROR', err); setUsers(prev); throw err; }
     }, [getAuthHeaders, users, fetchUsers]);
 
@@ -357,10 +356,16 @@ const UserManagementTab = ({ initialUsers = [] }) => {
     const contextValue = useMemo(() => ({ state, dispatch, users, toast, setUsers }), [state, users, toast, setUsers]);
 
     const handleSaveUser = useCallback(async (formData) => {
-        console.log('[handleSaveUser] called', { id: formData.id, idType: typeof formData.id, email: formData.email, keys: Object.keys(formData) });
+        const hasId = formData.id != null && !isNaN(formData.id);
+        console.log('[handleSaveUser]', { id: formData.id, hasId, email: formData.email });
         try {
-            if (formData.id) { await updateUser(formData.id, formData); toast(`${formData.name} updated successfully`); }
-            else { const created = await createUser(formData); toast(`${created?.name ?? formData.name} created successfully`); }
+            if (hasId) {
+                await updateUser(Number(formData.id), formData);
+                toast(`${formData.name} updated successfully`);
+            } else {
+                const created = await createUser(formData);
+                toast(`${created?.name ?? formData.name} created successfully`);
+            }
             dispatch({ type: 'CLOSE_MODAL' });
         } catch (err) { console.error('[handleSaveUser] error', err); toast(err.message || 'Save failed', 'error'); }
     }, [updateUser, createUser, toast]);
@@ -448,7 +453,7 @@ const UserManagementTab = ({ initialUsers = [] }) => {
 
                 {/* MODALS — Handled directly by Modals.jsx */}
                 {modal.type === 'EDIT' && (
-                    <UserFormModal user={modal.user} onSave={handleSaveUser} onCancel={() => dispatch({ type:'CLOSE_MODAL' })} />
+                    <UserFormModal key={modal.user?.id ?? 'new'} user={modal.user} onSave={handleSaveUser} onCancel={() => dispatch({ type:'CLOSE_MODAL' })} />
                 )}
 
                 {modal.type === 'DRAWER' && (
