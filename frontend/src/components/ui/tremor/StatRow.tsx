@@ -1,5 +1,6 @@
 /**
- * Tremor-inspired stat rows for summary strips below charts.
+ * Tremor-style stat display components.
+ * Cleaner typography, better spacing.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
@@ -21,9 +22,9 @@ export const StatStrip: React.FC<StatStripProps> = ({ items, dividers = false })
   <div
     style={{
       display: 'flex',
-      gap: dividers ? 0 : 16,
-      marginTop: 12,
-      paddingTop: 12,
+      gap: dividers ? 0 : 20,
+      marginTop: 16,
+      paddingTop: 16,
       borderTop: `1px solid ${THEME.glassBorder}`,
     }}
   >
@@ -35,28 +36,27 @@ export const StatStrip: React.FC<StatStripProps> = ({ items, dividers = false })
           minWidth: 0,
           ...(dividers
             ? {
-                paddingRight: 12,
+                paddingRight: 16,
                 borderRight: i < items.length - 1 ? `1px solid ${THEME.glassBorder}` : 'none',
-                paddingLeft: i > 0 ? 12 : 0,
+                paddingLeft: i > 0 ? 16 : 0,
               }
             : {}),
         }}
       >
         <div
           style={{
-            fontSize: 9,
+            fontSize: 12,
             color: THEME.textDim,
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            marginBottom: 3,
+            fontWeight: 500,
+            marginBottom: 4,
           }}
         >
           {s.label}
         </div>
         <div
           style={{
-            fontSize: 15,
-            fontWeight: 800,
+            fontSize: 18,
+            fontWeight: 700,
             color: s.color || THEME.textMain,
             lineHeight: 1,
             fontFamily: THEME.fontMono,
@@ -80,28 +80,26 @@ interface MiniStatProps {
 export const MiniStat: React.FC<MiniStatProps> = ({ label, value, color }) => (
   <div
     style={{
-      padding: '8px 12px',
-      borderRadius: 10,
-      background: THEME.surface,
-      border: `1px solid ${THEME.grid}40`,
-      boxShadow: '0 0 0 1px rgba(0,0,0,0.04)',
+      padding: '10px 14px',
+      borderRadius: 8,
+      background: THEME.bgAlt || THEME.surface,
+      border: `1px solid ${THEME.glassBorder}`,
     }}
   >
     <div
       style={{
-        fontSize: 9,
+        fontSize: 11,
         color: THEME.textDim,
-        fontWeight: 600,
-        letterSpacing: '0.04em',
-        marginBottom: 2,
+        fontWeight: 500,
+        marginBottom: 4,
       }}
     >
       {label}
     </div>
     <div
       style={{
-        fontSize: 14,
-        fontWeight: 800,
+        fontSize: 16,
+        fontWeight: 700,
         color: color || THEME.textMain,
         lineHeight: 1,
         fontFamily: THEME.fontMono,

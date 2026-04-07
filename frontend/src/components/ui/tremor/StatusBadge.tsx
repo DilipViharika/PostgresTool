@@ -1,5 +1,6 @@
 /**
- * Tremor-inspired status badges and indicators.
+ * Tremor-style status badges, live dots, legend items, and dividers.
+ * Cleaner, more minimal design.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
@@ -18,16 +19,14 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ label, color, pulse })
       display: 'inline-flex',
       alignItems: 'center',
       gap: 5,
-      fontSize: 9.5,
-      fontWeight: 700,
-      padding: '4px 11px',
-      borderRadius: 12,
-      background: `${color}12`,
+      fontSize: 11,
+      fontWeight: 500,
+      padding: '3px 10px',
+      borderRadius: 6,
+      background: `${color}14`,
       color,
-      lineHeight: 1.3,
+      lineHeight: 1.4,
       whiteSpace: 'nowrap',
-      fontFamily: THEME.fontMono,
-      letterSpacing: '0.02em',
     }}
   >
     <span
@@ -70,15 +69,6 @@ export const LiveDot: React.FC<LiveDotProps> = ({ color = THEME.success, size = 
         animation: 'tremorPulseRing 2s ease-out infinite',
       }}
     />
-    <div
-      style={{
-        position: 'absolute',
-        inset: -5,
-        borderRadius: '50%',
-        border: `1px solid ${color}35`,
-        animation: 'tremorPulseRing 2s ease-out infinite 0.5s',
-      }}
-    />
   </div>
 );
 
@@ -90,15 +80,15 @@ interface LegendItemProps {
   dashed?: boolean;
 }
 
-export const LegendItem: React.FC<LegendItemProps> = ({ label, color, dashed }) => (
-  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, color: THEME.textDim }}>
+export const LegendItem: React.FC<LegendItemProps> = ({ label, color }) => (
+  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: THEME.textMuted }}>
     <span
       style={{
-        width: 10,
-        height: 3,
+        width: 8,
+        height: 8,
         borderRadius: 2,
         background: color,
-        ...(dashed ? { backgroundImage: `repeating-linear-gradient(90deg, ${color} 0, ${color} 4px, transparent 4px, transparent 7px)`, background: 'none' } : {}),
+        flexShrink: 0,
       }}
     />
     {label}
@@ -111,7 +101,8 @@ export const Divider: React.FC<{ style?: React.CSSProperties }> = ({ style = {} 
   <div
     style={{
       height: 1,
-      background: `linear-gradient(90deg, transparent 0%, ${THEME.glassBorder} 20%, ${THEME.glassBorder} 80%, transparent 100%)`,
+      background: THEME.glassBorder,
+      margin: '4px 0',
       ...style,
     }}
   />

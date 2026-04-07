@@ -1,11 +1,12 @@
 /**
- * Tremor-inspired ProgressBar with animated fill and optional label.
+ * Tremor-style ProgressBar — clean and minimal.
+ * Rounded, smooth colors, no heavy shadows.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
 
 interface ProgressBarProps {
-  value: number;        // 0–100
+  value: number;
   color?: string;
   label?: string;
   valueLabel?: string;
@@ -19,7 +20,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   color = THEME.primary,
   label,
   valueLabel,
-  height = 5,
+  height = 6,
   showLabel = true,
   animate = true,
 }) => {
@@ -28,18 +29,18 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   return (
     <div>
       {showLabel && (label || valueLabel) && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
           {label && (
-            <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600 }}>
+            <span style={{ fontSize: 13, color: THEME.textMuted, fontWeight: 500 }}>
               {label}
             </span>
           )}
           {valueLabel && (
             <span
               style={{
-                fontSize: 10,
-                fontWeight: 700,
-                color,
+                fontSize: 13,
+                fontWeight: 600,
+                color: THEME.textMain,
                 fontFamily: THEME.fontMono,
               }}
             >
@@ -51,20 +52,19 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       <div
         style={{
           height,
-          borderRadius: 10,
-          background: `${THEME.grid}55`,
+          borderRadius: height,
+          background: `${THEME.glassBorder}`,
           overflow: 'hidden',
-          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.15)',
         }}
       >
         <div
           style={{
             width: `${pct}%`,
             height: '100%',
-            borderRadius: 10,
-            background: `linear-gradient(90deg, ${color}80, ${color})`,
+            borderRadius: height,
+            background: color,
             transformOrigin: 'left',
-            animation: animate ? 'tremorBarGrow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both' : undefined,
+            transition: animate ? 'width 1s cubic-bezier(0.22, 1, 0.36, 1)' : undefined,
           }}
         />
       </div>

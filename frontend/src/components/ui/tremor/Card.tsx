@@ -1,19 +1,17 @@
 /**
- * Tremor-inspired Card component for dashboard panels.
- * Integrates with the VIGIL THEME system while providing
- * clean, consistent card layouts.
+ * Tremor-style Card and Panel components.
+ * Clean, minimal design — subtle borders, generous padding, no accent strips.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
 import type { LucideIcon } from 'lucide-react';
 
-/* ──────────────────────────────────────────────────────────────────────── */
+/* ── Basic Card ──────────────────────────────────────────────────────── */
 
 interface CardProps {
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
-  /** Removes default padding from body */
   noPadding?: boolean;
 }
 
@@ -23,12 +21,12 @@ export const Card: React.FC<CardProps> = ({ children, className = '', style, noP
     style={{
       background: THEME.surface,
       border: `1px solid ${THEME.glassBorder}`,
-      borderRadius: 16,
+      borderRadius: 12,
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
       position: 'relative',
-      boxShadow: THEME.shadowMd,
+      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
       padding: noPadding ? 0 : undefined,
       ...style,
     }}
@@ -37,7 +35,7 @@ export const Card: React.FC<CardProps> = ({ children, className = '', style, noP
   </div>
 );
 
-/* ──────────────────────────────────────────────────────────────────────── */
+/* ── Panel Card (with optional header) ───────────────────────────────── */
 
 interface PanelCardProps {
   children: React.ReactNode;
@@ -65,59 +63,40 @@ export const PanelCard: React.FC<PanelCardProps> = ({
     style={{
       background: THEME.surface,
       border: `1px solid ${THEME.glassBorder}`,
-      borderRadius: 16,
+      borderRadius: 12,
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
       position: 'relative',
-      boxShadow: THEME.shadowMd,
+      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
       ...style,
     }}
   >
-    {/* Accent top strip */}
+    {/* Header — clean, no accent strip */}
     {title && (
       <div
         style={{
-          height: 3,
-          background: `linear-gradient(90deg, ${accentColor || THEME.primary}, ${accentColor || THEME.primary}80)`,
-          opacity: 0.8,
-        }}
-      />
-    )}
-
-    {/* Header */}
-    {title && (
-      <div
-        style={{
-          padding: '14px 20px',
+          padding: '16px 20px',
           borderBottom: `1px solid ${THEME.glassBorder}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexShrink: 0,
-          minHeight: 48,
+          minHeight: 52,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {TIcon && (
-            <div
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 8,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: `${accentColor || THEME.primary}14`,
-              }}
-            >
-              <TIcon size={14} color={accentColor || THEME.primary} />
-            </div>
+            <TIcon
+              size={16}
+              color={accentColor || THEME.textMuted}
+              strokeWidth={1.8}
+            />
           )}
           <span
             style={{
-              fontSize: 13.5,
-              fontWeight: 650,
+              fontSize: 14,
+              fontWeight: 600,
               color: THEME.textMain,
               letterSpacing: '-0.01em',
             }}
@@ -130,7 +109,7 @@ export const PanelCard: React.FC<PanelCardProps> = ({
     )}
 
     {/* Body */}
-    <div style={{ flex: 1, minHeight: 0, padding: noPadding ? 0 : '18px 20px' }}>
+    <div style={{ flex: 1, minHeight: 0, padding: noPadding ? 0 : '20px' }}>
       {children}
     </div>
   </div>

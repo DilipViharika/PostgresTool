@@ -1233,51 +1233,59 @@ const OverviewTab = () => {
         {
             label: 'Active Sessions',
             value: `${activeConns}`,
-            sub: `of ${maxConns} max`,
+            sub: `of ${maxConns}`,
             color: connColor,
             icon: Activity,
-            detail: `${connPct.toFixed(0)}% used`,
+            delta: `${connPct.toFixed(0)}%`,
+            deltaType: connPct > 85 ? 'increase' as const : 'unchanged' as const,
+            detail: connPct > 85 ? 'High utilization' : connPct > 65 ? 'Moderate' : 'Healthy',
             healthy: connPct < 70,
         },
         {
             label: 'Cache Hit Ratio',
             value: `${cacheHit}%`,
-            sub: cacheHit >= 99 ? 'Excellent' : cacheHit >= 95 ? 'Good' : 'Below target',
+            sub: '',
             color: cacheColor,
             icon: Zap,
+            delta: cacheHit >= 99 ? 'Excellent' : cacheHit >= 95 ? 'Good' : 'Below target',
+            deltaType: cacheHit >= 95 ? 'increase' as const : 'decrease' as const,
             detail: cacheHit >= 95 ? 'On target' : 'Needs tuning',
             healthy: cacheHit >= 95,
         },
         {
             label: 'Database Size',
-            value: `${diskGB}`,
-            sub: 'GB on disk',
-            color: THEME.warning,
+            value: `${diskGB} GB`,
+            sub: '',
+            color: THEME.textMain,
             icon: Database,
-            detail: '',
+            delta: undefined,
+            deltaType: 'unchanged' as const,
+            detail: 'On disk',
             healthy: true,
         },
         {
             label: 'Uptime',
-            value: uptimeHrs,
-            sub: 'hours',
-            color: THEME.info || THEME.primary,
+            value: `${uptimeHrs}h`,
+            sub: '',
+            color: THEME.textMain,
             icon: Clock,
-            detail: '',
-            healthy: true,
+            delta: undefined,
+            deltaType: 'unchanged' as const,
+            detail: Number(uptimeHrs) > 24 ? 'Stable' : 'Recently restarted',
+            healthy: Number(uptimeHrs) > 24,
         },
     ];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '8px 0 40px 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '12px 0 40px 0' }}>
             <TremorStyles />
 
             <ConnectionStatusBanner />
 
-            {/* Row 1: Hero Metric Cards */}
-            <div className="tremor-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 16 }}>
+            {/* Row 1: Hero Metric Cards — Tremor-style clean layout */}
+            <div className="tremor-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 12 }}>
                 {metricCards.map((m, i) => (
-                    <KpiCard key={i} label={m.label} value={m.value} sub={m.sub} color={m.color} icon={m.icon} detail={m.detail} healthy={m.healthy} />
+                    <KpiCard key={i} label={m.label} value={m.value} sub={m.sub} color={m.color} icon={m.icon} detail={m.detail} healthy={m.healthy} delta={m.delta} deltaType={m.deltaType} />
                 ))}
             </div>
 

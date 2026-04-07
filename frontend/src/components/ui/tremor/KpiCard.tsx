@@ -1,10 +1,11 @@
 /**
- * Tremor-inspired KPI / Metric Card.
- * Shows a single key metric with icon, label, value, sub-text, and health indicator.
+ * Tremor-style KPI / Metric Card.
+ * Clean, minimal design with large metrics — Tremor's signature aesthetic.
+ * No colored left borders, no glass effects — just clean data presentation.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
-import { CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface KpiCardProps {
@@ -16,6 +17,8 @@ interface KpiCardProps {
   color: string;
   healthy?: boolean;
   sparkline?: React.ReactNode;
+  delta?: string;
+  deltaType?: 'increase' | 'decrease' | 'unchanged';
 }
 
 const KpiCard: React.FC<KpiCardProps> = ({
@@ -27,102 +30,116 @@ const KpiCard: React.FC<KpiCardProps> = ({
   color,
   healthy,
   sparkline,
+  delta,
+  deltaType = 'unchanged',
 }) => (
   <div
     className="tremor-kpi"
     style={{
-      display: 'flex',
-      flexDirection: 'row',
-      gap: 14,
-      padding: '18px 20px',
-      borderRadius: 16,
+      padding: '24px',
+      borderRadius: 12,
       background: THEME.surface,
       border: `1px solid ${THEME.glassBorder}`,
-      borderLeft: `4px solid ${color}`,
       position: 'relative',
       overflow: 'hidden',
-      boxShadow: THEME.shadowMd,
+      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
       transition: 'transform 0.2s ease, box-shadow 0.2s ease',
     }}
   >
-    {/* Icon */}
-    <div
-      style={{
-        width: 44,
-        height: 44,
-        borderRadius: 12,
-        flexShrink: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: `${color}14`,
-      }}
-    >
-      <Icon size={20} color={color} />
-    </div>
-
-    {/* Content */}
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <div
+    {/* Top row: label + icon */}
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+      <span
         style={{
-          fontSize: 11,
+          fontSize: 13,
           color: THEME.textMuted,
-          fontWeight: 600,
+          fontWeight: 500,
           lineHeight: 1,
-          marginBottom: 6,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
+          letterSpacing: '0.01em',
         }}
       >
         {label}
-      </div>
+      </span>
+      <Icon size={18} color={THEME.textDim} strokeWidth={1.8} />
+    </div>
 
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-        <span
-          style={{
-            fontSize: 26,
-            fontWeight: 800,
-            color: THEME.textMain,
-            lineHeight: 1,
-            letterSpacing: '-0.03em',
-            fontFamily: THEME.fontMono,
-          }}
-        >
-          {value}
+    {/* Value */}
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: sub ? 4 : 0 }}>
+      <span
+        style={{
+          fontSize: 30,
+          fontWeight: 700,
+          color: THEME.textMain,
+          lineHeight: 1,
+          letterSpacing: '-0.02em',
+          fontFamily: THEME.fontBody,
+        }}
+      >
+        {value}
+      </span>
+      {sub && (
+        <span style={{ fontSize: 13, color: THEME.textDim, fontWeight: 400 }}>
+          {sub}
         </span>
-        {sub && (
-          <span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 500 }}>
-            {sub}
-          </span>
-        )}
-      </div>
+      )}
+    </div>
 
-      {/* Sparkline slot */}
-      {sparkline && <div style={{ marginTop: 6 }}>{sparkline}</div>}
+    {/* Sparkline slot */}
+    {sparkline && <div style={{ marginTop: 12 }}>{sparkline}</div>}
 
-      {/* Detail / health indicator */}
-      {detail && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6 }}>
-          {healthy !== undefined && (
-            healthy ? (
-              <CheckCircle size={12} color={THEME.success} />
-            ) : (
-              <AlertTriangle size={12} color={THEME.warning} />
-            )
-          )}
+    {/* Detail / delta row */}
+    {(detail || delta) && (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          marginTop: 12,
+          paddingTop: 12,
+          borderTop: `1px solid ${THEME.glassBorder}`,
+        }}
+      >
+        {/* Delta badge */}
+        {delta && (
           <span
             style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: healthy ? THEME.success : THEME.warning,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 2,
+              fontSize: 12,
+              fontWeight: 600,
               fontFamily: THEME.fontMono,
+              color: deltaType === 'increase'
+                ? (healthy !== false ? THEME.success : THEME.danger)
+                : deltaType === 'decrease'
+                  ? (healthy !== false ? THEME.danger : THEME.success)
+                  : THEME.textDim,
+              padding: '2px 8px',
+              borderRadius: 6,
+              background: deltaType === 'increase'
+                ? (healthy !== false ? `${THEME.success}12` : `${THEME.danger}12`)
+                : deltaType === 'decrease'
+                  ? (healthy !== false ? `${THEME.danger}12` : `${THEME.success}12`)
+                  : `${THEME.textDim}12`,
+            }}
+          >
+            {deltaType === 'increase' && <ArrowUpRight size={12} />}
+            {deltaType === 'decrease' && <ArrowDownRight size={12} />}
+            {delta}
+          </span>
+        )}
+        {detail && (
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: healthy ? THEME.success : healthy === false ? THEME.warning : THEME.textDim,
             }}
           >
             {detail}
           </span>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    )}
   </div>
 );
 
