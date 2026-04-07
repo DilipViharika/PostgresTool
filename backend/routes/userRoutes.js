@@ -289,35 +289,6 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
         }
     });
 
-    /* ── GET /api/users/diag/code-version ─────────────────────────────────
-       Diagnostic: confirms which backend code version is deployed.           */
-    router.get('/users/diag/code-version', (req, res) => {
-        res.json({ version: 'v3-dynamic-set-builder', ts: new Date().toISOString() });
-    });
-
-    /* ── GET /api/users/diag/test-update/:id ──────────────────────────────
-       Diagnostic: test email update directly (bypasses auth for debugging). */
-    router.get('/users/diag/test-update/:id', async (req, res) => {
-        try {
-            const id = parseInt(req.params.id);
-            const testEmail = req.query.email;
-            if (!testEmail) return res.json({ error: 'Pass ?email=xxx' });
-
-            const before = await getUserById(pool, id);
-            const updated = await updateUser(pool, id, { email: testEmail });
-            const after = await getUserById(pool, id);
-
-            res.json({
-                success: !!updated,
-                before: { id: before?.id, email: before?.email },
-                updated: { id: updated?.id, email: updated?.email },
-                afterReRead: { id: after?.id, email: after?.email },
-            });
-        } catch (err) {
-            res.status(500).json({ error: err.message, stack: err.stack });
-        }
-    });
-
     /* ── PUT /api/users/:id ────────────────────────────────────────────────
        Update editable fields (partial update, no password here).             */
     router.put('/users/:id', ...guard, async (req, res) => {
@@ -327,8 +298,6 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 log('ERROR', 'PUT /users/:id — invalid ID', { raw: req.params.id });
                 return res.status(400).json({ error: 'Invalid user ID', received: req.params.id });
             }
-
-            log('INFO', '=== PUT /users/:id START ===', { userId: id, bodyKeys: Object.keys(req.body), email: req.body.email, name: req.body.name });
 
             const { email, name } = req.body;
 
@@ -342,7 +311,6 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
                 return res.status(404).json({ error: 'User not found' });
             }
 
-            log('INFO', 'User updated', { userId: id, email: updated.email, name: updated.name });
             res.json(updated);
 
             // Fire-and-forget audit logging

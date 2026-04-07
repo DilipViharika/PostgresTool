@@ -129,10 +129,7 @@ export async function createUser(pool, data) {
 
 export async function updateUser(pool, id, data) {
     const existing = await getUserById(pool, id);
-    if (!existing) {
-        console.log(`[updateUser] No existing user found for id=${id}`);
-        return null;
-    }
+    if (!existing) return null;
 
     /* Build SET clause dynamically — only touch columns that were provided.
        This avoids the COALESCE pattern which can mask issues when the pg
@@ -166,10 +163,7 @@ export async function updateUser(pool, id, data) {
                  WHERE id = $${idIdx} AND deleted_at IS NULL
                  RETURNING *`;
 
-    console.log(`[updateUser] id=${id}, email=${data.email}, sql=${sql}, params=${JSON.stringify(vals)}`);
-
     const { rows } = await pool.query(sql, vals);
-    console.log(`[updateUser] rows=${rows.length}, returnedEmail=${rows[0]?.email}`);
     return rows[0] ? toClient(rows[0]) : null;
 }
 
