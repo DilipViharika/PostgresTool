@@ -151,18 +151,28 @@ function useUsers(initialUsers = []) {
     const updateUser = useCallback(async (id, formData) => {
         const numId = Number(id);
         if (isNaN(numId)) { throw new Error(`Invalid user ID: ${id}`); }
-        console.log('[updateUser] SENDING PUT', { id: numId, email: formData.email });
+        const url = `${API_BASE}/api/users/${numId}`;
+        const body = JSON.stringify(formData);
+        console.log('[updateUser] SENDING PUT', { url, id: numId, email: formData.email, bodyLength: body.length });
+        alert(`DEBUG: Sending PUT to ${url}\nEmail: ${formData.email}\nID: ${numId}`);
         const prev = users;
         setUsers(u => u.map(x => x.id === numId ? { ...x, ...formData, id: numId } : x));
         try {
-            const res = await fetch(`${API_BASE}/api/users/${numId}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(formData) });
-            if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `HTTP ${res.status}`); }
-            const updated = await res.json();
+            const res = await fetch(url, { method: 'PUT', headers: getAuthHeaders(), body });
+            const text = await res.text();
+            console.log('[updateUser] RAW RESPONSE', { status: res.status, text });
+            if (!res.ok) {
+                let errMsg = `HTTP ${res.status}`;
+                try { errMsg = JSON.parse(text).error || errMsg; } catch {}
+                alert(`DEBUG: PUT failed! Status=${res.status}\n${text}`);
+                throw new Error(errMsg);
+            }
+            const updated = JSON.parse(text);
             console.log('[updateUser] PUT RESPONSE', { id: updated.id, email: updated.email });
+            alert(`DEBUG: PUT success!\nReturned email: ${updated.email}\nReturned id: ${updated.id}`);
             setUsers(u => u.map(x => x.id === numId ? (updated.user || updated) : x));
-            // Re-fetch the full user list to ensure UI reflects database state
             setTimeout(() => fetchUsers(), 500);
-        } catch (err) { console.error('[updateUser] ERROR', err); setUsers(prev); throw err; }
+        } catch (err) { console.error('[updateUser] ERROR', err); alert(`DEBUG: PUT error: ${err.message}`); setUsers(prev); throw err; }
     }, [getAuthHeaders, users, fetchUsers]);
 
     const deleteUsers = useCallback(async (ids) => {
@@ -357,7 +367,8 @@ const UserManagementTab = ({ initialUsers = [] }) => {
 
     const handleSaveUser = useCallback(async (formData) => {
         const hasId = formData.id != null && !isNaN(formData.id);
-        console.log('[handleSaveUser]', { id: formData.id, hasId, email: formData.email });
+        console.log('[handleSaveUser]', { id: formData.id, hasId, email: formData.email, idType: typeof formData.id });
+        alert(`DEBUG handleSaveUser:\nid=${formData.id} (${typeof formData.id})\nhasId=${hasId}\nemail=${formData.email}\npath=${hasId ? 'UPDATE' : 'CREATE'}`);
         try {
             if (hasId) {
                 await updateUser(Number(formData.id), formData);

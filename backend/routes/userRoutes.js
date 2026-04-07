@@ -289,6 +289,35 @@ export default function userRoutes(pool, authenticate, requireScreen, requireRol
         }
     });
 
+    /* ── GET /api/users/diag/code-version ─────────────────────────────────
+       Diagnostic: confirms which backend code version is deployed.           */
+    router.get('/users/diag/code-version', (req, res) => {
+        res.json({ version: 'v3-dynamic-set-builder', ts: new Date().toISOString() });
+    });
+
+    /* ── GET /api/users/diag/test-update/:id ──────────────────────────────
+       Diagnostic: test email update directly (bypasses auth for debugging). */
+    router.get('/users/diag/test-update/:id', async (req, res) => {
+        try {
+            const id = parseInt(req.params.id);
+            const testEmail = req.query.email;
+            if (!testEmail) return res.json({ error: 'Pass ?email=xxx' });
+
+            const before = await getUserById(pool, id);
+            const updated = await updateUser(pool, id, { email: testEmail });
+            const after = await getUserById(pool, id);
+
+            res.json({
+                success: !!updated,
+                before: { id: before?.id, email: before?.email },
+                updated: { id: updated?.id, email: updated?.email },
+                afterReRead: { id: after?.id, email: after?.email },
+            });
+        } catch (err) {
+            res.status(500).json({ error: err.message, stack: err.stack });
+        }
+    });
+
     /* ── PUT /api/users/:id ────────────────────────────────────────────────
        Update editable fields (partial update, no password here).             */
     router.put('/users/:id', ...guard, async (req, res) => {
