@@ -37,7 +37,11 @@ const Styles: FC = () => (
     <style>{`
         @keyframes upFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes upSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .up-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:upFade .3s ease; }
+        .up-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); animation:upFade .3s ease; }
+        .up-card:hover { border-color:${THEME.primary}30; }
+        .up-card-section { padding:16px 20px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .up-card-section:last-child { border-bottom:none; }
+        .up-card-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:${THEME.textMuted}; margin-bottom:12px; }
         .up-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
         .up-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
         .up-input:focus { outline:none; border-color:${THEME.primary}; }

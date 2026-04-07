@@ -25,9 +25,30 @@ const Styles = () => (
         .mysql-card {
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
+            border-top: 3px solid #3E6D8E;
             border-radius: 12px;
-            padding: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(62,109,142,0.06);
+            transition: all 0.25s ease;
             animation: mysql-fade 0.3s ease;
+        }
+
+        .mysql-card:hover {
+            box-shadow: 0 6px 20px rgba(62,109,142,0.10);
+            transform: translateY(-1px);
+        }
+
+        .mysql-card-head {
+            background: rgba(62,109,142,0.04);
+            padding: 14px 18px;
+            border-bottom: 1px solid ${DARK_THEME.border};
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mysql-card-body {
+            padding: 16px 18px;
         }
 
         .mysql-metric-box {

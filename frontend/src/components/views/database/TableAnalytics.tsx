@@ -45,8 +45,13 @@ const CSS = `
 @keyframes ud-typewriter{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ai-glow{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,.0)}50%{box-shadow:0 0 20px 4px rgba(139,92,246,.18)}}
 .ud-rise {animation:ud-rise .32s cubic-bezier(.2,0,0,1) both}
-.ud-card {transition:border-color .2s,background .2s,transform .18s,box-shadow .2s}
-.ud-card:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.45)!important}
+.ud-card {border:1px solid ${THEME.grid};border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05);transition:all 0.25s ease}
+.ud-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.08)}
+.ud-card-header {height:28px;background:${THEME.textMain}0a;display:flex;align-items:center;padding:0 12px;gap:6px;border-bottom:1px solid ${THEME.glassBorder}}
+.ud-card-dot {width:8px;height:8px;border-radius:50%}
+.ud-card-title {font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;color:${THEME.textMuted};margin-left:8px;letter-spacing:0.03em}
+.ud-card-body {padding:16px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.02)}
+.ud-card.legacy {padding:20px;background:${THEME.surface};border:1px solid ${THEME.grid};border-radius:12px;transition:all 0.25s ease}
 .ud-navitem{transition:all .16s}
 .ud-navitem:hover{background:rgba(255,255,255,.06)!important;color:#fff!important}
 .ud-row{transition:background .14s}

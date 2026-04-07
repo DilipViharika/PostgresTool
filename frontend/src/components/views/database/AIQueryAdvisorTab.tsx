@@ -8,7 +8,12 @@ const Styles = () => (
     <style>{`
         @keyframes aqSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes aqFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .aq-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:aqFade .3s ease; }
+        .aq-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); transition:all 0.25s ease; animation:aqFade .3s ease; }
+        .aq-card:hover { box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+        .aq-card-header { height:28px; background:${THEME.textMain}0a; display:flex; align-items:center; padding:0 12px; gap:6px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .aq-card-dot { width:8px; height:8px; border-radius:50%; }
+        .aq-card-title { font-family:'JetBrains Mono','Fira Code',monospace; font-size:11px; color:${THEME.textMuted}; margin-left:8px; letter-spacing:0.03em; }
+        .aq-card-body { padding:16px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02); }
         .aq-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
         .aq-textarea { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:12px; color:${THEME.textMain}; font-size:13px; font-family:monospace; width:100%; resize:vertical; min-height:120px; }
         .aq-textarea:focus { outline:none; border-color:${THEME.primary}; }

@@ -18,7 +18,13 @@ const Styles = () => (
         @keyframes qrFade  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes qrPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
         @keyframes qrSlide { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
-        .qr-card        { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:qrFade .3s ease; }
+        .qr-card        { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); transition:all 0.25s ease; animation:qrFade .3s ease; }
+        .qr-card:hover  { box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+        .qr-card-header { height:28px; background:${THEME.textMain}0a; display:flex; align-items:center; padding:0 12px; gap:6px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .qr-card-dot    { width:8px; height:8px; border-radius:50%; }
+        .qr-card-title  { font-family:'JetBrains Mono','Fira Code',monospace; font-size:11px; color:${THEME.textMuted}; margin-left:8px; letter-spacing:0.03em; }
+        .qr-card-body   { padding:16px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02); }
+        .qr-card.legacy { padding:20px; }
         .qr-metric      { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
         .qr-badge       { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:700; }
         .qr-textarea    { width:100%; background:${THEME.bg}90; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:8px; padding:12px; font-family:${THEME.fontMono}; font-size:12px; outline:none; resize:vertical; line-height:1.6; box-sizing:border-box; }

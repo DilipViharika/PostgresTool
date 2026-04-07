@@ -110,16 +110,16 @@ const AdminStyles = () => (
         .adm-scrollbar::-webkit-scrollbar-track { background:transparent; }
         .adm-scrollbar::-webkit-scrollbar-thumb { background:${T.grid}; border-radius:2px; }
 
-        .adm-ext-card { transition:all 0.25s cubic-bezier(0.22,1,0.36,1); }
-        .adm-ext-card:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px ${T.primary}20 !important; }
+        .adm-ext-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:10px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
+        .adm-ext-card:hover { border-color:${T.primary}30; }
 
         .adm-input-field:focus { outline:none; border-color:${T.primary} !important; box-shadow:0 0 0 2px ${T.primary}25; }
         .adm-spin { animation:admSpin 1s linear infinite; }
 
-        .adm-stat-card { transition:all 0.2s; position:relative; overflow:hidden; }
-        .adm-stat-card::before { content:''; position:absolute; inset:0; opacity:0; transition:opacity 0.3s; background:linear-gradient(135deg, var(--card-color, ${T.primary})06, transparent); border-radius:inherit; }
-        .adm-stat-card:hover::before { opacity:1; }
-        .adm-stat-card:hover { transform:translateY(-3px); }
+        .adm-stat-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:10px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
+        .adm-stat-card:hover { border-color:${T.primary}30; }
+        .adm-stat-section { padding:16px 20px; border-bottom:1px solid ${T.glassBorder}; }
+        .adm-stat-section:last-child { border-bottom:none; }
 
         .adm-tab-btn { transition:all 0.2s cubic-bezier(0.22,1,0.36,1); position:relative; overflow:hidden; }
         .adm-tab-btn:hover { transform:translateY(-1px); }

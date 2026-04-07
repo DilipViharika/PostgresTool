@@ -100,24 +100,45 @@ function ensureSvStyles() {
 
         '/* ── Card ── */',
         `.sv-card {
-            background: linear-gradient(135deg, ${THEME.surface} 0%, ${THEME.surface} 100%);
+            background: ${THEME.surface};
             border: 1px solid ${THEME.grid};
-            border-radius: 14px;
-            padding: 20px;
-            animation: svFadeUp .4s ease both;
-            backdrop-filter: blur(4px);
-            position: relative;
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.25s ease;
+            animation: svFadeUp .4s ease both;
         }`,
-        `.sv-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            background: linear-gradient(135deg, ${THEME.surface} 0%, transparent 60%);
-            pointer-events: none;
+        `.sv-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
         }`,
-        `.sv-card:hover { border-color: ${THEME.glassBorder}; }`,
+        `.sv-card-header {
+            height: 28px;
+            background: ${THEME.textMain}0a;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 6px;
+            border-bottom: 1px solid ${THEME.glassBorder};
+        }`,
+        `.sv-card-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }`,
+        `.sv-card-title {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 11px;
+            color: ${THEME.textMuted};
+            margin-left: 8px;
+            letter-spacing: 0.03em;
+        }`,
+        `.sv-card-body {
+            padding: 16px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }`,
+        `.sv-card.legacy {
+            padding: 20px;
+        }`,
 
         '/* ── Metric card ── */',
         `.sv-metric-card {

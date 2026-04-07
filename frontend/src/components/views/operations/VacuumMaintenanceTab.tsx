@@ -52,21 +52,29 @@ function ensureVmStyles() {
 
         /* ── Base card ── */
         `.vm-card {
-            background: linear-gradient(135deg, ${THEME.surface} 0%, ${THEME.surface} 100%);
-            border: 1px solid ${THEME.grid};
-            border-radius: 14px;
+            background: ${THEME.surface};
+            border: none;
+            border-left: 4px solid var(--pipe-color, ${THEME.primary});
+            border-radius: 0 14px 14px 0;
             padding: 20px;
             animation: vmFadeUp .4s ease both;
-            backdrop-filter: blur(4px);
             position: relative;
             overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02);
+            transition: all 0.25s ease;
+        }`,
+        `.vm-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            border-left-width: 6px;
         }`,
         `.vm-card::before {
             content: '';
             position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            background: linear-gradient(135deg, ${THEME.surface} 0%, transparent 60%);
+            top: 0;
+            right: 0;
+            width: 40%;
+            height: 100%;
+            background: repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px);
             pointer-events: none;
         }`,
 

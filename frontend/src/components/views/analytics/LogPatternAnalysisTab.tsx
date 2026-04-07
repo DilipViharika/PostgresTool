@@ -40,6 +40,33 @@ const Styles = () => (
     .slide-up {
       animation: slideUp 0.4s ease-out;
     }
+    .analytics-card {
+      background: ${THEME.surface};
+      border: 1px solid ${THEME.glassBorder};
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: all 0.25s ease;
+    }
+    .analytics-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+    .analytics-card-ribbon {
+      height: 48px;
+      background: linear-gradient(135deg, var(--ribbon-color, ${THEME.primary}) 0%, var(--ribbon-end, ${THEME.primary}cc) 100%);
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      gap: 10px;
+      color: white;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+    .analytics-card-body {
+      padding: 18px;
+    }
   `}</style>
 );
 
@@ -47,61 +74,54 @@ const Styles = () => (
 const SummaryCard = ({ label, value, subtext, color = THEME.primary, isLoading }) => {
     if (isLoading) {
         return (
-            <div
-                style={{
-                    background: THEME.surface,
-                    border: `1px solid ${THEME.glassBorder}`,
-                    borderRadius: '12px',
-                    padding: '20px',
-                }}
-            >
-                <div style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '8px' }}>
-                    {label}
+            <div className="analytics-card">
+                <div className="analytics-card-ribbon" style={{ '--ribbon-color': color, '--ribbon-end': color + 'cc' }}>
+                    <div style={{ height: '16px', width: '16px', background: 'rgba(255,255,255,0.3)', borderRadius: '4px' }} />
+                    <span>{label}</span>
                 </div>
-                <div
-                    style={{
-                        height: '32px',
-                        background: THEME.textDim,
-                        borderRadius: '6px',
-                        animation: 'pulse 2s infinite',
-                    }}
-                />
+                <div className="analytics-card-body">
+                    <div
+                        style={{
+                            height: '32px',
+                            background: THEME.textDim,
+                            borderRadius: '6px',
+                            animation: 'pulse 2s infinite',
+                        }}
+                    />
+                </div>
             </div>
         );
     }
 
     return (
         <div
-            className="slide-up"
+            className="analytics-card slide-up"
             style={{
-                background: THEME.surface,
-                border: `1px solid ${THEME.glassBorder}`,
-                borderRadius: '12px',
-                padding: '20px',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
             }}
             onMouseEnter={(e) => {
-                e.currentTarget.style.background = `rgba(99, 102, 241, 0.08)`;
-                e.currentTarget.style.borderColor = `rgba(99, 102, 241, 0.25)`;
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={(e) => {
-                e.currentTarget.style.background = THEME.surface;
-                e.currentTarget.style.borderColor = THEME.glassBorder;
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+                e.currentTarget.style.transform = 'translateY(0)';
             }}
         >
-            <div style={{ color: THEME.textMuted, fontSize: '12px', marginBottom: '8px' }}>
-                {label}
+            <div className="analytics-card-ribbon" style={{ '--ribbon-color': color, '--ribbon-end': color + 'cc' }}>
+                <span>{label}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <div style={{ fontSize: '28px', fontWeight: '600', color, fontFamily: THEME.fontDisplay }}>
-                    {value}
-                </div>
-                {subtext && (
-                    <div style={{ fontSize: '12px', color: THEME.textMuted }}>
-                        {subtext}
+            <div className="analytics-card-body">
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '600', color, fontFamily: THEME.fontDisplay }}>
+                        {value}
                     </div>
-                )}
+                    {subtext && (
+                        <div style={{ fontSize: '12px', color: THEME.textMuted }}>
+                            {subtext}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -61,6 +61,10 @@ const RelStyles = () => (
         .rel-link:hover{text-decoration:underline;opacity:0.9}
         .rel-tab-btn{transition:all 0.2s}
         .rel-tab-btn:hover{opacity:0.85}
+        .rel-card{background:${THEME.surface};border:1px solid ${THEME.glassBorder};border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all 0.3s ease;text-align:center}
+        .rel-card:hover{box-shadow:0 0 0 3px ${THEME.primary}15, 0 8px 24px rgba(0,0,0,0.06)}
+        .rel-card-metric{padding:24px 18px 12px;background:radial-gradient(ellipse at center, ${THEME.primary}06 0%, transparent 70%)}
+        .rel-card-footer{padding:12px 18px 16px;border-top:1px solid ${THEME.glassBorder};font-size:12px;color:${THEME.textMuted}}
         * { font-family: ${THEME.fontBody}; }
         code, .mono { font-family: ${THEME.fontMono} !important; }
     `}</style>
@@ -1069,17 +1073,16 @@ const ReliabilityTab = () => {
             {/* Metric strip */}
             <div className="rel-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
                 {metricCards.map((m, i) => (
-                    <div key={i} className={isRefreshing ? 'rel-metric-flash' : ''} style={{
-                        display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRadius: 14,
-                        border: `1px solid ${isRefreshing ? `${THEME.primary}22` : THEME.glassBorder}`, transition: 'border-color 0.3s',
-                    }}>
-                        <div style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
-                            <m.icon size={16} color={m.color} />
+                    <div key={i} className={`rel-card ${isRefreshing ? 'rel-metric-flash' : ''}`}>
+                        <div className="rel-card-metric" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                            <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}12`, border: `1px solid ${m.color}20` }}>
+                                <m.icon size={18} color={m.color} />
+                            </div>
+                            <div style={{ fontSize: 22, fontWeight: 800, color: m.color, fontFamily: THEME.fontMono, lineHeight: 1, letterSpacing: '-0.02em' }}>{m.value}</div>
                         </div>
-                        <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 700,  letterSpacing: '0.02em', lineHeight: 1, marginBottom: 4 }}>{m.label}</div>
-                            <div style={{ fontSize: 18, fontWeight: 800, color: m.color, fontFamily: THEME.fontMono, lineHeight: 1 }}>{m.value}</div>
-                            <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 3, lineHeight: 1 }}>{m.sub}</div>
+                        <div className="rel-card-footer" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, letterSpacing: '0.01em' }}>{m.label}</div>
+                            <div style={{ fontSize: 11, color: THEME.textMuted }}>{m.sub}</div>
                         </div>
                     </div>
                 ))}

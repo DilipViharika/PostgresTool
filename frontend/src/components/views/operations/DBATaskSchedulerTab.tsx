@@ -854,6 +854,17 @@ const Styles = () => (
     .task-fade-in {
       animation: fadeIn 0.3s ease-in-out;
     }
+
+    div[style*="border-left: 4px"]::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40%;
+      height: 100%;
+      background: repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px);
+      pointer-events: none;
+    }
   `}</style>
 );
 
@@ -903,10 +914,14 @@ const styles = {
     gap: 16,
     padding: 16,
     backgroundColor: THEME.surface,
-    border: `1px solid ${THEME.glassBorder}`,
-    borderRadius: 8,
+    border: 'none',
+    borderLeft: `4px solid ${THEME.primary}`,
+    borderRadius: '0 8px 8px 0',
     transition: 'all 0.2s ease',
     cursor: 'default',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02)',
+    position: 'relative',
+    overflow: 'hidden',
   },
 
   statIcon: {
@@ -1159,9 +1174,13 @@ const styles = {
     flexDirection: 'column',
     padding: 12,
     backgroundColor: THEME.surface,
-    border: `1px solid ${THEME.glassBorder}`,
-    borderRadius: 6,
+    border: 'none',
+    borderLeft: `4px solid ${THEME.primary}`,
+    borderRadius: '0 6px 6px 0',
     transition: 'all 0.2s ease',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02)',
+    position: 'relative',
+    overflow: 'hidden',
   },
 
   taskMainRow: {
@@ -1442,9 +1461,12 @@ const styles = {
 
   approvalCard: {
     backgroundColor: THEME.surface,
-    border: `1px solid ${THEME.glassBorder}`,
-    borderRadius: 8,
+    border: 'none',
+    borderLeft: `4px solid ${THEME.primary}`,
+    borderRadius: '0 8px 8px 0',
     overflow: 'hidden',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02)',
+    position: 'relative',
   },
 
   approvalRiskBanner: {

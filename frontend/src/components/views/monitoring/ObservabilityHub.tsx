@@ -48,7 +48,31 @@ const Styles = () => (
         .oh-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
         .oh-title { font-size:24px; font-weight:700; color:${T.text1}; }
         .oh-subtitle { font-size:12px; color:${T.text2}; text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px; }
-        .oh-card { background:${T.surface}; border:1px solid ${T.border}; border-radius:12px; padding:20px; margin-bottom:16px; }
+        .oh-card {
+            background: linear-gradient(180deg, ${T.surface} 0%, ${T.surface}f8 100%);
+            border: 1px solid ${T.border};
+            border-radius: 14px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.25s ease;
+            margin-bottom: 16px;
+        }
+        .oh-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .oh-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--tile-accent, ${T.primary});
+            opacity: 0.7;
+        }
         .oh-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
         .oh-grid-3 { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
         .oh-grid-6 { display:grid; grid-template-columns:repeat(6, 1fr); gap:12px; }

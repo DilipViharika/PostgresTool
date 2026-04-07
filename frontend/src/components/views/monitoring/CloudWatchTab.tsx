@@ -201,6 +201,30 @@ const CW_STYLES = `
     @keyframes cwSpin    { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes cwFadeUp  { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes cwSlideIn { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: none; } }
+    .cw-card {
+        background: linear-gradient(180deg, #120A1F 0%, #120A1Ff8 100%);
+        border: 1px solid rgba(139,92,246,0.2);
+        border-radius: 14px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        transition: all 0.25s ease;
+    }
+    .cw-card:hover {
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+    }
+    .cw-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--tile-accent, #6366f1);
+        opacity: 0.7;
+    }
 `;
 
 /* ── sessionStorage helpers ── */

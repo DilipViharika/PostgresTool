@@ -9,7 +9,10 @@ const Styles = () => (
     <style>{`
         @keyframes rmSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes rmFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .rm-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:rmFade .3s ease; }
+        .rm-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); animation:rmFade .3s ease; transition:border-color 0.2s ease; }
+        .rm-card:hover { border-color:${THEME.primary}30; }
+        .rm-card-section { padding:16px 20px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .rm-card-section:last-child { border-bottom:none; }
         .rm-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
         .rm-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
         .rm-input:focus { outline:none; border-color:${THEME.primary}; }

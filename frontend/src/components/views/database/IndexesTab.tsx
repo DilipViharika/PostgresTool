@@ -292,7 +292,7 @@ const SegBar = ({pct,color,h=4}) =>
     </div>;
 
 const Card = ({children,style={}}) =>
-    <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:'0 1px 3px rgba(0,0,0,0.04)',...style}}>{children}</div>;
+    <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,overflow:'hidden',boxShadow:'0 2px 8px rgba(0,0,0,0.05)',transition:'all 0.25s ease',...style}}>{children}</div>;
 
 const CH = ({title,right,sub}) =>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',

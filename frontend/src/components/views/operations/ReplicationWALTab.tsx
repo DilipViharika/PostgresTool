@@ -12,7 +12,9 @@ const Styles = () => (
         @keyframes rwSpin  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes rwFade  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes rwPulse { 0%,100%{opacity:1} 50%{opacity:.35} }
-        .rw-card  { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:16px; animation:rwFade .3s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .rw-card  { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 14px 14px 0; padding:16px; animation:rwFade .3s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02); position:relative; overflow:hidden; transition: all 0.25s ease; }
+        .rw-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-left-width: 6px; }
+        .rw-card::before { content:''; position:absolute; top:0; right:0; width:40%; height:100%; background:repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px); pointer-events:none; }
         .rw-metric{ background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:12px; }
         .rw-row   { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid ${THEME.grid}30; font-size:12px; }
         .rw-row:last-child { border-bottom:none; }

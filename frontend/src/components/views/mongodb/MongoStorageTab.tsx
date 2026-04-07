@@ -40,9 +40,41 @@ const Styles = () => (
         .mongo-card {
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
+            border-left: 3px solid #00684A;
             border-radius: 12px;
-            padding: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,104,74,0.06);
+            transition: all 0.25s ease;
+            position: relative;
             animation: mongoFade 0.3s ease;
+        }
+
+        .mongo-card:hover {
+            box-shadow: 0 6px 20px rgba(0,104,74,0.10);
+            transform: translateY(-1px);
+        }
+
+        .mongo-card::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00684A40;
+        }
+
+        .mongo-card-head {
+            padding: 14px 18px;
+            border-bottom: 1px solid ${DARK_THEME.border};
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mongo-card-body {
+            padding: 16px 18px;
         }
 
         .mongo-table {

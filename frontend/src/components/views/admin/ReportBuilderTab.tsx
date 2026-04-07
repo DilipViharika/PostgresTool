@@ -101,10 +101,23 @@ const Styles = () => (
         .rb-preview-scroll { max-height:calc(100vh - 200px); overflow-y:auto; padding:20px; }
         .rb-report-card {
             background:${THEME.surface};
-            border:1px solid ${THEME.grid};
+            border:1px solid ${THEME.glassBorder};
             border-radius:10px;
-            padding:16px;
+            padding:0;
             margin-bottom:16px;
+            overflow:hidden;
+            box-shadow:0 1px 3px rgba(0,0,0,0.03);
+            transition:border-color 0.2s ease;
+        }
+        .rb-report-card:hover {
+            border-color:${THEME.primary}30;
+        }
+        .rb-report-card > * {
+            padding:16px;
+            border-bottom:1px solid ${THEME.glassBorder};
+        }
+        .rb-report-card > *:last-child {
+            border-bottom:none;
         }
         .rb-report-header {
             font-size:16px;

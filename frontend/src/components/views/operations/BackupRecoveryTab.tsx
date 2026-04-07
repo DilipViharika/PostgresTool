@@ -12,7 +12,9 @@ const Styles = () => (
         @keyframes brSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes brFade { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         @keyframes brPulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
-        .br-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:brFade .3s ease; }
+        .br-card { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 14px 14px 0; padding:20px; animation:brFade .3s ease; position:relative; overflow:hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02); transition: all 0.25s ease; }
+        .br-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-left-width: 6px; }
+        .br-card::before { content:''; position:absolute; top:0; right:0; width:40%; height:100%; background:repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px); pointer-events:none; }
         .br-metric { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
         .br-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:700; }
         .br-setting-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid ${THEME.grid}40; font-size:13px; }

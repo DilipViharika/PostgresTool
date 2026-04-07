@@ -49,6 +49,43 @@ const Styles = () => (
         transform: scale(1.5);
       }
     }
+
+    .sec-card {
+      background: var(--theme-surface);
+      border: 1px solid var(--theme-grid);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      transition: all 0.25s ease;
+      display: flex;
+      position: relative;
+    }
+    .sec-card:hover {
+      border-color: rgba(239, 68, 68, 0.25);
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.06);
+    }
+
+    .sec-card-stripe {
+      width: 5px;
+      flex-shrink: 0;
+      background: var(--severity-color, var(--theme-primary));
+    }
+
+    .sec-card-content {
+      flex: 1;
+      padding: 16px 18px;
+    }
+
+    .sec-card-header {
+      background: var(--theme-textMain)08;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--theme-glassBorder);
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
   `}</style>
 );
 

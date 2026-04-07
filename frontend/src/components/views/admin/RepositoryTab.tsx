@@ -165,10 +165,10 @@ const RepoStyles = () => (
         .r8-stagger > *:nth-child(3) { animation-delay:120ms; }
         .r8-stagger > *:nth-child(4) { animation-delay:180ms; }
 
-        .r8-card { position:relative; overflow:hidden; cursor:pointer; transition:transform 0.22s, border-color 0.22s, box-shadow 0.22s; }
-        .r8-card:hover { transform:translateY(-4px); }
-        .r8-card-remote:hover { border-color:${THEME.primary}55 !important; box-shadow:0 16px 48px rgba(0,0,0,.18), 0 0 0 1px ${THEME.primary}18; }
-        .r8-card-local:hover  { border-color:${THEME.info}55 !important;    box-shadow:0 16px 48px rgba(0,0,0,.18), 0 0 0 1px ${THEME.info}18; }
+        .r8-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
+        .r8-card:hover { border-color:${THEME.primary}30; }
+        .r8-card-remote:hover { border-color:${THEME.primary}30 !important; }
+        .r8-card-local:hover  { border-color:${THEME.info}30 !important; }
 
         .r8-tree-item { transition:background .14s; cursor:pointer; user-select:none; }
         .r8-tree-item:hover   { background:${THEME.primary}08 !important; }

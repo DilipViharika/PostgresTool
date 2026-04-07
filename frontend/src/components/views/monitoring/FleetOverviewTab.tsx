@@ -46,6 +46,30 @@ const FleetStyles = () => (
         .fleet-stagger > *:nth-child(6) { animation-delay: 0.30s; }
         .fleet-card-hover { transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
         .fleet-card-hover:hover { transform: translateY(-2px); box-shadow: 0 1px 3px rgba(0,0,0,0.04); border-color: ${THEME.primary}40 !important; }
+        .fleet-card {
+            background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
+            border: 1px solid ${THEME.glassBorder};
+            border-radius: 14px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.25s ease;
+        }
+        .fleet-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .fleet-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--tile-accent, ${THEME.primary});
+            opacity: 0.7;
+        }
     `}</style>
 );
 

@@ -43,6 +43,10 @@ const AnimCSS = () => <style>{`
 .vsel::-webkit-scrollbar{height:4px;width:4px}
 .vsel::-webkit-scrollbar-track{background:transparent}
 .vsel::-webkit-scrollbar-thumb{background:${THEME.grid}40;border-radius:4px}
+.analytics-card{background:${THEME.surface};border:1px solid ${THEME.glassBorder};border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all 0.25s ease}
+.analytics-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.08);transform:translateY(-2px)}
+.analytics-card-ribbon{height:48px;background:linear-gradient(135deg,var(--ribbon-color,${THEME.primary}) 0%,var(--ribbon-end,${THEME.primary}cc) 100%);display:flex;align-items:center;padding:0 18px;gap:10px;color:white;font-weight:600;font-size:13px;letter-spacing:0.02em}
+.analytics-card-body{padding:18px}
 `}</style>;
 
 /* ═══════════ CODEBLOCK — with syntax HL + macOS chrome ═══════════ */

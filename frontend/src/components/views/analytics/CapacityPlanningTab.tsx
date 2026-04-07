@@ -19,14 +19,33 @@ import {
    ═══════════════════════════════════════════════════════════════════════════ */
 const CapStyles = () => (
     <style>{`
-        .cap-card {
+        .analytics-card {
             background: ${THEME.surface};
-            border: 1px solid ${THEME.border};
-            border-radius: 12px;
+            border: 1px solid ${THEME.glassBorder};
+            border-radius: 14px;
             overflow: hidden;
-            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.25s ease;
         }
-        .cap-card:hover { border-color: ${THEME.primary}50; }
+        .analytics-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .analytics-card-ribbon {
+            height: 48px;
+            background: linear-gradient(135deg, var(--ribbon-color, ${THEME.primary}) 0%, var(--ribbon-end, ${THEME.primary}cc) 100%);
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            gap: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.02em;
+        }
+        .analytics-card-body {
+            padding: 18px;
+        }
 
         .forecast-badge {
             font-size: 11px;
@@ -190,14 +209,16 @@ const StatTile = ({ label, value, sub, icon: Icon, color, gauge }) => {
         : THEME.textMain;
 
     return (
-        <div className="cap-card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim }}>{label}</div>
-                <Icon size={16} color={color} />
+        <div className="analytics-card" style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="analytics-card-ribbon" style={{ '--ribbon-color': color, '--ribbon-end': color + 'cc' }}>
+                <Icon size={16} color="white" />
+                <span>{label}</span>
             </div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: valueColor }}>{value}</div>
-            <div style={{ fontSize: 11, color: THEME.textMuted }}>{sub}</div>
-            {gauge && <GaugeBar {...gauge} color={color} />}
+            <div className="analytics-card-body" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ fontSize: 24, fontWeight: 800, color: valueColor }}>{value}</div>
+                <div style={{ fontSize: 11, color: THEME.textMuted }}>{sub}</div>
+                {gauge && <GaugeBar {...gauge} color={color} />}
+            </div>
         </div>
     );
 };
@@ -396,86 +417,97 @@ const CapacityPlanningTab = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
                     {/* Storage Forecast Chart */}
-                    <div className="cap-card" style={{ padding: 20 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                            <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: 0 }}>Storage Utilization Forecast</h3>
-                            <div className="forecast-badge" style={{ background: `${THEME.primary}15`, color: THEME.primary }}>
+                    <div className="analytics-card">
+                        <div className="analytics-card-ribbon" style={{ '--ribbon-color': THEME.primary, '--ribbon-end': THEME.primary + 'cc' }}>
+                            <TrendingUp size={16} color="white" />
+                            <span>Storage Utilization Forecast</span>
+                        </div>
+                        <div className="analytics-card-body">
+                            <div className="forecast-badge" style={{ background: `${THEME.primary}15`, color: THEME.primary, marginBottom: 16 }}>
                                 <TrendingUp size={12} /> Linear Growth Model
                             </div>
-                        </div>
-                        <div style={{ height: 250, width: '100%' }}>
-                            <ResponsiveContainer>
-                                <ComposedChart data={storageData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} vertical={false} />
-                                    <XAxis dataKey="date" hide />
-                                    <YAxis stroke={THEME.textDim} fontSize={10} unit="GB" />
-                                    <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.border}` }} />
-                                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                                    <Area type="monotone" dataKey="used" stroke={THEME.primary} fill={`${THEME.primary}20`} strokeWidth={2} name="History" />
-                                    <Line type="monotone" dataKey="predicted" stroke={THEME.warning} strokeDasharray="5 5" strokeWidth={2} name="Forecast" dot={false} />
-                                    <ReferenceLine
-                                        y={1000 * (thresholds.storage / 100)}
-                                        label={`Warning (${thresholds.storage}%)`}
-                                        stroke={THEME.warning}
-                                        strokeDasharray="3 3"
-                                    />
-                                    <ReferenceLine y={1000} label="Disk Limit (1TB)" stroke={THEME.danger} strokeDasharray="3 3" />
-                                </ComposedChart>
-                            </ResponsiveContainer>
+                            <div style={{ height: 250, width: '100%' }}>
+                                <ResponsiveContainer>
+                                    <ComposedChart data={storageData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} vertical={false} />
+                                        <XAxis dataKey="date" hide />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} unit="GB" />
+                                        <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.border}` }} />
+                                        <Legend wrapperStyle={{ fontSize: 11 }} />
+                                        <Area type="monotone" dataKey="used" stroke={THEME.primary} fill={`${THEME.primary}20`} strokeWidth={2} name="History" />
+                                        <Line type="monotone" dataKey="predicted" stroke={THEME.warning} strokeDasharray="5 5" strokeWidth={2} name="Forecast" dot={false} />
+                                        <ReferenceLine
+                                            y={1000 * (thresholds.storage / 100)}
+                                            label={`Warning (${thresholds.storage}%)`}
+                                            stroke={THEME.warning}
+                                            strokeDasharray="3 3"
+                                        />
+                                        <ReferenceLine y={1000} label="Disk Limit (1TB)" stroke={THEME.danger} strokeDasharray="3 3" />
+                                    </ComposedChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
                     </div>
 
                     {/* Connection Saturation Chart */}
-                    <div className="cap-card" style={{ padding: 20 }}>
-                        <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, marginBottom: 20 }}>Daily Connection Saturation</h3>
-                        <div style={{ height: 200, width: '100%' }}>
-                            <ResponsiveContainer>
-                                <AreaChart data={connData}>
-                                    <defs>
-                                        <linearGradient id="colorConn" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor={THEME.info} stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor={THEME.info} stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} vertical={false} />
-                                    <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} interval={4} />
-                                    <YAxis stroke={THEME.textDim} fontSize={10} />
-                                    <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.border}` }} />
-                                    <Area type="monotone" dataKey="connections" stroke={THEME.info} fill="url(#colorConn)" strokeWidth={2} name="Connections" />
-                                    <ReferenceLine y={200} label="Max Conns" stroke={THEME.danger} />
-                                    <ReferenceLine
-                                        y={200 * (thresholds.connections / 100)}
-                                        label={`Warning (${thresholds.connections}%)`}
-                                        stroke={THEME.warning}
-                                        strokeDasharray="3 3"
-                                    />
-                                </AreaChart>
-                            </ResponsiveContainer>
+                    <div className="analytics-card">
+                        <div className="analytics-card-ribbon" style={{ '--ribbon-color': THEME.info, '--ribbon-end': THEME.info + 'cc' }}>
+                            <Activity size={16} color="white" />
+                            <span>Daily Connection Saturation</span>
+                        </div>
+                        <div className="analytics-card-body">
+                            <div style={{ height: 200, width: '100%' }}>
+                                <ResponsiveContainer>
+                                    <AreaChart data={connData}>
+                                        <defs>
+                                            <linearGradient id="colorConn" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor={THEME.info} stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor={THEME.info} stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} vertical={false} />
+                                        <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} interval={4} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} />
+                                        <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.border}` }} />
+                                        <Area type="monotone" dataKey="connections" stroke={THEME.info} fill="url(#colorConn)" strokeWidth={2} name="Connections" />
+                                        <ReferenceLine y={200} label="Max Conns" stroke={THEME.danger} />
+                                        <ReferenceLine
+                                            y={200 * (thresholds.connections / 100)}
+                                            label={`Warning (${thresholds.connections}%)`}
+                                            stroke={THEME.warning}
+                                            strokeDasharray="3 3"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
                     </div>
 
                     {/* Monthly Cost Trend Chart */}
-                    <div className="cap-card" style={{ padding: 20 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                            <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: 0 }}>Monthly Cost Trend</h3>
-                            <div className="forecast-badge" style={{ background: `${THEME.success}15`, color: THEME.success }}>
+                    <div className="analytics-card">
+                        <div className="analytics-card-ribbon" style={{ '--ribbon-color': THEME.success, '--ribbon-end': THEME.success + 'cc' }}>
+                            <DollarSign size={16} color="white" />
+                            <span>Monthly Cost Trend</span>
+                        </div>
+                        <div className="analytics-card-body">
+                            <div className="forecast-badge" style={{ background: `${THEME.success}15`, color: THEME.success, marginBottom: 16 }}>
                                 <DollarSign size={12} /> AWS RDS Estimate
                             </div>
-                        </div>
-                        <div style={{ height: 180, width: '100%' }}>
-                            <ResponsiveContainer>
-                                <ComposedChart data={costData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} vertical={false} />
-                                    <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} />
-                                    <YAxis stroke={THEME.textDim} fontSize={10} tickFormatter={v => `$${v}`} />
-                                    <Tooltip
-                                        formatter={v => [`$${v}`, 'Cost']}
-                                        contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
-                                    />
-                                    <Bar dataKey="cost" fill={THEME.primary} radius={[4, 4, 0, 0]} name="Cost" />
-                                    <ReferenceLine y={482.50} stroke={THEME.warning} strokeDasharray="4 4" label="Current" />
-                                </ComposedChart>
-                            </ResponsiveContainer>
+                            <div style={{ height: 180, width: '100%' }}>
+                                <ResponsiveContainer>
+                                    <ComposedChart data={costData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} vertical={false} />
+                                        <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} />
+                                        <YAxis stroke={THEME.textDim} fontSize={10} tickFormatter={v => `$${v}`} />
+                                        <Tooltip
+                                            formatter={v => [`$${v}`, 'Cost']}
+                                            contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                                        />
+                                        <Bar dataKey="cost" fill={THEME.primary} radius={[4, 4, 0, 0]} name="Cost" />
+                                        <ReferenceLine y={482.50} stroke={THEME.warning} strokeDasharray="4 4" label="Current" />
+                                    </ComposedChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
                     </div>
 
@@ -485,96 +517,102 @@ const CapacityPlanningTab = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
                     {/* What-If Modeling */}
-                    <div className="cap-card" style={{ padding: 20 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                            <Calculator size={16} color={THEME.primary} />
-                            <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: 0 }}>What-If Modeling</h3>
+                    <div className="analytics-card">
+                        <div className="analytics-card-ribbon" style={{ '--ribbon-color': THEME.primary, '--ribbon-end': THEME.primary + 'cc' }}>
+                            <Calculator size={16} color="white" />
+                            <span>What-If Modeling</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            <div>
-                                <label style={{ fontSize: 11, color: THEME.textDim, display: 'block', marginBottom: 4 }}>Expected Data Growth (%)</label>
-                                <input
-                                    type="number"
-                                    className="scenario-input"
-                                    value={scenario.growth}
-                                    onChange={e => setScenario({ ...scenario, growth: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label style={{ fontSize: 11, color: THEME.textDim, display: 'block', marginBottom: 4 }}>New Concurrent Users</label>
-                                <input
-                                    type="number"
-                                    className="scenario-input"
-                                    value={scenario.users}
-                                    onChange={e => setScenario({ ...scenario, users: e.target.value })}
-                                />
-                            </div>
-                            <div style={{ marginTop: 4, padding: 12, background: `${THEME.primary}10`, borderRadius: 8, border: `1px solid ${THEME.primary}30` }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: THEME.primary, marginBottom: 6 }}>Impact Analysis</div>
-                                <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.8 }}>
-                                    • Storage runway: <strong style={{ color: scenarioImpact.daysLeft < 30 ? THEME.danger : THEME.textMain }}>{scenarioImpact.daysLeft} days</strong><br />
-                                    • Runway reduction: <strong style={{ color: THEME.warning }}>−{scenarioImpact.storageImpactDays} days</strong><br />
-                                    • Projected peak conns: <strong>{scenarioImpact.projectedConns}</strong><br />
-                                    • Conn warning exceeded: <strong style={{ color: scenarioImpact.connExceededAt !== 'Never' ? THEME.danger : THEME.success }}>{scenarioImpact.connExceededAt}</strong>
+                        <div className="analytics-card-body">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                <div>
+                                    <label style={{ fontSize: 11, color: THEME.textDim, display: 'block', marginBottom: 4 }}>Expected Data Growth (%)</label>
+                                    <input
+                                        type="number"
+                                        className="scenario-input"
+                                        value={scenario.growth}
+                                        onChange={e => setScenario({ ...scenario, growth: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: 11, color: THEME.textDim, display: 'block', marginBottom: 4 }}>New Concurrent Users</label>
+                                    <input
+                                        type="number"
+                                        className="scenario-input"
+                                        value={scenario.users}
+                                        onChange={e => setScenario({ ...scenario, users: e.target.value })}
+                                    />
+                                </div>
+                                <div style={{ marginTop: 4, padding: 12, background: `${THEME.primary}10`, borderRadius: 8, border: `1px solid ${THEME.primary}30` }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: THEME.primary, marginBottom: 6 }}>Impact Analysis</div>
+                                    <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.8 }}>
+                                        • Storage runway: <strong style={{ color: scenarioImpact.daysLeft < 30 ? THEME.danger : THEME.textMain }}>{scenarioImpact.daysLeft} days</strong><br />
+                                        • Runway reduction: <strong style={{ color: THEME.warning }}>−{scenarioImpact.storageImpactDays} days</strong><br />
+                                        • Projected peak conns: <strong>{scenarioImpact.projectedConns}</strong><br />
+                                        • Conn warning exceeded: <strong style={{ color: scenarioImpact.connExceededAt !== 'Never' ? THEME.danger : THEME.success }}>{scenarioImpact.connExceededAt}</strong>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Alert Thresholds */}
-                    <div className="cap-card" style={{ padding: 20 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                            <Sliders size={16} color={THEME.primary} />
-                            <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: 0 }}>Alert Thresholds</h3>
+                    <div className="analytics-card">
+                        <div className="analytics-card-ribbon" style={{ '--ribbon-color': THEME.warning, '--ribbon-end': THEME.warning + 'cc' }}>
+                            <Sliders size={16} color="white" />
+                            <span>Alert Thresholds</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                                    <label style={{ fontSize: 11, color: THEME.textDim }}>Storage Warning</label>
-                                    <span style={{ fontSize: 11, fontWeight: 700, color: THEME.warning }}>{thresholds.storage}%</span>
+                        <div className="analytics-card-body">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                                        <label style={{ fontSize: 11, color: THEME.textDim }}>Storage Warning</label>
+                                        <span style={{ fontSize: 11, fontWeight: 700, color: THEME.warning }}>{thresholds.storage}%</span>
+                                    </div>
+                                    <input
+                                        type="range" min={50} max={95}
+                                        value={thresholds.storage}
+                                        onChange={e => setThresholds({ ...thresholds, storage: +e.target.value })}
+                                        style={{ width: '100%', accentColor: THEME.primary }}
+                                    />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: THEME.textMuted, marginTop: 2 }}>
+                                        <span>50%</span><span>95%</span>
+                                    </div>
                                 </div>
-                                <input
-                                    type="range" min={50} max={95}
-                                    value={thresholds.storage}
-                                    onChange={e => setThresholds({ ...thresholds, storage: +e.target.value })}
-                                    style={{ width: '100%', accentColor: THEME.primary }}
-                                />
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: THEME.textMuted, marginTop: 2 }}>
-                                    <span>50%</span><span>95%</span>
-                                </div>
-                            </div>
-                            <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                                    <label style={{ fontSize: 11, color: THEME.textDim }}>Connection Warning</label>
-                                    <span style={{ fontSize: 11, fontWeight: 700, color: THEME.warning }}>{thresholds.connections}%</span>
-                                </div>
-                                <input
-                                    type="range" min={50} max={95}
-                                    value={thresholds.connections}
-                                    onChange={e => setThresholds({ ...thresholds, connections: +e.target.value })}
-                                    style={{ width: '100%', accentColor: THEME.primary }}
-                                />
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: THEME.textMuted, marginTop: 2 }}>
-                                    <span>50%</span><span>95%</span>
+                                <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                                        <label style={{ fontSize: 11, color: THEME.textDim }}>Connection Warning</label>
+                                        <span style={{ fontSize: 11, fontWeight: 700, color: THEME.warning }}>{thresholds.connections}%</span>
+                                    </div>
+                                    <input
+                                        type="range" min={50} max={95}
+                                        value={thresholds.connections}
+                                        onChange={e => setThresholds({ ...thresholds, connections: +e.target.value })}
+                                        style={{ width: '100%', accentColor: THEME.primary }}
+                                    />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: THEME.textMuted, marginTop: 2 }}>
+                                        <span>50%</span><span>95%</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Smart Recommendations */}
-                    <div className="cap-card" style={{ padding: 20 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                            <Zap size={16} color={THEME.warning} />
-                            <h3 style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, margin: 0 }}>Smart Recommendations</h3>
+                    <div className="analytics-card">
+                        <div className="analytics-card-ribbon" style={{ '--ribbon-color': THEME.warning, '--ribbon-end': THEME.warning + 'cc' }}>
+                            <Zap size={16} color="white" />
+                            <span>Smart Recommendations</span>
                         </div>
-                        {RECOMMENDATIONS.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                                <CheckCircle size={28} color={THEME.success} style={{ marginBottom: 8 }} />
-                                <div style={{ fontSize: 13, color: THEME.textDim }}>All systems healthy. No actions needed.</div>
-                            </div>
-                        ) : (
-                            RECOMMENDATIONS.map((rec, i) => <RecommendationCard key={i} rec={rec} />)
-                        )}
+                        <div className="analytics-card-body">
+                            {RECOMMENDATIONS.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                                    <CheckCircle size={28} color={THEME.success} style={{ marginBottom: 8 }} />
+                                    <div style={{ fontSize: 13, color: THEME.textDim }}>All systems healthy. No actions needed.</div>
+                                </div>
+                            ) : (
+                                RECOMMENDATIONS.map((rec, i) => <RecommendationCard key={i} rec={rec} />)
+                            )}
+                        </div>
                     </div>
 
                 </div>

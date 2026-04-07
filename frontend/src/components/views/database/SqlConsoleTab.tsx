@@ -365,17 +365,19 @@ const CostMeter = ({ sql }) => {
    PANEL
    ═══════════════════════════════════════════════════════════════════════════ */
 const Panel = ({ title, icon:TIcon, rightNode, noPad, children, style={} }) => (
-    <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:12, display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,0.04)', ...style }}>
+    <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:12, display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:'0 2px 8px rgba(0,0,0,0.05)', transition:'all 0.25s ease', ...style }}>
         {title && (
-            <div style={{ padding:'10px 14px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, minHeight:40 }}>
+            <div style={{ height:28, background:`${THEME.textMain}0a`, padding:'0 12px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, gap:6 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                    {TIcon && <TIcon size={11} color={THEME.textDim}/>}
-                    <span style={{ fontSize:11, fontWeight:700, color:THEME.textMuted, letterSpacing:'0.02em' }}>{title}</span>
+                    <div style={{ width:8, height:8, borderRadius:'50%', background:THEME.danger, flexShrink:0 }} />
+                    <div style={{ width:8, height:8, borderRadius:'50%', background:'#f59e0b', flexShrink:0 }} />
+                    <div style={{ width:8, height:8, borderRadius:'50%', background:THEME.success, flexShrink:0 }} />
+                    <span style={{ fontSize:11, fontWeight:700, color:THEME.textMuted, letterSpacing:'0.03em', fontFamily:"'JetBrains Mono','Fira Code',monospace", marginLeft:8 }}>{title}</span>
                 </div>
                 {rightNode}
             </div>
         )}
-        <div style={{ flex:1, minHeight:0, padding:noPad?0:'12px 14px', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        <div style={{ flex:1, minHeight:0, padding:noPad?0:'12px 14px', display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
             {children}
         </div>
     </div>

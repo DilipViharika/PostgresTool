@@ -9,7 +9,10 @@ const Styles = () => (
     <style>{`
         @keyframes cdFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .cd-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:cdFade .3s ease; }
+        .cd-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:14px; padding:0; animation:cdFade .3s ease; overflow:hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.25s ease; }
+        .cd-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+        .cd-card-ribbon { height:48px; background:linear-gradient(135deg, var(--ribbon-color, ${THEME.primary}) 0%, var(--ribbon-end, ${THEME.primary}cc) 100%); display:flex; align-items:center; padding:0 18px; gap:10px; color:white; font-weight:600; font-size:13px; letter-spacing:0.02em; }
+        .cd-card-body { padding:20px; }
         .cd-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:8px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; transition:all .2s ease; }
         .cd-button:hover { background:${THEME.primaryLight}; }
         .cd-button-secondary { background:${THEME.secondary}; }
@@ -664,37 +667,39 @@ export default function CustomDashboardTab() {
             <Styles />
 
             {/* Header */}
-            <div className="cd-card" style={{ marginBottom:20, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <div>
-                    <div style={{ fontSize:18, fontWeight:700, color:THEME.textMain, display:'flex', alignItems:'center', gap:10 }}>
-                        <Layout size={20} />
-                        Custom Dashboard
-                    </div>
-                    <input
-                        className="cd-input"
-                        placeholder="Dashboard name..."
-                        value={dashboardName}
-                        onChange={(e) => setDashboardName(e.target.value)}
-                        style={{ width:'300px', marginTop:10, fontSize:12 }}
-                    />
+            <div className="cd-card" style={{ marginBottom:20 }}>
+                <div className="cd-card-ribbon" style={{ '--ribbon-color': THEME.primary, '--ribbon-end': THEME.primary + 'cc' }}>
+                    <Layout size={16} color="white" />
+                    <span>Custom Dashboard</span>
                 </div>
-                <div style={{ display:'flex', gap:10, flexWrap:'wrap', justifyContent:'flex-end' }}>
-                    <button className="cd-button" onClick={() => setTemplateGalleryOpen(true)}>
-                        <Grid size={14} style={{ marginRight:6 }} />
-                        Templates
-                    </button>
-                    <button className="cd-button" onClick={() => setModalOpen(true)}>
-                        <Plus size={14} style={{ marginRight:6 }} />
-                        Add Widget
-                    </button>
-                    <button className="cd-button cd-button-secondary" onClick={saveDashboard}>
-                        <Save size={14} style={{ marginRight:6 }} />
-                        Save
-                    </button>
-                    <button className="cd-button cd-button-secondary" onClick={exportDashboard}>
-                        <Download size={14} style={{ marginRight:6 }} />
-                        Export
-                    </button>
+                <div className="cd-card-body" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <div>
+                        <input
+                            className="cd-input"
+                            placeholder="Dashboard name..."
+                            value={dashboardName}
+                            onChange={(e) => setDashboardName(e.target.value)}
+                            style={{ width:'300px', fontSize:12 }}
+                        />
+                    </div>
+                    <div style={{ display:'flex', gap:10, flexWrap:'wrap', justifyContent:'flex-end' }}>
+                        <button className="cd-button" onClick={() => setTemplateGalleryOpen(true)}>
+                            <Grid size={14} style={{ marginRight:6 }} />
+                            Templates
+                        </button>
+                        <button className="cd-button" onClick={() => setModalOpen(true)}>
+                            <Plus size={14} style={{ marginRight:6 }} />
+                            Add Widget
+                        </button>
+                        <button className="cd-button cd-button-secondary" onClick={saveDashboard}>
+                            <Save size={14} style={{ marginRight:6 }} />
+                            Save
+                        </button>
+                        <button className="cd-button cd-button-secondary" onClick={exportDashboard}>
+                            <Download size={14} style={{ marginRight:6 }} />
+                            Export
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -713,15 +718,20 @@ export default function CustomDashboardTab() {
                     ))}
                 </div>
             ) : (
-                <div className="cd-card" style={{ textAlign:'center', padding:'60px 20px' }}>
-                    <AlertTriangle size={40} color={THEME.textDim} style={{ margin:'0 auto 16px' }} />
-                    <div style={{ color:THEME.textMuted, fontSize:14, marginBottom:20 }}>
-                        No widgets added yet. Create your custom dashboard to get started.
+                <div className="cd-card">
+                    <div className="cd-card-ribbon" style={{ '--ribbon-color': THEME.warning, '--ribbon-end': THEME.warning + 'cc' }}>
+                        <AlertTriangle size={16} color="white" />
+                        <span>Getting Started</span>
                     </div>
-                    <button className="cd-button" onClick={() => setTemplateGalleryOpen(true)}>
-                        <Grid size={14} style={{ marginRight:6 }} />
-                        Browse Templates
-                    </button>
+                    <div className="cd-card-body" style={{ textAlign:'center', padding:'60px 20px' }}>
+                        <div style={{ color:THEME.textMuted, fontSize:14, marginBottom:20 }}>
+                            No widgets added yet. Create your custom dashboard to get started.
+                        </div>
+                        <button className="cd-button" onClick={() => setTemplateGalleryOpen(true)}>
+                            <Grid size={14} style={{ marginRight:6 }} />
+                            Browse Templates
+                        </button>
+                    </div>
                 </div>
             )}
 

@@ -12,7 +12,31 @@ const Styles = () => (
     <style>{`
         @keyframes cmSpin  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes cmFade  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .cm-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:cmFade .3s ease; }
+        .cm-card {
+            background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
+            border: 1px solid ${THEME.grid};
+            border-radius: 14px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.25s ease;
+            animation: cmFade 0.3s ease;
+        }
+        .cm-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .cm-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--tile-accent, ${THEME.primary});
+            opacity: 0.7;
+        }
         .cm-metric { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
         .cm-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid ${THEME.grid}40; font-size:13px; }
         .cm-row:last-child { border-bottom:none; }

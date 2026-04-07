@@ -15,7 +15,31 @@ const Styles = () => (
     <style>{`
         @keyframes pmdFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pmdSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .pmd-card { background: ${THEME.surface}; border: 1px solid ${THEME.grid}; border-radius: 12px; padding: 16px; animation: pmdFade 0.3s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .pmd-card {
+            background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
+            border: 1px solid ${THEME.grid};
+            border-radius: 14px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.25s ease;
+            animation: pmdFade 0.3s ease;
+        }
+        .pmd-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .pmd-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--tile-accent, ${THEME.primary});
+            opacity: 0.7;
+        }
         .pmd-metric { display: flex; align-items: center; gap: 12px; padding: 12px; background: ${THEME.surface}; border: 1px solid ${THEME.grid}; border-radius: 12px; }
         .pmd-spin { animation: pmdSpin 1s linear infinite; }
         .pmd-slider { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: ${THEME.grid}; outline: none; cursor: pointer; }

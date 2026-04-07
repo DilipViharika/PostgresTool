@@ -44,12 +44,40 @@ const OptimizerStyles = () => (
             background: ${THEME.surface};
             border: 1px solid ${THEME.grid};
             border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.25s ease;
         }
         .opt-card:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border-color: ${THEME.primary}30;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+        .opt-card-header {
+            height: 28px;
+            background: ${THEME.textMain}0a;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 6px;
+            border-bottom: 1px solid ${THEME.glassBorder};
+        }
+        .opt-card-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .opt-card-title {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 11px;
+            color: ${THEME.textMuted};
+            margin-left: 8px;
+            letter-spacing: 0.03em;
+        }
+        .opt-card-body {
+            padding: 16px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .opt-card.legacy {
+            padding: 20px;
         }
         .opt-tab-btn { transition: all 0.18s; cursor: pointer; }
         .opt-tab-btn:hover { opacity: 1 !important; }

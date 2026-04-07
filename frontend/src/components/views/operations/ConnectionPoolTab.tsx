@@ -88,13 +88,15 @@ const S = {
     }; },
     card: (accent) => ({
         background: THEME.surface,
-        border: `1px solid ${THEME.glassBorder}`,
-        borderTop: `2px solid ${accent}55`,
-        borderRadius: 14,
+        border: 'none',
+        borderLeft: `4px solid ${accent || THEME.primary}`,
+        borderRadius: '0 14px 14px 0',
         padding: 20,
-        transition: 'all 0.3s cubic-bezier(0.23, 1, 0.320, 1)',
+        transition: 'all 0.25s ease',
         position: 'relative',
         overflow: 'hidden',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02)',
+        '--pipe-color': accent,
     }),
     badge: (color) => ({
         display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -912,6 +914,8 @@ const ConnectionsTab = () => {
             <style>{`
                 @keyframes cpPulse { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
                 @keyframes cpFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+                .cp-pipe-card::before { content:''; position:absolute; top:0; right:0; width:40%; height:100%; background:repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px); pointer-events:none; }
+                .cp-pipe-card:hover { border-left-width: 6px; }
             `}</style>
 
             {/* ── Success / Error Toast ── */}
@@ -1141,10 +1145,11 @@ const ConnectionsTab = () => {
                             const dbMeta = DB_TYPES[conn.dbType] || DB_TYPES.postgresql;
                             const isActive = conn.id === activeConnectionId;
                             return (
-                                <div key={conn.id} style={{
+                                <div key={conn.id} className="cp-pipe-card" style={{
                                     ...S.card(dbMeta.accent),
                                     animation: `slideUp 0.4s ease-out ${idx * 0.05}s backwards`,
-                                    border: isActive ? `2px solid ${dbMeta.accent}66` : `1px solid ${THEME.glassBorder}`,
+                                    border: isActive ? `2px solid ${dbMeta.accent}66` : `none`,
+                                    borderLeft: `${isActive ? 6 : 4}px solid ${dbMeta.accent}`,
                                     background: isActive ? `${dbMeta.accent}08` : THEME.surface,
                                 }}>
                                     <div style={{ position: 'absolute', top: -40, left: -40, width: 120, height: 120, borderRadius: '50%', background: `${dbMeta.accent}12`, pointerEvents: 'none', animation: isActive ? 'pulse 2s ease-in-out infinite' : 'none' }} />

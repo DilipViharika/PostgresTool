@@ -7,7 +7,10 @@ import { FileCode, Download, Copy, Package, Settings, Code, RefreshCw, CheckCirc
 const Styles = () => (
     <style>{`
         @keyframes tfFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .tf-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:20px; animation:tfFade .3s ease; }
+        .tf-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); animation:tfFade .3s ease; transition:border-color 0.2s ease; }
+        .tf-card:hover { border-color:${THEME.primary}30; }
+        .tf-card-section { padding:16px 20px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .tf-card-section:last-child { border-bottom:none; }
         .tf-export-card { background:${THEME.grid}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px; margin-bottom:12px; display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start; }
         .tf-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:8px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
         .tf-button:hover { background:${THEME.primaryLight}; }
