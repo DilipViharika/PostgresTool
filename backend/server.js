@@ -1451,7 +1451,7 @@ for (const prefix of modularMounts) {
     app.use(prefix, terraformRoutes(pool, authenticate, requireRole));
     app.use(prefix, aiMonitoringRoutes(pool, authenticate));
     app.use(prefix, metricsRoutes(pool, authenticate));
-    app.use(prefix, schemaRoutes(pool, authenticate));
+    app.use(prefix, schemaRoutes(pool, authenticate, reqPool));
     app.use(prefix, observabilityRoutes(pool, authenticate, requireScreen));
     app.use(prefix, reportRoutes(pool, authenticate, requireScreen));
 

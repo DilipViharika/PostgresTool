@@ -45,7 +45,7 @@ function sanitizePagination(limit?: any, offset?: any): { valid: boolean; limit?
     return { valid: true, limit: cleanLimit, offset: cleanOffset };
 }
 
-export default function schemaRoutes(pool: Pool, authenticate: any): Router {
+export default function schemaRoutes(pool: Pool, authenticate: any, reqPool?: (req: Request) => Promise<Pool>): Router {
     const router = Router();
 
     router.get('/schema/relationships', authenticate, async (req: Request, res: Response) => {

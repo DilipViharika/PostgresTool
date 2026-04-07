@@ -2,10 +2,10 @@
  * routes/schemaRoutes.js
  * ──────────────────────
  * Schema relationships, dependencies, and column details.
- * Provides data for the Schema Visualizer tab.
+ * Provides data for the Schema Browser, Schema Visualizer, and Table Dependencies tabs.
  *
  * Mount with:
- *   app.use('/api', schemaRoutes(pool, authenticate));
+ *   app.use('/api', schemaRoutes(pool, authenticate, reqPool));
  */
 
 import { Router } from 'express';
@@ -49,8 +49,25 @@ function sanitizePagination(limit, offset) {
     return { valid: true, limit: cleanLimit, offset: cleanOffset };
 }
 
-export default function schemaRoutes(pool, authenticate) {
+export default function schemaRoutes(pool, authenticate, reqPool) {
     const router = Router();
+
+    /**
+     * Resolve the correct database pool for a request.
+     * Uses the user's active connection if reqPool is provided,
+     * falls back to the admin pool otherwise.
+     */
+    async function resolvePool(req) {
+        if (reqPool) {
+            try {
+                return await reqPool(req);
+            } catch (e) {
+                log('WARN', 'Failed to resolve request pool, falling back to admin pool', { error: e.message });
+                return pool;
+            }
+        }
+        return pool;
+    }
 
     /**
      * GET /api/schema/relationships
@@ -100,9 +117,10 @@ export default function schemaRoutes(pool, authenticate) {
                 ORDER BY ns1.nspname, t1.relname, fk.conname;
             `;
 
+            const connPool = await resolvePool(req);
             const [tablesResult, relationshipsResult] = await Promise.all([
-                pool.query(tablesQuery),
-                pool.query(relationshipsQuery),
+                connPool.query(tablesQuery),
+                connPool.query(relationshipsQuery),
             ]);
 
             const tables = tablesResult.rows.map(row => ({
@@ -160,7 +178,8 @@ export default function schemaRoutes(pool, authenticate) {
                 ORDER BY n1.nspname, c1.relname;
             `;
 
-            const result = await pool.query(query);
+            const connPool = await resolvePool(req);
+            const result = await connPool.query(query);
             const dependencies = result.rows.map(row => ({
                 id: `${row.source}→${row.target}`,
                 source: row.source,
@@ -237,12 +256,13 @@ export default function schemaRoutes(pool, authenticate) {
                 ORDER BY sequence_schema, sequence_name;
             `;
 
+            const connPool = await resolvePool(req);
             const [schemasRes, tablesRes, viewsRes, functionsRes, sequencesRes] = await Promise.all([
-                pool.query(schemasQuery),
-                pool.query(tablesQuery),
-                pool.query(viewsQuery),
-                pool.query(functionsQuery),
-                pool.query(sequencesQuery),
+                connPool.query(schemasQuery),
+                connPool.query(tablesQuery),
+                connPool.query(viewsQuery),
+                connPool.query(functionsQuery),
+                connPool.query(sequencesQuery),
             ]);
 
             // Build hierarchical structure
@@ -363,9 +383,10 @@ export default function schemaRoutes(pool, authenticate) {
                 ORDER BY attnum;
             `;
 
+            const connPool = await resolvePool(req);
             const [columnsResult, statsResult] = await Promise.all([
-                pool.query(columnsQuery, [schema, table]),
-                pool.query(statsQuery, [schema, table]),
+                connPool.query(columnsQuery, [schema, table]),
+                connPool.query(statsQuery, [schema, table]),
             ]);
 
             const statsMap = {};
