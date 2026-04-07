@@ -45,27 +45,27 @@ export const DS_DARK = {
 
 export const DS_LIGHT = {
     ...DS_ACCENTS,
-    bg:           '#f0f2f5',
-    bgDeep:       '#e8eaef',
+    bg:           '#f8f9fb',
+    bgDeep:       '#f1f3f6',
     surface:      '#ffffff',
-    surfaceHover: '#f7f8fa',
-    border:       'rgba(0,0,0,0.06)',
-    borderAccent: 'rgba(0,184,116,0.15)',
-    textPrimary:  '#1a1e2e',
-    textSub:      '#4a5068',
-    textMuted:    '#8590a5',
-    glowCyan:     '0 0 8px rgba(0,184,116,0.08)',
-    glowViolet:   '0 0 8px rgba(0,184,116,0.08)',
-    shadowCard:   '0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.03)',
-    shadowDeep:   '0 8px 32px rgba(0,0,0,0.08)',
+    surfaceHover: '#f4f5f7',
+    border:       'rgba(0,0,0,0.07)',
+    borderAccent: 'rgba(0,184,116,0.18)',
+    textPrimary:  '#111827',
+    textSub:      '#4b5563',
+    textMuted:    '#9ca3af',
+    glowCyan:     '0 0 8px rgba(0,184,116,0.06)',
+    glowViolet:   '0 0 8px rgba(0,184,116,0.06)',
+    shadowCard:   '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)',
+    shadowDeep:   '0 10px 30px rgba(0,0,0,0.06)',
     sidebarBg:    '#ffffff',
-    sidebarBorder:'rgba(0,0,0,0.06)',
-    sidebarText:  '#5a6078',
-    sidebarHover: 'rgba(0,0,0,0.025)',
-    headerBg:     'rgba(255,255,255,0.95)',
+    sidebarBorder:'rgba(0,0,0,0.05)',
+    sidebarText:  '#6b7280',
+    sidebarHover: 'rgba(0,0,0,0.03)',
+    headerBg:     'rgba(255,255,255,0.88)',
     logoBg:       'linear-gradient(135deg, #00e5a0 0%, #00b874 100%)',
-    logoText:     '#1a1e2e',
-    logoSub:      '#5a6078',
+    logoText:     '#111827',
+    logoSub:      '#6b7280',
     _dark: false,
 };
 
@@ -91,8 +91,8 @@ export const Z = {
 
 /* Mutable DS — swapped by ThemeToggle, picked up on re-render */
 let DS = (() => {
-    try { return localStorage.getItem('vigil_theme') === 'light' ? DS_LIGHT : DS_DARK; }
-    catch { return DS_DARK; }
+    try { return localStorage.getItem('vigil_theme') === 'dark' ? DS_DARK : DS_LIGHT; }
+    catch { return DS_LIGHT; }
 })();
 
 export function setDS(newDS) { DS = newDS; }

@@ -2727,7 +2727,7 @@ const Sidebar = ({
         return visibleGroups.map((g) => ({ type: 'section', ...g }));
     }, [visibleGroups]);
 
-    const W = collapsed ? 64 : 252;
+    const W = collapsed ? 56 : 232;
 
     return (
         <aside
@@ -2750,13 +2750,13 @@ const Sidebar = ({
             {/* ── LOGO ── */}
             <div
                 style={{
-                    height: 64,
+                    height: 54,
                     flexShrink: 0,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: collapsed ? 'center' : 'flex-start',
-                    padding: collapsed ? 0 : '0 18px',
-                    gap: 12,
+                    padding: collapsed ? 0 : '0 16px',
+                    gap: 10,
                     borderBottom: `1px solid ${DS.border}`,
                 }}
             >
@@ -4013,14 +4013,16 @@ const DashboardInner = ({ onLogout }) => {
                     {/* ── TOP HEADER ── */}
                     <header
                         style={{
-                            height: isDemoFullPage ? 0 : 62,
+                            height: isDemoFullPage ? 0 : 54,
                             flexShrink: 0,
                             borderBottom: isDemoFullPage ? 'none' : `1px solid ${DS.border}`,
                             display: isDemoFullPage ? 'none' : 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            padding: '0 28px',
+                            padding: '0 24px',
                             background: DS.headerBg,
+                            backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)',
                             position: 'sticky',
                             top: 0,
                             zIndex: 40,
@@ -4141,7 +4143,7 @@ const DashboardInner = ({ onLogout }) => {
 
                         <div
                             style={{
-                                padding: isDemoFullPage ? 0 : '28px 32px',
+                                padding: isDemoFullPage ? 0 : '20px 24px',
                                 width: '100%',
                                 minHeight: '100%',
                                 position: 'relative',
