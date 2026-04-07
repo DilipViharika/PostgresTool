@@ -118,36 +118,36 @@ const _DARK = {
 
 // ── Internal light-mode token set ────────────────────────────────────────────
 const _LIGHT = {
-    // ── Backgrounds — Clean white/gray ──────────────────────────────────────────
-    bg:            '#f0f2f5',
-    bgAlt:         '#e8eaef',
+    // ── Backgrounds — Airy white ────────────────────────────────────────────────
+    bg:            '#f8f9fb',
+    bgAlt:         '#f1f3f6',
     surface:       '#ffffff',
-    surfaceHover:  '#f7f8fa',
+    surfaceHover:  '#f4f5f7',
     surfaceRaised: '#ffffff',
 
     // ── Glass ─────────────────────────────────────────────────────────────────
-    glass:             'rgba(255, 255, 255, 0.92)',
-    glassHeavy:        'rgba(255, 255, 255, 0.98)',
-    glassBorder:       'rgba(0, 0, 0, 0.06)',
-    glassBorderHover:  'rgba(0, 0, 0, 0.12)',
+    glass:             'rgba(255, 255, 255, 0.85)',
+    glassHeavy:        'rgba(255, 255, 255, 0.96)',
+    glassBorder:       'rgba(0, 0, 0, 0.07)',
+    glassBorderHover:  'rgba(0, 0, 0, 0.13)',
 
     // ── Typography ────────────────────────────────────────────────────────────
-    textMain:    '#1a1e2e',
-    textMuted:   '#5a6078',
-    textDim:     '#9198ae',
+    textMain:    '#111827',
+    textMuted:   '#4b5563',
+    textDim:     '#9ca3af',
     textInverse: '#ffffff',
 
     // ── Green — primary accent ───────────────────────────────────────────────
     primary:      '#00b874',
     primaryDark:  '#00a066',
     primaryLight: '#00e5a0',
-    primaryFaint: 'rgba(0, 184, 116, 0.06)',
+    primaryFaint: 'rgba(0, 184, 116, 0.05)',
 
     // ── Green — secondary (unified accent) ──────────────────────────────────
     secondary:      '#00b874',
     secondaryDark:  '#00a066',
     secondaryLight: '#00e5a0',
-    secondaryFaint: 'rgba(0, 184, 116, 0.06)',
+    secondaryFaint: 'rgba(0, 184, 116, 0.05)',
 
     // ── Success ───────────────────────────────────────────────────────────────
     success:      '#16a34a',
@@ -175,26 +175,26 @@ const _LIGHT = {
     aiLight: '#70FFBD',
 
     // ── Structural accents ────────────────────────────────────────────────────
-    grid:      '#e4e7ef',
-    gridAlt:   '#d0d4e0',
-    pearl:     '#1a1e2e',
-    deepTeal:  '#e4e7ef',
-    inkBlack:  '#eceef4',
+    grid:      '#e5e7eb',
+    gridAlt:   '#d1d5db',
+    pearl:     '#111827',
+    deepTeal:  '#f1f3f6',
+    inkBlack:  '#f4f5f7',
     phosphor:  '#00b874',
     biolume:   '#00b874',
-    mariana:   '#f3f4f8',
+    mariana:   '#f8f9fb',
 
-    // ── Shadows — soft modern elevation ─────────────────────────────────────────
-    shadowSm:     '0 1px 2px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.03)',
-    shadowMd:     '0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
-    shadowLg:     '0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)',
-    shadowXl:     '0 16px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06)',
-    shadowInner:  'inset 0 1px 3px rgba(0,0,0,0.04)',
-    shadowNeon:       (color) => `0 0 3px ${color}20, 0 0 8px ${color}10`,
-    shadowNeonStrong: (color) => `0 0 4px ${color}30, 0 0 12px ${color}15`,
-    shadowGold:   '0 2px 8px rgba(0,184,116,0.12), 0 0 12px rgba(0,184,116,0.06)',
-    shadowTeal:   '0 2px 8px rgba(0,184,116,0.15), 0 0 12px rgba(0,184,116,0.08)',
-    shadowDeep:   '0 16px 48px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)',
+    // ── Shadows — minimal, soft ────────────────────────────────────────────────
+    shadowSm:     '0 1px 2px rgba(0,0,0,0.03)',
+    shadowMd:     '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)',
+    shadowLg:     '0 4px 12px rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.03)',
+    shadowXl:     '0 8px 24px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
+    shadowInner:  'inset 0 1px 2px rgba(0,0,0,0.03)',
+    shadowNeon:       (color) => `0 0 2px ${color}15`,
+    shadowNeonStrong: (color) => `0 0 4px ${color}20`,
+    shadowGold:   '0 1px 4px rgba(0,184,116,0.08)',
+    shadowTeal:   '0 1px 4px rgba(0,184,116,0.10)',
+    shadowDeep:   '0 10px 30px rgba(0,0,0,0.06)',
 
     // ── Border Radius (same) ──────────────────────────────────────────────────
     radiusXs:   '4px',
