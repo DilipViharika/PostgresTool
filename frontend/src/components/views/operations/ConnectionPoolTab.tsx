@@ -905,13 +905,11 @@ const ConnectionsTab = () => {
     const isEmpty = connections.length === 0 && !connectionsLoading && !refreshing;
 
     return (
-        <div style={{ ...S.root, padding: isEmpty ? '0' : '32px 28px', minHeight: isEmpty ? '100%' : '100vh', height: isEmpty ? '100%' : 'auto' }}>
+        <div style={{ ...S.root, padding: isEmpty ? '0' : '32px 28px', minHeight: isEmpty ? 0 : '100vh' }}>
             {/* ── Keyframes ── */}
             <style>{`
-                @keyframes cpFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-                @keyframes cpGlow { 0%,100%{opacity:.5} 50%{opacity:1} }
-                @keyframes cpOrbit { from{transform:rotate(0deg) translateX(120px) rotate(0deg)} to{transform:rotate(360deg) translateX(120px) rotate(-360deg)} }
-                @keyframes cpGridIn { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+                @keyframes cpPulse { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
+                @keyframes cpFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
             `}</style>
 
             {/* ── Success / Error Toast ── */}
@@ -933,190 +931,130 @@ const ConnectionsTab = () => {
             )}
 
             {/* ═══════════════════════════════════════════════════════════════
-               EMPTY STATE — Full-page immersive onboarding
+               EMPTY STATE — Centered compact layout, no scroll
             ═══════════════════════════════════════════════════════════════ */}
             {isEmpty && (
                 <div style={{
-                    height: '100%', minHeight: 'calc(100vh - 62px)',
-                    display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', justifyContent: 'center',
-                    background: THEME.bg, position: 'relative', overflow: 'hidden',
-                    padding: '0 24px', boxSizing: 'border-box',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    height: 'calc(100vh - 62px)', overflow: 'hidden',
+                    background: THEME.bg, position: 'relative',
                 }}>
-                    {/* Ambient background grid */}
+                    {/* Subtle radial glow behind center */}
                     <div style={{
-                        position: 'absolute', inset: 0, opacity: 0.03,
-                        backgroundImage: `linear-gradient(${THEME.primary} 1px, transparent 1px), linear-gradient(90deg, ${THEME.primary} 1px, transparent 1px)`,
-                        backgroundSize: '60px 60px', pointerEvents: 'none',
-                    }} />
-                    {/* Radial glow */}
-                    <div style={{
-                        position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)',
-                        width: 600, height: 600, borderRadius: '50%',
-                        background: `radial-gradient(circle, ${THEME.primary}12 0%, transparent 70%)`,
+                        position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%,-50%)',
+                        width: 400, height: 400, borderRadius: '50%',
+                        background: `radial-gradient(circle, ${THEME.primary}0a 0%, transparent 70%)`,
                         pointerEvents: 'none',
                     }} />
 
-                    {/* Floating orbiting icons */}
-                    <div style={{ position: 'absolute', top: '35%', left: '50%', width: 0, height: 0, pointerEvents: 'none' }}>
-                        {Object.values(DB_TYPES).map((db, i) => (
-                            <div key={i} style={{
-                                position: 'absolute',
-                                animation: `cpOrbit ${18 + i * 6}s linear infinite`,
-                                animationDelay: `${i * -6}s`,
-                            }}>
-                                <div style={{
-                                    width: 44, height: 44, borderRadius: 12,
-                                    background: `${db.accent}15`, border: `1px solid ${db.accent}25`,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontSize: 22, animation: 'cpFloat 3s ease-in-out infinite',
-                                    animationDelay: `${i * 0.5}s`,
-                                    boxShadow: `0 4px 20px ${db.accent}15`,
-                                }}>
-                                    {db.icon}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Main content */}
                     <div style={{
                         position: 'relative', zIndex: 1, textAlign: 'center',
-                        maxWidth: 560, width: '100%',
-                        animation: 'fadeUp 0.6s ease-out',
+                        maxWidth: 480, width: '100%', padding: '0 20px',
+                        animation: 'cpFadeIn 0.5s ease-out',
                     }}>
-                        {/* Hero icon */}
+                        {/* Icon */}
                         <div style={{
                             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                            width: 80, height: 80, borderRadius: 24,
-                            background: `linear-gradient(135deg, ${THEME.primary}22, ${THEME.primary}08)`,
-                            border: `2px solid ${THEME.primary}30`,
-                            marginBottom: 20, position: 'relative',
-                            boxShadow: `0 0 60px ${THEME.primary}15`,
+                            width: 56, height: 56, borderRadius: 16,
+                            background: `${THEME.primary}15`,
+                            border: `1px solid ${THEME.primary}25`,
+                            marginBottom: 16,
                         }}>
-                            <Database size={38} color={THEME.primary} strokeWidth={1.5} />
-                            <div style={{
-                                position: 'absolute', bottom: -6, right: -6,
-                                width: 30, height: 30, borderRadius: '50%',
-                                background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primary}cc)`,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                boxShadow: `0 4px 12px ${THEME.primary}50`,
-                                border: `2px solid ${THEME.bg}`,
-                            }}>
-                                <Plus size={16} color="#fff" strokeWidth={3} />
-                            </div>
+                            <Database size={26} color={THEME.primary} strokeWidth={1.5} />
                         </div>
 
-                        <h1 style={{
-                            fontSize: 28, fontWeight: 800, color: THEME.textMain,
-                            margin: '0 0 8px', letterSpacing: '-0.03em', lineHeight: 1.2,
+                        <h2 style={{
+                            fontSize: 20, fontWeight: 700, color: THEME.textMain,
+                            margin: '0 0 6px', letterSpacing: '-0.02em',
                         }}>
-                            Connect Your First Database
-                        </h1>
+                            No connections yet
+                        </h2>
                         <p style={{
-                            fontSize: 14, color: THEME.textMuted, maxWidth: 400,
-                            margin: '0 auto 24px', lineHeight: 1.6, fontWeight: 400,
+                            fontSize: 12, color: THEME.textMuted, margin: '0 0 20px', lineHeight: 1.5,
                         }}>
-                            Monitor performance, analyze queries, and get real-time
-                            alerts — all from one dashboard.
+                            Add a database to start monitoring queries and performance.
                         </p>
 
-                        {/* CTA button */}
-                        <button
-                            onClick={() => openNew()}
-                            style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 10,
-                                padding: '12px 32px', borderRadius: 14, border: 'none',
-                                background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primary}bb)`,
-                                color: '#fff', fontSize: 16, fontWeight: 700,
-                                cursor: 'pointer', transition: 'all 0.25s',
-                                boxShadow: `0 6px 24px ${THEME.primary}40, 0 0 0 1px ${THEME.primary}20`,
-                                letterSpacing: '0.01em',
-                            }}
-                            onMouseEnter={e => {
-                                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
-                                e.currentTarget.style.boxShadow = `0 10px 36px ${THEME.primary}50, 0 0 0 1px ${THEME.primary}30`;
-                            }}
-                            onMouseLeave={e => {
-                                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                                e.currentTarget.style.boxShadow = `0 6px 24px ${THEME.primary}40, 0 0 0 1px ${THEME.primary}20`;
-                            }}
-                        >
-                            <Plus size={20} strokeWidth={2.5} />
-                            New Connection
-                        </button>
-
-                        {/* Database type cards */}
-                        <div style={{
-                            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12,
-                            marginTop: 28,
-                        }}>
-                            {Object.entries(DB_TYPES).map(([key, db], i) => (
-                                <div
+                        {/* Quick-add DB type row */}
+                        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 20 }}>
+                            {Object.entries(DB_TYPES).map(([key, db]) => (
+                                <button
                                     key={key}
                                     onClick={() => { openNew(); handleDbTypeChange(key); }}
                                     style={{
-                                        padding: '18px 14px 16px', borderRadius: 16, cursor: 'pointer',
-                                        background: THEME.surface,
-                                        border: `1px solid ${THEME.glassBorder}`,
-                                        transition: 'all 0.25s', textAlign: 'center',
-                                        animation: `cpGridIn 0.5s ease-out ${0.2 + i * 0.1}s backwards`,
-                                        position: 'relative', overflow: 'hidden',
+                                        display: 'flex', alignItems: 'center', gap: 8,
+                                        padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
+                                        background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
+                                        color: THEME.textMain, fontSize: 12, fontWeight: 600,
+                                        transition: 'all 0.2s', fontFamily: FONT_UI,
                                     }}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.transform = 'translateY(-4px)';
-                                        e.currentTarget.style.boxShadow = `0 8px 32px ${db.accent}20`;
-                                        e.currentTarget.style.borderColor = db.accent + '55';
+                                        e.currentTarget.style.borderColor = db.accent + '66';
+                                        e.currentTarget.style.background = `${db.accent}0c`;
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                        e.currentTarget.style.boxShadow = `0 4px 16px ${db.accent}15`;
                                     }}
                                     onMouseLeave={e => {
+                                        e.currentTarget.style.borderColor = THEME.glassBorder;
+                                        e.currentTarget.style.background = THEME.surface;
                                         e.currentTarget.style.transform = 'translateY(0)';
                                         e.currentTarget.style.boxShadow = 'none';
-                                        e.currentTarget.style.borderColor = THEME.glassBorder;
                                     }}
                                 >
-                                    {/* Accent line at top */}
-                                    <div style={{
-                                        position: 'absolute', top: 0, left: 0, right: 0, height: 3,
-                                        background: `linear-gradient(90deg, transparent, ${db.accent}66, transparent)`,
-                                    }} />
-                                    <div style={{
-                                        fontSize: 30, marginBottom: 8,
-                                        filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))',
-                                    }}>{db.icon}</div>
-                                    <div style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>
-                                        {db.label}
-                                    </div>
-                                    <div style={{
-                                        fontSize: 11, color: db.accent, fontWeight: 600,
-                                        fontFamily: FONT_MONO, letterSpacing: '0.03em',
-                                    }}>
-                                        :{db.defaultPort}
-                                    </div>
-                                </div>
+                                    <span style={{ fontSize: 18 }}>{db.icon}</span>
+                                    {db.label}
+                                </button>
                             ))}
                         </div>
 
-                        {/* Feature pills */}
+                        {/* Or divider + generic button */}
                         <div style={{
-                            display: 'flex', gap: 8, justifyContent: 'center',
-                            marginTop: 20, flexWrap: 'wrap',
+                            display: 'flex', alignItems: 'center', gap: 12,
+                            margin: '0 auto 20px', maxWidth: 280,
+                        }}>
+                            <div style={{ flex: 1, height: 1, background: THEME.glassBorder }} />
+                            <span style={{ fontSize: 10, color: THEME.textMuted, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>or</span>
+                            <div style={{ flex: 1, height: 1, background: THEME.glassBorder }} />
+                        </div>
+
+                        <button
+                            onClick={() => openNew()}
+                            style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 8,
+                                padding: '9px 22px', borderRadius: 10, border: 'none',
+                                background: THEME.primary, color: '#fff',
+                                fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                                transition: 'all 0.2s', fontFamily: FONT_UI,
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = `0 4px 16px ${THEME.primary}40`;
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}
+                        >
+                            <Plus size={14} strokeWidth={2.5} />
+                            Add Connection Manually
+                        </button>
+
+                        {/* Feature tags */}
+                        <div style={{
+                            display: 'flex', gap: 14, justifyContent: 'center', marginTop: 24,
                         }}>
                             {[
-                                { icon: <Lock size={13} />, text: 'Encrypted at rest', color: THEME.primary },
-                                { icon: <Terminal size={13} />, text: 'SSH Tunneling', color: '#a78bfa' },
-                                { icon: <ShieldCheck size={13} />, text: 'SSL Support', color: THEME.success },
-                                { icon: <Zap size={13} />, text: 'Real-time Monitoring', color: '#f5a623' },
-                            ].map((pill, i) => (
-                                <div key={i} style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                                    padding: '5px 12px', borderRadius: 20,
-                                    background: `${pill.color}10`,
-                                    border: `1px solid ${pill.color}20`,
-                                    fontSize: 12, fontWeight: 600, color: pill.color,
-                                    animation: `fadeUp 0.4s ease-out ${0.5 + i * 0.07}s backwards`,
+                                { icon: <Lock size={10} />, text: 'Encrypted' },
+                                { icon: <Terminal size={10} />, text: 'SSH Tunnel' },
+                                { icon: <ShieldCheck size={10} />, text: 'SSL' },
+                                { icon: <Zap size={10} />, text: 'Real-time' },
+                            ].map((t, i) => (
+                                <span key={i} style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                                    fontSize: 10, color: THEME.textMuted, fontWeight: 500,
                                 }}>
-                                    {pill.icon} {pill.text}
-                                </div>
+                                    {t.icon} {t.text}
+                                </span>
                             ))}
                         </div>
                     </div>
