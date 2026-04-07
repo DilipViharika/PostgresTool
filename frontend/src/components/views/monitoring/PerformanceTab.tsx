@@ -1969,81 +1969,90 @@ const PerformanceTab = () => {
                                     { title: 'Connections', icon: Network, pct: Math.round((totalConns / maxConnections) * 100), displayValue: `${totalConns}`, unit: `/ ${maxConnections}`, color: totalConns > maxConnections * 0.8 ? THEME.warning : THEME.primary, chips: [{ label: 'Active', value: totalConns, icon: Network }, { label: 'Max', value: maxConnections, icon: Server }] },
                                     { title: 'Cache Hit', icon: Database, pct: Number(cacheHitPct) || 0, displayValue: `${cacheHitPct}`, unit: '%', color: THEME.success, chips: [{ label: 'Reads', value: Number(deepDbStats?.blks_read || 0).toLocaleString(), icon: HardDrive }, { label: 'Hits', value: Number(deepDbStats?.blks_hit || 0).toLocaleString(), icon: Database }] },
                                     { title: 'Shared Buffers', icon: Layers, pct: 100, displayValue: pgSettings?.shared_buffers || '—', unit: '', color: THEME.primary, chips: [{ label: 'Size', value: pgSettings?.shared_buffers || '—', icon: Database }, { label: 'work_mem', value: pgSettings?.work_mem || '—', icon: Layers }] },
-                                ].map((card, idx) => {
-                                    const r = 54, stroke = 7, circ = Math.PI * r;
-                                    const offset = circ - (circ * Math.min(card.pct, 100)) / 100;
-                                    return (
+                                ].map((card, idx) => (
                                     <div
                                         key={idx}
                                         style={{
-                                            background: `linear-gradient(135deg, ${card.color}08 0%, ${THEME.surface} 60%)`,
-                                            borderRadius: 20,
-                                            border: `1px solid ${THEME.glassBorder}`,
-                                            padding: '24px',
                                             display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            gap: 18,
-                                            boxShadow: THEME.shadowSm,
-                                            position: 'relative',
+                                            borderRadius: 16,
                                             overflow: 'hidden',
+                                            border: `1px solid ${THEME.glassBorder}`,
+                                            boxShadow: THEME.shadowMd,
                                         }}
                                     >
-                                        {/* Title */}
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'flex-start' }}>
-                                            <card.icon size={14} color={card.color} />
-                                            <span style={{ fontSize: 12, fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                                {card.title}
+                                        {/* Left: colored panel with big metric */}
+                                        <div style={{
+                                            width: '42%',
+                                            background: `linear-gradient(145deg, ${card.color}, ${card.color}dd)`,
+                                            padding: '22px 18px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            gap: 6,
+                                            position: 'relative',
+                                        }}>
+                                            {/* Decorative circle */}
+                                            <div style={{
+                                                position: 'absolute', top: -20, right: -20,
+                                                width: 80, height: 80, borderRadius: '50%',
+                                                background: 'rgba(255,255,255,0.08)',
+                                            }} />
+                                            <div style={{
+                                                position: 'absolute', bottom: -15, left: -15,
+                                                width: 50, height: 50, borderRadius: '50%',
+                                                background: 'rgba(255,255,255,0.05)',
+                                            }} />
+                                            <card.icon size={20} color="rgba(255,255,255,0.7)" style={{ marginBottom: 2 }} />
+                                            <div style={{
+                                                fontSize: 30, fontWeight: 800, color: '#fff',
+                                                fontFamily: THEME.fontMono, lineHeight: 1,
+                                                letterSpacing: '-0.03em', position: 'relative',
+                                            }}>
+                                                {card.displayValue}
+                                                {card.unit && <span style={{ fontSize: 13, fontWeight: 500, opacity: 0.75 }}> {card.unit}</span>}
+                                            </div>
+                                            <span style={{
+                                                fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.7)',
+                                                textTransform: 'uppercase', letterSpacing: '0.08em',
+                                            }}>
+                                                {card.pct}% used
                                             </span>
                                         </div>
 
-                                        {/* SVG semicircle gauge */}
-                                        <div style={{ position: 'relative', width: 130, height: 75 }}>
-                                            <svg viewBox="0 0 130 75" width="130" height="75" style={{ overflow: 'visible' }}>
-                                                {/* Track */}
-                                                <path
-                                                    d="M 11 70 A 54 54 0 0 1 119 70"
-                                                    fill="none"
-                                                    stroke={THEME.glassBorder}
-                                                    strokeWidth={stroke}
-                                                    strokeLinecap="round"
-                                                />
-                                                {/* Fill */}
-                                                <path
-                                                    d="M 11 70 A 54 54 0 0 1 119 70"
-                                                    fill="none"
-                                                    stroke={card.color}
-                                                    strokeWidth={stroke}
-                                                    strokeLinecap="round"
-                                                    strokeDasharray={`${circ}`}
-                                                    strokeDashoffset={offset}
-                                                    style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1)' }}
-                                                />
-                                            </svg>
-                                            {/* Center metric */}
-                                            <div style={{
-                                                position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-                                                textAlign: 'center',
+                                        {/* Right: white panel with title + details */}
+                                        <div style={{
+                                            flex: 1,
+                                            background: THEME.surface,
+                                            padding: '18px 18px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            gap: 12,
+                                        }}>
+                                            <span style={{
+                                                fontSize: 13, fontWeight: 650, color: THEME.textMain,
+                                                letterSpacing: '-0.01em',
                                             }}>
-                                                <div style={{
-                                                    fontSize: 28, fontWeight: 800, color: THEME.textMain,
-                                                    fontFamily: THEME.fontMono, lineHeight: 1, letterSpacing: '-0.03em',
-                                                }}>
-                                                    {card.displayValue}
-                                                    <span style={{ fontSize: 13, fontWeight: 500, color: THEME.textDim }}>{card.unit}</span>
-                                                </div>
+                                                {card.title}
+                                            </span>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                {card.chips.map((chip, i) => (
+                                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                        <chip.icon size={12} color={THEME.textDim} />
+                                                        <span style={{ fontSize: 11, color: THEME.textDim, minWidth: 48 }}>{chip.label}</span>
+                                                        <span style={{
+                                                            fontSize: 14, fontWeight: 700, color: THEME.textMain,
+                                                            fontFamily: THEME.fontMono, fontVariantNumeric: 'tabular-nums',
+                                                        }}>
+                                                            {typeof chip.value === 'number' ? chip.value.toLocaleString() : chip.value}
+                                                        </span>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
-
-                                        {/* Bottom chips */}
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, width: '100%' }}>
-                                            {card.chips.map((chip, i) => (
-                                                <StatChip key={i} label={chip.label} value={chip.value} icon={chip.icon} small />
-                                            ))}
-                                        </div>
                                     </div>
-                                    );
-                                })}
+                                ))}
                             </div>
 
                             <div className="perf-equal-row" style={{ gridTemplateColumns: '1.4fr 1fr' }}>
