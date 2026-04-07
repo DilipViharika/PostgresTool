@@ -1966,22 +1966,73 @@ const PerformanceTab = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
                                 {[
-                                    { title: 'Connections', label: 'Pool', value: Math.round((totalConns / maxConnections) * 100), color: totalConns > maxConnections * 0.8 ? THEME.warning : THEME.primary, chips: [{ label: 'Active', value: totalConns, color: THEME.primary, icon: Network }, { label: 'Max', value: maxConnections, icon: Server }] },
-                                    { title: 'Cache Hit', label: 'Hit%', value: Number(cacheHitPct) || 0, color: THEME.success, chips: [{ label: 'Reads', value: Number(deepDbStats?.blks_read || 0).toLocaleString(), icon: HardDrive }, { label: 'Hits', value: Number(deepDbStats?.blks_hit || 0).toLocaleString(), icon: Database }] },
-                                    { title: 'Shared Buffers', label: 'Buf', value: 100, color: THEME.primary, chips: [{ label: 'Size', value: pgSettings?.shared_buffers || '—', icon: Database }, { label: 'work_mem', value: pgSettings?.work_mem || '—', icon: Layers }] },
+                                    { title: 'Connections', icon: Network, value: Math.round((totalConns / maxConnections) * 100), displayValue: `${totalConns}`, unit: `/ ${maxConnections}`, color: totalConns > maxConnections * 0.8 ? THEME.warning : THEME.primary, chips: [{ label: 'Active', value: totalConns, icon: Network }, { label: 'Max', value: maxConnections, icon: Server }] },
+                                    { title: 'Cache Hit', icon: Database, value: Number(cacheHitPct) || 0, displayValue: `${cacheHitPct}`, unit: '%', color: THEME.success, chips: [{ label: 'Reads', value: Number(deepDbStats?.blks_read || 0).toLocaleString(), icon: HardDrive }, { label: 'Hits', value: Number(deepDbStats?.blks_hit || 0).toLocaleString(), icon: Database }] },
+                                    { title: 'Shared Buffers', icon: Layers, value: 100, displayValue: pgSettings?.shared_buffers || '—', unit: '', color: THEME.primary, chips: [{ label: 'Size', value: pgSettings?.shared_buffers || '—', icon: Database }, { label: 'work_mem', value: pgSettings?.work_mem || '—', icon: Layers }] },
                                 ].map((card, idx) => (
-                                    <GlassCard key={idx} title={card.title}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', height: 220, gap: 0 }}>
-                                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 0 }}>
-                                                <ResourceGauge label={card.label} value={card.value} color={card.color} size={120} />
-                                            </div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, flexShrink: 0 }}>
-                                                {card.chips.map((chip, i) => (
-                                                    <StatChip key={i} label={chip.label} value={chip.value} color={chip.color} icon={chip.icon} small />
-                                                ))}
+                                    <div
+                                        key={idx}
+                                        style={{
+                                            background: THEME.surface,
+                                            borderRadius: 16,
+                                            border: `1px solid ${THEME.glassBorder}`,
+                                            borderLeft: `4px solid ${card.color}`,
+                                            padding: '20px 22px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 16,
+                                            boxShadow: THEME.shadowMd,
+                                        }}
+                                    >
+                                        {/* Header row */}
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <div style={{
+                                                    width: 36, height: 36, borderRadius: 10,
+                                                    background: `${card.color}12`, display: 'flex',
+                                                    alignItems: 'center', justifyContent: 'center',
+                                                }}>
+                                                    <card.icon size={18} color={card.color} />
+                                                </div>
+                                                <span style={{ fontSize: 13, fontWeight: 650, color: THEME.textMain, letterSpacing: '-0.01em' }}>
+                                                    {card.title}
+                                                </span>
                                             </div>
                                         </div>
-                                    </GlassCard>
+                                        {/* Big metric */}
+                                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                                            <span style={{
+                                                fontSize: 32, fontWeight: 800, color: THEME.textMain,
+                                                fontFamily: THEME.fontMono, lineHeight: 1, letterSpacing: '-0.03em',
+                                            }}>
+                                                {card.displayValue}
+                                            </span>
+                                            <span style={{ fontSize: 14, fontWeight: 500, color: THEME.textDim }}>{card.unit}</span>
+                                        </div>
+                                        {/* Progress bar */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                            <div style={{
+                                                height: 6, borderRadius: 3, background: `${THEME.glassBorder}`,
+                                                overflow: 'hidden',
+                                            }}>
+                                                <div style={{
+                                                    height: '100%', borderRadius: 3,
+                                                    background: `linear-gradient(90deg, ${card.color}, ${card.color}cc)`,
+                                                    width: `${Math.min(card.value, 100)}%`,
+                                                    transition: 'width 0.8s cubic-bezier(0.22,1,0.36,1)',
+                                                }} />
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: THEME.textDim }}>
+                                                <span>{card.value}% utilization</span>
+                                            </div>
+                                        </div>
+                                        {/* Bottom chips */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                            {card.chips.map((chip, i) => (
+                                                <StatChip key={i} label={chip.label} value={chip.value} icon={chip.icon} small />
+                                            ))}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
 
