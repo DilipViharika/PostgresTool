@@ -1,11 +1,10 @@
 /**
- * Premium badges, live dots, legend items, dividers.
- * Neon glow, gradient fills, animated pulse, glass borders.
+ * StatusBadge, LiveDot, LegendItem, Divider — matches original OverviewTab styling.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
 
-/* ── Status Badge ──────────────────────────────────────────────────────── */
+/* ── Status Badge — 9.5px mono, pill, no border ───────────────────────── */
 
 interface StatusBadgeProps {
   label: string;
@@ -18,35 +17,34 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ label, color, pulse })
     style={{
       display: 'inline-flex',
       alignItems: 'center',
-      gap: 6,
-      fontSize: 11,
-      fontWeight: 650,
-      padding: '4px 12px 4px 10px',
-      borderRadius: 8,
-      background: `linear-gradient(135deg, ${color}18, ${color}0c)`,
-      border: `1px solid ${color}28`,
+      gap: 5,
+      fontSize: 9.5,
+      fontWeight: 700,
+      padding: '4px 11px',
+      borderRadius: 12,
+      background: `${color}12`,
       color,
-      lineHeight: 1.4,
+      lineHeight: 1.3,
       whiteSpace: 'nowrap',
-      boxShadow: `0 0 8px ${color}12, inset 0 1px 0 rgba(255,255,255,0.03)`,
+      fontFamily: THEME.fontMono,
+      letterSpacing: '0.02em',
     }}
   >
     <span
       style={{
-        width: 7,
-        height: 7,
+        width: 6,
+        height: 6,
         borderRadius: '50%',
         background: color,
         flexShrink: 0,
-        boxShadow: `0 0 6px ${color}80, 0 0 12px ${color}40`,
-        animation: pulse ? 'tremorPulse 1.5s ease-in-out infinite' : 'none',
+        animation: pulse ? 'ovPulse 1.5s ease-in-out infinite' : 'none',
       }}
     />
     {label}
   </span>
 );
 
-/* ── Live Dot (neon halo) ──────────────────────────────────────────────── */
+/* ── Live Dot — double pulse ring ──────────────────────────────────── */
 
 interface LiveDotProps {
   color?: string;
@@ -61,7 +59,6 @@ export const LiveDot: React.FC<LiveDotProps> = ({ color = THEME.success, size = 
         inset: 0,
         borderRadius: '50%',
         background: color,
-        boxShadow: `0 0 6px ${color}90, 0 0 14px ${color}50, 0 0 22px ${color}20`,
       }}
     />
     <div
@@ -69,14 +66,23 @@ export const LiveDot: React.FC<LiveDotProps> = ({ color = THEME.success, size = 
         position: 'absolute',
         inset: -3,
         borderRadius: '50%',
-        border: `1.5px solid ${color}60`,
-        animation: 'tremorPulseRing 2s ease-out infinite',
+        border: `1px solid ${color}60`,
+        animation: 'ovPulseRing 2s ease-out infinite',
+      }}
+    />
+    <div
+      style={{
+        position: 'absolute',
+        inset: -5,
+        borderRadius: '50%',
+        border: `1px solid ${color}35`,
+        animation: 'ovPulseRing 2s ease-out infinite 0.5s',
       }}
     />
   </div>
 );
 
-/* ── Legend Item (gradient swatch) ─────────────────────────────────────── */
+/* ── Legend Item ─────────────────────────────────────────────────────── */
 
 interface LegendItemProps {
   label: string;
@@ -91,23 +97,21 @@ export const LegendItem: React.FC<LegendItemProps> = ({ label, color }) => (
         width: 10,
         height: 10,
         borderRadius: 3,
-        background: `linear-gradient(135deg, ${color}, ${color}bb)`,
+        background: color,
         flexShrink: 0,
-        boxShadow: `0 0 5px ${color}35`,
       }}
     />
     {label}
   </span>
 );
 
-/* ── Divider (gradient fade) ────────────────────────────────────────── */
+/* ── Divider ────────────────────────────────────────────────────────── */
 
 export const Divider: React.FC<{ style?: React.CSSProperties }> = ({ style = {} }) => (
   <div
     style={{
       height: 1,
       background: `linear-gradient(90deg, transparent, ${THEME.glassBorder}, transparent)`,
-      margin: '4px 0',
       ...style,
     }}
   />

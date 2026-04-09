@@ -85,7 +85,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                 }}
             >
                 <env.icon size={12} />
-                <span className="tremor-mono" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.03em' }}>
+                <span className="ov-mono" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.03em' }}>
                     {env.label}
                 </span>
                 <ChevronDown size={10} style={{ transition: 'transform 0.18s', transform: open ? 'rotate(180deg)' : 'none' }} />
@@ -126,7 +126,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
                                 <div style={{ fontSize: 12, fontWeight: 700, color: e.id === currentEnv ? e.color : THEME.textMain }}>
                                     {e.label}
                                 </div>
-                                <div className="tremor-mono" style={{ fontSize: 9.5, color: THEME.textDim, marginTop: 1 }}>
+                                <div className="ov-mono" style={{ fontSize: 9.5, color: THEME.textDim, marginTop: 1 }}>
                                     {e.host}
                                 </div>
                             </div>
@@ -248,7 +248,7 @@ const NotificationBell = () => {
                             return (
                                 <div
                                     key={a.id}
-                                    className="tremor-notif-item"
+                                    className="ov-notif-item"
                                     style={{
                                         display: 'flex', alignItems: 'flex-start', gap: 10, padding: '11px 14px',
                                         background: a.read ? 'transparent' : `${sc}06`,
@@ -264,7 +264,7 @@ const NotificationBell = () => {
                                         }}>
                                             {a.title}
                                         </div>
-                                        <div className="tremor-mono" style={{ fontSize: 9.5, color: THEME.textDim, marginTop: 3 }}>
+                                        <div className="ov-mono" style={{ fontSize: 9.5, color: THEME.textDim, marginTop: 3 }}>
                                             {a.time}
                                         </div>
                                     </div>
@@ -341,7 +341,7 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                 }}
             >
                 {interval === 0 ? <Pause size={11} /> : <Play size={11} />}
-                <span className="tremor-mono" style={{ fontSize: 10.5, fontWeight: 700 }}>
+                <span className="ov-mono" style={{ fontSize: 10.5, fontWeight: 700 }}>
                     {cur.label}
                 </span>
                 <ChevronDown size={9} style={{ transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'none' }} />
@@ -374,7 +374,7 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
                                 if (opt.value !== interval) ev.currentTarget.style.background = 'transparent';
                             }}
                         >
-                            <span className="tremor-mono" style={{
+                            <span className="ov-mono" style={{
                                 fontSize: 11.5, color: opt.value === interval ? THEME.primary : THEME.textMuted,
                                 fontWeight: opt.value === interval ? 700 : 400,
                             }}>
@@ -406,13 +406,13 @@ const PgVersionBadge = ({ version = '16.2', environment = 'prod' }) => {
             </div>
             <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span className="tremor-mono" style={{
+                    <span className="ov-mono" style={{
                         fontSize: 10.5, fontWeight: 700, color: envData.color, lineHeight: 1
                     }}>
                         PostgreSQL {version}
                     </span>
                 </div>
-                <div className="tremor-mono" style={{ fontSize: 8.5, color: THEME.textDim, marginTop: 1, lineHeight: 1 }}>
+                <div className="ov-mono" style={{ fontSize: 8.5, color: THEME.textDim, marginTop: 1, lineHeight: 1 }}>
                     x86_64-linux-gnu
                 </div>
             </div>
@@ -448,7 +448,7 @@ const BackupStatusCard = ({ lastBackup }) => {
                         }}>
                             Last Backup
                         </div>
-                        <div className="tremor-mono" style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
+                        <div className="ov-mono" style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
                             {backup.type} backup
                         </div>
                     </div>
@@ -457,7 +457,7 @@ const BackupStatusCard = ({ lastBackup }) => {
             </div>
 
             <div>
-                <div className="tremor-mono" style={{
+                <div className="ov-mono" style={{
                     fontSize: 20, fontWeight: 700, color: isOld ? THEME.warning : THEME.textMain,
                     lineHeight: 1, letterSpacing: '-0.01em',
                 }}>
@@ -526,12 +526,12 @@ const LongTxnCard = ({ data, onNavigate }) => {
                             }}>
                                 Long-Running Txns
                             </div>
-                            <div className="tremor-mono" style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
+                            <div className="ov-mono" style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
                                 threshold: &gt; 1m
                             </div>
                         </div>
                     </div>
-                    <div className="tremor-mono" style={{
+                    <div className="ov-mono" style={{
                         fontSize: 24, fontWeight: 800, color: THEME.success, lineHeight: 1,
                     }}>
                         0
@@ -587,12 +587,12 @@ const LongTxnCard = ({ data, onNavigate }) => {
                         }}>
                             Long-Running Txns
                         </div>
-                        <div className="tremor-mono" style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
+                        <div className="ov-mono" style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
                             threshold: &gt; 1m
                         </div>
                     </div>
                 </div>
-                <div className="tremor-mono" style={{
+                <div className="ov-mono" style={{
                     fontSize: 24, fontWeight: 800, color: txns.length > 0 ? THEME.warning : THEME.success, lineHeight: 1,
                 }}>
                     {txns.length}
@@ -609,13 +609,13 @@ const LongTxnCard = ({ data, onNavigate }) => {
                         <div key={t.pid} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                    <span className="tremor-mono" style={{ fontSize: 9.5, color: THEME.textDim }}>
+                                    <span className="ov-mono" style={{ fontSize: 9.5, color: THEME.textDim }}>
                                         PID {t.pid}
                                     </span>
                                     {t.waitEvent && <StatusBadge label={`Wait: ${t.waitEvent}`} color={THEME.danger} />}
                                     {isIdle && <StatusBadge label="Idle in Txn" color={THEME.warning} />}
                                 </div>
-                                <span className="tremor-mono" style={{
+                                <span className="ov-mono" style={{
                                     fontSize: 10.5, fontWeight: 700, color: i === 0 ? THEME.danger : THEME.warning,
                                 }}>
                                     {t.duration}
@@ -630,7 +630,7 @@ const LongTxnCard = ({ data, onNavigate }) => {
                             <div style={{
                                 height: 4, borderRadius: 10, background: `${THEME.grid}50`, overflow: 'hidden',
                             }}>
-                                <div className="tremor-bar-animate" style={{
+                                <div className="ov-bar-animate" style={{
                                     width: `${pct}%`, height: '100%', borderRadius: 10,
                                     background: i === 0 ? `linear-gradient(90deg, ${THEME.danger}70, ${THEME.danger})` : `linear-gradient(90deg, ${THEME.warning}70, ${THEME.warning})`,
                                     animationDelay: `${i * 0.1}s`,
@@ -692,7 +692,7 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                     <div style={{
                         width: 32, height: 32, borderRadius: 10, background: `${urgentColor}14`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }} className={vacuum.urgentCount > 3 ? 'tremor-vacuum-urgent' : ''}>
+                    }} className={vacuum.urgentCount > 3 ? 'ov-vacuum-urgent' : ''}>
                         <Leaf size={15} color={urgentColor} />
                     </div>
                     <div>
@@ -702,13 +702,13 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                         }}>
                             Vacuum Health
                         </div>
-                        <div className="tremor-mono" style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
+                        <div className="ov-mono" style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>
                             {total} tables tracked
                         </div>
                     </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                    <div className="tremor-mono" style={{
+                    <div className="ov-mono" style={{
                         fontSize: 22, fontWeight: 800, color: urgentColor, lineHeight: 1
                     }}>
                         {vacuum.urgentCount}
@@ -749,13 +749,13 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
                 <div style={{ fontSize: 10, color: THEME.textDim }}>
                     Dead tuples:{' '}
-                    <strong className="tremor-mono" style={{ color: THEME.textMuted }}>
+                    <strong className="ov-mono" style={{ color: THEME.textMuted }}>
                         {fmtNum(vacuum.deadTuples)}
                     </strong>
                 </div>
                 <div style={{ fontSize: 10, color: THEME.textDim }}>
                     Bloat:{' '}
-                    <strong className="tremor-mono" style={{
+                    <strong className="ov-mono" style={{
                         color: vacuum.bloatPct > 10 ? THEME.danger : THEME.warning
                     }}>
                         {vacuum.bloatPct}%
@@ -764,7 +764,7 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
             </div>
             <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>
                 Last run: <strong style={{ color: THEME.textMuted }}>{vacuum.lastRunTable}</strong>{' '}
-                <span className="tremor-mono">{vacuum.lastRunAgo}</span>
+                <span className="ov-mono">{vacuum.lastRunAgo}</span>
             </div>
 
             {onNavigate && (
@@ -1283,21 +1283,21 @@ const OverviewTab = () => {
             <ConnectionStatusBanner />
 
             {/* Row 1: Hero Metric Cards — Tremor-style clean layout */}
-            <div className="tremor-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 12 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 12 }}>
                 {metricCards.map((m, i) => (
                     <KpiCard key={i} label={m.label} value={m.value} sub={m.sub} color={m.color} icon={m.icon} detail={m.detail} healthy={m.healthy} delta={m.delta} deltaType={m.deltaType} />
                 ))}
             </div>
 
             {/* Row 2: Backup + LongTxns + Vacuum */}
-            <div className="tremor-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18 }}>
                 <BackupStatusCard lastBackup={backupData} />
                 <LongTxnCard data={longTxns.length > 0 ? longTxns : null} onNavigate={() => nav?.goToTab('performance')} />
                 <VacuumHealthCard data={vacuumData} onNavigate={() => nav?.goToTab('maintenance')} />
             </div>
 
             {/* Row 3: Velocity Chart + Health + Connection Pool */}
-            <div className="tremor-stagger" style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: 18 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: 18 }}>
                 {/* Cluster Velocity */}
                 <PanelCard title="Cluster Velocity" icon={Activity} accentColor={THEME.primary}
                     rightNode={
@@ -1345,7 +1345,7 @@ const OverviewTab = () => {
                                 <div style={{ fontSize: 9, color: THEME.textDim, fontWeight: 600, letterSpacing: '0.04em', marginBottom: 3 }}>
                                     {s.label}
                                 </div>
-                                <div className="tremor-mono" style={{ fontSize: 15, fontWeight: 800, color: s.color, lineHeight: 1 }}>
+                                <div className="ov-mono" style={{ fontSize: 15, fontWeight: 800, color: s.color, lineHeight: 1 }}>
                                     {s.value}
                                 </div>
                             </div>
@@ -1369,7 +1369,7 @@ const OverviewTab = () => {
                                             <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600 }}>
                                                 {item.label}
                                             </span>
-                                            <span className="tremor-mono" style={{ fontSize: 10, fontWeight: 700, color: item.color }}>
+                                            <span className="ov-mono" style={{ fontSize: 10, fontWeight: 700, color: item.color }}>
                                                 {item.value}
                                             </span>
                                         </div>
@@ -1408,7 +1408,7 @@ const OverviewTab = () => {
                         {[['P50', '#34d399'], ['P95', THEME.warning], ['P99', THEME.danger]].map(([l, c]) => (
                             <span key={l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                 <span style={{ width: 10, height: 3, borderRadius: 2, background: c }} />
-                                <span className="tremor-mono">{l}</span>
+                                <span className="ov-mono">{l}</span>
                             </span>
                         ))}
                     </div>
@@ -1437,7 +1437,7 @@ const OverviewTab = () => {
             </PanelCard>
 
             {/* Row 5: Workload + Throughput + Ops */}
-            <div className="tremor-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr 1.3fr', gap: 18 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr 1.3fr', gap: 18 }}>
                 {/* Workload Split */}
                 <PanelCard title="Workload Split" icon={BarChart3}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, height: '100%', justifyContent: 'center' }}>
@@ -1453,7 +1453,7 @@ const OverviewTab = () => {
                                 </PieChart>
                             </ResponsiveContainer>
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                                <span className="tremor-mono" style={{ fontSize: 21, fontWeight: 800, color: THEME.textMain, lineHeight: 1 }}>
+                                <span className="ov-mono" style={{ fontSize: 21, fontWeight: 800, color: THEME.textMain, lineHeight: 1 }}>
                                     {readPct}%
                                 </span>
                                 <span style={{ fontSize: 8, color: THEME.textDim, fontWeight: 600, letterSpacing: '0.02em', marginTop: 2 }}>
@@ -1466,7 +1466,7 @@ const OverviewTab = () => {
                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                     <span style={{ width: 8, height: 8, borderRadius: 2, background: d.color }} />
                                     <span style={{ fontSize: 11, color: THEME.textMuted }}>{d.name}</span>
-                                    <span className="tremor-mono" style={{ fontSize: 11, fontWeight: 700, color: d.color }}>
+                                    <span className="ov-mono" style={{ fontSize: 11, fontWeight: 700, color: d.color }}>
                                         {d.value}%
                                     </span>
                                 </div>
@@ -1474,7 +1474,7 @@ const OverviewTab = () => {
                         </div>
                         <div style={{ fontSize: 10, color: THEME.textDim, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <Layers size={10} /> Total:{' '}
-                            <strong className="tremor-mono" style={{ color: THEME.textMuted }}>
+                            <strong className="ov-mono" style={{ color: THEME.textMuted }}>
                                 {fmtNum(totalOps)}
                             </strong>
                         </div>
@@ -1496,7 +1496,7 @@ const OverviewTab = () => {
                                             <span style={{ fontSize: 11, fontWeight: 600, color: THEME.textMuted }}>
                                                 {row.label}
                                             </span>
-                                            <span className="tremor-mono" style={{ fontSize: 11.5, fontWeight: 800, color: row.color }}>
+                                            <span className="ov-mono" style={{ fontSize: 11.5, fontWeight: 800, color: row.color }}>
                                                 {fmtNum(row.raw)}
                                             </span>
                                         </div>
@@ -1511,7 +1511,7 @@ const OverviewTab = () => {
                         <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600, letterSpacing: '0.04em' }}>
                             Total Ops
                         </span>
-                        <span className="tremor-mono" style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginLeft: 'auto' }}>
+                        <span className="ov-mono" style={{ fontSize: 14, fontWeight: 800, color: THEME.textMain, marginLeft: 'auto' }}>
                             {fmtNum(totalOps)}
                         </span>
                     </div>
@@ -1545,7 +1545,7 @@ const OverviewTab = () => {
             </div>
 
             {/* Row 6: System Resources */}
-            <div className="tremor-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
                 {[
                     { label: 'CPU Load', value: Math.round(Number(data?.stats?.cpuUsage || 0)), color: THEME.primary, icon: Cpu, detail: data?.stats?.cpuDetail || 'N/A', status: Number(data?.stats?.cpuUsage || 0) > 80 ? 'High' : Number(data?.stats?.cpuUsage || 0) > 50 ? 'Moderate' : 'Normal', secondary: Math.round(Number(data?.stats?.ioWait || 0)), secondaryLabel: 'I/O Wait' },
                     { label: 'Memory Usage', value: Math.round(Number(data?.stats?.memoryUsagePct || 0)), color: THEME.secondary, icon: MemoryStick || Server, detail: data?.stats?.memoryDetail || `${data?.stats?.sharedBuffersMB ? Math.round(data.stats.sharedBuffersMB / 1024 * 10) / 10 + ' GB shared buffers' : 'N/A'}`, status: Number(data?.stats?.memoryUsagePct || 0) > 80 ? 'High' : Number(data?.stats?.memoryUsagePct || 0) > 50 ? 'Moderate' : 'Normal', secondary: Math.round(Number(data?.stats?.sharedBuffersPct || 0)), secondaryLabel: 'Shared Buf' },
@@ -1557,17 +1557,17 @@ const OverviewTab = () => {
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
                                     <r.icon size={12} color={r.color} style={{ flexShrink: 0 }} />
-                                    <span className="tremor-display" style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>
+                                    <span className="ov-display" style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>
                                         {r.label}
                                     </span>
                                     <StatusBadge label={r.status} color={r.status === 'Normal' ? THEME.success : r.status === 'Moderate' ? THEME.warning : THEME.danger} />
                                 </div>
                                 <div style={{ fontSize: 10.5, color: THEME.textDim, marginBottom: 6 }}>{r.detail}</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <span className="tremor-mono" style={{ fontSize: 9.5, color: THEME.textDim }}>
+                                    <span className="ov-mono" style={{ fontSize: 9.5, color: THEME.textDim }}>
                                         {r.secondaryLabel}:
                                     </span>
-                                    <span className="tremor-mono" style={{ fontSize: 9.5, color: r.color, fontWeight: 700 }}>
+                                    <span className="ov-mono" style={{ fontSize: 9.5, color: r.color, fontWeight: 700 }}>
                                         {r.secondary}%
                                     </span>
                                 </div>
@@ -1578,7 +1578,7 @@ const OverviewTab = () => {
             </div>
 
             {/* Row 7: Replication + Tables + WAL */}
-            <div className="tremor-stagger" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1.4fr 1.2fr', gap: 18 }}>
+            <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1.4fr 1.2fr', gap: 18 }}>
                 {/* Replication & Locks */}
                 <PanelCard title="Replication & Locks" icon={GitBranch} accentColor={THEME.secondary}
                     rightNode={
@@ -1596,10 +1596,10 @@ const OverviewTab = () => {
                             <div style={{ padding: '8px 12px', borderRadius: 10, background: THEME.surface, border: `1px solid ${THEME.grid}50`, display: 'flex', alignItems: 'center', gap: 8, minWidth: 115, boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.08)' }}>
                                 <Server size={13} color={THEME.primary} />
                                 <div>
-                                    <span className="tremor-mono" style={{ fontSize: 10.5, fontWeight: 700, color: THEME.textMain, display: 'block' }}>
+                                    <span className="ov-mono" style={{ fontSize: 10.5, fontWeight: 700, color: THEME.textMain, display: 'block' }}>
                                         {replicationData?.isStandby ? 'standby' : 'primary'}
                                     </span>
-                                    <span className="tremor-mono" style={{ fontSize: 9, color: THEME.textDim }}>
+                                    <span className="ov-mono" style={{ fontSize: 9, color: THEME.textDim }}>
                                         lag: {replicationData?.isStandby ? `${replicationData?.replayLag || 0} ms` : '0 ms'}
                                     </span>
                                 </div>
@@ -1611,10 +1611,10 @@ const OverviewTab = () => {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                             <Server size={12} color={THEME.secondary} />
                                             <div>
-                                                <span className="tremor-mono" style={{ fontSize: 10.5, fontWeight: 700, color: THEME.textMain, display: 'block' }}>
+                                                <span className="ov-mono" style={{ fontSize: 10.5, fontWeight: 700, color: THEME.textMain, display: 'block' }}>
                                                     {r.application_name || r.name}
                                                 </span>
-                                                <span className="tremor-mono" style={{ fontSize: 9, color: (r.replay_lag_ms || r.lagMs || 0) > 300 ? THEME.warning : THEME.textDim }}>
+                                                <span className="ov-mono" style={{ fontSize: 9, color: (r.replay_lag_ms || r.lagMs || 0) > 300 ? THEME.warning : THEME.textDim }}>
                                                     lag: {r.replay_lag_ms || r.lagMs || 0} ms
                                                 </span>
                                             </div>
@@ -1634,7 +1634,7 @@ const OverviewTab = () => {
                                     <span style={{ fontSize: 9.5, color: THEME.textDim, fontWeight: 600, letterSpacing: '0.04em' }}>
                                         Blocked queries
                                     </span>
-                                    <span className="tremor-mono" style={{ fontSize: 12, fontWeight: 800, color: THEME.danger }}>
+                                    <span className="ov-mono" style={{ fontSize: 12, fontWeight: 800, color: THEME.danger }}>
                                         {String(replicationData?.blockedQueries || 0)}
                                     </span>
                                 </div>
@@ -1652,7 +1652,7 @@ const OverviewTab = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <Unlock size={10} color={THEME.success} />
                                     <span style={{ fontSize: 10.5, color: THEME.textMuted }}>Deadlocks (5m)</span>
-                                    <span className="tremor-mono" style={{ fontSize: 11, fontWeight: 700, color: Number(replicationData?.deadlocks || data?.traffic?.deadlocks || 0) > 0 ? THEME.danger : THEME.success }}>
+                                    <span className="ov-mono" style={{ fontSize: 11, fontWeight: 700, color: Number(replicationData?.deadlocks || data?.traffic?.deadlocks || 0) > 0 ? THEME.danger : THEME.success }}>
                                         {String(replicationData?.deadlocks || data?.traffic?.deadlocks || 0)}
                                     </span>
                                 </div>
@@ -1673,7 +1673,7 @@ const OverviewTab = () => {
                             return (
                                 <div key={t.table_name || t.name || i} style={{ padding: '10px 18px', borderBottom: i < arr.length - 1 ? `1px solid ${THEME.grid}22` : 'none' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-                                        <span className="tremor-mono" style={{ fontSize: 10.5, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '62%' }} title={name}>
+                                        <span className="ov-mono" style={{ fontSize: 10.5, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '62%' }} title={name}>
                                             {name}
                                         </span>
                                         <span style={{ fontSize: 10.5, color: THEME.textDim }}>
@@ -1681,7 +1681,7 @@ const OverviewTab = () => {
                                         </span>
                                     </div>
                                     <div style={{ height: 6, borderRadius: 14, background: `${THEME.grid}50`, overflow: 'hidden', display: 'flex', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' }}>
-                                        <div className="tremor-bar-animate" style={{ width: '100%', height: '100%', display: 'flex', transformOrigin: 'left' }}>
+                                        <div className="ov-bar-animate" style={{ width: '100%', height: '100%', display: 'flex', transformOrigin: 'left' }}>
                                             <div style={{ width: `${rp}%`, background: `linear-gradient(90deg, ${THEME.primary}80, ${THEME.primary})` }} />
                                             <div style={{ flex: 1, minWidth: 0, background: `linear-gradient(90deg, ${THEME.secondary}80, ${THEME.secondary})` }} />
                                         </div>

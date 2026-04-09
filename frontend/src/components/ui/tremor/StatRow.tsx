@@ -1,5 +1,5 @@
 /**
- * Premium stat display — neon text glow, glass panels, gradient accents.
+ * StatStrip & MiniStat — clean original styling.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
@@ -21,9 +21,9 @@ export const StatStrip: React.FC<StatStripProps> = ({ items, dividers = false })
   <div
     style={{
       display: 'flex',
-      gap: dividers ? 0 : 20,
-      marginTop: 16,
-      paddingTop: 16,
+      gap: dividers ? 0 : 16,
+      marginTop: 14,
+      paddingTop: 14,
       borderTop: `1px solid ${THEME.glassBorder}`,
     }}
   >
@@ -35,33 +35,32 @@ export const StatStrip: React.FC<StatStripProps> = ({ items, dividers = false })
           minWidth: 0,
           ...(dividers
             ? {
-                paddingRight: 16,
+                paddingRight: 14,
                 borderRight: i < items.length - 1 ? `1px solid ${THEME.glassBorder}` : 'none',
-                paddingLeft: i > 0 ? 16 : 0,
+                paddingLeft: i > 0 ? 14 : 0,
               }
             : {}),
         }}
       >
         <div
           style={{
-            fontSize: 10.5,
+            fontSize: 10,
             color: THEME.textDim,
             fontWeight: 600,
-            marginBottom: 5,
-            letterSpacing: '0.04em',
+            marginBottom: 4,
             textTransform: 'uppercase',
+            letterSpacing: '0.03em',
           }}
         >
           {s.label}
         </div>
         <div
+          className="ov-mono"
           style={{
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: 800,
             color: s.color || THEME.textMain,
             lineHeight: 1,
-            fontFamily: THEME.fontMono,
-            textShadow: s.color ? `0 0 14px ${s.color}30, 0 0 4px ${s.color}18` : undefined,
           }}
         >
           {s.value}
@@ -71,7 +70,7 @@ export const StatStrip: React.FC<StatStripProps> = ({ items, dividers = false })
   </div>
 );
 
-/* ── Mini Stat Box (glass panel with neon accent) ────────────────────── */
+/* ── Mini Stat ──────────────────────────────────────────────────────── */
 
 interface MiniStatProps {
   label: string;
@@ -82,69 +81,31 @@ interface MiniStatProps {
 export const MiniStat: React.FC<MiniStatProps> = ({ label, value, color }) => (
   <div
     style={{
-      padding: '12px 16px',
-      borderRadius: 12,
-      background: `linear-gradient(135deg, ${THEME.bgAlt || THEME.surface}, ${THEME.surface})`,
+      padding: '10px 14px',
+      borderRadius: 10,
+      background: THEME.bgAlt || THEME.surface,
       border: `1px solid ${THEME.glassBorder}`,
-      boxShadow: `${THEME.shadowSm}, 0 0 12px ${color || THEME.primary}06`,
-      position: 'relative',
-      overflow: 'hidden',
     }}
   >
-    {/* Left neon accent bar */}
-    {color && (
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: '15%',
-          bottom: '15%',
-          width: 3,
-          borderRadius: 2,
-          background: `linear-gradient(180deg, ${color}, ${color}80)`,
-          boxShadow: `0 0 8px ${color}40`,
-        }}
-      />
-    )}
-    {/* Mini orb glow */}
-    {color && (
-      <div
-        style={{
-          position: 'absolute',
-          top: -15,
-          right: -15,
-          width: 50,
-          height: 50,
-          borderRadius: '50%',
-          background: `radial-gradient(circle, ${color}0a, transparent 60%)`,
-          pointerEvents: 'none',
-        }}
-      />
-    )}
     <div
       style={{
         fontSize: 10,
         color: THEME.textDim,
         fontWeight: 600,
-        marginBottom: 5,
-        letterSpacing: '0.04em',
+        marginBottom: 4,
         textTransform: 'uppercase',
-        position: 'relative',
-        zIndex: 1,
+        letterSpacing: '0.03em',
       }}
     >
       {label}
     </div>
     <div
+      className="ov-mono"
       style={{
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: 800,
         color: color || THEME.textMain,
         lineHeight: 1,
-        fontFamily: THEME.fontMono,
-        textShadow: color ? `0 0 10px ${color}25` : undefined,
-        position: 'relative',
-        zIndex: 1,
       }}
     >
       {value}
