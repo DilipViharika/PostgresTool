@@ -153,6 +153,7 @@ const ConnectionSwitcherLazy = lazyRetry(() => import('./components/layout/Conne
 
 // Shared — Per-section error boundary for graceful tab-level recovery (eager — must be class component)
 import SectionErrorBoundary from './components/shared/SectionErrorBoundary';
+const ErrorBoundary = SectionErrorBoundary;
 import CommandPalette from './components/shared/CommandPalette';
 
 // Enterprise edition
