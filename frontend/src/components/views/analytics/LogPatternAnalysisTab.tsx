@@ -745,7 +745,8 @@ export default function LogPatternAnalysisTab() {
     const loadData = useCallback(async () => {
         try {
             setIsLoading(true);
-            const token = localStorage.getItem('vigil_token');
+            // SECURITY: Retrieve token from sessionStorage instead of localStorage
+            const token = sessionStorage.getItem('vigil_token');
             const result = await fetchData('/api/log-patterns/summary', {
                 headers: { Authorization: `Bearer ${token}` },
             });

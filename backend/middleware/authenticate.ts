@@ -21,12 +21,17 @@ interface RateLimitBucket {
 
 const apiKeyRateLimits = new Map<string, RateLimitBucket>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 60 seconds
-const RATE_LIMIT_MAX = 100; // 100 requests per minute
+const RATE_LIMIT_MAX = 60; // 60 requests per minute (reduced from 100 for stricter rate limiting)
 
 /**
  * Check if API key has exceeded rate limit
+ * Returns { allowed: boolean, remaining: number, resetTime: number }
  */
-function checkApiKeyRateLimit(apiKey: string): boolean {
+function checkApiKeyRateLimit(apiKey: string): {
+  allowed: boolean;
+  remaining: number;
+  resetTime: number;
+} {
   const now = Date.now();
   let bucket = apiKeyRateLimits.get(apiKey);
 
@@ -34,11 +39,19 @@ function checkApiKeyRateLimit(apiKey: string): boolean {
     // Create or reset bucket
     bucket = { count: 1, resetTime: now + RATE_LIMIT_WINDOW };
     apiKeyRateLimits.set(apiKey, bucket);
-    return true; // Within limit
+    return {
+      allowed: true,
+      remaining: RATE_LIMIT_MAX - 1,
+      resetTime: bucket.resetTime
+    };
   }
 
   bucket.count++;
-  return bucket.count <= RATE_LIMIT_MAX;
+  return {
+    allowed: bucket.count <= RATE_LIMIT_MAX,
+    remaining: Math.max(0, RATE_LIMIT_MAX - bucket.count),
+    resetTime: bucket.resetTime
+  };
 }
 
 /**
@@ -105,8 +118,17 @@ export function buildAuthenticate(
     const apiKey = req.headers['x-api-key'] as string | undefined;
     if (apiKey) {
       // Check rate limit before authenticating
-      if (!checkApiKeyRateLimit(apiKey)) {
-        res.status(429).json({ error: 'Rate limit exceeded (100 requests per minute per API key)' });
+      const rateLimitCheck = checkApiKeyRateLimit(apiKey);
+
+      // Add rate limit info to response headers
+      res.setHeader('X-RateLimit-Limit', String(RATE_LIMIT_MAX));
+      res.setHeader('X-RateLimit-Remaining', String(rateLimitCheck.remaining));
+      res.setHeader('X-RateLimit-Reset', String(rateLimitCheck.resetTime));
+
+      if (!rateLimitCheck.allowed) {
+        res.status(429).json({
+          error: `Rate limit exceeded (${RATE_LIMIT_MAX} requests per minute per API key)`
+        });
         return;
       }
 
@@ -184,4 +206,4 @@ export function requireRole(...roles: UserRole[]): RequestHandler {
     }
     next();
   };
-}
+}

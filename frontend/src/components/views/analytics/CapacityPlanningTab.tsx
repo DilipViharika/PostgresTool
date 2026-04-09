@@ -623,4 +623,4 @@ const CapacityPlanningTab = () => {
     );
 };
 
-export default CapacityPlanningTab;
+export default React.memo(CapacityPlanningTab);

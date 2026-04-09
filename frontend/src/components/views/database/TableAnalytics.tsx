@@ -175,7 +175,7 @@ const ChartTip = ({ active, payload, label }) => {
         <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20, padding: '20px 24px', fontSize: 12, fontFamily: THEME.fontMono, color: THEME.textMain }}>
             {label && <div style={{ color: THEME.textDim, marginBottom: 4 }}>{label}</div>}
             {payload.map((p, i) => (
-                <div key={i} style={{ color: p.color, fontWeight: 600 }}>{p.name}: {typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</div>
+                <div key={p.name} style={{ color: p.color, fontWeight: 600 }}>{p.name}: {typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</div>
             ))}
         </div>
     );
@@ -192,7 +192,7 @@ const Bar2 = ({ v, max, color, h = 5 }) => {
 
 const StackBar = ({ segs, h = 9 }) => (
     <div style={{ display: 'flex', height: h, borderRadius: h, overflow: 'hidden', background: `${THEME.glassBorder}60` }}>
-        {segs.map((s, i) => <div key={i} style={{ width: `${s.pct}%`, background: s.color, flexShrink: 0, transition: 'width .6s' }} />)}
+        {segs.map((s, i) => <div key={`seg-${i}-${s.color}`} style={{ width: `${s.pct}%`, background: s.color, flexShrink: 0, transition: 'width .6s' }} />)}
     </div>
 );
 
@@ -221,7 +221,9 @@ const Chip = ({ children, color, size = 'md' }) => (
     }}>{children}</span>
 );
 
-const Card = ({ children, accent, style = {}, className = '' }) => (
+const Card = ({ children, accent, style = {}, className = '' }: { children: React.ReactNode; accent?: string; style?: Record<string, unknown>; className?: string }) => {
+    const padding = style && typeof style === 'object' && 'padding' in style ? style.padding : 0;
+    return (
     <div className={`ud-card ${className}`} style={{
         background: THEME.surface,
         ...style,
@@ -233,11 +235,12 @@ const Card = ({ children, accent, style = {}, className = '' }) => (
                 <div className="ud-card-dot" style={{ background: '#28c840' }} />
             </div>
         )}
-        <div className={accent ? "ud-card-body" : ""} style={accent ? {} : { padding: (style as any).padding || 0 }}>
+        <div className={accent ? "ud-card-body" : ""} style={accent ? {} : { padding }}>
             {children}
         </div>
     </div>
 );
+};
 
 const SecHead = ({ Icon, title, sub, accent, right }) => {
     const ac = accent || THEME.primary;

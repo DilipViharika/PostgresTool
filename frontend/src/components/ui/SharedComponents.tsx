@@ -123,10 +123,9 @@ export const THEME = _AT;
 const NeuralContext = createContext({});
 export const useNeural = () => useContext(NeuralContext);
 
-export const NeuralProvider = ({ children, theme: customTheme }) => {
+export const NeuralProvider = ({ children }) => {
     const [alerts, setAlerts] = useState([]);
     const [glitchTarget, setGlitchTarget] = useState(null);
-    const merged = { ...THEME, ...(customTheme || {}) };
     const pushAlert = useCallback((alert) => {
         const id = Date.now();
         setAlerts((prev) => [{ ...alert, id, ts: Date.now() }, ...prev].slice(0, 8));
@@ -135,7 +134,7 @@ export const NeuralProvider = ({ children, theme: customTheme }) => {
     const dismissAlert = useCallback((id) => setAlerts((prev) => prev.filter((a) => a.id !== id)), []);
     return (
         <NeuralContext.Provider
-            value={{ theme: merged, alerts, pushAlert, dismissAlert, glitchTarget, setGlitchTarget }}
+            value={{ theme: THEME, alerts, pushAlert, dismissAlert, glitchTarget, setGlitchTarget }}
         >
             {children}
         </NeuralContext.Provider>
@@ -333,16 +332,6 @@ export const CornerBrackets = () => null;
 
 export const ScanlineOverlay = () => null;
 
-export const HexPattern = () => null;
-
-export const GridPattern = () => null;
-
-export const GlowOrb = () => null;
-
-export const NoiseTexture = () => null;
-
-export const CircuitLines = () => null;
-
 // ═══════════════════════════════════════════════════════════════════════════
 //  CHIP BADGE & TREND CHIP
 // ═══════════════════════════════════════════════════════════════════════════
@@ -403,6 +392,24 @@ export const TrendChip = ({ value, label, size = 'default' }) => {
         </span>
     );
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  CARD COMPONENTS — Usage Guide
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Three primary card types for different use cases:
+//
+// 1. GlassCard (below) — The primary card for dashboards and data displays.
+//    Features: title, subtitle, icon, collapse, refresh. Best for main content.
+//
+// 2. PanelCard (tremor/Card.tsx) — Compact card with header, icon, and accent strip.
+//    Features: minimal styling, icon background. For secondary panels and sidebars.
+//
+// 3. MetricCard (below) — Metric/stat display with optional sparkline and trend.
+//    Features: compact layout, value + label, trend indicators. For KPIs and stats.
+//
+// Additional: KpiCard (tremor/KpiCard.tsx) — Similar to MetricCard, metric display.
+//
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  1. GLASS CARD — v3 Neural Panel
@@ -830,7 +837,7 @@ export const ResourceGauge = ({
                         <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
                         <RadialBar background={{ fill: `${_AT.glassBorder}` }} clockWise dataKey="value" cornerRadius={5}>
                             {data.map((_, i) => (
-                                <Cell key={i} fill={resolvedColor} />
+                                <Cell key={`gauge-cell-${i}`} fill={resolvedColor} />
                             ))}
                         </RadialBar>
                     </RadialBarChart>
@@ -957,7 +964,7 @@ export const NeonProgressBar = ({
                 {showMilestones &&
                     milestones.map((m, i) => (
                         <div
-                            key={i}
+                            key={`milestone-${m}-${i}`}
                             style={{
                                 position: 'absolute',
                                 left: `${m}%`,
@@ -1092,7 +1099,7 @@ export const CustomTooltip = ({ active, payload, label, formatter, unit }) => {
             )}
             {payload.map((entry, i) => (
                 <div
-                    key={i}
+                    key={entry.name}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1863,7 +1870,7 @@ export const DataTable = ({
                         </button>
                         {Array.from({ length: Math.min(totalPages, 7) }).map((_, i) => (
                             <button
-                                key={i}
+                                key={`page-${i}`}
                                 onClick={() => setPage(i)}
                                 style={{
                                     background: page === i ? `${accentColor}20` : _AT.surfaceHover,
@@ -1985,7 +1992,7 @@ export const SkeletonLoader = ({ rows = 3, height = 16, gap = 10, style: customS
             >
                 {Array.from({ length: rows }).map((_, i) => (
                     <div
-                        key={i}
+                        key={`skeleton-row-${i}`}
                         style={{
                             height: 120,
                             borderRadius: '14px',
@@ -2014,7 +2021,7 @@ export const SkeletonLoader = ({ rows = 3, height = 16, gap = 10, style: customS
         <div style={{ display: 'flex', flexDirection: 'column', gap, ...customStyle }}>
             {Array.from({ length: rows }).map((_, i) => (
                 <div
-                    key={i}
+                    key={`skeleton-bar-${i}`}
                     style={{
                         height,
                         borderRadius: 2,
@@ -2241,7 +2248,7 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
             >
                 {history.map((line, i) => (
                     <div
-                        key={i}
+                        key={`history-${i}-${line.type}`}
                         style={{
                             display: 'flex',
                             alignItems: 'flex-start',
@@ -2369,7 +2376,7 @@ export const Timeline = ({ events = [], maxHeight = 400 }) => {
                 const Icon = config.icon;
                 return (
                     <div
-                        key={i}
+                        key={`event-${i}-${event.title || event.type}`}
                         style={{
                             display: 'flex',
                             gap: 12,
@@ -2508,7 +2515,7 @@ export const RadarMetric = ({ data = [], size = 200, color = _AT.primary, label 
                 {/* Spoke lines */}
                 {data.map((_, i) => {
                     const end = toXY(i, 100, r);
-                    return <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke={`${color}15`} strokeWidth={1} />;
+                    return <line key={`spoke-${i}`} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke={`${color}15`} strokeWidth={1} />;
                 })}
                 {/* Data polygon */}
                 <polygon
@@ -2528,7 +2535,7 @@ export const RadarMetric = ({ data = [], size = 200, color = _AT.primary, label 
                     const p = toXY(i, d.value, r);
                     return (
                         <circle
-                            key={i}
+                            key={`data-point-${i}`}
                             cx={p.x}
                             cy={p.y}
                             r={3.5}
@@ -2544,7 +2551,7 @@ export const RadarMetric = ({ data = [], size = 200, color = _AT.primary, label 
                     const p = toXY(i, 120, r);
                     return (
                         <text
-                            key={i}
+                            key={`label-${i}`}
                             x={p.x}
                             y={p.y}
                             textAnchor="middle"
@@ -2634,7 +2641,7 @@ export const HeatmapGrid = ({ data = [], weeks = 26, color = _AT.primary, label 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2, paddingTop: 16 }}>
                     {days.map((d, i) => (
                         <div
-                            key={i}
+                            key={`day-${d}`}
                             style={{
                                 height: 11,
                                 fontSize: 8,
@@ -2660,7 +2667,7 @@ export const HeatmapGrid = ({ data = [], weeks = 26, color = _AT.primary, label 
                         const intensity = cell.value / maxVal;
                         return (
                             <div
-                                key={i}
+                                key={cell.date || `cell-${i}`}
                                 title={`${cell.date || ''}: ${cell.value}`}
                                 style={{
                                     width: 11,
@@ -2682,7 +2689,7 @@ export const HeatmapGrid = ({ data = [], weeks = 26, color = _AT.primary, label 
                 <span style={{ fontSize: 8, color: _AT.textDim, fontFamily: _AT.fontMono }}>Less</span>
                 {[0, 0.25, 0.5, 0.75, 1].map((v, i) => (
                     <div
-                        key={i}
+                        key={`intensity-${v}`}
                         style={{
                             width: 11,
                             height: 11,
@@ -3021,7 +3028,7 @@ export const NetworkGraph = ({ nodes = [], edges = [], width = 400, height = 300
                 if (!from || !to) return null;
                 const color = edge.active ? _AT.primary : _AT.textDim;
                 return (
-                    <g key={i}>
+                    <g key={`edge-${edge.from}-${edge.to}`}>
                         <line
                             x1={from.x}
                             y1={from.y}
@@ -3133,7 +3140,7 @@ export const WaveformBar = ({ bars = 32, color = _AT.primary, active = true, hei
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, height: 40 }}>
             {Array.from({ length: bars }).map((_, i) => (
                 <div
-                    key={i}
+                    key={`bar-${i}`}
                     style={{
                         flex: 1,
                         borderRadius: 2,
@@ -3261,7 +3268,7 @@ export const PillInput = ({ value = [], onChange, placeholder = 'Add tag...', co
         >
             {value.map((tag, i) => (
                 <span
-                    key={i}
+                    key={tag}
                     style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -3545,7 +3552,7 @@ export const NeuralSelect = ({ value, options, onChange, label, color = _AT.prim
                         const isActive = key === value;
                         return (
                             <div
-                                key={i}
+                                key={key}
                                 onClick={() => {
                                     onChange(key);
                                     setOpen(false);
@@ -3698,7 +3705,7 @@ export const ConnectionPoolBar = ({ total, idle, active, waiting, max }) => {
                     (seg, i) =>
                         seg.value > 0 && (
                             <div
-                                key={i}
+                                key={`seg-${i}-${seg.color}`}
                                 style={{
                                     width: `${(seg.value / barMax) * 100}%`,
                                     background: `linear-gradient(180deg, ${seg.color}80, ${seg.color}50)`,
@@ -3732,14 +3739,14 @@ export const ConnectionPoolBar = ({ total, idle, active, waiting, max }) => {
             </div>
             <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
                 {segments.map((seg, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div key={seg.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <div
                             style={{
                                 width: 8,
                                 height: 8,
                                 borderRadius: 1,
                                 background: seg.color,
-                                
+
                             }}
                         />
                         <span style={{ fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono }}>
@@ -4267,7 +4274,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {[_AT.danger, _AT.warning, _AT.success].map((c, i) => (
                             <div
-                                key={i}
+                                key={`color-${c}`}
                                 style={{
                                     width: 8,
                                     height: 8,
@@ -4317,7 +4324,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                     )}
                     {type === 'api' &&
                         data.queries?.map((q, i) => (
-                            <div key={i} style={{ marginBottom: 12 }}>
+                            <div key={`query-${i}-${q.calls}`} style={{ marginBottom: 12 }}>
                                 <div
                                     style={{ color: _AT.textDim, fontSize: 10 }}
                                 >{`-- [${i + 1}] ${q.calls} calls · ${q.duration}ms avg`}</div>
@@ -4512,7 +4519,7 @@ export const CacheStatsRing = ({ size: cacheSize, maxSize, hitRate }) => {
                             stroke="none"
                         >
                             {data.map((e, i) => (
-                                <Cell key={i} fill={e.fill} />
+                                <Cell key={`pie-cell-${i}-${e.fill}`} fill={e.fill} />
                             ))}
                         </Pie>
                     </PieChart>
@@ -5108,11 +5115,6 @@ export default {
     // Primitives
     CornerBrackets,
     ScanlineOverlay,
-    HexPattern,
-    GridPattern,
-    GlowOrb,
-    NoiseTexture,
-    CircuitLines,
     // Badges & chips
     ChipBadge,
     TrendChip,

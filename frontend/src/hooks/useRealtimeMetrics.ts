@@ -5,7 +5,7 @@ export interface MetricUpdate {
   value: number;
   timestamp: number;
   unit?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UseRealtimeMetricsOptions {
@@ -25,7 +25,7 @@ export interface UseRealtimeMetricsReturn {
   metrics: Record<string, MetricUpdate[]>;
   latency: number;
   reconnectCount: number;
-  send: (data: any) => void;
+  send: (data: Record<string, unknown>) => void;
   disconnect: () => void;
   reconnect: () => void;
 }
@@ -132,7 +132,7 @@ export function useRealtimeMetrics(options?: UseRealtimeMetricsOptions): UseReal
     setTimeout(() => connect(), 100);
   };
 
-  const send = (data: any) => {
+  const send = (data: Record<string, unknown>) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(data));
     }

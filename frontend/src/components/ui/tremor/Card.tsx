@@ -1,6 +1,11 @@
 /**
  * Card & Panel — Clean, minimal, premium design.
  * No decorative clutter. Rich feel through shadows, spacing, and typography.
+ *
+ * Card Usage Guide:
+ * - Card: Basic container with subtle border and shadow. Use for simple layouts.
+ * - PanelCard: Card with optional header, icon, and accent strip. Use for dashboard panels.
+ * - For more featured cards (title, subtitle, collapse, refresh), see GlassCard in SharedComponents.tsx
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';

@@ -44,7 +44,8 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
         setError('');
 
         try {
-            const token = localStorage.getItem('vigil_token');
+            // SECURITY: Retrieve token from sessionStorage instead of localStorage
+            const token = sessionStorage.getItem('vigil_token');
             const res = await fetch(`${API_BASE}/api/auth/change-password`, {
                 method: 'POST',
                 headers: {
@@ -70,8 +71,9 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
             setTimeout(() => {
                 onSuccess();
             }, 1500);
-        } catch (err: any) {
-            setError(err.message || 'Network error. Please try again.');
+        } catch (err: unknown) {
+            const errorMsg = err instanceof Error ? err.message : 'Network error. Please try again.';
+            setError(errorMsg);
             setLoading(false);
         }
     }, [isValid, currentPassword, newPassword, onSuccess]);

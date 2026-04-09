@@ -53,7 +53,9 @@ function deriveKey(secret) {
 }
 
 function getEncryptionSecret() {
+    const IS_PROD = process.env.NODE_ENV === 'production';
     let key = process.env.ENCRYPTION_KEY;
+
     if (!key) {
         key = process.env.JWT_SECRET;
         if (key) {
@@ -61,15 +63,31 @@ function getEncryptionSecret() {
             // It may be shorter than ideal for cryptographic key derivation and could be
             // shared or rotated independently of the encryption key. Always set a dedicated
             // ENCRYPTION_KEY environment variable in production.
-            console.warn('[Encryption] WARNING: Using JWT_SECRET as fallback for encryption key. Set ENCRYPTION_KEY environment variable for production security.');
+            const message = '[Encryption] CRITICAL WARNING: Using JWT_SECRET as fallback for encryption key. Set ENCRYPTION_KEY environment variable for production security.';
+            if (IS_PROD) {
+                console.error(message);
+            } else {
+                console.warn(message);
+            }
         }
     }
+
     if (!key) {
         throw new Error(
             'ENCRYPTION_KEY (or JWT_SECRET) environment variable is required. '
           + 'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))"'
         );
     }
+
+    // In production, fail if only using JWT_SECRET fallback
+    if (IS_PROD && !process.env.ENCRYPTION_KEY && process.env.JWT_SECRET) {
+        throw new Error(
+            'FATAL: ENCRYPTION_KEY must be explicitly set in production. ' +
+            'Using JWT_SECRET as fallback is not allowed. ' +
+            'Generate a dedicated key with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))"'
+        );
+    }
+
     return key;
 }
 

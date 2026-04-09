@@ -376,7 +376,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, war
    ═══════════════════════════════════════════════════════════════════════════ */
 const COLS = '2.2fr 1fr 1.4fr 1fr 1fr 100px';
 
-export default function VacuumMaintenanceTab() {
+function VacuumMaintenanceTab() {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -411,7 +411,8 @@ export default function VacuumMaintenanceTab() {
     const fetchDeadTupleRate = React.useCallback(async () => {
         setDeadTupleLoading(true);
         try {
-            const token = localStorage.getItem('vigil_token') || localStorage.getItem('authToken');
+            // SECURITY: Retrieve token from sessionStorage instead of localStorage
+            const token = sessionStorage.getItem('vigil_token') || sessionStorage.getItem('authToken');
             const API_BASE = import.meta.env.VITE_API_URL || '';
             const res = await fetch(`${API_BASE}/api/vacuum/dead-tuple-rate`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -1258,3 +1259,5 @@ export default function VacuumMaintenanceTab() {
         </div>
     );
 }
+
+export default React.memo(VacuumMaintenanceTab);

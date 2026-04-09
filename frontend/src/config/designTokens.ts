@@ -1,8 +1,9 @@
 // ==========================================================================
-//  VIGIL — Design Tokens (single source of truth for the visual system)
+//  VIGIL — Design Tokens (Z-index scale & accent colors reference)
+//  Theme tokens now consolidated in utils/theme.tsx
 // ==========================================================================
 
-/* Accent colors shared by both themes — VIGIL Indigo palette */
+/* Accent colors shared by both themes — VIGIL Indigo palette (reference only) */
 export const DS_ACCENTS = {
     cyan:         '#6366f1',
     cyanDim:      'rgba(99,102,241,0.15)',
@@ -17,65 +18,9 @@ export const DS_ACCENTS = {
     fontUI:   `'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif`,
 };
 
-export const DS_DARK = {
-    ...DS_ACCENTS,
-    bg:           '#0f1923',
-    bgDeep:       '#0a1219',
-    surface:      '#1a2736',
-    surfaceHover: '#1f2f40',
-    border:       'rgba(255,255,255,0.08)',
-    borderAccent: 'rgba(99,102,241,0.2)',
-    textPrimary:  '#f0f4ff',
-    textSub:      '#8b9ab8',
-    textMuted:    '#5a6e84',
-    glowCyan:     '0 0 12px rgba(99,102,241,0.12), 0 0 30px rgba(99,102,241,0.04)',
-    glowViolet:   '0 0 12px rgba(99,102,241,0.12), 0 0 30px rgba(99,102,241,0.04)',
-    shadowCard:   '0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2)',
-    shadowDeep:   '0 8px 32px rgba(0,0,0,0.4)',
-    sidebarBg:    '#131f2e',
-    sidebarBorder:'rgba(255,255,255,0.06)',
-    sidebarText:  '#6b8094',
-    sidebarHover: 'rgba(255,255,255,0.04)',
-    headerBg:     'rgba(15,25,35,0.92)',
-    logoBg:       'linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%)',
-    logoText:     '#f0f4ff',
-    logoSub:      '#5a6e84',
-    _dark: true,
-};
-
-export const DS_LIGHT = {
-    ...DS_ACCENTS,
-    bg:           '#f5f5f9',
-    bgDeep:       '#eef0f6',
-    surface:      '#ffffff',
-    surfaceHover: '#f0f1f7',
-    border:       'rgba(0,0,0,0.08)',
-    borderAccent: 'rgba(99,102,241,0.25)',
-    textPrimary:  '#111827',
-    textSub:      '#4b5563',
-    textMuted:    '#9ca3af',
-    glowCyan:     '0 0 12px rgba(99,102,241,0.10)',
-    glowViolet:   '0 0 12px rgba(99,102,241,0.10)',
-    shadowCard:   '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-    shadowDeep:   '0 12px 36px rgba(0,0,0,0.08)',
-    sidebarBg:    '#1e1b4b',
-    sidebarBorder:'rgba(255,255,255,0.08)',
-    sidebarText:  'rgba(255,255,255,0.6)',
-    sidebarHover: 'rgba(255,255,255,0.08)',
-    headerBg:     'rgba(255,255,255,0.88)',
-    logoBg:       'linear-gradient(135deg, #818cf8 0%, #6366f1 100%)',
-    logoText:     '#ffffff',
-    logoSub:      'rgba(255,255,255,0.5)',
-    _dark: false,
-};
-
 /* ── Z-Index Scale ── consistent layering across the app ──────────────── *
  *  Use these instead of arbitrary values (e.g. 9999, 10000).
  *  Import: import { Z } from '@/config/designTokens';
- *
- *  TODO: Migrate remaining hardcoded accent colors (#38bdf8, #00b874,
- *        #34d399, #fbbf24, #fb7185) in ~11 component files to use
- *        DS.cyan / DS.violet / DS.emerald / DS.amber / DS.rose instead.
  * ──────────────────────────────────────────────────────────────────────── */
 export const Z = {
     base:       1,      // default stacking (sticky headers, relative layers)
@@ -89,13 +34,16 @@ export const Z = {
     max:        999,    // absolute top (debug tools, critical alerts)
 };
 
-/* Mutable DS — swapped by ThemeToggle, picked up on re-render */
-let DS = (() => {
-    try { return localStorage.getItem('vigil_theme') === 'dark' ? DS_DARK : DS_LIGHT; }
-    catch { return DS_LIGHT; }
-})();
+// Legacy exports for backward compatibility - theme tokens are now in utils/theme.tsx
+// Use THEME from utils/theme.tsx instead of these
+import { THEME as THEME_TOKENS } from '../utils/theme';
 
-export function setDS(newDS) { DS = newDS; }
-export function getDS() { return DS; }
-export { DS };
-export default DS;
+// Merge THEME tokens with DS_ACCENTS for backward compatibility
+const getMergedDS = () => ({ ...DS_ACCENTS, ...THEME_TOKENS });
+
+export const DS_DARK = getMergedDS();
+export const DS_LIGHT = getMergedDS();
+export const getDS = getMergedDS;
+export const setDS = () => {}; // no-op for backward compat
+export const DS = getMergedDS();
+export default getMergedDS();

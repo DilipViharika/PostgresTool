@@ -8,12 +8,14 @@
         "jsx": "react-jsx",
 
         /* ── Type Checking (incremental migration — tighten over time) ─── */
-        "strict": false,
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "strictNullChecks": false,
         "strictBindCallApply": true,
         "strictFunctionTypes": true,
         "noImplicitThis": true,
-        "noUnusedLocals": false,
-        "noUnusedParameters": false,
+        "noImplicitAny": false,
         "noFallthroughCasesInSwitch": true,
         "forceConsistentCasingInFileNames": true,
         "allowJs": true,

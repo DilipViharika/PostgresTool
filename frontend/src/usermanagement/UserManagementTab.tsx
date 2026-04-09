@@ -121,7 +121,9 @@ function useUsers(initialUsers = []) {
     const abortRef              = useRef(null);
 
     const getAuthHeaders = useCallback(() => {
-        const token = localStorage.getItem('vigil_token');
+        // SECURITY: Retrieve token from sessionStorage instead of localStorage
+        // to prevent token persistence on shared devices
+        const token = sessionStorage.getItem('vigil_token');
         return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
     }, []);
 
@@ -346,7 +348,7 @@ const UserManagementTab = ({ initialUsers = [] }) => {
     }, [fetchUsers]);
 
     // Initial load
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: run once on mount to fetch initial users list
     useEffect(() => { if (initialUsers.length === 0) fetchUsers(); }, []);
 
     const activeCount  = useMemo(() => users.filter(u => u.status === 'active').length, [users]);

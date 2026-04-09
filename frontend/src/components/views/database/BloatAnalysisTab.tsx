@@ -396,7 +396,7 @@ const SortHeader = ({ label, col, sortCol, sortDir, onSort }) => {
 const COLS_TABLE = '2.2fr 0.9fr 1fr 1fr 1.4fr 1fr';
 const COLS_INDEX = '2.2fr 1fr 0.9fr 0.9fr 1.4fr';
 
-export default function BloatAnalysisTab() {
+function BloatAnalysisTab() {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [tables,     setTables]     = useState([]);
     const [indexes,    setIndexes]    = useState([]);
@@ -912,3 +912,5 @@ export default function BloatAnalysisTab() {
         </div>
     );
 }
+
+export default React.memo(BloatAnalysisTab);

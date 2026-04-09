@@ -18,17 +18,26 @@ interface Breadcrumb {
 
 interface ErrorTracker {
   init: (config: ErrorTrackerConfig) => void;
-  captureException: (error: Error, context?: Record<string, any>) => void;
+  captureException: (error: Error, context?: Record<string, unknown>) => void;
   captureMessage: (message: string, level?: 'info' | 'warning' | 'error') => void;
   setUser: (user: { id: string; email?: string; username?: string } | null) => void;
   addBreadcrumb: (breadcrumb: { category: string; message: string; level?: string }) => void;
   startTransaction: (name: string) => { finish: () => void };
-  withScope: (callback: (scope: any) => void) => void;
+  withScope: (callback: (scope: Record<string, unknown>) => void) => void;
 }
 
 let config: ErrorTrackerConfig = { enabled: true, debug: false };
 const breadcrumbs: Breadcrumb[] = [];
 const MAX_BREADCRUMBS = 20;
+
+// ─── Debug logging utility ────────────────────────────────────────────────
+// SECURITY: Only logs in development mode. Production builds should not leak
+// sensitive debugging information to the browser console.
+const debugLog = (message: string, data?: any) => {
+  if (import.meta.env.DEV && config.debug) {
+    console.log(`[VIGIL-ERROR] ${message}`, data);
+  }
+};
 
 // Sentry integration — install @sentry/react and uncomment to enable:
 // async function initSentry(cfg: ErrorTrackerConfig) {
@@ -41,10 +50,10 @@ const MAX_BREADCRUMBS = 20;
 const errorTracker: ErrorTracker = {
   init: (cfg: ErrorTrackerConfig) => {
     config = { ...config, ...cfg };
-    if (config.debug) console.log('[VIGIL-ERROR] Error tracking initialized', { environment: cfg.environment, enabled: cfg.enabled });
+    debugLog('Error tracking initialized', { environment: cfg.environment, enabled: cfg.enabled });
   },
 
-  captureException: (error: Error, context?: Record<string, any>) => {
+  captureException: (error: Error, context?: Record<string, unknown>) => {
     if (!config.enabled) return;
     const contextStr = context ? JSON.stringify(context, null, 2) : '';
     console.error(
@@ -73,12 +82,12 @@ const errorTracker: ErrorTracker = {
     return {
       finish: () => {
         const duration = Date.now() - startTime;
-        if (config.debug) console.log(`[VIGIL-ERROR] Transaction "${name}" completed in ${duration}ms`);
+        debugLog(`Transaction "${name}" completed in ${duration}ms`);
       },
     };
   },
 
-  withScope: (callback: (scope: any) => void) => {
+  withScope: (callback: (scope: Record<string, unknown>) => void) => {
     callback({});
   },
 };

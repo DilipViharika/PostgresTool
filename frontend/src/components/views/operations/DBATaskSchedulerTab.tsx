@@ -58,7 +58,8 @@ const DBATaskSchedulerTab = () => {
   };
 
   const getAuthHeader = () => {
-    const token = localStorage.getItem('vigil_token');
+    // SECURITY: Retrieve token from sessionStorage instead of localStorage
+    const token = sessionStorage.getItem('vigil_token');
     return {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,

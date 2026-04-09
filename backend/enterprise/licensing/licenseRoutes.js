@@ -24,6 +24,43 @@ function log(level, message, meta = {}) {
   fn(JSON.stringify(entry));
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// License Activation Rate Limiting (max 5 per hour per user)
+// ─────────────────────────────────────────────────────────────────────────────
+const licenseActivationAttempts = new Map();
+const LICENSE_ACTIVATION_WINDOW = 60 * 60 * 1000; // 1 hour
+const LICENSE_ACTIVATION_MAX = 5; // max 5 activations per hour
+
+function checkLicenseActivationRateLimit(userId) {
+  const now = Date.now();
+  let record = licenseActivationAttempts.get(userId);
+
+  if (!record || now - record.windowStart > LICENSE_ACTIVATION_WINDOW) {
+    // Create or reset bucket
+    record = { count: 0, windowStart: now };
+    licenseActivationAttempts.set(userId, record);
+  }
+
+  record.count++;
+  return {
+    allowed: record.count <= LICENSE_ACTIVATION_MAX,
+    remaining: Math.max(0, LICENSE_ACTIVATION_MAX - record.count),
+    resetTime: record.windowStart + LICENSE_ACTIVATION_WINDOW
+  };
+}
+
+// Cleanup stale records every hour
+if (process.env.VERCEL !== '1') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [userId, record] of licenseActivationAttempts) {
+      if (now - record.windowStart > 2 * LICENSE_ACTIVATION_WINDOW) {
+        licenseActivationAttempts.delete(userId);
+      }
+    }
+  }, 60 * 60 * 1000);
+}
+
 export default function licenseRoutes(pool, authenticate, requireRole) {
   const router = Router();
 
@@ -56,6 +93,7 @@ export default function licenseRoutes(pool, authenticate, requireRole) {
    * POST /api/license/activate
    * Activate a new license key (super_admin only).
    * Body: { licenseKey, orgId }
+   * Rate limited: max 5 activations per hour per user
    */
   router.post('/activate', authenticate, requireRole('super_admin'), async (req, res) => {
     try {
@@ -65,17 +103,64 @@ export default function licenseRoutes(pool, authenticate, requireRole) {
         return res.status(400).json({ error: 'Missing licenseKey or orgId' });
       }
 
-      const licenseSecret = process.env.LICENSE_SECRET || 'change-me-in-production';
+      // Check rate limit
+      const rateLimitCheck = checkLicenseActivationRateLimit(req.user.id);
+      res.setHeader('X-RateLimit-Limit', String(LICENSE_ACTIVATION_MAX));
+      res.setHeader('X-RateLimit-Remaining', String(rateLimitCheck.remaining));
+      res.setHeader('X-RateLimit-Reset', String(rateLimitCheck.resetTime));
+
+      if (!rateLimitCheck.allowed) {
+        log('WARN', 'License activation rate limit exceeded', {
+          userId: req.user.id,
+          orgId
+        });
+        return res.status(429).json({
+          error: `Too many license activation attempts. Maximum ${LICENSE_ACTIVATION_MAX} per hour.`
+        });
+      }
+
+      const licenseSecret = process.env.LICENSE_SECRET;
+      if (!licenseSecret) {
+        log('ERROR', 'LICENSE_SECRET not configured', {});
+        return res.status(500).json({ error: 'License service not configured' });
+      }
+
+      // Verify user's organization
+      if (req.user?.orgId && req.user.orgId !== orgId) {
+        log('WARN', 'Attempted license activation for unauthorized organization', {
+          userId: req.user.id,
+          requestedOrgId: orgId,
+          userOrgId: req.user.orgId
+        });
+        return res.status(403).json({ error: 'You cannot activate licenses for other organizations' });
+      }
+
       const result = await activateLicense(pool, licenseKey, orgId, licenseSecret);
 
       if (!result.success) {
+        log('WARN', 'License activation failed', {
+          userId: req.user.id,
+          orgId,
+          error: result.error
+        });
         return res.status(400).json({ error: result.error });
       }
 
-      log('INFO', 'License activated', { orgId, tier: result.license.tier, userId: req.user.id });
+      // Audit log for successful license activation
+      log('INFO', 'License activated', {
+        userId: req.user.id,
+        username: req.user.username,
+        orgId,
+        tier: result.license.tier,
+        expiresAt: result.license.expiresAt
+      });
+
       res.json({ success: true, license: result.license });
     } catch (err) {
-      log('ERROR', 'Failed to activate license', { error: err.message });
+      log('ERROR', 'Failed to activate license', {
+        error: err.message,
+        userId: req.user?.id
+      });
       res.status(500).json({ error: 'Failed to activate license' });
     }
   });
@@ -144,7 +229,12 @@ export default function licenseRoutes(pool, authenticate, requireRole) {
         return res.status(400).json({ error: 'Missing licenseKey' });
       }
 
-      const licenseSecret = process.env.LICENSE_SECRET || 'change-me-in-production';
+      const licenseSecret = process.env.LICENSE_SECRET;
+      if (!licenseSecret) {
+        log('ERROR', 'LICENSE_SECRET not configured', {});
+        return res.status(500).json({ error: 'License service not configured' });
+      }
+
       const result = validateLicenseKeyFormat(licenseKey, licenseSecret);
 
       if (!result.valid) {

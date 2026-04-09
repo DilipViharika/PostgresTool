@@ -66,7 +66,7 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 const CONFIG = Object.freeze({
     PORT:           Number(process.env.PORT) || 5000,
     FRONTEND_URL:   process.env.FRONTEND_URL || 'http://localhost:5173',
-    JWT_SECRET:     process.env.JWT_SECRET  || 'vigil-change-me-in-production',
+    JWT_SECRET:     process.env.JWT_SECRET  || (IS_PROD ? null : 'vigil-change-me-in-production'),
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '8h',
     CORS_ORIGINS: [
         'http://localhost:5173',
@@ -144,18 +144,27 @@ const HAS_ADMIN_DB = !!(process.env.DATABASE_URL || (process.env.PGHOST && proce
     }
 
     // ── JWT secret ──────────────────────────────────────────────────────
-    const jwtSecret = process.env.JWT_SECRET;
-    const weakSecret = !jwtSecret || jwtSecret === 'vigil-change-me-in-production';
-    if (weakSecret && IS_PROD) {
+    if (!process.env.JWT_SECRET) {
+        if (IS_PROD) {
+            errors.push(
+                'FATAL: JWT_SECRET environment variable is required in production. ' +
+                'Set a strong (32+ char) secret via the Vercel dashboard → Settings → Environment Variables. ' +
+                'Refusing to start without a configured JWT_SECRET.'
+            );
+        } else {
+            warnings.push('JWT_SECRET not configured. Set a strong secret before deploying to production.');
+        }
+    } else if (process.env.JWT_SECRET === 'vigil-change-me-in-production') {
         errors.push(
-            'FATAL: JWT_SECRET is missing or uses the default value in PRODUCTION. ' +
-            'Set a strong (32+ char) secret via the Vercel dashboard → Settings → Environment Variables. ' +
-            'Refusing to start with insecure tokens.'
+            'FATAL: JWT_SECRET is using the insecure default value. ' +
+            'Change it to a strong, random secret in your environment configuration. ' +
+            'Refusing to start with default secrets.'
         );
-    } else if (weakSecret) {
-        warnings.push('JWT_SECRET is using the default insecure value. Set a strong secret before deploying.');
-    } else if (jwtSecret.length < 32) {
-        warnings.push('JWT_SECRET is shorter than 32 characters. Use a longer, random secret for better security.');
+    } else if (process.env.JWT_SECRET.length < 32) {
+        errors.push(
+            'FATAL: JWT_SECRET is shorter than 32 characters. ' +
+            'Generate a longer secret with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))"'
+        );
     }
 
     // ── Required variables in production ────────────────────────────────
@@ -520,7 +529,18 @@ function securityHeaders(_req, res, next) {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
     res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
     res.setHeader('Origin-Agent-Cluster', '?1');
-    res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+
+    // Proper Content Security Policy for API backend
+    // Disallow all content embedding and enforce strict policies
+    const csp = [
+        "default-src 'none'",
+        "frame-ancestors 'none'",
+        "base-uri 'none'",
+        "form-action 'none'",
+        "upgrade-insecure-requests",
+    ].join('; ');
+    res.setHeader('Content-Security-Policy', csp);
+
     if (IS_PROD) {
         res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
     }
@@ -533,16 +553,54 @@ function securityHeaders(_req, res, next) {
 // ─────────────────────────────────────────────────────────────────────────────
 const DANGEROUS_SQL = /\b(INSERT|UPDATE|DELETE|DROP|TRUNCATE|CREATE|ALTER|GRANT|REVOKE|COPY|EXECUTE|DO\b|CALL|NOTIFY|LISTEN|LOAD|LOCK\s+TABLE|CHECKPOINT|SECURITY\s+LABEL|SET\s+ROLE|RESET\s+ALL)\b/i;
 
+// Additional bypass patterns to detect SQL injection attempts
+const INJECTION_BYPASS_PATTERNS = [
+    /\bUNION\b/i,                              // UNION-based injection
+    /\b(AND|OR)\b.*=.*1\b/i,                   // Tautology injection
+    /['"`];?\s*-{2}|['"`];?\s*\/\*/,           // Comment-based injection
+    /\$\d+/,                                   // Parameter injection attempt
+    /\bEXISTS\b.*\(/i,                         // EXISTS-based injection
+    /\bCASE\b.*\bWHEN\b/i,                     // CASE-based injection
+];
+
+function sanitizeSqlForValidation(sql) {
+    // Remove SQL comments
+    let cleaned = sql
+        .replace(/--[^\n]*/g, ' ')              // Single-line comments
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')     // Multi-line comments
+        .replace(/#[^\n]*/g, ' ');              // MySQL-style comments
+
+    // Normalize whitespace
+    cleaned = cleaned.replace(/\s+/g, ' ').trim();
+
+    return cleaned;
+}
+
 function validateExplainQuery(sql) {
     if (!sql || typeof sql !== 'string') return 'Query must be a non-empty string';
     if (sql.length > 8_000) return 'Query too long (max 8,000 characters)';
-    const stripped = sql
-        .replace(/--[^\n]*/g, ' ')
-        .replace(/\/\*[\s\S]*?\*\//g, ' ')
-        .trim();
+
+    const stripped = sanitizeSqlForValidation(sql);
+
     if (!stripped) return 'Query is empty';
     if (/;/.test(stripped.replace(/;$/, ''))) return 'Multiple SQL statements are not allowed';
-    if (DANGEROUS_SQL.test(stripped)) return 'Query contains disallowed SQL operations (only SELECT is allowed here)';
+
+    // Check for dangerous operations
+    if (DANGEROUS_SQL.test(stripped)) {
+        return 'Query contains disallowed SQL operations (only SELECT is allowed here)';
+    }
+
+    // Check for injection bypass patterns
+    for (const pattern of INJECTION_BYPASS_PATTERNS) {
+        if (pattern.test(stripped)) {
+            log('WARN', 'Suspicious SQL pattern detected in EXPLAIN query', {
+                pattern: pattern.toString(),
+                queryLength: sql.length
+            });
+            return 'Query contains suspicious patterns that may indicate SQL injection attempts';
+        }
+    }
+
     return null;
 }
 
@@ -556,13 +614,27 @@ function validateConsoleQuery(sql, role) {
     if (!sql || typeof sql !== 'string') return 'Query must be a non-empty string';
     if (sql.length > 50_000) return 'Query too long (max 50,000 characters)';
 
+    const stripped = sanitizeSqlForValidation(sql);
+
     // Check critical blocks for ALL users (including super_admin)
-    if (CRITICAL_BLOCKED.test(sql)) {
+    if (CRITICAL_BLOCKED.test(stripped)) {
+        log('ERROR', 'Critical SQL blocked for user', { role, queryLength: sql.length });
         return 'This statement is blocked - it poses a critical security risk and cannot be executed.';
     }
 
+    // Check for injection bypass patterns
+    for (const pattern of INJECTION_BYPASS_PATTERNS) {
+        if (pattern.test(stripped)) {
+            log('WARN', 'Suspicious SQL pattern detected in console query', {
+                role,
+                pattern: pattern.toString(),
+                queryLength: sql.length
+            });
+        }
+    }
+
     // Additional role-based restrictions for non-super_admin users
-    if (role !== 'super_admin' && CONSOLE_BLOCKED.test(sql)) {
+    if (role !== 'super_admin' && CONSOLE_BLOCKED.test(stripped)) {
         return 'This statement is blocked for your role. Contact a super_admin.';
     }
 
@@ -956,6 +1028,24 @@ app.use(cors({
 app.use(securityHeaders);
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CSRF Token Storage (in-memory with TTL, for double-submit cookie pattern)
+// ─────────────────────────────────────────────────────────────────────────────
+const csrfTokens = new Map();
+const CSRF_TOKEN_TTL = 1 * 60 * 60 * 1000; // 1 hour
+
+// Cleanup stale CSRF tokens every 10 minutes
+if (process.env.VERCEL !== '1') {
+    setInterval(() => {
+        const now = Date.now();
+        for (const [token, metadata] of csrfTokens) {
+            if (now - metadata.createdAt > CSRF_TOKEN_TTL) {
+                csrfTokens.delete(token);
+            }
+        }
+    }, 10 * 60 * 1000);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // CSRF Protection: Origin header validation for state-changing requests
 // ─────────────────────────────────────────────────────────────────────────────
 // Although this API uses JWT Bearer tokens (not cookies), we add Origin validation
@@ -966,6 +1056,18 @@ app.use((req, res, next) => {
         const origin = req.headers.origin;
         if (origin && !CONFIG.CORS_ORIGINS.includes(origin)) {
             return res.status(403).json({ error: 'CSRF: Origin not allowed' });
+        }
+
+        // Validate CSRF token if provided (double-submit pattern)
+        const csrfToken = req.headers['x-csrf-token'];
+        if (csrfToken) {
+            const metadata = csrfTokens.get(csrfToken);
+            if (!metadata || Date.now() - metadata.createdAt > CSRF_TOKEN_TTL) {
+                log('WARN', 'Invalid or expired CSRF token', { ip: req.ip });
+                return res.status(403).json({ error: 'CSRF token invalid or expired' });
+            }
+            // Mark token as used to prevent reuse
+            csrfTokens.delete(csrfToken);
         }
     }
     next();
@@ -984,6 +1086,16 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const authenticate = buildAuthenticate(pool, CONFIG);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSRF Token Endpoint
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/csrf-token', authenticate, (req, res) => {
+    // Generate a random CSRF token
+    const token = randomUUID();
+    csrfTokens.set(token, { createdAt: Date.now() });
+    res.json({ csrfToken: token });
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HEALTH

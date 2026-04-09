@@ -1045,5 +1045,5 @@ const VIGILDashboard = () => {
   );
 };
 
-const AlertsComponent = VIGILDashboard;
+const AlertsComponent = React.memo(VIGILDashboard);
 export default AlertsComponent;
