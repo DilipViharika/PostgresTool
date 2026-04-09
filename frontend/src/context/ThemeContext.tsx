@@ -30,7 +30,7 @@ export const ThemeProvider = ({ children }) => {
         });
     }, []);
 
-    const value = useMemo(() => ({ isDark, tokens, toggleTheme }), [isDark, tokens, toggleTheme]);
+    const value = useMemo(() => ({ isDark, tokens: THEME, toggleTheme }), [isDark, toggleTheme]);
 
     return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
