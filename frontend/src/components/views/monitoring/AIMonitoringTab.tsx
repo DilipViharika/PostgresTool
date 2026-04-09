@@ -23,18 +23,18 @@ const Styles = () => (
         .aim-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             transition: all 0.25s ease;
             animation: aimFade 0.3s ease;
             backdrop-filter: blur(12px);
         }
         .aim-card:hover {
             box-shadow: 0 8px 28px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
         .aim-card::after {
             content: '';
@@ -75,7 +75,7 @@ const Styles = () => (
         .aim-anomaly-badge {
             display: inline-block;
             padding: 6px 12px;
-            border-radius: 6px;
+            border-radius: 22px;
             font-size: 12px;
             font-weight: 700;
             margin-right: 8px;
@@ -101,7 +101,7 @@ const Styles = () => (
 
         .aim-input-group {
             display: flex;
-            gap: 14px;
+            gap: 20px;
             align-items: stretch;
         }
 
@@ -109,8 +109,8 @@ const Styles = () => (
             flex: 1;
             background: ${THEME.surfaceHover};
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 10px;
-            padding: 12px 16px;
+            border-radius: 20px;
+            padding: 22px 28px;
             color: ${THEME.textMain};
             font-size: 14px;
         }
@@ -125,20 +125,20 @@ const Styles = () => (
             background: ${THEME.primary};
             color: ${THEME.surfaceHover};
             border: none;
-            border-radius: 8px;
+            border-radius: 20px;
             padding: 12px 20px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 18px;
             font-size: 14px;
             transition: all 0.2s;
         }
 
         .aim-btn:hover {
             background: ${THEME.primaryHover};
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
 
         .aim-btn:active {
@@ -149,7 +149,7 @@ const Styles = () => (
             background: ${THEME.surfaceHover};
             border: 1px solid ${THEME.glassBorder};
             border-left: 3px solid ${THEME.primary};
-            border-radius: 10px;
+            border-radius: 20px;
             padding: 16px;
             margin-bottom: 12px;
             animation: aimFade 0.3s ease;
@@ -160,7 +160,7 @@ const Styles = () => (
             color: ${THEME.textMain};
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 18px;
             margin-bottom: 8px;
         }
 
@@ -174,24 +174,24 @@ const Styles = () => (
         .aim-suggestion-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 18px;
         }
 
         .aim-action-tag {
             display: inline-block;
             padding: 4px 10px;
             background: ${THEME.grid};
-            border-radius: 4px;
+            border-radius: 20px;
             font-size: 12px;
             color: ${THEME.textMuted};
         }
 
         .aim-query-chip {
             display: inline-block;
-            padding: 8px 14px;
+            padding: 14px 20px;
             background: ${THEME.grid};
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 8px;
+            border-radius: 20px;
             font-size: 12px;
             color: ${THEME.textMain};
             cursor: pointer;
@@ -219,7 +219,7 @@ const Styles = () => (
             margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 18px;
         }
 
         .aim-modal-overlay {
@@ -238,7 +238,7 @@ const Styles = () => (
         .aim-modal {
             background: ${THEME.surface};
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 12px;
+            border-radius: 22px;
             padding: 24px;
             max-width: 500px;
             width: 90%;
@@ -266,8 +266,8 @@ const Styles = () => (
         }
 
         .aim-modal-btn {
-            padding: 10px 16px;
-            border-radius: 6px;
+            padding: 16px 22px;
+            border-radius: 22px;
             font-weight: 600;
             cursor: pointer;
             border: none;
@@ -296,7 +296,7 @@ const Styles = () => (
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 18px;
             padding: 20px;
             color: ${THEME.textMuted};
             font-size: 14px;
@@ -309,13 +309,13 @@ const Styles = () => (
         .aim-error {
             background: ${THEME.danger}15;
             border: 1px solid ${THEME.danger};
-            border-radius: 10px;
+            border-radius: 20px;
             padding: 16px;
             color: ${THEME.danger};
             margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 20px;
         }
     `}</style>
 );
@@ -328,7 +328,7 @@ const fmt = (n) => n === null ? '—' : Number(n).toLocaleString('en-US', { maxi
 const ChartTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: THEME.shadowSm }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, padding: '20px 24px', fontSize: 12, boxShadow: THEME.shadowSm }}>
             {payload.map(p => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600, marginBottom: 4 }}>
                     {p.name}: {fmt(p.value)}
@@ -484,9 +484,9 @@ export default function AIMonitoringTab() {
                         </div>
 
                         {/* Component breakdown */}
-                        <div style={{ marginTop: 30, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16 }}>
+                        <div style={{ marginTop: 30, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 22 }}>
                             {healthScore?.components && Object.entries(healthScore.components).map(([key, value]) => (
-                                <div key={key} style={{ padding: 12, background: THEME.grid, borderRadius: 8 }}>
+                                <div key={key} style={{ padding: 12, background: THEME.grid, borderRadius: 20 }}>
                                     <div style={{ fontSize: 12, color: THEME.textMuted, marginBottom: 4, textTransform: 'capitalize' }}>{key}</div>
                                     <div style={{ fontSize: 20, fontWeight: 700, color: getHealthColor(value) }}>{Math.round(value)}</div>
                                 </div>
@@ -565,14 +565,14 @@ export default function AIMonitoringTab() {
                     <h3 className="aim-section-title">
                         <TrendingUp size={16} /> Detected Patterns
                     </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 22 }}>
                         {patterns.map((pattern) => (
                             <div key={pattern.id} className="aim-card">
                                 <div style={{ fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>{pattern.name}</div>
                                 <div style={{ fontSize: 12, color: THEME.textMuted, marginBottom: 12, lineHeight: 1.4 }}>
                                     {pattern.description}
                                 </div>
-                                <div style={{ fontSize: 11, padding: 8, background: THEME.grid, borderRadius: 6, marginBottom: 8, color: THEME.textMuted }}>
+                                <div style={{ fontSize: 11, padding: 8, background: THEME.grid, borderRadius: 18, marginBottom: 8, color: THEME.textMuted }}>
                                     <strong>Impact:</strong> {pattern.impact}
                                 </div>
                                 <div style={{ fontSize: 12, color: THEME.primary }}>
@@ -628,7 +628,7 @@ export default function AIMonitoringTab() {
 
                         {/* Query results */}
                         {queryResults && (
-                            <div style={{ marginTop: 20, padding: 16, background: THEME.grid, borderRadius: 8 }}>
+                            <div style={{ marginTop: 20, padding: 16, background: THEME.grid, borderRadius: 20 }}>
                                 <div style={{ fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>
                                     {queryResults.interpretation || queryResults.error || 'Result'}
                                 </div>

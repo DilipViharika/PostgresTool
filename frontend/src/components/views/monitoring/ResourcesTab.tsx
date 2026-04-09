@@ -93,17 +93,17 @@ const ResStyles = () => (
         .res-tile {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             transition: all 0.25s ease;
             backdrop-filter: blur(12px);
         }
         .res-tile:hover {
             box-shadow: 0 8px 28px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
         .res-tile::after {
             content: '';
@@ -147,7 +147,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 flexShrink: 0, minHeight: 42,
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     {TIcon && <TIcon size={12} color={refreshing ? THEME.primary : THEME.textDim} style={{ transition: 'color 0.3s' }} />}
                     <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted,  letterSpacing: '0.02em' }}>{title}</span>
                     {refreshing && (
@@ -169,7 +169,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
 const StatusBadge = ({ label, color }) => (
     <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
-        fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 5,
+        fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 16,
         background: `${color}12`, color, border: `1px solid ${color}20`,
         lineHeight: 1.2, whiteSpace: 'nowrap',
     }}>
@@ -224,7 +224,7 @@ const RingGauge = ({ value, color, size = 44, strokeWidth = 4 }) => {
 const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px', fontSize: 11, backdropFilter: 'blur(8px)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20, padding: '20px 24px', fontSize: 11, backdropFilter: 'blur(8px)', boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)' }}>
             <div style={{ fontWeight: 700, color: THEME.textMain, marginBottom: 6 }}>{label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
@@ -308,11 +308,11 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
 
     return (
         <div style={{
-            display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8,
-            padding: '8px 14px', borderRadius: 8,
+            display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 20,
+            padding: '14px 20px', borderRadius: 20,
             border: `1px solid ${error ? `${THEME.danger}30` : THEME.glassBorder}`,
             fontSize: 11,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 {error ? <WifiOff size={11} color={THEME.danger} /> : <Wifi size={11} color={THEME.success} />}
@@ -332,7 +332,7 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
                         const active = intervalSec === opt.value;
                         return (
                             <button key={opt.value} onClick={() => onIntervalChange(opt.value)} style={{
-                                padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
+                                padding: '3px 8px', borderRadius: 16, border: 'none', cursor: 'pointer',
                                 fontSize: 10, fontWeight: 700, transition: 'all 0.15s',
                                 background: active ? `${THEME.primary}15` : 'transparent',
                                 color: active ? THEME.primary : THEME.textDim,
@@ -345,11 +345,11 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
             <div style={{ flex: 1, minWidth: 0 }} />
             <button onClick={onRefresh} disabled={isRefreshing} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '5px 12px', borderRadius: 6, border: 'none', cursor: isRefreshing ? 'default' : 'pointer',
+                padding: '5px 12px', borderRadius: 18, border: 'none', cursor: isRefreshing ? 'default' : 'pointer',
                 fontWeight: 700, fontSize: 11,
                 background: isRefreshing ? `${THEME.primary}10` : `${THEME.primary}12`,
                 color: THEME.primary, transition: 'all 0.15s', opacity: isRefreshing ? 0.7 : 1,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
             }}
                     onMouseEnter={e => { if (!isRefreshing) e.currentTarget.style.background = `${THEME.primary}20`; }}
                     onMouseLeave={e => { e.currentTarget.style.background = isRefreshing ? `${THEME.primary}10` : `${THEME.primary}12`; }}>
@@ -373,10 +373,10 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
         { key: 'perf',  label: 'No errors or lock timeouts were reported during execution' },
     ];
     return (
-        <div style={{ background: THEME.surface, borderRadius: 16, border: `1px solid ${THEME.glassBorder}`, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: THEME.surface, borderRadius: 16, border: `1px solid ${THEME.glassBorder}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)' }}>
             <div style={{ padding: '11px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 24, height: 24, borderRadius: 6, background: `${THEME.warning}15`, border: `1px solid ${THEME.warning}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 18, background: `${THEME.warning}15`, border: `1px solid ${THEME.warning}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <ShieldAlert size={12} color={THEME.warning} />
                     </div>
                     <div>
@@ -386,15 +386,15 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
                 </div>
                 <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, display: 'flex', padding: 4 }}><X size={12} /></button>
             </div>
-            <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ padding: '8px 12px', borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}18`, fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>
+            <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 22 }}>
+                <div style={{ padding: '20px 24px', borderRadius: 20, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}18`, fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>
                     ⚠ Marking without actually applying the fix will hide this issue from the bloat list until the next DB refresh reveals it again.
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     {CHECKLIST.map(({ key, label }) => {
                         const checked = checks[key];
                         return (
-                            <div key={key} onClick={() => toggle(key)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 11px', borderRadius: 7, cursor: 'pointer', background: checked ? `${THEME.success}08` : THEME.surface, border: `1px solid ${checked ? `${THEME.success}25` : `${THEME.grid}40`}`, transition: 'all 0.15s' }}>
+                            <div key={key} onClick={() => toggle(key)} style={{ display: 'flex', alignItems: 'flex-start', gap: 22, padding: '9px 11px', borderRadius: 18, cursor: 'pointer', background: checked ? `${THEME.success}08` : THEME.surface, border: `1px solid ${checked ? `${THEME.success}25` : `${THEME.grid}40`}`, transition: 'all 0.15s' }}>
                                 <div style={{ width: 16, height: 16, borderRadius: 16, flexShrink: 0, marginTop: 1, border: `2px solid ${checked ? THEME.success : THEME.grid}`, background: checked ? THEME.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
                                     {checked && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke={THEME.textMain} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                 </div>
@@ -406,9 +406,9 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
                 <div style={{ fontSize: 10, color: THEME.textDim, textAlign: 'center' }}>
                     {Object.values(checks).filter(Boolean).length} / {CHECKLIST.length} items confirmed{!allChecked && ' — check all items to proceed'}
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={onCancel} style={{ flex: 1, minWidth: 0, padding: '8px', borderRadius: 7, border: `1px solid ${THEME.grid}40`, background: 'transparent', color: THEME.textMuted, fontSize: 11, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>Cancel</button>
-                    <button disabled={!allChecked} onClick={() => onConfirm(tableName, `Bloat fix verified & applied (was ${bloatPct}%)`)} style={{ flex: 2, padding: '8px', borderRadius: 7, border: 'none', fontSize: 11, fontWeight: 700, cursor: allChecked ? 'pointer' : 'not-allowed', background: allChecked ? `linear-gradient(135deg, ${THEME.success}, ${THEME.success}aa)` : `${THEME.grid}20`, color: allChecked ? '#fff' : THEME.textDim, boxShadow: allChecked ? '0 1px 3px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.04)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 20 }}>
+                    <button onClick={onCancel} style={{ flex: 1, minWidth: 0, padding: '8px', borderRadius: 18, border: `1px solid ${THEME.grid}40`, background: 'transparent', color: THEME.textMuted, fontSize: 11, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)' }}>Cancel</button>
+                    <button disabled={!allChecked} onClick={() => onConfirm(tableName, `Bloat fix verified & applied (was ${bloatPct}%)`)} style={{ flex: 2, padding: '8px', borderRadius: 18, border: 'none', fontSize: 11, fontWeight: 700, cursor: allChecked ? 'pointer' : 'not-allowed', background: allChecked ? `linear-gradient(135deg, ${THEME.success}, ${THEME.success}aa)` : `${THEME.grid}20`, color: allChecked ? '#fff' : THEME.textDim, boxShadow: allChecked ? '0 1px 3px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.04)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                         <CheckCircle size={12} />
                         {allChecked ? 'Confirmed — Mark as Done' : 'Check all items above first'}
                     </button>
@@ -472,7 +472,7 @@ const TableGrowthRateChart = ({ growthRateData, refreshing }) => {
                         onMouseLeave={() => setActiveSeries(null)}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: 5,
-                            padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
+                            padding: '3px 8px', borderRadius: 16, border: 'none', cursor: 'pointer',
                             fontSize: 9.5, fontWeight: 600, transition: 'all 0.15s',
                             background: activeSeries === s.name ? `${s.color}18` : `${THEME.grid}20`,
                             color: activeSeries === s.name ? s.color : THEME.textDim,
@@ -506,10 +506,10 @@ const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
                     return (
                         <div key={i}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor }} />
                                     <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>{ts.name}</span>
-                                    <span style={{ fontSize: 9.5, padding: '2px 6px', borderRadius: 14, background: `${THEME.primary}0a`, color: THEME.textDim, border: `1px solid ${THEME.grid}30` }}>{ts.tables} tables · {ts.sizePct}% capacity</span>
+                                    <span style={{ fontSize: 9.5, padding: '2px 6px', borderRadius: 20, background: `${THEME.primary}0a`, color: THEME.textDim, border: `1px solid ${THEME.grid}30` }}>{ts.tables} tables · {ts.sizePct}% capacity</span>
                                 </div>
                                 <div style={{ display: 'flex', gap: 20, fontSize: 11 }}>
                                     <span style={{ color: THEME.primary, fontVariantNumeric: 'tabular-nums' }}>↑ {ts.readsMB} MB/s</span>
@@ -518,17 +518,17 @@ const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                 {/* Reads bar */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                     <span style={{ fontSize: 9, color: THEME.textDim, width: 32, textAlign: 'right', flexShrink: 0 }}>Read</span>
-                                    <div style={{ flex: 1, minWidth: 0, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
-                                        <div className="res-bar-animate" style={{ width: `${readPct}%`, height: '100%', borderRadius: 10, background: THEME.primary, animationDelay: `${i * 0.08}s` }} />
+                                    <div style={{ flex: 1, minWidth: 0, height: 5, borderRadius: 16, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                        <div className="res-bar-animate" style={{ width: `${readPct}%`, height: '100%', borderRadius: 16, background: THEME.primary, animationDelay: `${i * 0.08}s` }} />
                                     </div>
                                 </div>
                                 {/* Writes bar */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                     <span style={{ fontSize: 9, color: THEME.textDim, width: 32, textAlign: 'right', flexShrink: 0 }}>Write</span>
-                                    <div style={{ flex: 1, minWidth: 0, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
-                                        <div className="res-bar-animate" style={{ width: `${writePct}%`, height: '100%', borderRadius: 10, background: THEME.success, animationDelay: `${i * 0.08 + 0.04}s` }} />
+                                    <div style={{ flex: 1, minWidth: 0, height: 5, borderRadius: 16, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                        <div className="res-bar-animate" style={{ width: `${writePct}%`, height: '100%', borderRadius: 16, background: THEME.success, animationDelay: `${i * 0.08 + 0.04}s` }} />
                                     </div>
                                 </div>
                             </div>
@@ -537,7 +537,7 @@ const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
                 })}
 
                 {/* Summary row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, paddingTop: 12, borderTop: `1px solid ${THEME.glassBorder}`, marginTop: 2 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 22, paddingTop: 12, borderTop: `1px solid ${THEME.glassBorder}`, marginTop: 2 }}>
                     {[
                         { label: 'Total Read',  value: `${tablespaceData.reduce((s, t) => s + t.readsMB, 0)} MB/s`, color: THEME.primary },
                         { label: 'Total Write', value: `${tablespaceData.reduce((s, t) => s + t.writesMB, 0)} MB/s`, color: THEME.success },
@@ -583,9 +583,9 @@ const PartitionTreePanel = ({ partitions, refreshing }) => {
                             {/* Parent row */}
                             <div
                                 onClick={() => toggle(p.parent)}
-                                style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 10px', borderRadius: 8, cursor: 'pointer', background: open ? `${THEME.primary}07` : 'transparent', border: `1px solid ${open ? `${THEME.primary}18` : 'transparent'}`, transition: 'all 0.15s', marginBottom: 2 }}
+                                style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 10px', borderRadius: 20, cursor: 'pointer', background: open ? `${THEME.primary}07` : 'transparent', border: `1px solid ${open ? `${THEME.primary}18` : 'transparent'}`, transition: 'all 0.15s', marginBottom: 2 }}
                             >
-                                <div style={{ width: 20, height: 20, borderRadius: 5, background: `${THEME.primary}12`, border: `1px solid ${THEME.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div style={{ width: 20, height: 20, borderRadius: 16, background: `${THEME.primary}12`, border: `1px solid ${THEME.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     {open ? <ChevronDown size={11} color={THEME.primary} /> : <ChevronRight size={11} color={THEME.primary} />}
                                 </div>
                                 <Layers size={12} color={THEME.primary} style={{ flexShrink: 0 }} />
@@ -601,7 +601,7 @@ const PartitionTreePanel = ({ partitions, refreshing }) => {
                                     {p.children.map((c, ci) => {
                                         const sm = statusMeta(c.status);
                                         return (
-                                            <div key={ci} className="res-tree-node res-row-hover" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 7, animationDelay: `${ci * 0.04}s` }}>
+                                            <div key={ci} className="res-tree-node res-row-hover" style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '7px 10px', borderRadius: 18, animationDelay: `${ci * 0.04}s` }}>
                                                 <div style={{ width: 4, height: 4, borderRadius: '50%', background: sm.color, flexShrink: 0 }} />
                                                 <span style={{ fontSize: 11.5, color: THEME.textMuted, flex: 1, minWidth: 0, fontFamily: 'monospace' }}>{c.name}</span>
                                                 <StatusBadge label={sm.label} color={sm.color} />
@@ -635,17 +635,17 @@ const FreezeUrgencyPanel = ({ data, refreshing }) => {
                    </div>
                }
         >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {top8.map((d, i) => {
                     const pct = (d.oldest_xid_age / d.freeze_threshold) * 100;
                     const color = freezeColor(d.oldest_xid_age);
                     const isCritical = d.oldest_xid_age > 1_500_000_000;
                     return (
-                        <div key={i} className={isCritical ? 'res-freeze-urgent' : ''} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div key={i} className={isCritical ? 'res-freeze-urgent' : ''} style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                             <Zap size={11} color={color} style={{ flexShrink: 0, opacity: isCritical ? 1 : 0.6 }} />
                             <span style={{ fontSize: 11.5, color: THEME.textMuted, width: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>{d.table_name}</span>
-                            <div style={{ flex: 1, minWidth: 0, height: 5, borderRadius: 10, background: `${THEME.grid}40`, overflow: 'hidden' }}>
-                                <div className="res-bar-animate" style={{ width: `${Math.min(pct, 100)}%`, height: '100%', borderRadius: 10, background: `linear-gradient(90deg, ${color}80, ${color})`, animationDelay: `${i * 0.05}s` }} />
+                            <div style={{ flex: 1, minWidth: 0, height: 5, borderRadius: 16, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                <div className="res-bar-animate" style={{ width: `${Math.min(pct, 100)}%`, height: '100%', borderRadius: 16, background: `linear-gradient(90deg, ${color}80, ${color})`, animationDelay: `${i * 0.05}s` }} />
                             </div>
                             <span style={{ fontSize: 10.5, fontWeight: 700, color, fontVariantNumeric: 'tabular-nums', minWidth: 50, textAlign: 'right' }}>{fmtXID(d.oldest_xid_age)}</span>
                             <span style={{ fontSize: 9.5, color: THEME.textDim, minWidth: 40, textAlign: 'right' }}>{pct.toFixed(0)}%</span>
@@ -676,9 +676,9 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
             icon={Eye}
             refreshing={refreshing}
             rightNode={
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <span style={{ fontSize: 10, color: THEME.textDim }}>{fmtSize(totalReclaimable)} reclaimable</span>
-                    <div style={{ display: 'flex', border: `1px solid ${THEME.grid}40`, borderRadius: 6, overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', border: `1px solid ${THEME.grid}40`, borderRadius: 18, overflow: 'hidden' }}>
                         {['tables', 'columns'].map(v => (
                             <button key={v} onClick={() => setView(v)} style={{ padding: '4px 10px', border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, textTransform: 'capitalize', background: view === v ? `${THEME.primary}20` : 'transparent', color: view === v ? THEME.primary : THEME.textDim, transition: 'all 0.15s' }}>{v}</button>
                         ))}
@@ -688,7 +688,7 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
         >
             {view === 'tables' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 60px 70px 90px', gap: 8, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 6 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 60px 70px 90px', gap: 20, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 6 }}>
                         {['Table', 'Size', 'Rows', 'Last Read', 'Risk'].map((h, i) => (
                             <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.04em', textAlign: i > 0 ? 'right' : 'left' }}>{h}</div>
                         ))}
@@ -696,7 +696,7 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
                     {deadCode.tables.map((t, i) => {
                         const rc = riskColor(t.risk);
                         return (
-                            <div key={i} className="res-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr 70px 60px 70px 90px', gap: 8, padding: '9px 0', borderBottom: `1px solid ${THEME.grid}15`, alignItems: 'center' }}>
+                            <div key={i} className="res-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr 70px 60px 70px 90px', gap: 20, padding: '9px 0', borderBottom: `1px solid ${THEME.grid}15`, alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
                                     <Trash2 size={11} color={rc} style={{ flexShrink: 0 }} />
                                     <span style={{ fontSize: 12, fontWeight: 600, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</span>
@@ -708,30 +708,30 @@ const DeadCodeDetector = ({ deadCode, refreshing }) => {
                             </div>
                         );
                     })}
-                    <div style={{ paddingTop: 12, display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: THEME.textDim }}>
+                    <div style={{ paddingTop: 12, display: 'flex', alignItems: 'center', gap: 22, fontSize: 11, color: THEME.textDim }}>
                         <Eye size={11} color={THEME.warning} />
                         Tables with 0 reads in 90+ days. Consider archival or DROP after verification.
                     </div>
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 80px', gap: 8, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 6 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 80px', gap: 20, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 6 }}>
                         {['Table', 'Column', 'Type', 'Last Read'].map((h, i) => (
                             <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.04em' }}>{h}</div>
                         ))}
                     </div>
                     {deadCode.columns.map((c, i) => (
-                        <div key={i} className="res-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 80px', gap: 8, padding: '9px 0', borderBottom: `1px solid ${THEME.grid}15`, alignItems: 'center' }}>
+                        <div key={i} className="res-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 80px', gap: 20, padding: '9px 0', borderBottom: `1px solid ${THEME.grid}15`, alignItems: 'center' }}>
                             <span style={{ fontSize: 11.5, color: THEME.textDim }}>{c.table}</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <span style={{ fontSize: 11.5, fontWeight: 600, color: THEME.textMain, fontFamily: 'monospace' }}>{c.column}</span>
-                                {c.nullable && <span style={{ fontSize: 8.5, padding: '1px 5px', borderRadius: 10, background: `${THEME.grid}30`, color: THEME.textDim }}>NULL</span>}
+                                {c.nullable && <span style={{ fontSize: 8.5, padding: '1px 5px', borderRadius: 16, background: `${THEME.grid}30`, color: THEME.textDim }}>NULL</span>}
                             </div>
                             <span style={{ fontSize: 10.5, fontFamily: 'monospace', color: THEME.secondary }}>{c.type}</span>
                             <span style={{ fontSize: 10.5, color: THEME.textDim }}>{c.last_read}</span>
                         </div>
                     ))}
-                    <div style={{ paddingTop: 12, display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: THEME.textDim }}>
+                    <div style={{ paddingTop: 12, display: 'flex', alignItems: 'center', gap: 22, fontSize: 11, color: THEME.textDim }}>
                         <AlertTriangle size={11} color={THEME.warning} />
                         Zero-read columns may indicate deprecated features. Verify before dropping.
                     </div>
@@ -769,7 +769,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
     };
 
     const inputStyle = {
-        padding: '6px 10px', borderRadius: 6, border: `1px solid ${THEME.grid}50`,
+        padding: '6px 10px', borderRadius: 18, border: `1px solid ${THEME.grid}50`,
         background: THEME.surface, color: THEME.textMain, fontSize: 11,
         outline: 'none', width: '100%',
     };
@@ -782,7 +782,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
             rightNode={
                 <button onClick={() => setShowNew(v => !v)} style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
-                    padding: '5px 12px', borderRadius: 7, border: 'none', cursor: 'pointer',
+                    padding: '5px 12px', borderRadius: 18, border: 'none', cursor: 'pointer',
                     fontSize: 11, fontWeight: 700,
                     background: `${THEME.primary}18`, color: THEME.primary,
                     transition: 'all 0.15s',
@@ -793,9 +793,9 @@ const RetentionPolicyManager = ({ refreshing }) => {
         >
             {/* New policy form */}
             {showNew && (
-                <div style={{ marginBottom: 16, padding: 14, borderRadius: 10, background: `${THEME.primary}07`, border: `1px solid ${THEME.primary}18`, animation: 'resFadeIn 0.2s ease-out' }}>
+                <div style={{ marginBottom: 16, padding: 14, borderRadius: 16, background: `${THEME.primary}07`, border: `1px solid ${THEME.primary}18`, animation: 'resFadeIn 0.2s ease-out' }}>
                     <div style={{ fontSize: 11.5, fontWeight: 700, color: THEME.textMain, marginBottom: 10 }}>New Retention Rule</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 1fr', gap: 8, marginBottom: 10 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px 1fr', gap: 20, marginBottom: 10 }}>
                         <div>
                             <div style={{ fontSize: 9.5, color: THEME.textDim, marginBottom: 4,  letterSpacing: '0.04em' }}>Table Name</div>
                             <input style={inputStyle} placeholder="e.g. events_log" value={newPolicy.table} onChange={e => setNewPolicy(p => ({ ...p, table: e.target.value }))} />
@@ -816,9 +816,9 @@ const RetentionPolicyManager = ({ refreshing }) => {
                             <input style={inputStyle} placeholder="e.g. created_at" value={newPolicy.partition_col} onChange={e => setNewPolicy(p => ({ ...p, partition_col: e.target.value }))} />
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={() => setShowNew(false)} style={{ padding: '7px 14px', borderRadius: 7, border: `1px solid ${THEME.grid}50`, background: 'transparent', color: THEME.textDim, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                        <button onClick={addPolicy} style={{ padding: '7px 14px', borderRadius: 7, border: 'none', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`, color: THEME.textMain, fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ display: 'flex', gap: 20 }}>
+                        <button onClick={() => setShowNew(false)} style={{ padding: '7px 14px', borderRadius: 18, border: `1px solid ${THEME.grid}50`, background: 'transparent', color: THEME.textDim, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                        <button onClick={addPolicy} style={{ padding: '7px 14px', borderRadius: 18, border: 'none', background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`, color: THEME.textMain, fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
                             <CheckCircle size={11} /> Save Policy
                         </button>
                     </div>
@@ -826,28 +826,28 @@ const RetentionPolicyManager = ({ refreshing }) => {
             )}
 
             {/* Policy list */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {policies.map((p) => {
                     const AIcon = actionIcon(p.action);
                     const ac = actionColor(p.action);
                     return (
-                        <div key={p.id} className="res-policy-row" style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '11px 14px', borderRadius: 10, background: p.enabled ? `${THEME.surface}` : `${THEME.grid}10`, border: `1px solid ${p.enabled ? `${THEME.grid}50` : `${THEME.grid}25`}`, opacity: p.enabled ? 1 : 0.65, transition: 'all 0.15s' }}>
+                        <div key={p.id} className="res-policy-row" style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '11px 14px', borderRadius: 16, background: p.enabled ? `${THEME.surface}` : `${THEME.grid}10`, border: `1px solid ${p.enabled ? `${THEME.grid}50` : `${THEME.grid}25`}`, opacity: p.enabled ? 1 : 0.65, transition: 'all 0.15s' }}>
 
                             {/* Toggle */}
-                            <div onClick={() => toggleEnabled(p.id)} style={{ width: 34, height: 18, borderRadius: 9, flexShrink: 0, cursor: 'pointer', background: p.enabled ? THEME.success : `${THEME.grid}60`, display: 'flex', alignItems: 'center', padding: '0 2px', transition: 'background 0.2s', justifyContent: p.enabled ? 'flex-end' : 'flex-start' }}>
+                            <div onClick={() => toggleEnabled(p.id)} style={{ width: 34, height: 18, borderRadius: 20, flexShrink: 0, cursor: 'pointer', background: p.enabled ? THEME.success : `${THEME.grid}60`, display: 'flex', alignItems: 'center', padding: '0 2px', transition: 'background 0.2s', justifyContent: p.enabled ? 'flex-end' : 'flex-start' }}>
                                 <div style={{ width: 14, height: 14, borderRadius: '50%', background: THEME.textMain, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', transition: 'all 0.2s' }} />
                             </div>
 
                             {/* Action icon */}
-                            <div style={{ width: 28, height: 28, borderRadius: 7, background: `${ac}12`, border: `1px solid ${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <div style={{ width: 28, height: 28, borderRadius: 18, background: `${ac}12`, border: `1px solid ${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <AIcon size={13} color={ac} />
                             </div>
 
                             {/* Details */}
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 3 }}>
                                     <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>{p.table}</span>
-                                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 14, background: `${ac}10`, color: ac, border: `1px solid ${ac}18`, fontWeight: 700 }}>{p.action.toUpperCase()}</span>
+                                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: `${ac}10`, color: ac, border: `1px solid ${ac}18`, fontWeight: 700 }}>{p.action.toUpperCase()}</span>
                                 </div>
                                 <div style={{ fontSize: 10.5, color: THEME.textDim, display: 'flex', gap: 20 }}>
                                     <span><Clock size={9} style={{ display: 'inline', marginRight: 3 }} />After {p.age_days}d</span>
@@ -859,7 +859,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
 
                             {/* Actions (revealed on hover via CSS) */}
                             <div className="res-policy-actions" style={{ display: 'flex', gap: 6, opacity: 0, transition: 'opacity 0.15s' }}>
-                                <button onClick={() => deletePolicy(p.id)} title="Delete policy" style={{ width: 26, height: 26, borderRadius: 6, border: `1px solid ${THEME.danger}20`, background: `${THEME.danger}0a`, color: THEME.danger, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <button onClick={() => deletePolicy(p.id)} title="Delete policy" style={{ width: 26, height: 26, borderRadius: 18, border: `1px solid ${THEME.danger}20`, background: `${THEME.danger}0a`, color: THEME.danger, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <Trash2 size={11} />
                                 </button>
                             </div>
@@ -895,7 +895,7 @@ const TOASTRatioCell = ({ table }) => {
 
     return (
         <div title={`Data: ${fmtSize(data)} · Index: ${fmtSize(idx)} · TOAST: ${fmtSize(toast)}`} style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 64 }}>
-            <div style={{ display: 'flex', height: 5, borderRadius: 10, overflow: 'hidden', background: `${THEME.grid}30` }}>
+            <div style={{ display: 'flex', height: 5, borderRadius: 16, overflow: 'hidden', background: `${THEME.grid}30` }}>
                 <div style={{ width: `${dataPct}%`, background: THEME.primary,   height: '100%' }} />
                 <div style={{ width: `${idxPct}%`, background: THEME.secondary, height: '100%' }} />
                 <div style={{ width: `${toastPct}%`, background: THEME.warning,  height: '100%' }} />
@@ -1090,7 +1090,7 @@ const ResourcesTab = () => {
         const active = activeTab === id;
         return (
             <button onClick={() => setActiveTab(id)} style={{
-                padding: '9px 18px', borderRadius: 8, cursor: 'pointer',
+                padding: '9px 18px', borderRadius: 20, cursor: 'pointer',
                 display: 'inline-flex', alignItems: 'center', gap: 7,
                 fontWeight: 600, fontSize: 12.5, lineHeight: 1,
                 transition: 'all 0.25s', whiteSpace: 'nowrap', border: 'none',
@@ -1102,10 +1102,10 @@ const ResourcesTab = () => {
                 <Icon size={13} style={{ flexShrink: 0 }} />
                 {label}
                 {count != null && (
-                    <span style={{ fontSize: 9.5, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.primary}15`, color: active ? THEME.textMain : THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 800, padding: '2px 6px', borderRadius: 16, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.primary}15`, color: active ? THEME.textMain : THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
                 )}
                 {badge && (
-                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.danger}15`, color: active ? THEME.textMain : THEME.danger }}>{badge}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 16, background: active ? 'rgba(255,255,255,0.25)' : `${THEME.danger}15`, color: active ? THEME.textMain : THEME.danger }}>{badge}</span>
                 )}
             </button>
         );
@@ -1115,7 +1115,7 @@ const ResourcesTab = () => {
     const SortTh = ({ label, sortId, align = 'left', width }) => {
         const active = sortKey === sortId;
         return (
-            <th onClick={() => toggleSort(sortId)} style={{ padding: '10px 16px', textAlign: align, width, fontSize: 10, fontWeight: 700, color: active ? THEME.primary : THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50`, cursor: 'pointer', userSelect: 'none', transition: 'color 0.15s', position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>
+            <th onClick={() => toggleSort(sortId)} style={{ padding: '16px 22px', textAlign: align, width, fontSize: 10, fontWeight: 700, color: active ? THEME.primary : THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50`, cursor: 'pointer', userSelect: 'none', transition: 'color 0.15s', position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: align === 'right' ? 'flex-end' : 'flex-start' }}>
                     {label}
                     {active && (sortDir === 'asc' ? <ArrowUp size={10} /> : <ArrowDown size={10} />)}
@@ -1131,7 +1131,7 @@ const ResourcesTab = () => {
                 <ResStyles />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
                     {[0, 1, 2, 3].map(i => (
-                        <div key={i} style={{ height: 96, borderRadius: 14, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.4, animation: 'resPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />
+                        <div key={i} style={{ height: 96, borderRadius: 20, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.4, animation: 'resPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />
                     ))}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 20 }}>
@@ -1160,8 +1160,8 @@ const ResourcesTab = () => {
 
             {/* ── Refresh status bar ── */}
             {/* ── Tabs ── */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
+                <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                     <TabBtn id="inventory" label="Table Inventory" icon={Database}     count={growth.length} />
                     <TabBtn id="analytics" label="Analytics"       icon={BarChart3} />
                     <TabBtn id="storage"   label="Storage & I/O"   icon={HardDrive} />
@@ -1169,7 +1169,7 @@ const ResourcesTab = () => {
                     <TabBtn id="retention" label="Retention"        icon={Clock} />
                     <TabBtn id="logs"      label="Maintenance"      icon={History}      count={logs.length} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: THEME.textDim }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, fontSize: 11, color: THEME.textDim }}>
                     <LiveDot color={refreshError ? THEME.danger : THEME.success} size={6} />
                     <span>{refreshError ? 'Fetch error' : 'Live'}</span>
                 </div>
@@ -1178,7 +1178,7 @@ const ResourcesTab = () => {
             {/* ── Quick metric strip ── */}
             <div className="res-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
                 {metricCards.map((m, i) => (
-                    <div key={i} style={{ padding: '12px', borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <div key={i} style={{ padding: '12px', borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 22, alignItems: 'flex-start' }}>
                         <div style={{ width: 42, height: 42, borderRadius: 16, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
                             <m.icon size={18} color={m.color} />
                         </div>
@@ -1268,7 +1268,7 @@ const ResourcesTab = () => {
                                 </div>
                             )}
                             {/* ── NEW: Legend for composition column ── */}
-                            <div style={{ display: 'flex', gap: 20, padding: '8px 16px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 9.5, color: THEME.textDim }}>
+                            <div style={{ display: 'flex', gap: 20, padding: '14px 20px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 9.5, color: THEME.textDim }}>
                                 {[{ l: 'Data', c: THEME.primary }, { l: 'Indexes', c: THEME.secondary }, { l: 'TOAST', c: THEME.warning }].map(x => (
                                     <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                         <span style={{ width: 8, height: 4, borderRadius: 1, background: x.c }} /> {x.l}
@@ -1283,7 +1283,7 @@ const ResourcesTab = () => {
                                rightNode={
                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                        {['all', 'high', 'medium', 'low'].map(f => (
-                                           <button key={f} onClick={() => setBloatFilter(f)} style={{ padding: '3px 9px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, textTransform: 'capitalize', background: bloatFilter === f ? `${THEME.primary}20` : 'transparent', color: bloatFilter === f ? THEME.primary : THEME.textDim, transition: 'all 0.15s' }}>{f}</button>
+                                           <button key={f} onClick={() => setBloatFilter(f)} style={{ padding: '3px 9px', borderRadius: 16, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, textTransform: 'capitalize', background: bloatFilter === f ? `${THEME.primary}20` : 'transparent', color: bloatFilter === f ? THEME.primary : THEME.textDim, transition: 'all 0.15s' }}>{f}</button>
                                        ))}
                                        {highBloat > 0 && <StatusBadge label={`${highBloat} critical`} color={THEME.danger} />}
                                    </div>
@@ -1292,13 +1292,13 @@ const ResourcesTab = () => {
                             {filteredVacuum.length === 0 ? (
                                 <EmptyState icon={Trash2} text={`No ${bloatFilter === 'all' ? '' : bloatFilter + ' '}bloat tables`} />
                             ) : (
-                                <div className="res-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
+                                <div className="res-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: 22, maxHeight: 320, overflowY: 'auto' }}>
                                     {filteredVacuum.map((v, i) => {
                                         const sel = selectedTable?.table_name === v.table_name;
                                         const resolved = resolvedOptimizations[v.table_name];
                                         const bc = resolved ? THEME.success : bloatColor(v.bloat_ratio_pct);
                                         return (
-                                            <div key={i} onClick={() => setSelectedTable(v)} className={resolved ? 'res-resolved-flash' : ''} style={{ padding: '12px 14px', borderRadius: 10, cursor: 'pointer', background: resolved ? `${THEME.success}06` : sel ? `${bc}08` : THEME.surface, border: `1px solid ${resolved ? `${THEME.success}25` : sel ? `${bc}35` : `${THEME.grid}50`}`, transition: 'all 0.2s', opacity: resolved ? 0.72 : 1 }}
+                                            <div key={i} onClick={() => setSelectedTable(v)} className={resolved ? 'res-resolved-flash' : ''} style={{ padding: '22px 28px', borderRadius: 16, cursor: 'pointer', background: resolved ? `${THEME.success}06` : sel ? `${bc}08` : THEME.surface, border: `1px solid ${resolved ? `${THEME.success}25` : sel ? `${bc}35` : `${THEME.grid}50`}`, transition: 'all 0.2s', opacity: resolved ? 0.72 : 1 }}
                                                  onMouseEnter={e => { if (!sel && !resolved) e.currentTarget.style.borderColor = `${THEME.grid}90`; }}
                                                  onMouseLeave={e => { if (!sel && !resolved) e.currentTarget.style.borderColor = `${THEME.grid}50`; }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -1309,14 +1309,14 @@ const ResourcesTab = () => {
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                                         {resolved ? (
                                                             <>
-                                                                <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: `${THEME.success}12`, color: THEME.success, border: `1px solid ${THEME.success}20` }}>✓ Optimization Applied</span>
+                                                                <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 16, background: `${THEME.success}12`, color: THEME.success, border: `1px solid ${THEME.success}20` }}>✓ Optimization Applied</span>
                                                                 <button onClick={e => { e.stopPropagation(); handleUnmarkResolved(v.table_name); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 2, display: 'flex', alignItems: 'center' }}><X size={10} /></button>
                                                             </>
                                                         ) : (
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                                                 <span style={{ fontSize: 12, fontWeight: 800, color: bc, fontVariantNumeric: 'tabular-nums' }}>{v.bloat_ratio_pct}%</span>
                                                                 {sel ? (
-                                                                    <button onClick={e => { e.stopPropagation(); setSelectedTable(v); handleRequestConfirm(v.table_name); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 700, background: `${THEME.success}18`, color: THEME.success, border: `1px solid ${THEME.success}30`, transition: 'all 0.15s' }}>
+                                                                    <button onClick={e => { e.stopPropagation(); setSelectedTable(v); handleRequestConfirm(v.table_name); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 18, cursor: 'pointer', fontSize: 10, fontWeight: 700, background: `${THEME.success}18`, color: THEME.success, border: `1px solid ${THEME.success}30`, transition: 'all 0.15s' }}>
                                                                         <CheckCircle size={10} /> Mark Optimized
                                                                     </button>
                                                                 ) : <ChevronRight size={12} color={THEME.textDim} />}
@@ -1345,7 +1345,7 @@ const ResourcesTab = () => {
                     </div>
 
                     {/* Right: Analysis panel */}
-                    <div style={{ position: 'sticky', top: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ position: 'sticky', top: 20, display: 'flex', flexDirection: 'column', gap: 22 }}>
                         {selectedTable && (() => {
                             const vEntry = vacuum.find(v => v.table_name === selectedTable.table_name);
                             if (!vEntry) return null;
@@ -1353,30 +1353,30 @@ const ResourcesTab = () => {
                             const bc = bloatColor(vEntry.bloat_ratio_pct);
                             if (res) {
                                 return (
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderRadius: 10, background: `${THEME.success}08`, border: `1px solid ${THEME.success}25` }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 22px', borderRadius: 16, background: `${THEME.success}08`, border: `1px solid ${THEME.success}25` }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                             <CheckCircle size={14} color={THEME.success} />
                                             <div>
                                                 <div style={{ fontSize: 12, fontWeight: 700, color: THEME.success }}>Optimization Marked as Applied</div>
                                                 <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>{res.note} — will auto-clear from bloat list on next DB refresh if bloat &lt; 10%</div>
                                             </div>
                                         </div>
-                                        <button onClick={() => handleUnmarkResolved(selectedTable.table_name)} style={{ background: 'none', border: `1px solid ${THEME.grid}40`, borderRadius: 5, cursor: 'pointer', color: THEME.textDim, fontSize: 10, fontWeight: 600, padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                        <button onClick={() => handleUnmarkResolved(selectedTable.table_name)} style={{ background: 'none', border: `1px solid ${THEME.grid}40`, borderRadius: 16, cursor: 'pointer', color: THEME.textDim, fontSize: 10, fontWeight: 600, padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                             <X size={9} /> Undo
                                         </button>
                                     </div>
                                 );
                             }
                             return (
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderRadius: 10, background: `${bc}07`, border: `1px solid ${bc}25` }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 22px', borderRadius: 16, background: `${bc}07`, border: `1px solid ${bc}25` }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                         <AlertTriangle size={13} color={bc} />
                                         <div>
                                             <div style={{ fontSize: 12, fontWeight: 700, color: bc }}>{vEntry.bloat_ratio_pct}% bloat on {selectedTable.table_name}</div>
                                             <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 1 }}>Apply the optimization below, then click the button →</div>
                                         </div>
                                     </div>
-                                    <button onClick={() => handleRequestConfirm(selectedTable.table_name)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', background: `linear-gradient(135deg, ${THEME.success}, ${THEME.success}bb)`, color: THEME.textMain, boxShadow: `0 3px 12px ${THEME.success}40`, transition: 'all 0.15s' }}>
+                                    <button onClick={() => handleRequestConfirm(selectedTable.table_name)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 18, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', background: `linear-gradient(135deg, ${THEME.success}, ${THEME.success}bb)`, color: THEME.textMain, boxShadow: `0 3px 12px ${THEME.success}40`, transition: 'all 0.15s' }}>
                                         <CheckCircle size={12} /> Mark Optimization Done
                                     </button>
                                 </div>
@@ -1417,7 +1417,7 @@ const ResourcesTab = () => {
                                     </div>
                                     <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                                         {['Schema', 'Indexes', 'Bloat', 'Growth', 'TOAST'].map(tag => (
-                                            <span key={tag} style={{ fontSize: 10, padding: '3px 10px', borderRadius: 6, background: `${THEME.primary}08`, color: THEME.textDim, border: `1px solid ${THEME.primary}12` }}>{tag}</span>
+                                            <span key={tag} style={{ fontSize: 10, padding: '3px 10px', borderRadius: 18, background: `${THEME.primary}08`, color: THEME.textDim, border: `1px solid ${THEME.primary}12` }}>{tag}</span>
                                         ))}
                                     </div>
                                 </div>
@@ -1454,7 +1454,7 @@ const ResourcesTab = () => {
                            rightNode={<span style={{ fontSize: 10, color: THEME.textDim }}>Higher ratio may indicate over-indexing</span>}
                     >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 120px', gap: 8, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 4 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 120px', gap: 20, padding: '0 0 8px', borderBottom: `1px solid ${THEME.grid}30`, marginBottom: 4 }}>
                                 {['Table', 'Table Size', 'Index Size', 'TOAST', 'Index Ratio'].map((h, i) => (
                                     <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.04em', textAlign: i > 0 ? 'right' : 'left' }}>{h}</div>
                                 ))}
@@ -1466,12 +1466,12 @@ const ResourcesTab = () => {
                                 const ratio = idx / Math.max(total - idx - toast, 0.001);
                                 const ratioColor = ratio > 1.5 ? THEME.danger : ratio > 0.8 ? THEME.warning : THEME.success;
                                 return (
-                                    <div key={i} className="res-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 120px', gap: 8, padding: '8px 0', borderBottom: `1px solid ${THEME.grid}15`, alignItems: 'center' }}>
+                                    <div key={i} className="res-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 120px', gap: 20, padding: '8px 0', borderBottom: `1px solid ${THEME.grid}15`, alignItems: 'center' }}>
                                         <span style={{ fontSize: 12, fontWeight: 600, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.table_name}</span>
                                         <span style={{ fontSize: 11, textAlign: 'right', color: THEME.primary, fontVariantNumeric: 'tabular-nums' }}>{fmtSize(total - idx - toast)}</span>
                                         <span style={{ fontSize: 11, textAlign: 'right', color: THEME.secondary, fontVariantNumeric: 'tabular-nums' }}>{fmtSize(idx)}</span>
                                         <span style={{ fontSize: 11, textAlign: 'right', color: THEME.warning, fontVariantNumeric: 'tabular-nums' }}>{fmtSize(toast)}</span>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, justifyContent: 'flex-end' }}>
                                             <div style={{ flex: 1, minWidth: 0, height: 4, borderRadius: 2, background: `${THEME.grid}40`, overflow: 'hidden', maxWidth: 60 }}>
                                                 <div className="res-bar-animate" style={{ width: `${Math.min(ratio / 2, 1) * 100}%`, height: '100%', borderRadius: 2, background: ratioColor, animationDelay: `${i * 0.04}s` }} />
                                             </div>
@@ -1620,7 +1620,7 @@ const ResourcesTab = () => {
                                 return (
                                     <div key={i} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 70px', alignItems: 'center', gap: 20, padding: '9px 20px', borderBottom: i < 7 ? `1px solid ${THEME.grid}20` : 'none' }}>
                                         <div style={{ fontSize: 11.5, fontWeight: 600, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.table_name}</div>
-                                        <div style={{ display: 'flex', height: 8, borderRadius: 14, overflow: 'hidden', background: `${THEME.grid}40` }}>
+                                        <div style={{ display: 'flex', height: 8, borderRadius: 20, overflow: 'hidden', background: `${THEME.grid}40` }}>
                                             <div className="res-bar-animate" style={{ width: `${pct * (100 - idxPct - toastPct) / 100}%`, background: THEME.primary,   height: '100%', animationDelay: `${i * 0.05}s` }} />
                                             <div className="res-bar-animate" style={{ width: `${pct * idxPct / 100}%`,                   background: THEME.secondary, height: '100%', animationDelay: `${i * 0.05 + 0.06}s` }} />
                                             <div className="res-bar-animate" style={{ width: `${pct * toastPct / 100}%`,                 background: THEME.warning,   height: '100%', animationDelay: `${i * 0.05 + 0.12}s` }} />
@@ -1630,7 +1630,7 @@ const ResourcesTab = () => {
                                 );
                             })}
                         </div>
-                        <div style={{ display: 'flex', gap: 20, padding: '8px 16px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim }}>
+                        <div style={{ display: 'flex', gap: 20, padding: '14px 20px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.primary }} /> Data</span>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.secondary }} /> Indexes</span>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.warning }} /> TOAST</span>
@@ -1653,7 +1653,7 @@ const ResourcesTab = () => {
                             { label: 'Unused Columns',    value: deadCode.columns.length, sub: 'potential dead fields',  color: THEME.warning,  icon: Eye },
                             { label: 'Space Reclaimable', value: fmtSize(deadCode.tables.reduce((s, t) => s + t.size_gb, 0)), sub: 'if all unused tables dropped', color: THEME.success, icon: HardDrive },
                         ].map((m, i) => (
-                            <div key={i} style={{ padding: '12px', borderRadius: 10, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 18, alignItems: 'flex-start', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                            <div key={i} style={{ padding: '12px', borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 18, alignItems: 'flex-start', boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)' }}>
                                 <div style={{ width: 42, height: 42, borderRadius: 16, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
                                     <m.icon size={18} color={m.color} />
                                 </div>
@@ -1669,10 +1669,10 @@ const ResourcesTab = () => {
                     <DeadCodeDetector deadCode={deadCode} refreshing={refreshingPanels.has('inventory')} />
 
                     {/* Safety notice */}
-                    <div style={{ padding: '12px 14px', borderRadius: 8, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}15`, display: 'flex', alignItems: 'flex-start', gap: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                    <div style={{ padding: '22px 28px', borderRadius: 20, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}15`, display: 'flex', alignItems: 'flex-start', gap: 22, boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)' }}>
                         <ShieldAlert size={16} color={THEME.warning} style={{ flexShrink: 0, marginTop: 1 }} />
                         <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>
-                            <strong style={{ color: THEME.warning }}>Before archiving or dropping:</strong> Verify with application owners, check for indirect reads through ORMs, background workers, or reporting pipelines. Zero-read in the past 90 days does not guarantee zero-use — some tables are queried rarely but are still critical (e.g., configuration, audit, disaster-recovery). Use <code style={{ background: `${THEME.grid}30`, padding: '1px 5px', borderRadius: 10, fontSize: 11 }}>pg_stat_user_tables</code> to confirm.
+                            <strong style={{ color: THEME.warning }}>Before archiving or dropping:</strong> Verify with application owners, check for indirect reads through ORMs, background workers, or reporting pipelines. Zero-read in the past 90 days does not guarantee zero-use — some tables are queried rarely but are still critical (e.g., configuration, audit, disaster-recovery). Use <code style={{ background: `${THEME.grid}30`, padding: '1px 5px', borderRadius: 16, fontSize: 11 }}>pg_stat_user_tables</code> to confirm.
                         </div>
                     </div>
                 </div>
@@ -1691,14 +1691,14 @@ const ResourcesTab = () => {
                     <Panel title="Partition Detach Candidates" icon={Database} refreshing={refreshingPanels.has('inventory')}
                            rightNode={<StatusBadge label={`${partitions.flatMap(p => p.children).filter(c => c.status === 'detach_ready').length} ready to archive`} color={THEME.warning} />}
                     >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                             {partitions.flatMap(p =>
                                 p.children
                                     .filter(c => c.status === 'detach_ready')
                                     .map(c => ({ ...c, parent: p.parent, strategy: p.strategy }))
                             ).map((c, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '12px 14px', borderRadius: 10, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}18` }}>
-                                    <div style={{ width: 32, height: 32, borderRadius: 8, background: `${THEME.warning}12`, border: `1px solid ${THEME.warning}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '22px 28px', borderRadius: 16, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}18` }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: 20, background: `${THEME.warning}12`, border: `1px solid ${THEME.warning}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                         <HardDrive size={14} color={THEME.warning} />
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -1706,8 +1706,8 @@ const ResourcesTab = () => {
                                         <div style={{ fontSize: 10.5, color: THEME.textDim }}>Parent: {c.parent} · {c.strategy} · {fmtNum(c.rows)} rows · {fmtSize(c.gb)}</div>
                                     </div>
                                     <StatusBadge label="Archive Ready" color={THEME.warning} />
-                                    <div style={{ display: 'flex', gap: 8 }}>
-                                        <button style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: `${THEME.warning}15`, color: THEME.warning, transition: 'all 0.15s' }}>
+                                    <div style={{ display: 'flex', gap: 20 }}>
+                                        <button style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 18, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: `${THEME.warning}15`, color: THEME.warning, transition: 'all 0.15s' }}>
                                             <HardDrive size={11} /> Detach &amp; Archive
                                         </button>
                                     </div>
@@ -1729,7 +1729,7 @@ const ResourcesTab = () => {
                 <div className="res-stagger">
                     <Panel title="Maintenance History" icon={History} noPad refreshing={refreshingPanels.has('logs')}
                            rightNode={
-                               <div style={{ display: 'flex', gap: 8 }}>
+                               <div style={{ display: 'flex', gap: 20 }}>
                                    <StatusBadge label={`${logs.filter(l => l.status === 'Success').length} success`} color={THEME.success} />
                                    {logs.some(l => l.status === 'Failed') && <StatusBadge label={`${logs.filter(l => l.status === 'Failed').length} failed`} color={THEME.danger} />}
                                </div>
@@ -1757,7 +1757,7 @@ const ResourcesTab = () => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}><Database size={11} color={THEME.textDim} style={{ flexShrink: 0 }} /> {log.table}</div>
                                         </td>
                                         <td style={{ padding: '13px 20px', borderBottom: `1px solid ${THEME.grid}20` }}>
-                                            <span style={{ display: 'inline-block', padding: '3px 9px', borderRadius: 5, background: `${THEME.primary}0a`, border: `1px solid ${THEME.primary}15`, fontSize: 10.5, fontWeight: 700, color: THEME.primary, fontFamily: 'monospace' }}>{log.action}</span>
+                                            <span style={{ display: 'inline-block', padding: '3px 9px', borderRadius: 16, background: `${THEME.primary}0a`, border: `1px solid ${THEME.primary}15`, fontSize: 10.5, fontWeight: 700, color: THEME.primary, fontFamily: 'monospace' }}>{log.action}</span>
                                         </td>
                                         <td style={{ padding: '13px 20px', textAlign: 'right', fontSize: 11.5, color: THEME.textMuted, borderBottom: `1px solid ${THEME.grid}20`, fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace' }}>{log.duration}</td>
                                         <td style={{ padding: '13px 20px', textAlign: 'right', fontSize: 12.5, fontWeight: 700, color: log.saved === '—' ? THEME.textDim : THEME.success, fontVariantNumeric: 'tabular-nums', borderBottom: `1px solid ${THEME.grid}20` }}>
@@ -1780,8 +1780,8 @@ const ResourcesTab = () => {
                                 { label: 'Success Rate', value: `${logs.length ? Math.round(logs.filter(l => l.status === 'Success').length / logs.length * 100) : 0}%`, color: logs.some(l => l.status === 'Failed') ? THEME.warning : THEME.success, icon: CheckCircle },
                                 { label: 'Avg Duration', value: '2m 40s',   color: THEME.warning,   icon: Timer },
                             ].map((s, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 20px', borderRight: i < 3 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
-                                    <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 22, padding: '13px 20px', borderRight: i < 3 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
+                                    <div style={{ width: 28, height: 28, borderRadius: 20, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
                                         <s.icon size={13} color={s.color} />
                                     </div>
                                     <div>

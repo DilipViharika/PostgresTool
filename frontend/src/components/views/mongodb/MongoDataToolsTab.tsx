@@ -33,9 +33,9 @@ const Styles = () => (
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
             border-left: 3px solid #00684A;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             backdrop-filter: blur(12px);
             transition: all 0.25s ease;
             position: relative;
@@ -44,7 +44,7 @@ const Styles = () => (
 
         .mongo-card:hover {
             box-shadow: 0 12px 28px rgba(0,104,74,0.12);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
 
         .mongo-card::after {
@@ -63,12 +63,12 @@ const Styles = () => (
             border-bottom: 1px solid ${DARK_THEME.border};
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 22px;
             font-weight: 700;
         }
 
         .mongo-card-body {
-            padding: 16px 18px;
+            padding: 22px 26px;
         }
 
         .mongo-section {
@@ -84,14 +84,14 @@ const Styles = () => (
             margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 20px;
         }
 
         .mongo-input {
             width: 100%;
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 12px;
+            border-radius: 22px;
             padding: 12px 14px;
             color: ${DARK_THEME.text};
             font-size: 13px;
@@ -109,7 +109,7 @@ const Styles = () => (
             width: 100%;
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 12px;
+            border-radius: 22px;
             padding: 16px;
             color: ${DARK_THEME.text};
             font-size: 12px;
@@ -129,20 +129,20 @@ const Styles = () => (
             background: ${DARK_THEME.accent};
             color: ${DARK_THEME.bg};
             border: none;
-            border-radius: 10px;
+            border-radius: 20px;
             padding: 10px 18px;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 20px;
             font-size: 12px;
             transition: all 0.2s;
         }
 
         .mongo-btn:hover {
             background: #4a9eff;
-            transform: translateY(-1px);
+            transform: translateY(-3px);
         }
 
         .mongo-btn:disabled {
@@ -171,7 +171,7 @@ const Styles = () => (
 
         .mongo-btn-group {
             display: flex;
-            gap: 8px;
+            gap: 20px;
             margin-top: 12px;
             flex-wrap: wrap;
         }
@@ -180,7 +180,7 @@ const Styles = () => (
             width: 100%;
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 12px;
+            border-radius: 22px;
             padding: 12px 14px;
             color: ${DARK_THEME.text};
             font-size: 13px;
@@ -204,7 +204,7 @@ const Styles = () => (
         .mongo-stage-card {
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 12px;
+            border-radius: 22px;
             padding: 16px;
             margin-bottom: 16px;
         }
@@ -212,7 +212,7 @@ const Styles = () => (
         .mongo-result-box {
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 12px;
+            border-radius: 22px;
             padding: 16px;
             max-height: 400px;
             overflow-y: auto;
@@ -227,7 +227,7 @@ const Styles = () => (
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 20px;
             padding: 20px;
             color: ${DARK_THEME.textMuted};
             font-size: 13px;
@@ -240,27 +240,27 @@ const Styles = () => (
         .mongo-error {
             background: ${DARK_THEME.danger}15;
             border: 1px solid ${DARK_THEME.danger};
-            border-radius: 12px;
+            border-radius: 22px;
             padding: 14px;
             color: ${DARK_THEME.danger};
             margin-bottom: 16px;
             font-size: 12px;
             display: flex;
             align-items: flex-start;
-            gap: 10px;
+            gap: 22px;
         }
 
         .mongo-success {
             background: ${DARK_THEME.success}15;
             border: 1px solid ${DARK_THEME.success};
-            border-radius: 12px;
+            border-radius: 22px;
             padding: 14px;
             color: ${DARK_THEME.success};
             margin-bottom: 16px;
             font-size: 12px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 22px;
         }
     `}</style>
 );
@@ -435,17 +435,17 @@ export default function MongoDataToolsTab() {
                             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 8, color: DARK_THEME.textMuted }}>
                                 Operation
                             </label>
-                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                                 {['find', 'insert', 'update', 'delete'].map(op => (
                                     <button
                                         key={op}
                                         onClick={() => setQueryMode(op)}
                                         style={{
-                                            padding: '8px 12px',
+                                            padding: '20px 24px',
                                             background: queryMode === op ? DARK_THEME.accent : DARK_THEME.border,
                                             color: queryMode === op ? DARK_THEME.bg : DARK_THEME.text,
                                             border: 'none',
-                                            borderRadius: 6,
+                                            borderRadius: 18,
                                             cursor: 'pointer',
                                             fontWeight: 600,
                                             fontSize: 12,
@@ -525,7 +525,7 @@ export default function MongoDataToolsTab() {
                         <div style={{ marginBottom: 16 }}>
                             {pipelineStages.map((stage, idx) => (
                                 <div key={idx} className="mongo-stage-card">
-                                    <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                                    <div style={{ display: 'flex', gap: 20, marginBottom: 8 }}>
                                         <select
                                             className="mongo-select"
                                             style={{ marginBottom: 0, flex: '0 0 150px' }}

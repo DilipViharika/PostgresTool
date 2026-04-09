@@ -9,14 +9,14 @@ const Styles = () => (
     <style>{`
         @keyframes rmSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes rmFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .rm-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:20px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); animation:rmFade .3s ease; transition:all 0.2s ease; backdrop-filter:blur(12px); }
-        .rm-card:hover { border-color:${THEME.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+        .rm-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius: 20px; padding:20px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); animation:rmFade .3s ease; transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .rm-card:hover { border-color:${THEME.primary}30; transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
         .rm-card-section { padding:14px 20px; border-bottom:1px solid ${THEME.glassBorder}; background:${THEME.bg}06; }
         .rm-card-section:last-child { border-bottom:none; }
         .rm-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .rm-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:12px 14px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .rm-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius: 22px; padding:12px 14px; color:${THEME.textMain}; font-size:13px; width:100%; }
         .rm-input:focus { outline:none; border-color:${THEME.primary}; }
-        .rm-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:12px; padding:12px 18px; font-weight:700; font-size:13px; cursor:pointer; }
+        .rm-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius: 22px; padding:12px 18px; font-weight:700; font-size:13px; cursor:pointer; }
         .rm-button:hover { background:${THEME.primaryLight}; }
         .rm-button-danger { background:${THEME.danger}; }
         .rm-button-danger:hover { background:${THEME.dangerLight}; }
@@ -39,7 +39,7 @@ const fmtBytes = (b) => {
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:8, padding:'8px 12px', fontSize:12 }}>
+        <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius: 20, padding:'8px 12px', fontSize:12 }}>
             <div style={{ color:THEME.textMuted, marginBottom:4 }}>{label}</div>
             {payload.map(p => (
                 <div key={p.name} style={{ color:p.color, fontWeight:600 }}>{p.name}: {fmtBytes(p.value)}</div>
@@ -156,7 +156,7 @@ export default function RetentionManagementTab() {
                 <div style={{
                     background:`${THEME.danger}15`,
                     border:`1px solid ${THEME.danger}40`,
-                    borderRadius:10,
+                    borderRadius: 16,
                     padding:'12px 16px',
                     marginBottom:20,
                     color:THEME.danger,
@@ -171,7 +171,7 @@ export default function RetentionManagementTab() {
                 <div style={{
                     background:`${THEME.success}15`,
                     border:`1px solid ${THEME.success}40`,
-                    borderRadius:10,
+                    borderRadius: 16,
                     padding:'12px 16px',
                     marginBottom:20,
                     color:THEME.success,
@@ -247,7 +247,7 @@ export default function RetentionManagementTab() {
                     <div style={{
                         background:`${THEME.warning}15`,
                         border:`1px solid ${THEME.warning}40`,
-                        borderRadius:8,
+                        borderRadius: 20,
                         padding:'12px 16px',
                         marginTop:16,
                         color:THEME.warning,
@@ -320,11 +320,11 @@ export default function RetentionManagementTab() {
                         Run Cleanup Now
                     </button>
                 ) : (
-                    <div style={{ background:THEME.grid, borderRadius:8, padding:16 }}>
+                    <div style={{ background:THEME.grid, borderRadius: 20, padding:16 }}>
                         <div style={{ color:THEME.danger, marginBottom:12, fontWeight:700, fontSize:13 }}>
                             Are you sure? This will permanently delete expired records.
                         </div>
-                        <div style={{ display:'flex', gap:10 }}>
+                        <div style={{ display:'flex', gap: 22 }}>
                             <button className="rm-button rm-button-danger" onClick={handleCleanup} disabled={cleaning}>
                                 {cleaning ? <RefreshCw size={14} className="rm-spinner" /> : <Trash2 size={14} />}
                                 {cleaning ? 'Cleaning...' : 'Confirm Cleanup'}

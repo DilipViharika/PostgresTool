@@ -12,18 +12,18 @@ const Styles = () => (
         .k-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             transition: all 0.25s ease;
             animation: kFade 0.3s ease;
             backdrop-filter: blur(12px);
         }
         .k-card:hover {
             box-shadow: 0 8px 28px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
         .k-card::after {
             content: '';
@@ -36,9 +36,9 @@ const Styles = () => (
             opacity: 0.7;
         }
         .k-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .k-metric { background:${THEME.grid}; border:1px solid ${THEME.glassBorder}; border-radius:14px; padding:16px; margin-bottom:12px; }
-        .k-progress-bar { width:100%; height:8px; background:${THEME.grid}; border-radius:8px; overflow:hidden; margin-top:8px; }
-        .k-progress-fill { height:100%; border-radius:8px; }
+        .k-metric { background:${THEME.grid}; border:1px solid ${THEME.glassBorder}; border-radius: 20px; padding:16px; margin-bottom:12px; }
+        .k-progress-bar { width:100%; height:8px; background:${THEME.grid}; border-radius: 20px; overflow:hidden; margin-top:8px; }
+        .k-progress-fill { height:100%; border-radius: 20px; }
         .k-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:16px; }
         .k-status-ok { color:${THEME.success}; }
         .k-status-fail { color:${THEME.danger}; }
@@ -64,7 +64,7 @@ const fmtBytes = (b) => {
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, padding:'8px 12px', fontSize:12, boxShadow: THEME.shadowSm }}>
+        <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius: 16, padding:'8px 12px', fontSize:12, boxShadow: THEME.shadowSm }}>
             <div style={{ color:THEME.textMuted, marginBottom:4 }}>{label}</div>
             {payload.map(p => (
                 <div key={p.name} style={{ color:p.color, fontWeight:600 }}>{p.name}: {p.value}%</div>
@@ -153,7 +153,7 @@ export default function KubernetesTab() {
                 <div style={{
                     background:`${THEME.danger}15`,
                     border:`1px solid ${THEME.danger}40`,
-                    borderRadius:12,
+                    borderRadius: 18,
                     padding:'12px 16px',
                     marginBottom:20,
                     color:THEME.danger,
@@ -171,7 +171,7 @@ export default function KubernetesTab() {
                         <Box size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Pod Information
                     </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap: 22 }}>
                         <div>
                             <div className="k-label">Pod Name</div>
                             <div style={{ fontSize:14, color:THEME.textMain, fontWeight:600 }}>{podInfo.name || '—'}</div>
@@ -202,7 +202,7 @@ export default function KubernetesTab() {
                     <div className="k-row">
                         <div className="k-metric">
                             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
-                                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                <div style={{ display:'flex', alignItems:'center', gap: 20 }}>
                                     <Cpu size={16} color={THEME.primary} />
                                     <div className="k-label" style={{ marginBottom:0 }}>CPU Usage</div>
                                 </div>
@@ -223,7 +223,7 @@ export default function KubernetesTab() {
 
                         <div className="k-metric">
                             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
-                                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                <div style={{ display:'flex', alignItems:'center', gap: 20 }}>
                                     <MemoryStick size={16} color={THEME.secondary} />
                                     <div className="k-label" style={{ marginBottom:0 }}>Memory Usage</div>
                                 </div>
@@ -252,10 +252,10 @@ export default function KubernetesTab() {
                         <Server size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Health Check Status
                     </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-                        <div style={{ background:THEME.grid, borderRadius:10, padding:12 }}>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 22 }}>
+                        <div style={{ background:THEME.grid, borderRadius: 16, padding:12 }}>
                             <div style={{ fontSize:13, fontWeight:700, marginBottom:8, color:THEME.textMain }}>Readiness Probe</div>
-                            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap: 20 }}>
                                 {metrics.readinessProbe ? (
                                     <>
                                         <CheckCircle size={20} className="k-status-ok" />
@@ -269,9 +269,9 @@ export default function KubernetesTab() {
                                 )}
                             </div>
                         </div>
-                        <div style={{ background:THEME.grid, borderRadius:10, padding:12 }}>
+                        <div style={{ background:THEME.grid, borderRadius: 16, padding:12 }}>
                             <div style={{ fontSize:13, fontWeight:700, marginBottom:8, color:THEME.textMain }}>Liveness Probe</div>
-                            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap: 20 }}>
                                 {metrics.livenessProbe ? (
                                     <>
                                         <CheckCircle size={20} className="k-status-ok" />
@@ -328,7 +328,7 @@ export default function KubernetesTab() {
                         <Server size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Replica Topology
                     </div>
-                    <div style={{ background:THEME.grid, borderRadius:10, padding:16, textAlign:'center' }}>
+                    <div style={{ background:THEME.grid, borderRadius: 16, padding:16, textAlign:'center' }}>
                         <div style={{ fontSize:13, fontWeight:700, color:THEME.primary, marginBottom:16 }}>
                             {topology.primary}
                         </div>
@@ -336,11 +336,11 @@ export default function KubernetesTab() {
                         {topology.replicas && topology.replicas.length > 0 && (
                             <>
                                 <div style={{ fontSize:20, color:THEME.textDim, marginBottom:12 }}>↓</div>
-                                <div style={{ display:'grid', gridTemplateColumns:`repeat(${Math.min(topology.replicas.length, 3)}, 1fr)`, gap:12 }}>
+                                <div style={{ display:'grid', gridTemplateColumns:`repeat(${Math.min(topology.replicas.length, 3)}, 1fr)`, gap: 18 }}>
                                     {topology.replicas.map((rep, i) => (
                                         <div key={i} style={{
                                             background:THEME.surfaceHover,
-                                            borderRadius:8,
+                                            borderRadius: 20,
                                             padding:8,
                                             fontSize:12,
                                             color:THEME.secondary

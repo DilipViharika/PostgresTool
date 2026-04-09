@@ -12,18 +12,18 @@ const Styles = () => (
         .ot-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             transition: all 0.25s ease;
             animation: otFade 0.3s ease;
             backdrop-filter: blur(12px);
         }
         .ot-card:hover {
             box-shadow: 0 8px 28px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
         .ot-card::after {
             content: '';
@@ -37,11 +37,11 @@ const Styles = () => (
         }
         .ot-section { margin-bottom:24px; }
         .ot-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .ot-select { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:14px; padding:10px 12px; color:${THEME.textMain}; font-size:14px; width:100%; cursor:pointer; }
-        .ot-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:14px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
-        .ot-stat { display:inline-block; padding:12px 16px; background:${THEME.grid}; border-radius:12px; margin-right:12px; margin-bottom:8px; }
+        .ot-select { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius: 20px; padding:10px 12px; color:${THEME.textMain}; font-size:14px; width:100%; cursor:pointer; }
+        .ot-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius: 20px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .ot-stat { display:inline-block; padding:12px 16px; background:${THEME.grid}; border-radius: 22px; margin-right:12px; margin-bottom:8px; }
         .ot-spinner { animation:otSpin 1s linear infinite; }
-        .ot-badge { display:inline-block; padding:4px 10px; background:${THEME.primary}20; color:${THEME.primary}; border-radius:6px; font-size:11px; font-weight:700; }
+        .ot-badge { display:inline-block; padding:4px 10px; background:${THEME.primary}20; color:${THEME.primary}; border-radius: 22px; font-size:11px; font-weight:700; }
     `}</style>
 );
 
@@ -52,7 +52,7 @@ const fmtDate = (d) => d ? new Date(d).toLocaleString() : '—';
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, padding:'8px 12px', fontSize:12, boxShadow: THEME.shadowSm }}>
+        <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius: 16, padding:'8px 12px', fontSize:12, boxShadow: THEME.shadowSm }}>
             <div style={{ color:THEME.textMuted, marginBottom:4 }}>{label}</div>
             {payload.map(p => (
                 <div key={p.name} style={{ color:p.color, fontWeight:600 }}>{p.name}: {fmt(p.value)}</div>
@@ -144,7 +144,7 @@ export default function OpenTelemetryTab() {
                 <div style={{
                     background:`${THEME.danger}15`,
                     border:`1px solid ${THEME.danger}40`,
-                    borderRadius:12,
+                    borderRadius: 18,
                     padding:'12px 16px',
                     marginBottom:20,
                     color:THEME.danger,
@@ -239,20 +239,20 @@ export default function OpenTelemetryTab() {
                         <Filter size={16} style={{ display:'inline-block', marginRight:8, verticalAlign:'middle' }} />
                         Metric Statistics
                     </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:12 }}>
-                        <div style={{ background:THEME.grid, borderRadius:10, padding:12 }}>
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap: 18 }}>
+                        <div style={{ background:THEME.grid, borderRadius: 16, padding:12 }}>
                             <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700,  }}>Average</div>
                             <div style={{ fontSize:18, fontWeight:800, color:THEME.primary }}>{fmt(stats.avg)}</div>
                         </div>
-                        <div style={{ background:THEME.grid, borderRadius:10, padding:12 }}>
+                        <div style={{ background:THEME.grid, borderRadius: 16, padding:12 }}>
                             <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700,  }}>Min</div>
                             <div style={{ fontSize:18, fontWeight:800, color:THEME.success }}>{fmt(stats.min)}</div>
                         </div>
-                        <div style={{ background:THEME.grid, borderRadius:10, padding:12 }}>
+                        <div style={{ background:THEME.grid, borderRadius: 16, padding:12 }}>
                             <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700,  }}>Max</div>
                             <div style={{ fontSize:18, fontWeight:800, color:THEME.warning }}>{fmt(stats.max)}</div>
                         </div>
-                        <div style={{ background:THEME.grid, borderRadius:10, padding:12 }}>
+                        <div style={{ background:THEME.grid, borderRadius: 16, padding:12 }}>
                             <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:4, fontWeight:700,  }}>P95</div>
                             <div style={{ fontSize:18, fontWeight:800, color:THEME.ai }}>{fmt(stats.p95)}</div>
                         </div>
@@ -266,12 +266,12 @@ export default function OpenTelemetryTab() {
                     <Activity size={16} style={{ display:'inline-block', marginRight:8, verticalAlign:'middle' }} />
                     Ingestion Statistics
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-                    <div style={{ background:THEME.grid, borderRadius:10, padding:16 }}>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 22 }}>
+                    <div style={{ background:THEME.grid, borderRadius: 16, padding:16 }}>
                         <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:6, fontWeight:700,  }}>Total Metrics</div>
                         <div style={{ fontSize:24, fontWeight:800, color:THEME.primary }}>{fmt(metricNames.length)}</div>
                     </div>
-                    <div style={{ background:THEME.grid, borderRadius:10, padding:16 }}>
+                    <div style={{ background:THEME.grid, borderRadius: 16, padding:16 }}>
                         <div style={{ fontSize:11, color:THEME.textMuted, marginBottom:6, fontWeight:700,  }}>Last Ingested</div>
                         <div style={{ fontSize:13, color:THEME.textMain, fontWeight:600 }}>{fmtDate(stats?.lastIngested)}</div>
                     </div>

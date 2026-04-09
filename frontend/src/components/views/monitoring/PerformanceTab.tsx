@@ -152,7 +152,7 @@ const SeverityTag = ({ ms }) => {
             : n > 200 ? { label: 'MEDIUM', color: THEME.primary, bg: `${THEME.primary}12` }
                 : { label: 'LOW', color: THEME.textDim, bg: `${THEME.textDim}15` };
     return (
-        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.02em', padding: '3px 8px', borderRadius: 12, background: level.bg, color: level.color, border: `1px solid ${level.color}25` }}>{level.label}</span>
+        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.02em', padding: '3px 8px', borderRadius: 18, background: level.bg, color: level.color, border: `1px solid ${level.color}25` }}>{level.label}</span>
     );
 };
 
@@ -160,7 +160,7 @@ const StatChip = ({ label, value, color = THEME.textMain, icon: Icon, small }) =
     <div style={{
         display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: small ? 3 : 5,
         padding: small ? '8px 12px' : '12px 14px',
-        background: THEME.surface, borderRadius: 8, border: `1px solid ${THEME.grid}40`,
+        background: THEME.surface, borderRadius: 20, border: `1px solid ${THEME.grid}40`,
         minWidth: 0, minHeight: small ? 52 : 62,
     }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, lineHeight: 1 }}>
@@ -174,7 +174,7 @@ const StatChip = ({ label, value, color = THEME.textMain, icon: Icon, small }) =
 const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px' }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20, padding: '20px 24px' }}>
             <div style={{ fontSize: 11, color: THEME.textMuted, marginBottom: 2 }}>t = {label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ fontSize: 12, fontWeight: 700, color: p.color || THEME.primary }}>
@@ -269,8 +269,8 @@ const ExplainTreeNode = ({ node, depth = 0, maxCost = 2845 }) => {
             <div
                 onClick={() => node.children?.length && setExpanded(!expanded)}
                 style={{
-                    display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 10px',
-                    borderRadius: 8, marginBottom: 4, cursor: node.children?.length ? 'pointer' : 'default',
+                    display: 'flex', alignItems: 'flex-start', gap: 22, padding: '8px 10px',
+                    borderRadius: 20, marginBottom: 4, cursor: node.children?.length ? 'pointer' : 'default',
                     background: isExpensive ? `${THEME.danger}06` : `${THEME.grid}15`,
                     border: `1px solid ${isExpensive ? `${THEME.danger}20` : `${THEME.grid}30`}`,
                     position: 'relative'
@@ -286,10 +286,10 @@ const ExplainTreeNode = ({ node, depth = 0, maxCost = 2845 }) => {
                         </div>
                     ) : <div style={{ width: 12, flexShrink: 0 }} />}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
                             <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{node.op}</span>
                             {node.table && <span style={{ fontSize: 11, color: THEME.primary, fontFamily: THEME.fontMono }}>on {node.table}</span>}
-                            {node.index && <span style={{ fontSize: 10, color: THEME.success, padding: '1px 6px', borderRadius: 8, background: `${THEME.success}10`, border: `1px solid ${THEME.success}20` }}>idx: {node.index}</span>}
+                            {node.index && <span style={{ fontSize: 10, color: THEME.success, padding: '1px 6px', borderRadius: 20, background: `${THEME.success}10`, border: `1px solid ${THEME.success}20` }}>idx: {node.index}</span>}
                         </div>
                         <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 2, fontFamily: THEME.fontMono }}>{node.detail}</div>
                         {node.rowsRemoved && (
@@ -370,9 +370,9 @@ const WaitEventBreakdown = ({ waitEventTypes, waitEvents }) => {
     };
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22, alignItems: 'start' }}>
             {/* Pie */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
                 <div style={{ position: 'relative' }}>
                     <PieChart width={200} height={200}>
                         <Pie
@@ -414,7 +414,7 @@ const WaitEventBreakdown = ({ waitEventTypes, waitEvents }) => {
             </div>
 
             {/* Detail breakdown */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 2 }}>
                     {hoveredWait ? `${hoveredWait} Wait Events` : 'Hover a slice to drill down'}
                 </div>
@@ -423,7 +423,7 @@ const WaitEventBreakdown = ({ waitEventTypes, waitEvents }) => {
                         const color = WAIT_COLORS[row.type];
                         const maxCount = 30;
                         return (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 10px', borderRadius: 6, background: `${THEME.grid}15`, border: `1px solid ${THEME.grid}25` }}>
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 22, padding: '6px 10px', borderRadius: 18, background: `${THEME.grid}15`, border: `1px solid ${THEME.grid}25` }}>
                                 <span style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
                                 <span style={{ flex: 1, fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.event}</span>
                                 <div style={{ width: 60, flexShrink: 0 }}><SeverityBar value={row.count} max={maxCount} color={color} /></div>
@@ -431,7 +431,7 @@ const WaitEventBreakdown = ({ waitEventTypes, waitEvents }) => {
                             </div>
                         );
                     })}
-                <div style={{ marginTop: 4, padding: '8px 10px', borderRadius: 6, background: `${THEME.primary}08`, border: `1px solid ${THEME.primary}15` }}>
+                <div style={{ marginTop: 4, padding: '8px 10px', borderRadius: 18, background: `${THEME.primary}08`, border: `1px solid ${THEME.primary}15` }}>
                     <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.5 }}>
                         <span style={{ color: THEME.primary, fontWeight: 700 }}>Tip:</span>{' '}
                         {hoveredWait === 'Lock' && 'High lock waits indicate contention. Check long-running transactions and use NOWAIT or advisory locks.'}
@@ -473,8 +473,8 @@ const SlowQueryTrend24h = ({ slowQueries }) => {
     const peakQuery = data.reduce((best, d) => d.slow > best.slow ? d : best, data[0]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 22 }}>
                 {[
                     { label: 'Slowest', value: peakQuery?.label || '—', color: THEME.danger, icon: TrendingUp },
                     { label: 'Avg Time (ms)', value: Math.round(data.reduce((s, d) => s + d.slow, 0) / data.length), color: THEME.warning, icon: Sigma },
@@ -493,7 +493,7 @@ const SlowQueryTrend24h = ({ slowQueries }) => {
                     <Tooltip content={({ active, payload, label }) => {
                         if (!active || !payload?.length) return null;
                         return (
-                            <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px' }}>
+                            <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20, padding: '20px 24px' }}>
                                 <div style={{ fontSize: 11, color: THEME.textMuted, marginBottom: 4 }}>{label}</div>
                                 {payload.map((p, i) => <div key={i} style={{ fontSize: 12, fontWeight: 700, color: p.color }}>{p.name}: {Number(p.value).toFixed(p.name === 'P99 ms' ? 0 : 0)}{p.name === 'P99 ms' ? 'ms' : ''}</div>)}
                             </div>
@@ -508,7 +508,7 @@ const SlowQueryTrend24h = ({ slowQueries }) => {
                     <Line yAxisId="p99" type="monotone" dataKey="p99" stroke={THEME.primary} strokeWidth={1.5} dot={false} name="P99 ms" />
                 </ComposedChart>
             </ResponsiveContainer>
-            <div style={{ display: 'flex', gap: 16, fontSize: 10, color: THEME.textDim, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 22, fontSize: 10, color: THEME.textDim, flexWrap: 'wrap' }}>
                 {[
                     { label: 'Slow Queries', color: THEME.warning },
                     { label: 'Critical (>5s)', color: THEME.danger },
@@ -549,9 +549,9 @@ const JITCompilationPanel = ({ slowQueries, jitEnabled }) => {
     const totalCost = jitQueries.reduce((s, q) => s + q.compileMs, 0);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
             {/* Summary strip */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 22 }}>
                 {[
                     { label: 'JIT Queries', value: jitQueries.length, color: THEME.primary, icon: BrainCircuit },
                     { label: 'Compile Time', value: `${totalCost}ms`, color: THEME.warning, icon: Timer },
@@ -561,49 +561,49 @@ const JITCompilationPanel = ({ slowQueries, jitEnabled }) => {
             </div>
 
             {/* Per-query table */}
-            <div style={{ borderRadius: 8, border: `1px solid ${THEME.grid}40`, overflow: 'hidden' }}>
+            <div style={{ borderRadius: 20, border: `1px solid ${THEME.grid}40`, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                     <tr style={{ background: `${THEME.grid}15` }}>
                         {['Query', 'JIT', 'Compile', 'Exec Time', 'Savings', 'Net', 'Flags'].map((h, i) => (
-                            <th key={h} style={{ padding: '8px 12px', textAlign: i === 0 ? 'left' : 'center', fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}40` }}>{h}</th>
+                            <th key={h} style={{ padding: '20px 24px', textAlign: i === 0 ? 'left' : 'center', fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}40` }}>{h}</th>
                         ))}
                     </tr>
                     </thead>
                     <tbody>
                     {jitData.map((q, i) => (
                         <tr key={i}  className="perf-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}20` }}>
-                            <td style={{ padding: '8px 12px', maxWidth: 180 }}>
+                            <td style={{ padding: '20px 24px', maxWidth: 180 }}>
                                 <span style={{ fontSize: 11, fontFamily: THEME.fontMono, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{q.query?.substring(0, 28) || `Query ${i+1}`}…</span>
                             </td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                            <td style={{ padding: '20px 24px', textAlign: 'center' }}>
                                 {q.hasJit ? (
-                                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 12, background: `${THEME.primary}12`, color: THEME.primary, border: `1px solid ${THEME.primary}20` }}>ON</span>
+                                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 18, background: `${THEME.primary}12`, color: THEME.primary, border: `1px solid ${THEME.primary}20` }}>ON</span>
                                 ) : (
-                                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 12, background: `${THEME.grid}20`, color: THEME.textDim }}>OFF</span>
+                                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 18, background: `${THEME.grid}20`, color: THEME.textDim }}>OFF</span>
                                 )}
                             </td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: q.hasJit ? THEME.warning : THEME.textDim, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
+                            <td style={{ padding: '20px 24px', textAlign: 'center', fontSize: 11, color: q.hasJit ? THEME.warning : THEME.textDim, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
                                 {q.hasJit ? `${q.compileMs}ms` : '—'}
                             </td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: q.execMs > 1000 ? THEME.danger : THEME.warning }}>
+                            <td style={{ padding: '20px 24px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: q.execMs > 1000 ? THEME.danger : THEME.warning }}>
                                 {q.execMs}ms
                             </td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: q.hasJit ? THEME.success : THEME.textDim, fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>
+                            <td style={{ padding: '20px 24px', textAlign: 'center', fontSize: 11, color: q.hasJit ? THEME.success : THEME.textDim, fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>
                                 {q.hasJit ? `−${q.savings}ms` : '—'}
                             </td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                            <td style={{ padding: '20px 24px', textAlign: 'center' }}>
                                 {q.hasJit ? (
                                     <span style={{ fontSize: 11, fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: q.net >= 0 ? THEME.success : THEME.danger }}>
                                             {q.net >= 0 ? '+' : ''}{q.net}ms
                                         </span>
                                 ) : <span style={{ color: THEME.textDim, fontSize: 11 }}>—</span>}
                             </td>
-                            <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                            <td style={{ padding: '20px 24px', textAlign: 'center' }}>
                                 <div style={{ display: 'flex', gap: 3, justifyContent: 'center' }}>
-                                    {q.inlining && <span title="Inlining" style={{ fontSize: 8, padding: '1px 5px', borderRadius: 8, background: `${THEME.primary}12`, color: THEME.primary, border: `1px solid ${THEME.primary}20`, fontWeight: 700 }}>INL</span>}
-                                    {q.optimization && <span title="Optimization" style={{ fontSize: 8, padding: '1px 5px', borderRadius: 8, background: `${THEME.success}12`, color: THEME.success, border: `1px solid ${THEME.success}20`, fontWeight: 700 }}>OPT</span>}
-                                    {q.deform && <span title="Deform" style={{ fontSize: 8, padding: '1px 5px', borderRadius: 8, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700 }}>DEF</span>}
+                                    {q.inlining && <span title="Inlining" style={{ fontSize: 8, padding: '1px 5px', borderRadius: 20, background: `${THEME.primary}12`, color: THEME.primary, border: `1px solid ${THEME.primary}20`, fontWeight: 700 }}>INL</span>}
+                                    {q.optimization && <span title="Optimization" style={{ fontSize: 8, padding: '1px 5px', borderRadius: 20, background: `${THEME.success}12`, color: THEME.success, border: `1px solid ${THEME.success}20`, fontWeight: 700 }}>OPT</span>}
+                                    {q.deform && <span title="Deform" style={{ fontSize: 8, padding: '1px 5px', borderRadius: 20, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700 }}>DEF</span>}
                                 </div>
                             </td>
                         </tr>
@@ -611,7 +611,7 @@ const JITCompilationPanel = ({ slowQueries, jitEnabled }) => {
                     </tbody>
                 </table>
             </div>
-            <div style={{ fontSize: 10, color: THEME.textDim, padding: '6px 10px', background: `${THEME.grid}15`, borderRadius: 6 }}>
+            <div style={{ fontSize: 10, color: THEME.textDim, padding: '6px 10px', background: `${THEME.grid}15`, borderRadius: 18 }}>
                 <span style={{ color: THEME.primary, fontWeight: 700 }}>INL</span> = function inlining &nbsp;·&nbsp;
                 <span style={{ color: THEME.success, fontWeight: 700 }}>OPT</span> = expression optimization &nbsp;·&nbsp;
                 <span style={{ color: THEME.warning, fontWeight: 700 }}>DEF</span> = tuple deforming &nbsp;·&nbsp;
@@ -636,8 +636,8 @@ const ParallelQueryPanel = ({ stats, settings }) => {
     const utilizationPct = '—';
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 22 }}>
                 {[
                     { label: 'Max Workers', value: maxWorkers, color: THEME.primary, icon: Boxes },
                     { label: 'Per Gather', value: maxWorkersPerGather, color: THEME.textMuted, icon: GitFork },
@@ -646,7 +646,7 @@ const ParallelQueryPanel = ({ stats, settings }) => {
                 ].map((s, i) => <StatChip key={i} {...s} small />)}
             </div>
 
-            <div style={{ padding: 16, borderRadius: 8, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+            <div style={{ padding: 16, borderRadius: 20, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
                 <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
                     <span style={{ color: THEME.primary, fontWeight: 700 }}>Note:</span>{' '}
                     Parallel worker utilization is a point-in-time metric from active queries. Use <code style={{ color: THEME.primary }}>EXPLAIN ANALYZE</code> on individual queries to see actual parallel worker allocation.
@@ -686,17 +686,17 @@ const LockTreeNode = ({ node, depth = 0, isLast = false }) => {
             )}
             <div style={{ marginLeft: depth > 0 ? 20 : 0, marginBottom: 8 }}>
                 <div style={{
-                    display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
-                    borderRadius: 9, background: `${color}06`,
+                    display: 'flex', alignItems: 'center', gap: 22, padding: '22px 28px',
+                    borderRadius: 20, background: `${color}06`,
                     border: `1px solid ${color}20`, cursor: hasBlockees ? 'pointer' : 'default',
 
                 }} onClick={() => hasBlockees && setExpanded(!expanded)}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}12`, border: `1px solid ${color}20` }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 20, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}12`, border: `1px solid ${color}20` }}>
                         {node.role === 'holder' ? <Lock size={14} color={color} /> : <Timer size={14} color={color} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
-                            <span style={{ fontSize: 10, fontWeight: 800, padding: '1px 7px', borderRadius: 12, background: `${color}15`, color, border: `1px solid ${color}25` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', marginBottom: 3 }}>
+                            <span style={{ fontSize: 10, fontWeight: 800, padding: '1px 7px', borderRadius: 18, background: `${color}15`, color, border: `1px solid ${color}25` }}>
                                 {node.role === 'holder' ? 'HOLDING' : 'WAITING'}
                             </span>
                             <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: THEME.fontMono }}>PID {node.pid}</span>
@@ -775,11 +775,11 @@ const LockBlockingTree = ({ lockBlocking }) => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <div style={{ display: 'flex', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 6, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700 }}>
+            <div style={{ display: 'flex', gap: 22, marginBottom: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 18, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700 }}>
                     {tree.length} lock holders
                 </span>
-                <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 6, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20`, fontWeight: 700 }}>
+                <span style={{ fontSize: 10, padding: '3px 10px', borderRadius: 18, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20`, fontWeight: 700 }}>
                     {totalBlocked} blocked processes
                 </span>
                 <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 0', display: 'flex', alignItems: 'center' }}>
@@ -805,8 +805,8 @@ const DeadlockHistory = ({ dbStats }) => {
     // Individual deadlock details require log parsing (not available via SQL)
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 4 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 22, marginBottom: 4 }}>
                 <StatChip label="Total Deadlocks" value={deadlockCount} color={deadlockCount > 0 ? THEME.danger : THEME.success} icon={ShieldAlert} small />
                 <StatChip label="Status" value={deadlockCount === 0 ? 'Clean' : 'Review Needed'} color={deadlockCount === 0 ? THEME.success : THEME.warning} icon={CheckCircle} small />
             </div>
@@ -816,7 +816,7 @@ const DeadlockHistory = ({ dbStats }) => {
                     <EmptyState icon={CheckCircle} text="No deadlocks detected (since last stats reset)" />
                 </div>
             ) : (
-                <div style={{ padding: 16, borderRadius: 8, background: `${THEME.danger}06`, border: `1px solid ${THEME.danger}15` }}>
+                <div style={{ padding: 16, borderRadius: 20, background: `${THEME.danger}06`, border: `1px solid ${THEME.danger}15` }}>
                     <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>
                         <span style={{ color: THEME.danger, fontWeight: 700 }}>{deadlockCount} deadlock(s)</span> detected since the last statistics reset.
                         PostgreSQL resolves deadlocks by aborting one of the transactions involved.
@@ -862,8 +862,8 @@ const GenericCustomPlanPanel = ({ slowQueries, settings }) => {
     const unhealthyCount = planData.stmts.filter(s => !s.healthy).length;
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 22 }}>
                 {[
                     { label: 'Statements', value: planData.stmts.length, color: THEME.primary, icon: FileCog },
                     { label: 'High Variance', value: unhealthyCount, color: unhealthyCount > 0 ? THEME.warning : THEME.textDim, icon: AlertTriangle },
@@ -877,30 +877,30 @@ const GenericCustomPlanPanel = ({ slowQueries, settings }) => {
                     <EmptyState icon={FileCog} text="No slow statements found in pg_stat_statements" />
                 </div>
             ) : (
-                <div style={{ borderRadius: 8, border: `1px solid ${THEME.grid}40`, overflow: 'hidden' }}>
+                <div style={{ borderRadius: 20, border: `1px solid ${THEME.grid}40`, overflow: 'hidden' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                         <tr style={{ background: `${THEME.grid}15` }}>
                             {['Statement', 'Calls', 'Mean', 'Stddev', 'Total', 'Status'].map((h, i) => (
-                                <th key={h} style={{ padding: '8px 12px', textAlign: i === 0 ? 'left' : 'center', fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}40` }}>{h}</th>
+                                <th key={h} style={{ padding: '20px 24px', textAlign: i === 0 ? 'left' : 'center', fontSize: 9, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}40` }}>{h}</th>
                             ))}
                         </tr>
                         </thead>
                         <tbody>
                         {planData.stmts.map((s, i) => (
                             <tr key={i} className="perf-row-hover" style={{ borderBottom: `1px solid ${THEME.grid}20` }}>
-                                <td style={{ padding: '8px 12px', maxWidth: 200 }}>
+                                <td style={{ padding: '20px 24px', maxWidth: 200 }}>
                                     <span style={{ fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{s.query}</span>
                                 </td>
-                                <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: THEME.primary, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{s.calls.toLocaleString()}</td>
-                                <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.warning, fontWeight: 600 }}>{s.meanMs}ms</td>
-                                <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.textMuted }}>{s.stddevMs}ms</td>
-                                <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.textMuted }}>{(s.totalMs / 1000).toFixed(1)}s</td>
-                                <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                                <td style={{ padding: '20px 24px', textAlign: 'center', fontSize: 11, color: THEME.primary, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{s.calls.toLocaleString()}</td>
+                                <td style={{ padding: '20px 24px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.warning, fontWeight: 600 }}>{s.meanMs}ms</td>
+                                <td style={{ padding: '20px 24px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.textMuted }}>{s.stddevMs}ms</td>
+                                <td style={{ padding: '20px 24px', textAlign: 'center', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: THEME.textMuted }}>{(s.totalMs / 1000).toFixed(1)}s</td>
+                                <td style={{ padding: '20px 24px', textAlign: 'center' }}>
                                     {s.concern ? (
-                                        <span title={s.concern} style={{ fontSize: 9, padding: '2px 7px', borderRadius: 12, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700, cursor: 'help' }}>⚠ Review</span>
+                                        <span title={s.concern} style={{ fontSize: 9, padding: '2px 7px', borderRadius: 18, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20`, fontWeight: 700, cursor: 'help' }}>⚠ Review</span>
                                     ) : (
-                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 12, background: `${THEME.success}10`, color: THEME.success, border: `1px solid ${THEME.success}20`, fontWeight: 700 }}>✓ OK</span>
+                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 18, background: `${THEME.success}10`, color: THEME.success, border: `1px solid ${THEME.success}20`, fontWeight: 700 }}>✓ OK</span>
                                     )}
                                 </td>
                             </tr>
@@ -909,7 +909,7 @@ const GenericCustomPlanPanel = ({ slowQueries, settings }) => {
                     </table>
                 </div>
             )}
-            <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.6, padding: '6px 10px', background: `${THEME.grid}15`, borderRadius: 6 }}>
+            <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.6, padding: '6px 10px', background: `${THEME.grid}15`, borderRadius: 18 }}>
                 <span style={{ color: THEME.primary, fontWeight: 700 }}>High variance</span> queries (stddev {'>'} 50% of mean) may benefit from <code style={{ color: THEME.primary }}>plan_cache_mode = force_custom_plan</code>.
                 Generic vs custom plan split requires PostgreSQL 16+ pg_stat_statements columns.
             </div>
@@ -941,8 +941,8 @@ const TempFileTracker = ({ slowQueries, dbStats, settings }) => {
     const workMem = settings?.work_mem || '—';
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 22 }}>
                 {[
                     { label: 'DB Temp Files', value: dbTempFiles.toLocaleString(), color: dbTempFiles > 0 ? THEME.warning : THEME.textDim, icon: HardDrive },
                     { label: 'DB Temp Bytes', value: dbTempBytes > 1048576 ? `${(dbTempBytes / 1048576).toFixed(1)} MB` : `${Math.round(dbTempBytes / 1024)} KB`, color: dbTempBytes > 0 ? THEME.danger : THEME.textDim, icon: Disc },
@@ -957,17 +957,17 @@ const TempFileTracker = ({ slowQueries, dbStats, settings }) => {
                     <EmptyState icon={CheckCircle} text="No queries using temp files detected in pg_stat_statements" />
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em' }}>Queries Using Temp Blocks</div>
                     {tempData.queries.map((q, i) => {
                         const sizeMB = (q.tempSizeKB / 1024).toFixed(1);
                         const sizeColor = q.tempSizeKB > 32768 ? THEME.danger : q.tempSizeKB > 8192 ? THEME.warning : THEME.textDim;
                         return (
-                            <div key={i} style={{ padding: '10px 14px', borderRadius: 8, background: `${sizeColor}04`, border: `1px solid ${sizeColor}15` }}>
-                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                            <div key={i} style={{ padding: '22px 28px', borderRadius: 20, background: `${sizeColor}04`, border: `1px solid ${sizeColor}15` }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 18 }}>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <div style={{ fontSize: 11, fontFamily: THEME.fontMono, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 6 }}>{q.query}</div>
-                                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
                                             <span style={{ fontSize: 10, color: THEME.textDim }}>
                                                 Reads: <span style={{ fontWeight: 700, color: THEME.warning }}>{q.tempBlksRead} blks</span>
                                             </span>
@@ -991,7 +991,7 @@ const TempFileTracker = ({ slowQueries, dbStats, settings }) => {
                     })}
                 </div>
             )}
-            <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.6, padding: '8px 10px', borderRadius: 6, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}12` }}>
+            <div style={{ fontSize: 10, color: THEME.textDim, lineHeight: 1.6, padding: '8px 10px', borderRadius: 18, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}12` }}>
                 <span style={{ color: THEME.primary, fontWeight: 700 }}>Fix:</span>{' '}
                 Increase <code style={{ color: THEME.primary }}>work_mem</code> for sessions running large sorts/hashes.
                 Use <code style={{ color: THEME.primary }}>SET work_mem = '64MB'</code> per-session rather than globally to avoid OOM.
@@ -1031,15 +1031,15 @@ const GanttChart = ({ queries }) => {
                     const width = Math.max((row.duration / totalSpan) * 100, 0.5);
                     const color = row.duration > 5000 ? THEME.danger : row.duration > 1000 ? THEME.warning : THEME.primary;
                     return (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 6 }}>
                             <div style={{ minWidth: 170, flex: 'none', fontSize: 10, color: THEME.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: THEME.fontMono, textAlign: 'right' }}>
                                 {row.query?.substring(0, 24) || `Query ${i + 1}`}…
                             </div>
-                            <div style={{ flex: 1, minWidth: 0, height: 22, background: `${THEME.grid}20`, borderRadius: 12, position: 'relative', overflow: 'hidden' }}>
+                            <div style={{ flex: 1, minWidth: 0, height: 22, background: `${THEME.grid}20`, borderRadius: 18, position: 'relative', overflow: 'hidden' }}>
                                 <div style={{
                                     position: 'absolute', left: `${left}%`, width: `${width}%`, height: '100%',
                                     background: `linear-gradient(90deg, ${color}80, ${color})`,
-                                    borderRadius: 12, minWidth: 4,
+                                    borderRadius: 18, minWidth: 4,
                                     animationDelay: `${i * 0.05}s`
                                 }} />
                                 <div style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', fontSize: 9, color: THEME.textDim, fontVariantNumeric: 'tabular-nums', pointerEvents: 'none' }}>
@@ -1076,15 +1076,15 @@ const LockWaitDetails = ({ lockBlocking }) => {
     );
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
             {waitChains.map((chain, i) => (
-                <div key={i} style={{ padding: 14, borderRadius: 8, background: `${THEME.danger}05`, border: `1px solid ${THEME.danger}15` }}>
+                <div key={i} style={{ padding: 14, borderRadius: 20, background: `${THEME.danger}05`, border: `1px solid ${THEME.danger}15` }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ padding: '2px 8px', borderRadius: 12, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>{chain.lockType}</span>
+                        <span style={{ padding: '2px 8px', borderRadius: 18, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>{chain.lockType}</span>
                         <span>on <span style={{ color: THEME.primary, fontFamily: THEME.fontMono }}>{chain.relation}</span></span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ flex: 1, minWidth: 0, padding: '10px 12px', borderRadius: 8, background: `${THEME.danger}08`, border: `1px solid ${THEME.danger}15` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+                        <div style={{ flex: 1, minWidth: 0, padding: '20px 24px', borderRadius: 20, background: `${THEME.danger}08`, border: `1px solid ${THEME.danger}15` }}>
                             <div style={{ fontSize: 10, color: THEME.danger, fontWeight: 700, marginBottom: 4 }}>WAITING — PID {chain.waiter.pid} ({chain.waiter.waitTime})</div>
                             <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.waiter.query}</div>
                         </div>
@@ -1092,7 +1092,7 @@ const LockWaitDetails = ({ lockBlocking }) => {
                             <ArrowRight size={14} color={THEME.warning} />
                             <span style={{ fontSize: 9, color: THEME.textDim }}>blocked by</span>
                         </div>
-                        <div style={{ flex: 1, minWidth: 0, padding: '10px 12px', borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}15` }}>
+                        <div style={{ flex: 1, minWidth: 0, padding: '20px 24px', borderRadius: 20, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}15` }}>
                             <div style={{ fontSize: 10, color: THEME.warning, fontWeight: 700, marginBottom: 4 }}>HOLDING — PID {chain.holder.pid} ({chain.holder.application_name || 'app'})</div>
                             <div style={{ fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chain.holder.query || ''}</div>
                         </div>
@@ -1113,9 +1113,9 @@ const KillQueryModal = ({ query, onConfirm, onClose }) => {
 
     return (
         <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }}>
-            <div onClick={e => e.stopPropagation()} style={{ width: 480, background: THEME.surface, border: `1px solid ${THEME.danger}30`, borderRadius: 12, overflow: 'hidden' }}>
-                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.glassBorder}`, background: THEME.surface, display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 8, background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: 480, background: THEME.surface, border: `1px solid ${THEME.danger}30`, borderRadius: 18, overflow: 'hidden' }}>
+                <div style={{ padding: '22px 28px', borderBottom: `1px solid ${THEME.glassBorder}`, background: THEME.surface, display: 'flex', alignItems: 'center', gap: 18 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 20, background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <XCircle size={18} color={THEME.danger} />
                     </div>
                     <div>
@@ -1124,15 +1124,15 @@ const KillQueryModal = ({ query, onConfirm, onClose }) => {
                     </div>
                     <button onClick={onClose} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: THEME.textDim, cursor: 'pointer', padding: 4 }}><X size={16} /></button>
                 </div>
-                <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    <div style={{ padding: 12, borderRadius: 8, background: THEME.bg, border: `1px solid ${THEME.grid}40`, fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted, maxHeight: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 22 }}>
+                    <div style={{ padding: 12, borderRadius: 20, background: THEME.bg, border: `1px solid ${THEME.grid}40`, fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted, maxHeight: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {query.query?.substring(0, 120)}…
                     </div>
                     <div>
                         <div style={{ fontSize: 11, fontWeight: 600, color: THEME.textDim, marginBottom: 8 }}>Reason for termination</div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             {reasons.map(r => (
-                                <div key={r} onClick={() => setReason(r)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 6, cursor: 'pointer', background: reason === r ? `${THEME.danger}10` : 'transparent', border: `1px solid ${reason === r ? `${THEME.danger}25` : `${THEME.grid}30`}` }}>
+                                <div key={r} onClick={() => setReason(r)} style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '20px 24px', borderRadius: 18, cursor: 'pointer', background: reason === r ? `${THEME.danger}10` : 'transparent', border: `1px solid ${reason === r ? `${THEME.danger}25` : `${THEME.grid}30`}` }}>
                                     <div style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${reason === r ? THEME.danger : THEME.grid}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                         {reason === r && <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.danger }} />}
                                     </div>
@@ -1141,9 +1141,9 @@ const KillQueryModal = ({ query, onConfirm, onClose }) => {
                             ))}
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={onClose} style={{ flex: 1, minWidth: 0, padding: '10px', borderRadius: 8, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>Cancel</button>
-                        <button disabled={!reason || killing} onClick={() => { setKilling(true); setTimeout(() => { onConfirm(query, reason); onClose(); }, 1000); }} style={{ flex: 1, minWidth: 0, padding: '10px', borderRadius: 8, border: 'none', background: killing ? `${THEME.danger}50` : `${THEME.danger}`, color: '#fff', cursor: reason ? 'pointer' : 'not-allowed', fontWeight: 700, fontSize: 12, opacity: !reason ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <div style={{ display: 'flex', gap: 20 }}>
+                        <button onClick={onClose} style={{ flex: 1, minWidth: 0, padding: '10px', borderRadius: 20, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>Cancel</button>
+                        <button disabled={!reason || killing} onClick={() => { setKilling(true); setTimeout(() => { onConfirm(query, reason); onClose(); }, 1000); }} style={{ flex: 1, minWidth: 0, padding: '10px', borderRadius: 20, border: 'none', background: killing ? `${THEME.danger}50` : `${THEME.danger}`, color: '#fff', cursor: reason ? 'pointer' : 'not-allowed', fontWeight: 700, fontSize: 12, opacity: !reason ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                             {killing ? <RotateCcw size={13} className="perf-spin" /> : <XCircle size={13} />}
                             {killing ? 'Terminating…' : 'Terminate Query'}
                         </button>
@@ -1185,24 +1185,24 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
     return (
         <>
             <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                <div onClick={e => e.stopPropagation()} style={{ width: '94%', maxWidth: 1100, maxHeight: '90vh', background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div onClick={e => e.stopPropagation()} style={{ width: '94%', maxWidth: 1100, maxHeight: '90vh', background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 18, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     {/* Header */}
                     <div style={{ padding: '16px 24px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-                            <div style={{ width: 40, height: 40, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25` }}>
+                            <div style={{ width: 40, height: 40, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25` }}>
                                 <AlertTriangle size={18} color={THEME.danger} />
                             </div>
                             <div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
                                     <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: THEME.textMain }}>Slow Query Detected</h3>
                                     <SeverityTag ms={queryData.mean_time_ms} />
                                     {currentTag && (
-                                        <span style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 12, background: currentTag === 'known-slow' ? `${THEME.warning}15` : `${THEME.success}12`, color: currentTag === 'known-slow' ? THEME.warning : THEME.success, border: `1px solid ${currentTag === 'known-slow' ? `${THEME.warning}25` : `${THEME.success}20`}` }}>
+                                        <span style={{ fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 18, background: currentTag === 'known-slow' ? `${THEME.warning}15` : `${THEME.success}12`, color: currentTag === 'known-slow' ? THEME.warning : THEME.success, border: `1px solid ${currentTag === 'known-slow' ? `${THEME.warning}25` : `${THEME.success}20`}` }}>
                                             {currentTag === 'known-slow' ? '⚑ KNOWN SLOW' : '✓ ACCEPTABLE'}
                                         </span>
                                     )}
                                 </div>
-                                <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2, display: 'flex', gap: 18, flexWrap: 'wrap' }}>
                                     <span>PID <span style={{ color: THEME.textMain, fontWeight: 600, fontFamily: THEME.fontMono }}>{queryData.pid || '—'}</span></span>
                                     <span>Duration <span style={{ color: THEME.danger, fontWeight: 600 }}>{Number(queryData.mean_time_ms).toFixed(1)}ms</span></span>
                                     <span>Cache Hit <span style={{ color: THEME.success, fontWeight: 600 }}>{queryData.cache_hit_pct || '—'}%</span></span>
@@ -1210,18 +1210,18 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                 </div>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <button className="tag-btn" onClick={() => onTag(queryData.id, currentTag === 'known-slow' ? null : 'known-slow')} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${THEME.warning}30`, background: currentTag === 'known-slow' ? `${THEME.warning}15` : 'transparent', color: currentTag === 'known-slow' ? THEME.warning : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                            <button className="tag-btn" onClick={() => onTag(queryData.id, currentTag === 'known-slow' ? null : 'known-slow')} style={{ padding: '5px 12px', borderRadius: 18, border: `1px solid ${THEME.warning}30`, background: currentTag === 'known-slow' ? `${THEME.warning}15` : 'transparent', color: currentTag === 'known-slow' ? THEME.warning : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <Tag size={11} /> Known Slow
                             </button>
-                            <button className="tag-btn" onClick={() => onTag(queryData.id, currentTag === 'acceptable' ? null : 'acceptable')} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${THEME.success}30`, background: currentTag === 'acceptable' ? `${THEME.success}12` : 'transparent', color: currentTag === 'acceptable' ? THEME.success : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <button className="tag-btn" onClick={() => onTag(queryData.id, currentTag === 'acceptable' ? null : 'acceptable')} style={{ padding: '5px 12px', borderRadius: 18, border: `1px solid ${THEME.success}30`, background: currentTag === 'acceptable' ? `${THEME.success}12` : 'transparent', color: currentTag === 'acceptable' ? THEME.success : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <CheckCircle size={11} /> Acceptable
                             </button>
-                            <button onClick={() => setShowKillModal(true)} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${THEME.danger}30`, background: 'transparent', color: THEME.danger, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
+                            <button onClick={() => setShowKillModal(true)} style={{ padding: '5px 12px', borderRadius: 18, border: `1px solid ${THEME.danger}30`, background: 'transparent', color: THEME.danger, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
                                     onMouseEnter={e => { e.currentTarget.style.background = `${THEME.danger}15`; }}
                                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                             ><XCircle size={11} /> Kill</button>
-                            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 20, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                     onMouseEnter={e => { e.currentTarget.style.background = `${THEME.danger}20`; e.currentTarget.style.color = THEME.danger; }}
                                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = THEME.textMuted; }}
                             ><X size={16} /></button>
@@ -1233,20 +1233,20 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                         <div style={{ display: 'flex', flexDirection: 'column', borderRight: `1px solid ${THEME.glassBorder}`, overflow: 'hidden' }}>
                             <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${THEME.glassBorder}` }}>
                                 {panels.map(t => (
-                                    <button key={t.id} onClick={() => setActivePanel(t.id)} style={{ flex: 1, minWidth: 0, padding: '10px 12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 11, fontWeight: 600, background: activePanel === t.id ? `${THEME.primary}10` : 'transparent', color: activePanel === t.id ? THEME.primary : THEME.textDim, borderBottom: `2px solid ${activePanel === t.id ? THEME.primary : 'transparent'}` }}>
+                                    <button key={t.id} onClick={() => setActivePanel(t.id)} style={{ flex: 1, minWidth: 0, padding: '20px 24px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 11, fontWeight: 600, background: activePanel === t.id ? `${THEME.primary}10` : 'transparent', color: activePanel === t.id ? THEME.primary : THEME.textDim, borderBottom: `2px solid ${activePanel === t.id ? THEME.primary : 'transparent'}` }}>
                                         <t.icon size={12} /> {t.label}
                                     </button>
                                 ))}
                             </div>
                             <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 16 }}>
                                 {activePanel === 'diff' && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                                                 <span style={{ width: 8, height: 8, borderRadius: 2, background: THEME.danger }} />
                                                 <span style={{ fontSize: 10, fontWeight: 700, color: THEME.danger,  letterSpacing: '0.02em' }}>Original Query</span>
                                             </div>
-                                            <div style={{ background: `${THEME.danger}06`, border: `1px solid ${THEME.danger}18`, padding: '14px 16px', borderRadius: 8, fontFamily: THEME.fontMono, fontSize: 12, lineHeight: 1.7, color: THEME.danger, position: 'relative', overflow: 'hidden' }}>
+                                            <div style={{ background: `${THEME.danger}06`, border: `1px solid ${THEME.danger}18`, padding: '18px 22px', borderRadius: 20, fontFamily: THEME.fontMono, fontSize: 12, lineHeight: 1.7, color: THEME.danger, position: 'relative', overflow: 'hidden' }}>
                                                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: THEME.danger, borderRadius: '8px 0 0 8px' }} />
                                                 <code style={{ paddingLeft: 8, display: 'block', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{queryData.query}</code>
                                             </div>
@@ -1262,9 +1262,9 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                                     <span style={{ width: 8, height: 8, borderRadius: 2, background: THEME.success }} />
                                                     <span style={{ fontSize: 10, fontWeight: 700, color: THEME.success,  letterSpacing: '0.02em' }}>Optimized</span>
                                                 </div>
-                                                <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 12, background: `${THEME.success}15`, color: THEME.success, border: `1px solid ${THEME.success}20` }}>{opt.fixType}</span>
+                                                <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 18, background: `${THEME.success}15`, color: THEME.success, border: `1px solid ${THEME.success}20` }}>{opt.fixType}</span>
                                             </div>
-                                            <div style={{ background: `${THEME.success}06`, border: `1px solid ${THEME.success}18`, padding: '14px 16px', borderRadius: 8, fontFamily: THEME.fontMono, fontSize: 12, lineHeight: 1.7, color: '#aaffcc', position: 'relative', overflow: 'hidden' }}>
+                                            <div style={{ background: `${THEME.success}06`, border: `1px solid ${THEME.success}18`, padding: '18px 22px', borderRadius: 20, fontFamily: THEME.fontMono, fontSize: 12, lineHeight: 1.7, color: '#aaffcc', position: 'relative', overflow: 'hidden' }}>
                                                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: THEME.success, borderRadius: '8px 0 0 8px' }} />
                                                 <code style={{ paddingLeft: 8, display: 'block', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{opt.optimized}</code>
                                             </div>
@@ -1275,7 +1275,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                     <div>
                                         <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
                                             <Workflow size={10} /> EXPLAIN ANALYZE — Visual Tree
-                                            <span style={{ marginLeft: 'auto', fontSize: 9, padding: '2px 8px', borderRadius: 12, background: `${THEME.primary}10`, color: THEME.primary, border: `1px solid ${THEME.primary}20` }}>Cost scale: node bar width</span>
+                                            <span style={{ marginLeft: 'auto', fontSize: 9, padding: '2px 8px', borderRadius: 18, background: `${THEME.primary}10`, color: THEME.primary, border: `1px solid ${THEME.primary}20` }}>Cost scale: node bar width</span>
                                         </div>
                                         {explainTree.map(node => (
                                             <ExplainTreeNode key={node.id} node={node} maxCost={2845} />
@@ -1283,7 +1283,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                     </div>
                                 )}
                                 {activePanel === 'trends' && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                         <div>
                                             <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 10 }}>Execution Time Trend (last 60min)</div>
                                             <ResponsiveContainer width="100%" height={140}>
@@ -1315,17 +1315,17 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
 
                         {/* Right sidebar */}
                         <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 22 }}>
                                 <div>
                                     <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 10 }}>Root Cause</div>
-                                    <div style={{ display: 'flex', gap: 10, padding: 14, borderRadius: 8, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}15` }}>
+                                    <div style={{ display: 'flex', gap: 22, padding: 14, borderRadius: 20, background: `${THEME.warning}08`, border: `1px solid ${THEME.warning}15` }}>
                                         <FileSearch color={THEME.warning} size={16} style={{ marginTop: 1, flexShrink: 0 }} />
                                         <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>{opt.reason}</div>
                                     </div>
                                 </div>
                                 <div>
                                     <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 10 }}>Performance Metrics</div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                                         <StatChip label="Cache Hit" value={`${queryData.cache_hit_pct || '—'}%`} color={THEME.success} icon={Database} small />
                                         <StatChip label="Temp Files" value={queryData.tempFiles || 0} color={queryData.tempFiles > 0 ? THEME.warning : THEME.textDim} icon={HardDrive} small />
                                         <StatChip label="Category" value={opt.category} color={THEME.primary} icon={Layers} small />
@@ -1334,9 +1334,9 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                 </div>
                                 <div>
                                     <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 10 }}>Cost Comparison</div>
-                                    <div style={{ padding: 16, background: THEME.bg, borderRadius: 8, border: `1px solid ${THEME.grid}40` }}>
+                                    <div style={{ padding: 16, background: THEME.bg, borderRadius: 20, border: `1px solid ${THEME.grid}40` }}>
                                         {[{ label: 'Before', value: opt.costBefore, max: opt.costBefore, color: THEME.danger, delay: 0 }, { label: 'After', value: opt.costAfter, max: opt.costBefore, color: THEME.success, delay: 0.3 }].map((bar, i) => (
-                                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: i === 0 ? 12 : 14 }}>
+                                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: i === 0 ? 12 : 14 }}>
                                                 <span style={{ width: 40, fontSize: 10, color: bar.color, fontWeight: 600, textAlign: 'right', flexShrink: 0 }}>{bar.label}</span>
                                                 <div style={{ flex: 1, minWidth: 0 }}><SeverityBar value={bar.value} max={bar.max} color={bar.color} delay={bar.delay} /></div>
                                                 <span style={{ width: 44, fontSize: 12, fontWeight: 800, color: bar.color, textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{bar.value.toLocaleString()}</span>
@@ -1350,18 +1350,18 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                     </div>
                                 </div>
                             </div>
-                            <div style={{ padding: '16px 20px', borderTop: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ padding: '22px 28px', borderTop: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {applied ? (
-                                    <div style={{ padding: 14, borderRadius: 8, background: `${THEME.success}15`, border: `1px solid ${THEME.success}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: THEME.success, fontWeight: 700, fontSize: 12 }}>
+                                    <div style={{ padding: 14, borderRadius: 20, background: `${THEME.success}15`, border: `1px solid ${THEME.success}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, color: THEME.success, fontWeight: 700, fontSize: 12 }}>
                                         <CheckCircle size={16} /> Optimization Applied
                                     </div>
                                 ) : (
                                     <>
-                                        <button style={{ padding: 11, borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 12, background: 'transparent', border: `1px solid ${THEME.glassBorder}`, color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                                        <button style={{ padding: 11, borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: 12, background: 'transparent', border: `1px solid ${THEME.glassBorder}`, color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                                                 onMouseEnter={e => { e.currentTarget.style.borderColor = THEME.primary; e.currentTarget.style.color = THEME.primary; }}
                                                 onMouseLeave={e => { e.currentTarget.style.borderColor = THEME.glassBorder; e.currentTarget.style.color = THEME.textMuted; }}
                                         ><Play size={13} /> Test in Sandbox</button>
-                                        <button onClick={handleApply} disabled={isApplying} style={{ padding: 11, borderRadius: 8, border: 'none', cursor: isApplying ? 'wait' : 'pointer', fontWeight: 700, fontSize: 12, color: '#fff', background: THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: isApplying ? 0.8 : 1 }}>
+                                        <button onClick={handleApply} disabled={isApplying} style={{ padding: 11, borderRadius: 20, border: 'none', cursor: isApplying ? 'wait' : 'pointer', fontWeight: 700, fontSize: 12, color: '#fff', background: THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: isApplying ? 0.8 : 1 }}>
                                             {isApplying ? <RotateCcw size={13} className="perf-spin" /> : <Sparkles size={13} />}
                                             {isApplying ? 'Applying…' : 'Apply Optimization'}
                                         </button>
@@ -1514,7 +1514,7 @@ const PerformanceTab = () => {
                         {bookmarkedQueries.has(row.id) ? <BookmarkCheck size={11} /> : <Bookmark size={11} />}
                     </button>
                     <span style={{ fontSize: 11, lineHeight: 1.4, opacity: 0.85 }}>{t?.length > 60 ? `${t.substring(0, 60)}…` : t}</span>
-                    {queryTags[row.id] && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 8, background: queryTags[row.id] === 'known-slow' ? `${THEME.warning}15` : `${THEME.success}12`, color: queryTags[row.id] === 'known-slow' ? THEME.warning : THEME.success, border: `1px solid ${queryTags[row.id] === 'known-slow' ? `${THEME.warning}25` : `${THEME.success}20`}`, flexShrink: 0 }}>{queryTags[row.id] === 'known-slow' ? '⚑' : '✓'}</span>}
+                    {queryTags[row.id] && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 20, background: queryTags[row.id] === 'known-slow' ? `${THEME.warning}15` : `${THEME.success}12`, color: queryTags[row.id] === 'known-slow' ? THEME.warning : THEME.success, border: `1px solid ${queryTags[row.id] === 'known-slow' ? `${THEME.warning}25` : `${THEME.success}20`}`, flexShrink: 0 }}>{queryTags[row.id] === 'known-slow' ? '⚑' : '✓'}</span>}
                 </div>
             )
         },
@@ -1538,7 +1538,7 @@ const PerformanceTab = () => {
         {
             key: 'actions', label: '', align: 'right', maxWidth: 80,
             render: (_, row) => (
-                <button onClick={() => setSelectedQuery(row)} style={{ background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, color: THEME.primary, padding: '5px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                <button onClick={() => setSelectedQuery(row)} style={{ background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, color: THEME.primary, padding: '5px 10px', borderRadius: 18, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}
                         onMouseEnter={e => { e.currentTarget.style.background = `${THEME.primary}25`; e.currentTarget.style.borderColor = THEME.primary; }}
                         onMouseLeave={e => { e.currentTarget.style.background = `${THEME.primary}10`; e.currentTarget.style.borderColor = `${THEME.primary}20`; }}
                 ><Sparkles size={10} /> Analyze</button>
@@ -1555,7 +1555,7 @@ const PerformanceTab = () => {
             key: 'state', label: 'State', align: 'right',
             render: v => {
                 const c = v === 'active' ? THEME.success : v?.includes('idle') ? THEME.textDim : THEME.warning;
-                return <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 12, background: `${c}15`, color: c, border: `1px solid ${c}20` }}>{v || '—'}</span>;
+                return <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 18, background: `${c}15`, color: c, border: `1px solid ${c}20` }}>{v || '—'}</span>;
             }
         }
     ];
@@ -1563,9 +1563,9 @@ const PerformanceTab = () => {
     const ViewTab = ({ id, label, icon: Icon, badge }) => {
         const active = activeView === id;
         return (
-            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 8, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontWeight: 600, fontSize: 12, lineHeight: 1, letterSpacing: '0.01em', whiteSpace: 'nowrap', background: active ? THEME.primary : THEME.surface, color: active ? THEME.buttonText || '#fff' : THEME.textMuted, border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60`, position: 'relative' }}>
+            <button onClick={() => setActiveView(id)} style={{ padding: '10px 22px', borderRadius: 20, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 20, fontWeight: 600, fontSize: 12, lineHeight: 1, letterSpacing: '0.01em', whiteSpace: 'nowrap', background: active ? THEME.primary : THEME.surface, color: active ? THEME.buttonText || '#fff' : THEME.textMuted, border: active ? '1px solid transparent' : `1px solid ${THEME.grid}60`, position: 'relative' }}>
                 <Icon size={14} style={{ flexShrink: 0 }} /> {label}
-                {badge && <span style={{ fontSize: 9, fontWeight: 800, padding: '1px 6px', borderRadius: 8, background: active ? `${THEME.primary}30` : `${THEME.warning}15`, color: active ? THEME.primary : THEME.warning, border: active ? `1px solid ${THEME.primary}40` : `1px solid ${THEME.warning}25`, marginLeft: 2 }}>{badge}</span>}
+                {badge && <span style={{ fontSize: 9, fontWeight: 800, padding: '1px 6px', borderRadius: 20, background: active ? `${THEME.primary}30` : `${THEME.warning}15`, color: active ? THEME.primary : THEME.warning, border: active ? `1px solid ${THEME.primary}40` : `1px solid ${THEME.warning}25`, marginLeft: 2 }}>{badge}</span>}
             </button>
         );
     };
@@ -1573,9 +1573,9 @@ const PerformanceTab = () => {
     const SubViewTab = ({ id, label, icon: Icon, stateKey, setState, badge }) => {
         const active = stateKey === id;
         return (
-            <button onClick={() => setState(id)} style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${active ? THEME.primary + '40' : THEME.grid + '40'}`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 11, background: active ? `${THEME.primary}12` : 'transparent', color: active ? THEME.primary : THEME.textMuted, whiteSpace: 'nowrap' }}>
+            <button onClick={() => setState(id)} style={{ padding: '7px 14px', borderRadius: 18, border: `1px solid ${active ? THEME.primary + '40' : THEME.grid + '40'}`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 11, background: active ? `${THEME.primary}12` : 'transparent', color: active ? THEME.primary : THEME.textMuted, whiteSpace: 'nowrap' }}>
                 <Icon size={12} /> {label}
-                {badge && <span style={{ fontSize: 8, fontWeight: 800, padding: '1px 5px', borderRadius: 8, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>{badge}</span>}
+                {badge && <span style={{ fontSize: 8, fontWeight: 800, padding: '1px 5px', borderRadius: 20, background: `${THEME.danger}15`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>{badge}</span>}
             </button>
         );
     };
@@ -1583,13 +1583,13 @@ const PerformanceTab = () => {
     const SessionMetric = ({ icon: Icon, title, value, color, filterKey }) => {
         const isActive = sessionFilter === filterKey;
         return (
-            <div onClick={() => setSessionFilter(filterKey)} style={{ cursor: 'pointer', padding: '20px 20px', borderRadius: 12, background: isActive ? `${color}12` : THEME.surface, border: `1px solid ${isActive ? `${color}30` : `${THEME.grid}50`}`, display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', overflow: 'hidden', minHeight: 110 }}
+            <div onClick={() => setSessionFilter(filterKey)} style={{ cursor: 'pointer', padding: '20px 20px', borderRadius: 18, background: isActive ? `${color}12` : THEME.surface, border: `1px solid ${isActive ? `${color}30` : `${THEME.grid}50`}`, display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', overflow: 'hidden', minHeight: 110 }}
                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.borderColor = `${color}25`; e.currentTarget.style.background = `${color}06`; e.currentTarget.style.transform = 'translateY(-2px)'; } }}
                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.borderColor = `${THEME.grid}50`; e.currentTarget.style.background = THEME.surface; e.currentTarget.style.transform = 'translateY(0)'; } }}
             >
                 {isActive && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: color }} />}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ width: 38, height: 38, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}12`, border: `1px solid ${color}18` }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}12`, border: `1px solid ${color}18` }}>
                         <Icon size={17} color={color} />
                     </div>
                     <div style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600,  letterSpacing: '0.02em' }}>{title}</div>
@@ -1602,10 +1602,10 @@ const PerformanceTab = () => {
     };
 
     const HealthMetricCard = ({ title, value, unit, icon: Icon, color, trend, detail }) => (
-        <div style={{ padding: 20, borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.grid}40`, display: 'flex', flexDirection: 'column', gap: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)', transition: 'all 0.2s ease', cursor: 'default' }}>
+        <div style={{ padding: 20, borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.grid}40`, display: 'flex', flexDirection: 'column', gap: 20, boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)', transition: 'all 0.2s ease', cursor: 'default' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 8, background: `${color}12`, border: `1px solid ${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={14} color={color} /></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                    <div style={{ width: 30, height: 30, borderRadius: 20, background: `${color}12`, border: `1px solid ${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={14} color={color} /></div>
                     <span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 600 }}>{title}</span>
                 </div>
                 {trend !== undefined && (
@@ -1624,7 +1624,7 @@ const PerformanceTab = () => {
             <PerfStyles />
 
             {/* View Switcher */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
                 <ViewTab id="activity" label="Activity & Queries" icon={Zap} />
                 <ViewTab id="insights" label="Deep Insights" icon={BrainCircuit}  />
                 <ViewTab id="health" label="Resources & Health" icon={Cpu} />
@@ -1636,13 +1636,13 @@ const PerformanceTab = () => {
                     {/* Live Sessions */}
                     <GlassCard title={sessionFilter ? `${sessionFilter.charAt(0).toUpperCase() + sessionFilter.slice(1)} Sessions` : "Live Sessions"}
                                rightNode={
-                                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: THEME.textDim }}>
                                            <LiveDot color={THEME.success} size={7} />
                                            <span>{totalConns} total connections</span>
                                        </div>
                                        {sessionFilter && (
-                                           <button onClick={() => setSessionFilter(null)} style={{ background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, color: THEME.primary, padding: '4px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                           <button onClick={() => setSessionFilter(null)} style={{ background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, color: THEME.primary, padding: '4px 12px', borderRadius: 18, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                                                <ChevronLeft size={12} /> Back
                                            </button>
                                        )}
@@ -1690,19 +1690,19 @@ const PerformanceTab = () => {
                     {/* Slow Query Analysis */}
                     <GlassCard title="Query Analysis" noPad style={{ minHeight: 400 }}
                                rightNode={
-                                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                                       <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+                                       <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 18, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>
                                            {filteredSlowQueries.length} slow queries
                                        </span>
                                        {n1Patterns.length > 0 && (
-                                           <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20` }}>
+                                           <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 18, background: `${THEME.warning}12`, color: THEME.warning, border: `1px solid ${THEME.warning}20` }}>
                                                {n1Patterns.length} N+1 patterns
                                            </span>
                                        )}
                                    </div>
                                }
                     >
-                        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ padding: '22px 28px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', gap: 6, flex: 1, minWidth: 0, flexWrap: 'wrap' }}>
                                 <SubViewTab id="queries" label="Slow Queries" icon={List} stateKey={activitySubView} setState={setActivitySubView} />
                                 <SubViewTab id="gantt" label="Timeline" icon={Calendar} stateKey={activitySubView} setState={setActivitySubView} />
@@ -1710,15 +1710,15 @@ const PerformanceTab = () => {
                                 <SubViewTab id="n1" label="N+1 Patterns" icon={Merge} stateKey={activitySubView} setState={setActivitySubView} />
                             </div>
                             {activitySubView === 'queries' && (
-                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
                                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                                         <Search size={12} color={THEME.textDim} style={{ position: 'absolute', left: 8, pointerEvents: 'none' }} />
-                                        <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search queries…" style={{ paddingLeft: 26, paddingRight: 10, paddingTop: 6, paddingBottom: 6, borderRadius: 6, border: `1px solid ${THEME.grid}50`, background: THEME.bg, color: THEME.textMain, fontSize: 11, width: 160, outline: 'none' }} />
+                                        <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search queries…" style={{ paddingLeft: 26, paddingRight: 10, paddingTop: 6, paddingBottom: 6, borderRadius: 18, border: `1px solid ${THEME.grid}50`, background: THEME.bg, color: THEME.textMain, fontSize: 11, width: 160, outline: 'none' }} />
                                     </div>
-                                    <button onClick={() => setQueryGroupMode(!queryGroupMode)} style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid ${queryGroupMode ? THEME.primary + '40' : THEME.grid + '40'}`, background: queryGroupMode ? `${THEME.primary}12` : 'transparent', color: queryGroupMode ? THEME.primary : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <button onClick={() => setQueryGroupMode(!queryGroupMode)} style={{ padding: '6px 12px', borderRadius: 18, border: `1px solid ${queryGroupMode ? THEME.primary + '40' : THEME.grid + '40'}`, background: queryGroupMode ? `${THEME.primary}12` : 'transparent', color: queryGroupMode ? THEME.primary : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
                                         <Merge size={12} /> Group
                                     </button>
-                                    <button onClick={() => setShowFilterPanel(!showFilterPanel)} style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid ${showFilterPanel ? THEME.primary + '40' : THEME.grid + '40'}`, background: showFilterPanel ? `${THEME.primary}12` : 'transparent', color: showFilterPanel ? THEME.primary : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <button onClick={() => setShowFilterPanel(!showFilterPanel)} style={{ padding: '6px 12px', borderRadius: 18, border: `1px solid ${showFilterPanel ? THEME.primary + '40' : THEME.grid + '40'}`, background: showFilterPanel ? `${THEME.primary}12` : 'transparent', color: showFilterPanel ? THEME.primary : THEME.textDim, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
                                         <Filter size={12} /> Filter {(filterApp || filterUser) && <span style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.warning, flexShrink: 0 }} />}
                                     </button>
                                 </div>
@@ -1726,18 +1726,18 @@ const PerformanceTab = () => {
                         </div>
 
                         {showFilterPanel && activitySubView === 'queries' && (
-                            <div style={{ padding: '12px 20px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 12, background: `${THEME.primary}04`, flexWrap: 'wrap', alignItems: 'center' }}>
+                            <div style={{ padding: '12px 20px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 18, background: `${THEME.primary}04`, flexWrap: 'wrap', alignItems: 'center' }}>
                                 <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600 }}>FILTER BY:</span>
-                                <select value={filterApp} onChange={e => setFilterApp(e.target.value)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${THEME.grid}50`, background: THEME.surface, color: filterApp ? THEME.primary : THEME.textDim, fontSize: 11, cursor: 'pointer', outline: 'none' }}>
+                                <select value={filterApp} onChange={e => setFilterApp(e.target.value)} style={{ padding: '4px 10px', borderRadius: 18, border: `1px solid ${THEME.grid}50`, background: THEME.surface, color: filterApp ? THEME.primary : THEME.textDim, fontSize: 11, cursor: 'pointer', outline: 'none' }}>
                                     <option value="">All Apps</option>
                                     {uniqueApps.map(a => <option key={a} value={a}>{a}</option>)}
                                 </select>
-                                <select value={filterUser} onChange={e => setFilterUser(e.target.value)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${THEME.grid}50`, background: THEME.surface, color: filterUser ? THEME.primary : THEME.textDim, fontSize: 11, cursor: 'pointer', outline: 'none' }}>
+                                <select value={filterUser} onChange={e => setFilterUser(e.target.value)} style={{ padding: '4px 10px', borderRadius: 18, border: `1px solid ${THEME.grid}50`, background: THEME.surface, color: filterUser ? THEME.primary : THEME.textDim, fontSize: 11, cursor: 'pointer', outline: 'none' }}>
                                     <option value="">All Users</option>
                                     {uniqueUsers.map(u => <option key={u} value={u}>{u}</option>)}
                                 </select>
                                 {(filterApp || filterUser || searchQuery) && (
-                                    <button onClick={() => { setFilterApp(''); setFilterUser(''); setSearchQuery(''); }} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${THEME.danger}30`, background: 'transparent', color: THEME.danger, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <button onClick={() => { setFilterApp(''); setFilterUser(''); setSearchQuery(''); }} style={{ padding: '4px 10px', borderRadius: 18, border: `1px solid ${THEME.danger}30`, background: 'transparent', color: THEME.danger, cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                                         <X size={10} /> Clear
                                     </button>
                                 )}
@@ -1751,13 +1751,13 @@ const PerformanceTab = () => {
 
                             {activitySubView === 'queries' && queryGroupMode && (
                                 <div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 0, padding: '8px 16px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 0, padding: '14px 20px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
                                         {['Query Fingerprint', 'Variants', 'Total Calls', 'Avg Time', ''].map((h, i) => (
                                             <div key={i} style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', textAlign: i > 0 ? 'right' : 'left', padding: '0 8px' }}>{h}</div>
                                         ))}
                                     </div>
                                     {(groupedQueries || []).map((g, i) => (
-                                        <div key={i} className="perf-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 0, padding: '10px 16px', borderBottom: `1px solid ${THEME.grid}20`, alignItems: 'center' }}>
+                                        <div key={i} className="perf-row-hover" style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 0, padding: '16px 22px', borderBottom: `1px solid ${THEME.grid}20`, alignItems: 'center' }}>
                                             <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMain, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 8px' }}>
                                                 <Hash size={10} color={THEME.textDim} style={{ marginRight: 5 }} />
                                                 {g.fingerprint}
@@ -1766,7 +1766,7 @@ const PerformanceTab = () => {
                                             <div style={{ textAlign: 'right', fontSize: 12, fontVariantNumeric: 'tabular-nums', color: THEME.textMuted, padding: '0 12px' }}>{g.totalCalls.toLocaleString()}</div>
                                             <div style={{ textAlign: 'right', fontSize: 12, fontWeight: 700, color: g.avgTime > 1000 ? THEME.danger : THEME.warning, fontVariantNumeric: 'tabular-nums', padding: '0 12px' }}>{g.avgTime.toFixed(1)}ms</div>
                                             <div style={{ padding: '0 8px' }}>
-                                                <button onClick={() => setSelectedQuery(g.representative)} style={{ background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, color: THEME.primary, padding: '4px 10px', borderRadius: 5, cursor: 'pointer', fontSize: 10, fontWeight: 600 }}>
+                                                <button onClick={() => setSelectedQuery(g.representative)} style={{ background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}20`, color: THEME.primary, padding: '4px 10px', borderRadius: 16, cursor: 'pointer', fontSize: 10, fontWeight: 600 }}>
                                                     <Sparkles size={9} style={{ marginRight: 3 }} />Analyze
                                                 </button>
                                             </div>
@@ -1776,20 +1776,20 @@ const PerformanceTab = () => {
                             )}
 
                             {activitySubView === 'gantt' && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 4 }}>
                                         <span style={{ fontSize: 11, fontWeight: 600, color: THEME.textDim }}>Query Execution Timeline</span>
-                                        <span style={{ fontSize: 10, color: THEME.textDim, padding: '2px 8px', borderRadius: 12, background: `${THEME.grid}30`, border: `1px solid ${THEME.grid}40` }}>last 5 seconds</span>
+                                        <span style={{ fontSize: 10, color: THEME.textDim, padding: '2px 8px', borderRadius: 18, background: `${THEME.grid}30`, border: `1px solid ${THEME.grid}40` }}>last 5 seconds</span>
                                     </div>
                                     <GanttChart queries={rawSlowQueries} />
                                 </div>
                             )}
 
                             {activitySubView === 'locks' && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 4 }}>
                                         <span style={{ fontSize: 11, fontWeight: 600, color: THEME.textDim }}>Active Lock Wait Chains</span>
-                                        <span style={{ fontSize: 10, color: locks.length > 0 ? THEME.danger : THEME.success, padding: '2px 8px', borderRadius: 12, background: locks.length > 0 ? `${THEME.danger}10` : `${THEME.success}10`, border: `1px solid ${locks.length > 0 ? `${THEME.danger}20` : `${THEME.success}20`}` }}>
+                                        <span style={{ fontSize: 10, color: locks.length > 0 ? THEME.danger : THEME.success, padding: '2px 8px', borderRadius: 18, background: locks.length > 0 ? `${THEME.danger}10` : `${THEME.success}10`, border: `1px solid ${locks.length > 0 ? `${THEME.danger}20` : `${THEME.success}20`}` }}>
                                             {locks.length} blocked queries
                                         </span>
                                     </div>
@@ -1798,7 +1798,7 @@ const PerformanceTab = () => {
                             )}
 
                             {activitySubView === 'n1' && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: THEME.textDim, marginBottom: 4 }}>
                                         Repetitive Query Patterns — Potential N+1 Issues
                                     </div>
@@ -1807,11 +1807,11 @@ const PerformanceTab = () => {
                                             <EmptyState icon={CheckCircle} text="No N+1 patterns detected" />
                                         </div>
                                     ) : n1Patterns.map((p, i) => (
-                                        <div key={i} style={{ padding: 14, borderRadius: 8, background: p.severity === 'high' ? `${THEME.danger}06` : `${THEME.warning}06`, border: `1px solid ${p.severity === 'high' ? `${THEME.danger}15` : `${THEME.warning}15`}` }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                                        <div key={i} style={{ padding: 14, borderRadius: 20, background: p.severity === 'high' ? `${THEME.danger}06` : `${THEME.warning}06`, border: `1px solid ${p.severity === 'high' ? `${THEME.danger}15` : `${THEME.warning}15`}` }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 18 }}>
                                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                                                        <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 12, background: p.severity === 'high' ? `${THEME.danger}18` : `${THEME.warning}15`, color: p.severity === 'high' ? THEME.danger : THEME.warning, border: `1px solid ${p.severity === 'high' ? `${THEME.danger}25` : `${THEME.warning}20`}` }}>{p.severity} N+1</span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 6 }}>
+                                                        <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 18, background: p.severity === 'high' ? `${THEME.danger}18` : `${THEME.warning}15`, color: p.severity === 'high' ? THEME.danger : THEME.warning, border: `1px solid ${p.severity === 'high' ? `${THEME.danger}25` : `${THEME.warning}20`}` }}>{p.severity} N+1</span>
                                                         <span style={{ fontSize: 12, fontWeight: 800, color: p.severity === 'high' ? THEME.danger : THEME.warning, fontVariantNumeric: 'tabular-nums' }}>{p.callCount.toLocaleString()}× calls</span>
                                                     </div>
                                                     <div style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.fingerprint}</div>
@@ -1866,8 +1866,8 @@ const PerformanceTab = () => {
                     {/* ── SLOW QUERY TREND ── */}
                     {insightsSubView === 'slow_trend' && (
                         <GlassCard title="Slow Query Trend — Last 24 Hours" rightNode={
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 16, background: `${THEME.danger}12`, color: THEME.danger, border: `1px solid ${THEME.danger}20` }}>
                                     P99 latency overlay
                                 </span>
                             </div>
@@ -1879,8 +1879,8 @@ const PerformanceTab = () => {
                     {/* ── JIT COMPILATION ── */}
                     {insightsSubView === 'jit' && (
                         <GlassCard title="JIT Compilation Analysis" rightNode={
-                            <div style={{ display: 'flex', gap: 8 }}>
-                                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 5, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: THEME.fontMono }}>
+                            <div style={{ display: 'flex', gap: 20 }}>
+                                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 16, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: THEME.fontMono }}>
                                     jit = on
                                 </span>
                             </div>
@@ -1892,8 +1892,8 @@ const PerformanceTab = () => {
                     {/* ── PARALLEL WORKERS ── */}
                     {insightsSubView === 'parallel' && (
                         <GlassCard title="Parallel Query Utilization" rightNode={
-                            <div style={{ display: 'flex', gap: 8 }}>
-                                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 5, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: THEME.fontMono }}>
+                            <div style={{ display: 'flex', gap: 20 }}>
+                                <span style={{ fontSize: 10, color: THEME.textDim, padding: '3px 8px', borderRadius: 16, background: `${THEME.grid}20`, border: `1px solid ${THEME.grid}40`, fontFamily: THEME.fontMono }}>
                                     max_parallel_workers = {pgSettings?.max_parallel_workers || '—'}
                                 </span>
                             </div>
@@ -1905,9 +1905,9 @@ const PerformanceTab = () => {
                     {/* ── LOCK BLOCKING TREE ── */}
                     {insightsSubView === 'lock_tree' && (
                         <GlassCard title="Lock Blocking Tree" rightNode={
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                 {locks.length > 0 && <LiveDot color={THEME.danger} size={7} />}
-                                <span style={{   padding: '3px 10px', borderRadius: 5, background: locks.length > 0 ? `${THEME.danger}12` : `${THEME.success}10`, color: locks.length > 0 ? THEME.danger : THEME.success, border: `1px solid ${locks.length > 0 ? `${THEME.danger}20` : `${THEME.success}20`}`, fontWeight: 700, fontSize: 10 }}>
+                                <span style={{   padding: '3px 10px', borderRadius: 16, background: locks.length > 0 ? `${THEME.danger}12` : `${THEME.success}10`, color: locks.length > 0 ? THEME.danger : THEME.success, border: `1px solid ${locks.length > 0 ? `${THEME.danger}20` : `${THEME.success}20`}`, fontWeight: 700, fontSize: 10 }}>
                                     {locks.length > 0 ? `${locks.length} active blocks` : 'No blocks'}
                                 </span>
                             </div>
@@ -2029,7 +2029,7 @@ const PerformanceTab = () => {
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'center',
-                                            gap: 12,
+                                            gap: 18,
                                         }}>
                                             <span style={{
                                                 fontSize: 13, fontWeight: 650, color: THEME.textMain,
@@ -2037,9 +2037,9 @@ const PerformanceTab = () => {
                                             }}>
                                                 {card.title}
                                             </span>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                                 {card.chips.map((chip, i) => (
-                                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                                         <chip.icon size={12} color={THEME.textDim} />
                                                         <span style={{ fontSize: 11, color: THEME.textDim, minWidth: 48 }}>{chip.label}</span>
                                                         <span style={{
@@ -2068,7 +2068,7 @@ const PerformanceTab = () => {
                                                 <thead>
                                                 <tr>
                                                     {[{ label: 'Table', align: 'left', width: '30%' }, { label: 'Reads', align: 'right', width: '18%' }, { label: 'Writes', align: 'right', width: '18%' }, { label: 'Hit Ratio', align: 'right', width: '14%' }, { label: 'Trend', align: 'right', width: '20%' }].map(h => (
-                                                        <th key={h.label} style={{ padding: '10px 14px', textAlign: h.align, width: h.width, fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>{h.label}</th>
+                                                        <th key={h.label} style={{ padding: '22px 28px', textAlign: h.align, width: h.width, fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>{h.label}</th>
                                                     ))}
                                                 </tr>
                                                 </thead>
@@ -2079,16 +2079,16 @@ const PerformanceTab = () => {
                                                     const hitRatio = reads + writes > 0 ? ((writes / (reads + writes)) * 100).toFixed(0) : 0;
                                                     return (
                                                         <tr key={i} className="perf-row-hover">
-                                                            <td style={{ padding: '10px 14px', fontSize: 12, fontWeight: 600, color: THEME.textMain, borderBottom: `1px solid ${THEME.grid}20` }}>
+                                                            <td style={{ padding: '22px 28px', fontSize: 12, fontWeight: 600, color: THEME.textMain, borderBottom: `1px solid ${THEME.grid}20` }}>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                                                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.primary, flexShrink: 0 }} />
                                                                     {t.table_name || t.relname || `table_${i}`}
                                                                 </div>
                                                             </td>
-                                                            <td style={{ padding: '10px 14px', fontSize: 12, fontVariantNumeric: 'tabular-nums', color: THEME.primary, textAlign: 'right', borderBottom: `1px solid ${THEME.grid}20` }}>{reads.toLocaleString()}</td>
-                                                            <td style={{ padding: '10px 14px', fontSize: 12, fontVariantNumeric: 'tabular-nums', color: THEME.success, textAlign: 'right', borderBottom: `1px solid ${THEME.grid}20` }}>{writes.toLocaleString()}</td>
-                                                            <td style={{ padding: '10px 14px', fontSize: 12, fontWeight: 700, color: Number(hitRatio) > 95 ? THEME.success : THEME.warning, textAlign: 'right', borderBottom: `1px solid ${THEME.grid}20` }}>{hitRatio}%</td>
-                                                            <td style={{ padding: '10px 14px', borderBottom: `1px solid ${THEME.grid}20` }}>
+                                                            <td style={{ padding: '22px 28px', fontSize: 12, fontVariantNumeric: 'tabular-nums', color: THEME.primary, textAlign: 'right', borderBottom: `1px solid ${THEME.grid}20` }}>{reads.toLocaleString()}</td>
+                                                            <td style={{ padding: '22px 28px', fontSize: 12, fontVariantNumeric: 'tabular-nums', color: THEME.success, textAlign: 'right', borderBottom: `1px solid ${THEME.grid}20` }}>{writes.toLocaleString()}</td>
+                                                            <td style={{ padding: '22px 28px', fontSize: 12, fontWeight: 700, color: Number(hitRatio) > 95 ? THEME.success : THEME.warning, textAlign: 'right', borderBottom: `1px solid ${THEME.grid}20` }}>{hitRatio}%</td>
+                                                            <td style={{ padding: '22px 28px', borderBottom: `1px solid ${THEME.grid}20` }}>
                                                                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                                                     <span style={{ fontSize: 10, color: THEME.textDim }}>—</span>
                                                                 </div>
@@ -2108,20 +2108,20 @@ const PerformanceTab = () => {
                                                 <EmptyState icon={Copy} text="Standalone Instance" />
                                             </div>
                                         ) : (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                                                 {repl.map((r, i) => {
                                                     const lagBytes = Number(r.replication_lag_bytes || 0);
                                                     const lagColor = lagBytes > 10000000 ? THEME.danger : lagBytes > 1000000 ? THEME.warning : THEME.success;
                                                     return (
-                                                        <div key={i} style={{ padding: 14, borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}50` }}>
+                                                        <div key={i} style={{ padding: 14, borderRadius: 20, background: THEME.surface, border: `1px solid ${THEME.grid}50` }}>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                                                     <LiveDot color={lagColor} size={7} />
                                                                     <span style={{ fontSize: 12, fontWeight: 600, color: THEME.textMain }}>{r.client_addr || `Replica ${i + 1}`}</span>
                                                                 </div>
-                                                                <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 12, background: `${lagColor}15`, color: lagColor, border: `1px solid ${lagColor}20` }}>{r.state || 'streaming'}</span>
+                                                                <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 18, background: `${lagColor}15`, color: lagColor, border: `1px solid ${lagColor}20` }}>{r.state || 'streaming'}</span>
                                                             </div>
-                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                                                                 <StatChip label="Lag" value={lagBytes > 1000000 ? `${(lagBytes / 1048576).toFixed(1)} MB` : `${(lagBytes / 1024).toFixed(0)} KB`} color={lagColor} icon={Timer} small />
                                                                 <StatChip label="LSN Diff" value={r.sent_lsn ? r.sent_lsn.split('/')[1] : '—'} icon={GitBranch} small />
                                                             </div>
@@ -2134,7 +2134,7 @@ const PerformanceTab = () => {
                                 </GlassCard>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, borderRadius: 12, background: THEME.surface, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0, borderRadius: 18, background: THEME.surface, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
                                 {[
                                     { label: 'Cache Hit', value: `${cacheHitPct}%`, color: THEME.success, icon: CheckCircle },
                                     { label: 'Commits', value: Number(deepDbStats?.xact_commit || 0).toLocaleString(), color: THEME.primary, icon: Zap },
@@ -2142,8 +2142,8 @@ const PerformanceTab = () => {
                                     { label: 'Temp Files', value: dbTempFiles > 0 ? dbTempFiles.toLocaleString() : '0', color: dbTempFiles > 0 ? THEME.warning : THEME.textDim, icon: HardDrive },
                                     { label: 'Uptime', value: uptime, color: THEME.textMain, icon: Radio },
                                 ].map((s, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', height: 58, borderRight: i < 4 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
-                                        <div style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 22, padding: '18px 22px', height: 58, borderRight: i < 4 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
+                                        <div style={{ width: 30, height: 30, borderRadius: 20, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
                                             <s.icon size={14} color={s.color} />
                                         </div>
                                         <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -2157,14 +2157,14 @@ const PerformanceTab = () => {
                     )}
 
                     {healthSubView === 'cpu' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
                                 <HealthMetricCard title="Active Sessions" value={`${activeSessions.length}`} unit="" icon={Cpu} color={THEME.primary} detail={`of ${totalConns} total connections`} />
                                 <HealthMetricCard title="Max Workers" value={pgSettings?.max_worker_processes || '—'} unit="" icon={Gauge} color={THEME.success} detail="max_worker_processes" />
                                 <HealthMetricCard title="Parallel Workers" value={pgSettings?.max_parallel_workers || '—'} unit="" icon={User} color={THEME.primary} detail="max_parallel_workers" />
                                 <HealthMetricCard title="IO Concurrency" value={pgSettings?.effective_io_concurrency || '—'} unit="" icon={Server} color={THEME.warning} detail="effective_io_concurrency" />
                             </div>
-                            <div style={{ padding: 16, borderRadius: 8, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                            <div style={{ padding: 16, borderRadius: 20, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
                                 <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
                                     <span style={{ color: THEME.primary, fontWeight: 700 }}>Note:</span>{' '}
                                     CPU/OS-level metrics require a system monitoring agent (e.g., node_exporter, pg_stat_monitor). PostgreSQL exposes database-level activity through pg_stat_activity and pg_stat_statements.
@@ -2174,14 +2174,14 @@ const PerformanceTab = () => {
                     )}
 
                     {healthSubView === 'memory' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
                                 <HealthMetricCard title="Shared Buffers" value={pgSettings?.shared_buffers || '—'} unit="" icon={Database} color={THEME.primary} detail="PostgreSQL buffer pool" />
                                 <HealthMetricCard title="Work Mem" value={pgSettings?.work_mem || '—'} unit="" icon={Layers} color={THEME.success} detail="Per-sort/hash allocation" />
                                 <HealthMetricCard title="Eff. Cache Size" value={pgSettings?.effective_cache_size || '—'} unit="" icon={MemoryStick} color={THEME.warning} detail="Planner estimate of OS cache" />
                                 <HealthMetricCard title="Seq Page Cost" value={pgSettings?.seq_page_cost || '—'} unit="" icon={RefreshCcw} color={THEME.textMuted} detail={`Random: ${pgSettings?.random_page_cost || '—'}`} />
                             </div>
-                            <div style={{ padding: 16, borderRadius: 8, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                            <div style={{ padding: 16, borderRadius: 20, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
                                 <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
                                     <span style={{ color: THEME.primary, fontWeight: 700 }}>Note:</span>{' '}
                                     OS-level memory metrics require a system monitoring agent. The values above are PostgreSQL configuration settings from <code style={{ color: THEME.primary }}>pg_settings</code>.
@@ -2191,14 +2191,14 @@ const PerformanceTab = () => {
                     )}
 
                     {healthSubView === 'disk' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
                                 <HealthMetricCard title="Blocks Read" value={Number(deepDbStats?.blks_read || 0).toLocaleString()} unit="" icon={HardDrive} color={THEME.primary} detail="From disk (pg_stat_database)" />
                                 <HealthMetricCard title="Blocks Hit" value={Number(deepDbStats?.blks_hit || 0).toLocaleString()} unit="" icon={HardDrive} color={THEME.success} detail="From buffer cache" />
                                 <HealthMetricCard title="Temp Files" value={dbTempFiles.toLocaleString()} unit="" icon={Timer} color={dbTempFiles > 0 ? THEME.warning : THEME.textDim} detail="Queries spilling to disk" />
                                 <HealthMetricCard title="Temp Bytes" value={dbTempBytes > 1048576 ? `${(dbTempBytes / 1048576).toFixed(1)}` : `${Math.round(dbTempBytes / 1024)}`} unit={dbTempBytes > 1048576 ? 'MB' : 'KB'} icon={Layers} color={dbTempBytes > 0 ? THEME.warning : THEME.textDim} detail="Total temp file size" />
                             </div>
-                            <div style={{ padding: 16, borderRadius: 8, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                            <div style={{ padding: 16, borderRadius: 20, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
                                 <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
                                     <span style={{ color: THEME.primary, fontWeight: 700 }}>Note:</span>{' '}
                                     Disk I/O throughput and latency metrics require OS-level monitoring. The counters above are cumulative values from <code style={{ color: THEME.primary }}>pg_stat_database</code> since the last stats reset.
@@ -2208,14 +2208,14 @@ const PerformanceTab = () => {
                     )}
 
                     {healthSubView === 'network' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
                                 <HealthMetricCard title="Total Connections" value={`${totalConns}`} unit="" icon={Wifi} color={THEME.primary} detail="Active pg_stat_activity" />
                                 <HealthMetricCard title="Tuples Fetched" value={Number(deepDbStats?.tup_fetched || 0).toLocaleString()} unit="" icon={Wifi} color={THEME.success} detail="Since stats reset" />
                                 <HealthMetricCard title="Tuples Inserted" value={Number(deepDbStats?.tup_inserted || 0).toLocaleString()} unit="" icon={Network} color={THEME.warning} detail="Since stats reset" />
                                 <HealthMetricCard title="Rollbacks" value={Number(deepDbStats?.xact_rollback || 0).toLocaleString()} unit="" icon={AlertCircle} color={Number(deepDbStats?.xact_rollback || 0) > 0 ? THEME.danger : THEME.textDim} detail="Transaction rollbacks" />
                             </div>
-                            <div style={{ padding: 16, borderRadius: 8, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                            <div style={{ padding: 16, borderRadius: 20, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
                                 <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
                                     <span style={{ color: THEME.primary, fontWeight: 700 }}>Note:</span>{' '}
                                     Network throughput metrics require OS-level monitoring. The values above are cumulative tuple/transaction counters from <code style={{ color: THEME.primary }}>pg_stat_database</code>.
@@ -2225,14 +2225,14 @@ const PerformanceTab = () => {
                     )}
 
                     {healthSubView === 'buffer' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
                                 <HealthMetricCard title="Cache Hit Ratio" value={`${cacheHitPct}`} unit="%" icon={Database} color={THEME.success} detail="Block-level hit rate" />
                                 <HealthMetricCard title="Buffers (Checkpoint)" value={Number(deep?.bgwriter?.buffers_checkpoint || 0).toLocaleString()} unit="" icon={HardDrive} color={THEME.warning} detail="Written during checkpoints" />
                                 <HealthMetricCard title="Buffers (Backend)" value={Number(deep?.bgwriter?.buffers_backend || 0).toLocaleString()} unit="" icon={RefreshCcw} color={THEME.primary} detail="Written by backends directly" />
                                 <HealthMetricCard title="Buffers (Clean)" value={Number(deep?.bgwriter?.buffers_clean || 0).toLocaleString()} unit="" icon={TrendingDown} color={THEME.textMuted} detail="Written by bgwriter" />
                             </div>
-                            <div style={{ padding: 16, borderRadius: 8, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
+                            <div style={{ padding: 16, borderRadius: 20, background: `${THEME.primary}06`, border: `1px solid ${THEME.primary}15` }}>
                                 <div style={{ fontSize: 11, color: THEME.textDim, lineHeight: 1.6 }}>
                                     <span style={{ color: THEME.primary, fontWeight: 700 }}>Buffer stats</span> are cumulative counters from <code style={{ color: THEME.primary }}>pg_stat_bgwriter</code>.
                                     A high "Buffers (Backend)" count relative to "Buffers (Checkpoint)" may indicate the bgwriter is not keeping up — consider tuning <code style={{ color: THEME.primary }}>bgwriter_lru_maxpages</code> and <code style={{ color: THEME.primary }}>bgwriter_delay</code>.
@@ -2244,7 +2244,7 @@ const PerformanceTab = () => {
                                     <thead>
                                     <tr>
                                         {['Table', 'Heap Reads', 'Buffer Hits', 'Hit Ratio', 'Efficiency'].map((h, i) => (
-                                            <th key={h} style={{ padding: '10px 16px', textAlign: i > 0 ? 'right' : 'left', fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>{h}</th>
+                                            <th key={h} style={{ padding: '16px 22px', textAlign: i > 0 ? 'right' : 'left', fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', borderBottom: `1px solid ${THEME.grid}50`, position: 'sticky', top: 0, background: THEME.surface, zIndex: 1 }}>{h}</th>
                                         ))}
                                     </tr>
                                     </thead>
@@ -2255,11 +2255,11 @@ const PerformanceTab = () => {
                                         const ratio = (reads + hits) > 0 ? (hits / (reads + hits) * 100) : 0;
                                         return (
                                             <tr key={i} className="perf-row-hover">
-                                                <td style={{ padding: '10px 16px', fontSize: 12, fontWeight: 600, color: THEME.textMain, borderBottom: `1px solid ${THEME.grid}20` }}>{t.table_name || t.relname || `table_${i}`}</td>
-                                                <td style={{ padding: '10px 16px', fontSize: 12, textAlign: 'right', color: THEME.textMuted, fontVariantNumeric: 'tabular-nums', borderBottom: `1px solid ${THEME.grid}20` }}>{reads.toLocaleString()}</td>
-                                                <td style={{ padding: '10px 16px', fontSize: 12, textAlign: 'right', color: THEME.primary, fontVariantNumeric: 'tabular-nums', borderBottom: `1px solid ${THEME.grid}20` }}>{hits.toLocaleString()}</td>
-                                                <td style={{ padding: '10px 16px', fontSize: 12, textAlign: 'right', fontWeight: 700, color: ratio > 95 ? THEME.success : ratio > 80 ? THEME.warning : THEME.danger, fontVariantNumeric: 'tabular-nums', borderBottom: `1px solid ${THEME.grid}20` }}>{ratio.toFixed(1)}%</td>
-                                                <td style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.grid}20` }}>
+                                                <td style={{ padding: '16px 22px', fontSize: 12, fontWeight: 600, color: THEME.textMain, borderBottom: `1px solid ${THEME.grid}20` }}>{t.table_name || t.relname || `table_${i}`}</td>
+                                                <td style={{ padding: '16px 22px', fontSize: 12, textAlign: 'right', color: THEME.textMuted, fontVariantNumeric: 'tabular-nums', borderBottom: `1px solid ${THEME.grid}20` }}>{reads.toLocaleString()}</td>
+                                                <td style={{ padding: '16px 22px', fontSize: 12, textAlign: 'right', color: THEME.primary, fontVariantNumeric: 'tabular-nums', borderBottom: `1px solid ${THEME.grid}20` }}>{hits.toLocaleString()}</td>
+                                                <td style={{ padding: '16px 22px', fontSize: 12, textAlign: 'right', fontWeight: 700, color: ratio > 95 ? THEME.success : ratio > 80 ? THEME.warning : THEME.danger, fontVariantNumeric: 'tabular-nums', borderBottom: `1px solid ${THEME.grid}20` }}>{ratio.toFixed(1)}%</td>
+                                                <td style={{ padding: '16px 22px', borderBottom: `1px solid ${THEME.grid}20` }}>
                                                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                                         <SeverityBar value={ratio} max={100} color={ratio > 95 ? THEME.success : ratio > 80 ? THEME.warning : THEME.danger} />
                                                     </div>

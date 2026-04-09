@@ -358,7 +358,7 @@ const ConnectionWizard = () => {
       cursor: 'pointer',
       transition: 'all 0.2s',
       textAlign: 'center',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+      boxShadow: '0 6px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05)',
       backdropFilter: 'blur(8px)',
     },
     typeCardHover: {
@@ -398,7 +398,7 @@ const ConnectionWizard = () => {
     },
     formInput: {
       width: '100%',
-      padding: '14px 16px',
+      padding: '18px 22px',
       borderRadius: '12px',
       border: `1.5px solid ${THEME.glassBorder}`,
       background: THEME.surfaceHover,
@@ -407,7 +407,7 @@ const ConnectionWizard = () => {
       fontFamily: THEME.fontMono,
       transition: 'all 0.2s',
       boxSizing: 'border-box',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
     },
     formInputFocus: {
       borderColor: THEME.primary,
@@ -430,7 +430,7 @@ const ConnectionWizard = () => {
       background: THEME.surfaceHover,
       border: `1px solid ${THEME.glassBorder}`,
       marginBottom: '16px',
-      boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+      boxShadow: '0 6px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05)',
       backdropFilter: 'blur(8px)',
     },
     toggleLabel: {
@@ -470,14 +470,14 @@ const ConnectionWizard = () => {
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
     },
     testStatusBox: {
-      padding: '16px 18px',
+      padding: '22px 26px',
       borderRadius: '12px',
       display: 'flex',
       alignItems: 'center',
       gap: '14px',
       marginBottom: '24px',
       fontFamily: THEME.fontBody,
-      boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+      boxShadow: '0 6px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05)',
       backdropFilter: 'blur(8px)',
     },
     testStatusSuccess: {
@@ -526,7 +526,7 @@ const ConnectionWizard = () => {
       background: THEME.surfaceHover,
       border: `1.5px solid ${THEME.glassBorder}`,
       color: THEME.textMuted,
-      boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
     },
     buttonSecondaryHover: {
       borderColor: '#6366f1',
@@ -579,7 +579,7 @@ const ConnectionWizard = () => {
               onClick={() => { setShowWizard(!showWizard); setStep(1); setSelectedType(null); setTestStatus(null); setTestError(null); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                padding: '6px 14px', borderRadius: 8,
+                padding: '6px 14px', borderRadius: 20,
                 background: showWizard ? THEME.surfaceHover : THEME.primary,
                 color: showWizard ? THEME.textMuted : '#fff',
                 border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
@@ -590,7 +590,7 @@ const ConnectionWizard = () => {
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {connections.map(conn => {
               const isActive = conn.id === activeConnectionId;
               const isConnected = conn.status === 'connected' || conn.status === 'success';
@@ -599,8 +599,8 @@ const ConnectionWizard = () => {
                   key={conn.id}
                   className="conn-row"
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 14px', borderRadius: 10,
+                    display: 'flex', alignItems: 'center', gap: 18,
+                    padding: '22px 28px', borderRadius: 16,
                     background: isActive ? `${dbColor(conn.dbType)}10` : 'transparent',
                     border: `1.5px solid ${isActive ? dbColor(conn.dbType) + '50' : THEME.glassBorder}`,
                     transition: 'all 0.2s',
@@ -610,14 +610,14 @@ const ConnectionWizard = () => {
                 >
                   <span style={{ fontSize: 22 }}>{dbIcon(conn.dbType)}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                       <span style={{ fontSize: 13, fontWeight: 600, color: THEME.textMain, fontFamily: THEME.fontBody }}>
                         {conn.name}
                       </span>
                       {isActive && (
                         <span style={{
                           fontSize: 9, fontWeight: 700,
-                          padding: '2px 7px', borderRadius: 6,
+                          padding: '2px 7px', borderRadius: 18,
                           background: 'rgba(99, 102, 241, 0.2)', color: THEME.primary,
                         }}>Active</span>
                       )}
@@ -631,7 +631,7 @@ const ConnectionWizard = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{
-                      fontSize: 10, padding: '3px 8px', borderRadius: 6,
+                      fontSize: 10, padding: '3px 8px', borderRadius: 18,
                       background: `${dbColor(conn.dbType)}15`, color: dbColor(conn.dbType),
                       fontWeight: 600, textTransform: 'capitalize',
                     }}>
@@ -642,7 +642,7 @@ const ConnectionWizard = () => {
                       disabled={deletingId === conn.id}
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        width: 30, height: 30, borderRadius: 8,
+                        width: 30, height: 30, borderRadius: 20,
                         background: 'transparent', border: `1px solid transparent`,
                         color: THEME.textDim, cursor: 'pointer',
                         transition: 'all 0.2s',

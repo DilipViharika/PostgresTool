@@ -13,10 +13,10 @@ const Styles = () => (
         @keyframes brFade { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         @keyframes brPulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
         .br-card { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 16px 16px 0; padding:24px; animation:brFade .3s ease; position:relative; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08); backdrop-filter:blur(12px); transition: all 0.25s ease; }
-        .br-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.12); border-left-width: 6px; transform: translateY(-2px); }
+        .br-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.12); border-left-width: 6px; transform: translateY(-4px); }
         .br-card::before { content:''; position:absolute; top:0; right:0; width:40%; height:100%; background:repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px); pointer-events:none; }
-        .br-metric { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:20px 24px; display:flex; align-items:center; gap:16px; box-shadow:0 4px 16px rgba(0,0,0,0.08); backdrop-filter:blur(12px); }
-        .br-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:12px; font-size:11px; font-weight:700; }
+        .br-metric { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius: 20px; padding:20px 24px; display:flex; align-items:center; gap: 22px; box-shadow:0 4px 16px rgba(0,0,0,0.08); backdrop-filter:blur(12px); }
+        .br-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius: 22px; font-size:11px; font-weight:700; }
         .br-setting-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid ${THEME.glassBorder}40; font-size:13px; }
         .br-setting-row:last-child { border-bottom:none; }
     `}</style>
@@ -47,7 +47,7 @@ const HealthBadge = ({ ok, label }) => (
 /* ── Metric card ──────────────────────────────────────────────────────────── */
 const MetricCard = ({ icon: Icon, label, value, sub, color = THEME.primary }) => (
     <div className="br-metric">
-        <div style={{ width:44, height:44, borderRadius:12, background:`${color}15`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+        <div style={{ width:44, height:44, borderRadius: 18, background:`${color}15`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
             <Icon size={20} color={color}/>
         </div>
         <div>
@@ -132,7 +132,7 @@ export default function BackupRecoveryTab() {
 
             {/* ── Toolbar ───────────────────────────────────────────────── */}
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'18px 24px', background:THEME.surface, borderRadius:16, border:`1px solid ${THEME.glassBorder}`, boxShadow:'0 4px 16px rgba(0,0,0,0.08)', backdropFilter:'blur(12px)' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                <div style={{ display:'flex', alignItems:'center', gap: 18 }}>
                     <Archive size={20} color={THEME.primary}/>
                     <span style={{ fontWeight:700, fontSize:15, color:THEME.textMain }}>Backup & Recovery</span>
                     {inRecovery && (
@@ -141,12 +141,12 @@ export default function BackupRecoveryTab() {
                         </span>
                     )}
                 </div>
-                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ display:'flex', alignItems:'center', gap: 22 }}>
                     <span style={{ fontSize:11, color:THEME.textDim }}>
                         {lastAt ? `Updated ${fmtRelative(lastAt)}` : ''}
                     </span>
                     <select value={interval} onChange={e => setInterval_(+e.target.value)}
-                        style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, color:THEME.textMain, borderRadius:8, padding:'4px 8px', fontSize:12 }}>
+                        style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, color:THEME.textMain, borderRadius: 20, padding:'4px 8px', fontSize:12 }}>
                         <option value={10}>10s</option>
                         <option value={30}>30s</option>
                         <option value={60}>1m</option>
@@ -156,13 +156,13 @@ export default function BackupRecoveryTab() {
             </div>
 
             {error && (
-                <div style={{ padding:14, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius:12, color:THEME.danger, fontSize:13, display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ padding:14, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius: 18, color:THEME.danger, fontSize:13, display:'flex', alignItems:'center', gap: 20 }}>
                     <AlertCircle size={16}/> {error}
                 </div>
             )}
 
             {/* ── Metric cards ──────────────────────────────────────────── */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:14 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap: 20 }}>
                 <MetricCard icon={FileCheck} label="WAL Files Archived" value={archiver.archived_count ?? '—'} sub={`Last: ${fmtRelative(archiver.last_archived_time)}`} color={THEME.success}/>
                 <MetricCard icon={AlertTriangle} label="Archive Failures" value={archiver.failed_count ?? '—'} sub={archiver.last_failed_time ? `Last fail: ${fmtRelative(archiver.last_failed_time)}` : 'No failures'} color={parseInt(archiver.failed_count) > 0 ? THEME.danger : THEME.success}/>
                 <MetricCard icon={Database} label="WAL Level" value={walLevel.toUpperCase()} sub={`Senders: ${maxWalSenders}`} color={THEME.primary}/>
@@ -175,7 +175,7 @@ export default function BackupRecoveryTab() {
                 {/* WAL Archiving Status */}
                 <div className="br-card">
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
-                        <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, display:'flex', alignItems:'center', gap:8 }}>
+                        <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, display:'flex', alignItems:'center', gap: 20 }}>
                             <Archive size={15} color={THEME.primary}/> WAL Archiving
                         </div>
                         <HealthBadge ok={archiveEnabled && archiveHealthy} label={archiveEnabled ? (archiveHealthy ? 'Healthy' : 'Failures Detected') : 'Disabled'}/>
@@ -199,12 +199,12 @@ export default function BackupRecoveryTab() {
                     </div>
 
                     {!archiveEnabled && (
-                        <div style={{ marginTop:16, padding:12, background:`${THEME.warning}10`, border:`1px solid ${THEME.warning}30`, borderRadius:10, fontSize:12, color:THEME.warning }}>
+                        <div style={{ marginTop:16, padding:12, background:`${THEME.warning}10`, border:`1px solid ${THEME.warning}30`, borderRadius: 16, fontSize:12, color:THEME.warning }}>
                             ⚠ WAL archiving is disabled. Set <code>archive_mode = on</code> in postgresql.conf to enable point-in-time recovery.
                         </div>
                     )}
                     {parseInt(archiver.failed_count) > 0 && (
-                        <div style={{ marginTop:12, padding:12, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius:10, fontSize:12, color:THEME.danger }}>
+                        <div style={{ marginTop:12, padding:12, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius: 16, fontSize:12, color:THEME.danger }}>
                             ❌ Archive failures detected. Last failed: <strong>{archiver.last_failed_wal}</strong> at {fmtDate(archiver.last_failed_time)}
                         </div>
                     )}
@@ -212,7 +212,7 @@ export default function BackupRecoveryTab() {
 
                 {/* Current WAL Position */}
                 <div className="br-card">
-                    <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:16, display:'flex', alignItems:'center', gap:8 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:16, display:'flex', alignItems:'center', gap: 20 }}>
                         <HardDrive size={15} color={THEME.secondary}/> Current WAL Position
                     </div>
 
@@ -232,14 +232,14 @@ export default function BackupRecoveryTab() {
                     {/* Replication readiness */}
                     <div style={{ marginTop:20 }}>
                         <div style={{ fontSize:12, fontWeight:700, color:THEME.textMuted, letterSpacing:'0.02em', marginBottom:10 }}>Replication Readiness</div>
-                        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                        <div style={{ display:'flex', flexDirection:'column', gap: 20 }}>
                             {[
                                 { label:'WAL Level ≥ replica', ok: ['replica','logical'].includes(walLevel) },
                                 { label:'Archive mode enabled', ok: archiveEnabled },
                                 { label:'max_wal_senders > 0',  ok: replicationOk },
                                 { label:'No archive failures',   ok: archiveHealthy },
                             ].map(({ label, ok }) => (
-                                <div key={label} style={{ display:'flex', alignItems:'center', gap:8, fontSize:13 }}>
+                                <div key={label} style={{ display:'flex', alignItems:'center', gap: 20, fontSize:13 }}>
                                     {ok
                                         ? <CheckCircle size={14} color={THEME.success}/>
                                         : <AlertTriangle size={14} color={THEME.warning}/>}
@@ -253,7 +253,7 @@ export default function BackupRecoveryTab() {
 
             {/* ── Configuration settings ────────────────────────────────── */}
             <div className="br-card">
-                <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:16, display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:16, display:'flex', alignItems:'center', gap: 20 }}>
                     <Shield size={15} color={THEME.primary}/> Backup-Relevant Configuration
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 32px' }}>
@@ -270,17 +270,17 @@ export default function BackupRecoveryTab() {
 
             {/* ── Guidance panel ────────────────────────────────────────── */}
             <div className="br-card" style={{ borderColor:`${THEME.primary}30` }}>
-                <div style={{ fontSize:13, fontWeight:700, color:THEME.primary, marginBottom:12, display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:THEME.primary, marginBottom:12, display:'flex', alignItems:'center', gap: 20 }}>
                     <CheckCircle size={15}/> Backup Best Practices
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 22 }}>
                     {[
                         { title:'pg_basebackup', desc:'Use pg_basebackup for physical full backups. Schedule nightly off-peak.' },
                         { title:'WAL Archiving',  desc:'Enable archive_mode=on and configure archive_command to copy WAL to secure storage.' },
                         { title:'PITR Testing',   desc:'Regularly test point-in-time recovery to verify backups are restorable.' },
                         { title:'Retention Policy', desc:'Keep at least 7 daily + 4 weekly + 12 monthly backups following a 3-2-1 rule.' },
                     ].map(({ title, desc }) => (
-                        <div key={title} style={{ padding:'12px 14px', background:`${THEME.surface}`, borderRadius:10, border:`1px solid ${THEME.glassBorder}` }}>
+                        <div key={title} style={{ padding:'12px 14px', background:`${THEME.surface}`, borderRadius: 16, border:`1px solid ${THEME.glassBorder}` }}>
                             <div style={{ fontSize:12, fontWeight:700, color:THEME.primary, marginBottom:4 }}>{title}</div>
                             <div style={{ fontSize:11, color:THEME.textMuted, lineHeight:1.5 }}>{desc}</div>
                         </div>

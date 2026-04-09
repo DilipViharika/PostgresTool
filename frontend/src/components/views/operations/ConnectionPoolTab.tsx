@@ -101,13 +101,13 @@ const S = {
     }),
     badge: (color) => ({
         display: 'inline-flex', alignItems: 'center', gap: 5,
-        padding: '3px 10px', borderRadius: 14, fontSize: 11, fontWeight: 700,
+        padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
         background: `${color}22`, color: color,
         border: `1px solid ${color}44`, letterSpacing: '0.02em',
     }),
     btn: (bg, border, color) => ({
-        background: bg, border: `1px solid ${border}`, borderRadius: 10,
-        padding: '8px 14px', color, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+        background: bg, border: `1px solid ${border}`, borderRadius: 16,
+        padding: '14px 20px', color, cursor: 'pointer', fontSize: 12, fontWeight: 600,
         transition: 'all 0.15s', display: 'inline-flex', alignItems: 'center', gap: 6,
         letterSpacing: '0.02em',
     }),
@@ -115,7 +115,7 @@ const S = {
         width: '100%', boxSizing: 'border-box',
         background: THEME.surfaceHover,
         border: `1px solid ${hasError ? THEME.danger : THEME.glassBorder}`,
-        borderRadius: 10, padding: '9px 12px', color: THEME.textMain, fontSize: 13,
+        borderRadius: 16, padding: '9px 12px', color: THEME.textMain, fontSize: 13,
         outline: 'none', transition: 'border-color 0.2s',
         fontFamily: FONT_UI,
     }),
@@ -139,10 +139,10 @@ const DBTypeSelector = ({ value, onChange }) => {
                 onClick={() => setOpen(o => !o)}
                 style={{
                     ...S.btn(THEME.surface, THEME.glassBorder, THEME.textMain),
-                    width: '100%', justifyContent: 'space-between', padding: '10px 14px', fontSize: 14,
+                    width: '100%', justifyContent: 'space-between', padding: '22px 28px', fontSize: 14,
                 }}
             >
-                <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                     <span style={{ fontSize: 20 }}>{current.icon}</span>
                     <span style={{ fontWeight: 600 }}>{current.label}</span>
                     <span style={S.badge(current.accent)}>:{current.defaultPort || 'N/A'}</span>
@@ -153,7 +153,7 @@ const DBTypeSelector = ({ value, onChange }) => {
                 <div style={{
                     position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 200,
                     background: THEME.surfaceRaised, border: `1px solid ${THEME.glassBorder}`,
-                    borderRadius: 10, overflow: 'hidden',
+                    borderRadius: 16, overflow: 'hidden',
                     boxShadow: THEME.shadowLg,
                 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', maxHeight: 360, overflowY: 'auto' }}>
@@ -166,8 +166,8 @@ const DBTypeSelector = ({ value, onChange }) => {
                                     background: key === value ? `${db.accent}15` : 'transparent',
                                     border: 'none',
                                     borderLeft: key === value ? `3px solid ${db.accent}` : '3px solid transparent',
-                                    padding: '10px 14px', cursor: 'pointer', textAlign: 'left',
-                                    display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
+                                    padding: '22px 28px', cursor: 'pointer', textAlign: 'left',
+                                    display: 'flex', alignItems: 'center', gap: 22, transition: 'all 0.15s',
                                 }}
                                 onMouseEnter={e => e.currentTarget.style.background = `${db.accent}12`}
                                 onMouseLeave={e => e.currentTarget.style.background = key === value ? `${db.accent}15` : 'transparent'}
@@ -198,7 +198,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
 
         if (meta.type === 'checkbox') {
             rows.push(
-                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                     <input
                         type="checkbox"
                         id={`chk-${f}`}
@@ -237,7 +237,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
 
         if (f === 'host' && fields[i + 1] === 'port') {
             rows.push(
-                <div key="host-port" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+                <div key="host-port" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 18 }}>
                     {['host', 'port'].map(field => {
                         const m = FIELD_META[field];
                         return (
@@ -326,12 +326,12 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
         setOpen(enabled);
     };
 
-    const rowStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 };
+    const rowStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 };
 
     return (
         <div style={{
             border: `1px solid ${formData.sshEnabled ? THEME.primary : THEME.glassBorder}`,
-            borderRadius: 10,
+            borderRadius: 16,
             overflow: 'hidden',
             transition: 'border-color 0.2s',
         }}>
@@ -340,8 +340,8 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                 type="button"
                 onClick={() => toggle(!formData.sshEnabled)}
                 style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '12px 16px', background: formData.sshEnabled ? '${THEME.primary}08' : THEME.surfaceHover,
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 22,
+                    padding: '18px 22px', background: formData.sshEnabled ? '${THEME.primary}08' : THEME.surfaceHover,
                     border: 'none', cursor: 'pointer', textAlign: 'left',
                     borderBottom: open ? `1px solid ${THEME.glassBorder}` : 'none',
                     transition: 'background 0.15s',
@@ -363,7 +363,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                 {/* Toggle pill */}
                 <div
                     style={{
-                        width: 36, height: 20, borderRadius: 10, position: 'relative',
+                        width: 36, height: 20, borderRadius: 16, position: 'relative',
                         background: formData.sshEnabled ? THEME.primary : THEME.glassBorder,
                         transition: 'background 0.2s', flexShrink: 0,
                     }}
@@ -380,11 +380,11 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
 
             {/* Expanded fields */}
             {open && (
-                <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14, background: THEME.surface }}>
+                <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 20, background: THEME.surface }}>
 
                     {/* Info banner */}
                     <div style={{
-                        display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 10,
+                        display: 'flex', gap: 22, padding: '20px 24px', borderRadius: 16,
                         background: '${THEME.primary}08', border: '1px solid ${THEME.primary}30',
                         fontSize: 12, color: THEME.textMuted, lineHeight: 1.5,
                     }}>
@@ -438,12 +438,12 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                     {/* Auth type tabs */}
                     <div>
                         <label style={S.label}>Authentication Method</label>
-                        <div style={{ display: 'flex', gap: 8 }}>
+                        <div style={{ display: 'flex', gap: 20 }}>
                             {[['key', '🔑 Private Key'], ['password', '🔒 Password']].map(([val, label]) => (
                                 <button key={val} type="button"
                                     onClick={() => setFormData(p => ({ ...p, sshAuthType: val }))}
                                     style={{
-                                        flex: 1, padding: '8px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600,
+                                        flex: 1, padding: '20px 24px', borderRadius: 16, fontSize: 12, fontWeight: 600,
                                         cursor: 'pointer', transition: 'all 0.15s',
                                         background: formData.sshAuthType === val ? '${THEME.primary}22' : THEME.surfaceHover,
                                         border: `1px solid ${formData.sshAuthType === val ? '${THEME.primary}66' : THEME.glassBorder}`,
@@ -565,11 +565,11 @@ const LeakDetector = () => {
     };
 
     return (
-        <div style={{ marginTop: 24, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 14, overflow: 'hidden' }}>
+        <div style={{ marginTop: 24, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20, overflow: 'hidden' }}>
             {/* Header / toggle */}
             <div
                 onClick={() => { setExpanded(e => !e); if (!expanded) scan(); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', cursor: 'pointer',
+                style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '14px 20px', cursor: 'pointer',
                     background: suspects.length > 0 ? `rgba(239,68,68,0.07)` : 'transparent',
                     borderBottom: expanded ? `1px solid ${THEME.glassBorder}` : 'none' }}
             >
@@ -581,21 +581,21 @@ const LeakDetector = () => {
                     </div>
                 </div>
                 {suspects.length > 0 && (
-                    <span style={{ padding: '3px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+                    <span style={{ padding: '3px 10px', borderRadius: 16, fontSize: 12, fontWeight: 700,
                         background: 'rgba(239,68,68,0.15)', color: THEME.danger, border: '1px solid rgba(239,68,68,0.3)' }}>
                         {suspects.length} suspect{suspects.length !== 1 ? 's' : ''}
                     </span>
                 )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <label style={{ fontSize: 11, color: THEME.textDim, whiteSpace: 'nowrap' }}>Threshold:</label>
                     <select value={threshold} onChange={e => { setThreshold(Number(e.target.value)); e.stopPropagation(); }}
                         onClick={e => e.stopPropagation()}
-                        style={{ fontSize: 12, padding: '3px 8px', borderRadius: 10, border: `1px solid ${THEME.glassBorder}`,
+                        style={{ fontSize: 12, padding: '3px 8px', borderRadius: 16, border: `1px solid ${THEME.glassBorder}`,
                             background: THEME.bg, color: THEME.textMain, cursor: 'pointer' }}>
                         {[5, 15, 30, 60, 120].map(m => <option key={m} value={m}>{m} min</option>)}
                     </select>
                     <button onClick={e => { e.stopPropagation(); scan(); }}
-                        style={{ padding: '4px 10px', borderRadius: 10, border: `1px solid ${THEME.glassBorder}`,
+                        style={{ padding: '4px 10px', borderRadius: 16, border: `1px solid ${THEME.glassBorder}`,
                             background: 'transparent', color: THEME.textDim, cursor: 'pointer', fontSize: 12 }}>
                         {loading ? '⟳' : '↻ Scan'}
                     </button>
@@ -612,19 +612,19 @@ const LeakDetector = () => {
                     ) : (
                         <>
                             {/* Column headers */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '60px 120px 100px 90px 1fr 140px', gap: 12,
+                            <div style={{ display: 'grid', gridTemplateColumns: '60px 120px 100px 90px 1fr 140px', gap: 18,
                                 padding: '10px 20px', fontSize: 11, color: THEME.textDim, fontWeight: 700,
                                  letterSpacing: .7, borderBottom: `1px solid ${THEME.glassBorder}22` }}>
                                 <span>PID</span><span>User</span><span>State</span><span>Idle For</span><span>Last Query</span><span>Application</span>
                             </div>
                             {suspects.map((s, i) => (
-                                <div key={i} style={{ display: 'grid', gridTemplateColumns: '60px 120px 100px 90px 1fr 140px', gap: 12,
+                                <div key={i} style={{ display: 'grid', gridTemplateColumns: '60px 120px 100px 90px 1fr 140px', gap: 18,
                                     padding: '10px 20px', alignItems: 'center', fontSize: 12,
                                     borderBottom: `1px solid ${THEME.glassBorder}11`,
                                     background: s.state === 'idle in transaction' ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
                                     <span style={{ color: THEME.textMuted, fontFamily: THEME.fontMono }}>{s.pid}</span>
                                     <span style={{ color: THEME.textMain, fontWeight: 600 }}>{s.usename}</span>
-                                    <span style={{ padding: '2px 8px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+                                    <span style={{ padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600,
                                         background: s.state === 'idle in transaction' ? 'rgba(239,68,68,0.15)' : 'rgba(249,115,22,0.12)',
                                         color: s.state === 'idle in transaction' ? THEME.danger : THEME.warning }}>
                                         {s.state}
@@ -638,7 +638,7 @@ const LeakDetector = () => {
                                 </div>
                             ))}
                             <div style={{ padding: '12px 20px', fontSize: 11, color: THEME.textDim, borderTop: `1px solid ${THEME.glassBorder}22` }}>
-                                💡 Tip: <code style={{ background: THEME.bg, padding: '2px 6px', borderRadius: 8 }}>SELECT pg_terminate_backend(pid)</code> to terminate a leaked connection
+                                💡 Tip: <code style={{ background: THEME.bg, padding: '2px 6px', borderRadius: 20 }}>SELECT pg_terminate_backend(pid)</code> to terminate a leaked connection
                             </div>
                         </>
                     )}
@@ -916,18 +916,18 @@ const ConnectionsTab = () => {
                 @keyframes cpPulse { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
                 @keyframes cpFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
                 .cp-pipe-card::before { content:''; position:absolute; top:0; right:0; width:40%; height:100%; background:repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px); pointer-events:none; }
-                .cp-pipe-card:hover { border-left-width: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
+                .cp-pipe-card:hover { border-left-width: 6px; box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-4px); }
             `}</style>
 
             {/* ── Success / Error Toast ── */}
             {saveSuccess && (
                 <div style={{
                     position: 'fixed', top: 20, right: 20, zIndex: 600,
-                    padding: '12px 18px', borderRadius: 12, maxWidth: 420,
+                    padding: '12px 18px', borderRadius: 18, maxWidth: 420,
                     background: saveSuccess.includes('failed') ? `${THEME.danger}12` : `${THEME.success}12`,
                     border: `1px solid ${saveSuccess.includes('failed') ? THEME.danger : THEME.success}30`,
                     boxShadow: THEME.shadowLg,
-                    display: 'flex', alignItems: 'center', gap: 10,
+                    display: 'flex', alignItems: 'center', gap: 22,
                     animation: 'fadeUp .3s ease', cursor: 'pointer',
                 }} onClick={() => setSaveSuccess('')}>
                     {saveSuccess.includes('failed')
@@ -983,14 +983,14 @@ const ConnectionsTab = () => {
                         </p>
 
                         {/* Quick-add DB type row */}
-                        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 20 }}>
+                        <div style={{ display: 'flex', gap: 22, justifyContent: 'center', marginBottom: 20 }}>
                             {Object.entries(DB_TYPES).map(([key, db]) => (
                                 <button
                                     key={key}
                                     onClick={() => { openNew(); handleDbTypeChange(key); }}
                                     style={{
-                                        display: 'flex', alignItems: 'center', gap: 8,
-                                        padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', gap: 20,
+                                        padding: '10px 18px', borderRadius: 16, cursor: 'pointer',
                                         background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
                                         color: THEME.textMain, fontSize: 12, fontWeight: 600,
                                         transition: 'all 0.2s', fontFamily: FONT_UI,
@@ -1016,7 +1016,7 @@ const ConnectionsTab = () => {
 
                         {/* Or divider + generic button */}
                         <div style={{
-                            display: 'flex', alignItems: 'center', gap: 12,
+                            display: 'flex', alignItems: 'center', gap: 18,
                             margin: '0 auto 20px', maxWidth: 280,
                         }}>
                             <div style={{ flex: 1, height: 1, background: THEME.glassBorder }} />
@@ -1027,8 +1027,8 @@ const ConnectionsTab = () => {
                         <button
                             onClick={() => openNew()}
                             style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 8,
-                                padding: '9px 22px', borderRadius: 10, border: 'none',
+                                display: 'inline-flex', alignItems: 'center', gap: 20,
+                                padding: '9px 22px', borderRadius: 16, border: 'none',
                                 background: THEME.primary, color: '#fff',
                                 fontSize: 12, fontWeight: 600, cursor: 'pointer',
                                 transition: 'all 0.2s', fontFamily: FONT_UI,
@@ -1048,7 +1048,7 @@ const ConnectionsTab = () => {
 
                         {/* Feature tags */}
                         <div style={{
-                            display: 'flex', gap: 14, justifyContent: 'center', marginTop: 24,
+                            display: 'flex', gap: 20, justifyContent: 'center', marginTop: 24,
                         }}>
                             {[
                                 { icon: <Lock size={10} />, text: 'Encrypted' },
@@ -1080,12 +1080,12 @@ const ConnectionsTab = () => {
                                 <h2 style={{ fontSize: 26, fontWeight: 800, color: THEME.textMain, margin: 0, letterSpacing: '-0.02em' }}>
                                     Database Connections
                                 </h2>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 8, flexWrap: 'wrap' }}>
                                     <p style={{ fontSize: 13, color: THEME.textMuted, margin: 0, fontWeight: 500 }}>
                                         {connections.length} connection{connections.length !== 1 ? 's' : ''} · Encrypted at rest
                                     </p>
                                     {connections.length > 0 && (
-                                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
                                             {typeStats.postgresql > 0 && <span style={{ ...S.badge('#4a90d9'), fontSize: 10 }}>{typeStats.postgresql} PostgreSQL</span>}
                                             {typeStats.mysql > 0 && <span style={{ ...S.badge('#f5a623'), fontSize: 10 }}>{typeStats.mysql} MySQL</span>}
                                             {typeStats.mongodb > 0 && <span style={{ ...S.badge('#00ed64'), fontSize: 10 }}>{typeStats.mongodb} MongoDB</span>}
@@ -1093,7 +1093,7 @@ const ConnectionsTab = () => {
                                     )}
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                            <div style={{ display: 'flex', gap: 22, alignItems: 'center' }}>
                                 <button onClick={() => openNew()}
                                     style={S.btn(THEME.primary + '2E', THEME.primary + '66', THEME.primary)}
                                     onMouseEnter={e => e.currentTarget.style.background = THEME.primary + '4D'}
@@ -1116,7 +1116,7 @@ const ConnectionsTab = () => {
                                         width: '100%', boxSizing: 'border-box',
                                         paddingLeft: 36, paddingRight: 12, paddingTop: 8, paddingBottom: 8,
                                         background: THEME.surfaceHover, border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 8, color: THEME.textMain, fontSize: 13,
+                                        borderRadius: 20, color: THEME.textMain, fontSize: 13,
                                         outline: 'none', transition: 'border-color 0.2s',
                                     }}
                                     onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
@@ -1157,10 +1157,10 @@ const ConnectionsTab = () => {
                                     {isActive && <div style={{ position: 'absolute', top: 14, right: 14, width: 10, height: 10, borderRadius: '50%', background: dbMeta.accent, animation: 'pulse 1s ease-in-out infinite' }} />}
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14, position: 'relative', zIndex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                                             <span style={{ fontSize: 28 }}>{dbMeta.icon}</span>
                                             <div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
                                                     <span style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain }}>{conn.name}</span>
                                                     {conn.isDefault && <span style={S.badge(THEME.success)}>DEFAULT</span>}
                                                     {isActive && <span style={S.badge(dbMeta.accent)}>ACTIVE</span>}
@@ -1174,7 +1174,7 @@ const ConnectionsTab = () => {
                                         </div>
                                     </div>
 
-                                    <div style={{ background: THEME.surfaceHover, borderRadius: 12, padding: '12px 16px', marginBottom: 14, fontSize: 11, position: 'relative', zIndex: 1 }}>
+                                    <div style={{ background: THEME.surfaceHover, borderRadius: 18, padding: '18px 22px', marginBottom: 14, fontSize: 11, position: 'relative', zIndex: 1 }}>
                                         {conn.database && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>database</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.database}</span></div>}
                                         {conn.username && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>user</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.username}</span></div>}
                                         {conn.replicaSet && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>replica set</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.replicaSet}</span></div>}
@@ -1184,7 +1184,7 @@ const ConnectionsTab = () => {
 
                                     {conn.lastTested && (
                                         <div style={{
-                                            display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', borderRadius: 12, marginBottom: 14,
+                                            display: 'flex', alignItems: 'center', gap: 6, padding: '22px 28px', borderRadius: 18, marginBottom: 14,
                                             background: conn.status === 'success' ? 'rgba(74,222,128,0.08)' : 'rgba(239,68,68,0.08)',
                                             border: `1px solid ${conn.status === 'success' ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)'}`,
                                             position: 'relative', zIndex: 1,
@@ -1196,7 +1196,7 @@ const ConnectionsTab = () => {
                                         </div>
                                     )}
 
-                                    <div style={{ display: 'flex', gap: 8, position: 'relative', zIndex: 1 }}>
+                                    <div style={{ display: 'flex', gap: 20, position: 'relative', zIndex: 1 }}>
                                         <button onClick={() => testConnection(conn)} disabled={testingConnection === conn.id} title="Test connection"
                                             style={{ ...S.btn('rgba(99,102,241,0.12)', 'rgba(99,102,241,0.25)', THEME.primary), flex: 1, justifyContent: 'center', opacity: testingConnection === conn.id ? 0.6 : 1 }}
                                             onMouseEnter={e => testingConnection !== conn.id && (e.currentTarget.style.background = 'rgba(99,102,241,0.22)')}
@@ -1231,7 +1231,7 @@ const ConnectionsTab = () => {
                         })}
 
                         {connections.length > 0 && filteredConnections.length === 0 && (
-                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px 20px', background: THEME.surface, border: `1px dashed ${THEME.glassBorder}`, borderRadius: 14 }}>
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px 20px', background: THEME.surface, border: `1px dashed ${THEME.glassBorder}`, borderRadius: 20 }}>
                                 <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
                                 <h3 style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 6 }}>No matching connections</h3>
                                 <p style={{ fontSize: 12, color: THEME.textMuted }}>Try adjusting your search query</p>
@@ -1282,9 +1282,9 @@ const ConnectionsTab = () => {
                             borderBottom: `1px solid ${THEME.glassBorder}`,
                             background: THEME.surface,
                         }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                                 <div style={{
-                                    width: 36, height: 36, borderRadius: 10,
+                                    width: 36, height: 36, borderRadius: 16,
                                     background: `${DB_TYPES[formData.dbType].accent}15`,
                                     border: `1px solid ${DB_TYPES[formData.dbType].accent}30`,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1305,7 +1305,7 @@ const ConnectionsTab = () => {
                                 onClick={closeModal}
                                 style={{
                                     background: 'none', border: `1px solid ${THEME.glassBorder}`,
-                                    color: THEME.textMuted, cursor: 'pointer', padding: 6, borderRadius: 8,
+                                    color: THEME.textMuted, cursor: 'pointer', padding: 6, borderRadius: 20,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     transition: 'all 0.15s',
                                 }}
@@ -1350,7 +1350,7 @@ const ConnectionsTab = () => {
                             <SSHTunnelSection formData={formData} setFormData={setFormData} />
 
                             {!editingConnection && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                                     <input
                                         type="checkbox"
                                         id="isDefault"
@@ -1366,8 +1366,8 @@ const ConnectionsTab = () => {
 
                             {errorMsg && (
                                 <div style={{
-                                    display: 'flex', alignItems: 'flex-start', gap: 10,
-                                    padding: '12px 14px', borderRadius: 8,
+                                    display: 'flex', alignItems: 'flex-start', gap: 22,
+                                    padding: '22px 28px', borderRadius: 20,
                                     background: 'rgba(239,68,68,0.08)',
                                     border: '1px solid rgba(239,68,68,0.3)',
                                 }}>
@@ -1385,7 +1385,7 @@ const ConnectionsTab = () => {
 
                         {/* Modal footer — sticky */}
                         <div style={{
-                            display: 'flex', gap: 10, justifyContent: 'flex-end',
+                            display: 'flex', gap: 22, justifyContent: 'flex-end',
                             padding: '16px 28px',
                             borderTop: `1px solid ${THEME.glassBorder}`,
                             background: THEME.surface,

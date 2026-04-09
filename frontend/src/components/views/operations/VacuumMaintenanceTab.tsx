@@ -60,14 +60,14 @@ function ensureVmStyles() {
             animation: vmFadeUp .4s ease both;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             backdrop-filter: blur(12px);
             transition: all 0.25s ease;
         }`,
         `.vm-card:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
             border-left-width: 6px;
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }`,
         `.vm-card::before {
             content: '';
@@ -84,17 +84,17 @@ function ensureVmStyles() {
         `.vm-metric-card {
             background: linear-gradient(145deg, ${THEME.surfaceHover} 0%, ${THEME.surface} 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 24px 28px;
-            display: flex; flex-direction: column; gap: 14px;
+            display: flex; flex-direction: column; gap: 20px;
             position: relative; overflow: hidden;
             transition: transform .2s, border-color .2s, box-shadow .2s;
             cursor: default;
             animation: vmFadeUp .4s ease both;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             backdrop-filter: blur(12px);
         }`,
-        `.vm-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.glassBorder}; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }`,
+        `.vm-metric-card:hover { transform: translateY(-4px); border-color: ${THEME.glassBorder}; box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08); }`,
         `.vm-metric-card::after {
             content: '';
             position: absolute;
@@ -121,7 +121,7 @@ function ensureVmStyles() {
         /* ── Column header ── */
         `.vm-head {
             display: grid;
-            gap: 12px;
+            gap: 18px;
             padding: 14px 20px;
             font-size: 10px;
             font-weight: 700;
@@ -137,7 +137,7 @@ function ensureVmStyles() {
             background: ${THEME.surface};
             border: 1px solid ${THEME.glassBorder};
             color: ${THEME.textMain};
-            border-radius: 12px;
+            border-radius: 22px;
             padding: 11px 16px;
             font-size: 13px;
             outline: none;
@@ -150,7 +150,7 @@ function ensureVmStyles() {
         /* ── Tabs ── */
         `.vm-tab {
             padding: 10px 20px;
-            border-radius: 12px;
+            border-radius: 22px;
             border: 1px solid ${THEME.glassBorder};
             background: transparent;
             color: ${THEME.textMuted};
@@ -160,7 +160,7 @@ function ensureVmStyles() {
             font-family: ${THEME.fontBody};
             transition: all .2s;
             letter-spacing: .3px;
-            display: inline-flex; align-items: center; gap: 8px;
+            display: inline-flex; align-items: center; gap: 20px;
         }`,
         `.vm-tab.active {
             background: linear-gradient(135deg, ${THEME.primary}40, ${THEME.primary}26);
@@ -174,7 +174,7 @@ function ensureVmStyles() {
         `.vm-badge {
             display: inline-flex; align-items: center; gap: 4px;
             padding: 3px 9px;
-            border-radius: 6px;
+            border-radius: 22px;
             font-size: 11px; font-weight: 700;
             animation: vmCounter .3s ease;
         }`,
@@ -217,7 +217,7 @@ function ensureVmStyles() {
         `.vm-action-btn {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 7px 14px;
-            border-radius: 10px;
+            border-radius: 20px;
             font-size: 11px; font-weight: 700;
             cursor: pointer;
             border: 1px solid ${THEME.primary}4D;
@@ -247,7 +247,7 @@ function ensureVmStyles() {
             display: flex; justify-content: space-between; align-items: center;
             padding: 14px 20px;
             background: ${THEME.success}0F;
-            border-radius: 12px;
+            border-radius: 22px;
             border: 1px solid ${THEME.success}2E;
             animation: vmFadeUp .3s ease both;
         }`,
@@ -296,7 +296,7 @@ const DeadBar = ({ pct }) => {
               ? `linear-gradient(90deg, ${THEME.warning}55, ${THEME.warning})`
               : `linear-gradient(90deg, ${THEME.success}55, ${THEME.success})`;
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <div className="vm-progress-track" style={{ flex: 1, minWidth: 50 }}>
                 <div className="vm-progress-fill" style={{ width: `${p}%`, background: grad }} />
             </div>
@@ -323,7 +323,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, war
                     style={{
                         width: 38,
                         height: 38,
-                        borderRadius: 10,
+                        borderRadius: 16,
                         background: `${accent}18`,
                         display: 'flex',
                         alignItems: 'center',
@@ -521,7 +521,7 @@ export default function VacuumMaintenanceTab() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     height: 320,
-                    gap: 16,
+                    gap: 22,
                     color: THEME.textDim,
                 }}
             >
@@ -554,16 +554,16 @@ export default function VacuumMaintenanceTab() {
                     alignItems: 'center',
                     padding: '14px 20px',
                     background: `linear-gradient(135deg, ${THEME.surfaceHover}, ${THEME.surface})`,
-                    borderRadius: 14,
+                    borderRadius: 20,
                     border: `1px solid ${THEME.glassBorder}`,
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <div
                         style={{
                             width: 36,
                             height: 36,
-                            borderRadius: 10,
+                            borderRadius: 16,
                             background: `${THEME.primary}26`,
                             display: 'flex',
                             alignItems: 'center',
@@ -607,7 +607,7 @@ export default function VacuumMaintenanceTab() {
                         </span>
                     )}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                     {lastAt && (
                         <div
                             style={{
@@ -628,7 +628,7 @@ export default function VacuumMaintenanceTab() {
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
                             color: THEME.textMain,
-                            borderRadius: 8,
+                            borderRadius: 20,
                             padding: '5px 10px',
                             fontSize: 12,
                             outline: 'none',
@@ -649,7 +649,7 @@ export default function VacuumMaintenanceTab() {
                             alignItems: 'center',
                             gap: 7,
                             padding: '7px 16px',
-                            borderRadius: 9,
+                            borderRadius: 20,
                             border: `1px solid ${THEME.primary}66`,
                             background: `${THEME.primary}1F`,
                             color: THEME.primary,
@@ -673,7 +673,7 @@ export default function VacuumMaintenanceTab() {
                         padding: 14,
                         background: `${THEME.danger}1A`,
                         border: `1px solid ${THEME.danger}4D`,
-                        borderRadius: 12,
+                        borderRadius: 18,
                         color: THEME.danger,
                         fontSize: 13,
                         display: 'flex',
@@ -686,7 +686,7 @@ export default function VacuumMaintenanceTab() {
             )}
 
             {/* ── Metric cards ──────────────────────────────────────────── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
                 <MetricCard
                     icon={Activity}
                     label="Active Workers"
@@ -742,7 +742,7 @@ export default function VacuumMaintenanceTab() {
                             marginBottom: 14,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 8,
+                            gap: 20,
                         }}
                     >
                         <Activity size={14} color={THEME.success} />
@@ -759,10 +759,10 @@ export default function VacuumMaintenanceTab() {
                             {workers.length} running
                         </span>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                         {workers.map((w, i) => (
                             <div key={w.pid} className="vm-worker" style={{ animationDelay: `${i * 60}ms` }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                                     <span className="vm-dot active" />
                                     <div>
                                         <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>
@@ -789,7 +789,7 @@ export default function VacuumMaintenanceTab() {
             )}
 
             {/* ── Sub-tabs ──────────────────────────────────────────────── */}
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
                 {[
                     { id: 'tables', label: 'Table Bloat', icon: Database },
                     { id: 'settings', label: 'Autovacuum Settings', icon: Settings },
@@ -815,9 +815,9 @@ export default function VacuumMaintenanceTab() {
                     {/* Filters */}
                     <div
                         style={{
-                            padding: '12px 16px',
+                            padding: '18px 22px',
                             display: 'flex',
-                            gap: 10,
+                            gap: 22,
                             alignItems: 'center',
                             borderBottom: `1px solid ${THEME.glassBorder}`,
                         }}
@@ -847,8 +847,8 @@ export default function VacuumMaintenanceTab() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 6,
-                                padding: '8px 14px',
-                                borderRadius: 9,
+                                padding: '14px 20px',
+                                borderRadius: 20,
                                 border: `1px solid ${filterHigh ? `${THEME.warning}80` : THEME.glassBorder}`,
                                 background: filterHigh ? `${THEME.warning}1A` : 'transparent',
                                 color: filterHigh ? THEME.warning : THEME.textDim,
@@ -991,7 +991,7 @@ export default function VacuumMaintenanceTab() {
                     {/* Footer */}
                     <div
                         style={{
-                            padding: '10px 16px',
+                            padding: '16px 22px',
                             borderTop: `1px solid ${THEME.glassBorder}`,
                             display: 'flex',
                             justifyContent: 'space-between',
@@ -1019,7 +1019,7 @@ export default function VacuumMaintenanceTab() {
                             marginBottom: 4,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 8,
+                            gap: 20,
                         }}
                     >
                         <Settings size={14} color={THEME.textDim} />
@@ -1082,10 +1082,10 @@ export default function VacuumMaintenanceTab() {
                     <div
                         style={{
                             marginTop: 24,
-                            padding: '16px 18px',
+                            padding: '22px 26px',
                             background: `${THEME.primary}12`,
                             border: `1px solid ${THEME.primary}33`,
-                            borderRadius: 12,
+                            borderRadius: 18,
                         }}
                     >
                         <div
@@ -1135,7 +1135,7 @@ export default function VacuumMaintenanceTab() {
                                 marginBottom: 16,
                             }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                                 <span style={{ fontSize: 20 }}>🗑️</span>
                                 <div>
                                     <h3 style={{ color: THEME.textMain, margin: 0, fontSize: 15, fontWeight: 700 }}>
@@ -1151,7 +1151,7 @@ export default function VacuumMaintenanceTab() {
                                 disabled={deadTupleLoading}
                                 style={{
                                     padding: '6px 14px',
-                                    borderRadius: 8,
+                                    borderRadius: 20,
                                     border: `1px solid ${THEME.glassBorder}`,
                                     background: 'transparent',
                                     color: THEME.textDim,
@@ -1171,14 +1171,14 @@ export default function VacuumMaintenanceTab() {
                                     padding: 40,
                                     fontSize: 13,
                                     background: THEME.surface,
-                                    borderRadius: 12,
+                                    borderRadius: 18,
                                     border: `1px dashed ${THEME.glassBorder}`,
                                 }}
                             >
                                 No dead tuple data available. Ensure pg_stat_user_tables is accessible.
                             </div>
                         ) : (
-                            <div style={{ display: 'grid', gap: 10 }}>
+                            <div style={{ display: 'grid', gap: 22 }}>
                                 {deadTupleData.map((t, i) => {
                                     const pct =
                                         typeof t.dead_pct === 'number'
@@ -1194,13 +1194,13 @@ export default function VacuumMaintenanceTab() {
                                             key={i}
                                             style={{
                                                 background: THEME.surface,
-                                                borderRadius: 10,
-                                                padding: '14px 16px',
+                                                borderRadius: 16,
+                                                padding: '18px 22px',
                                                 border: `1px solid ${urgent ? 'rgba(239,68,68,.3)' : THEME.glassBorder}`,
                                                 display: 'grid',
                                                 gridTemplateColumns: '1fr auto auto',
                                                 alignItems: 'center',
-                                                gap: 12,
+                                                gap: 18,
                                             }}
                                         >
                                             <div>
@@ -1217,7 +1217,7 @@ export default function VacuumMaintenanceTab() {
                                                 style={{
                                                     width: 120,
                                                     background: THEME.bg,
-                                                    borderRadius: 14,
+                                                    borderRadius: 20,
                                                     height: 8,
                                                     overflow: 'hidden',
                                                 }}
@@ -1227,7 +1227,7 @@ export default function VacuumMaintenanceTab() {
                                                         width: `${Math.min(pct, 100)}%`,
                                                         height: '100%',
                                                         background: color,
-                                                        borderRadius: 14,
+                                                        borderRadius: 20,
                                                         transition: 'width .4s',
                                                     }}
                                                 />

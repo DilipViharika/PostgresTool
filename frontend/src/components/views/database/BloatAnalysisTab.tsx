@@ -84,16 +84,16 @@ function ensureBaStyles() {
         `.ba-card {`,
         `    background: ${THEME.surface};`,
         `    border: 1px solid ${THEME.grid};`,
-        `    border-radius: 16px;`,
+        `    border-radius: 20px;`,
         `    overflow: hidden;`,
-        `    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);`,
+        `    box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);`,
         `    backdrop-filter: blur(12px);`,
         `    transition: all 0.25s ease;`,
         `    animation: baFadeUp .4s ease both;`,
         `}`,
         `.ba-card:hover {`,
         `    box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);`,
-        `    transform: translateY(-2px);`,
+        `    transform: translateY(-4px);`,
         `}`,
         `.ba-card-header {`,
         `    height: 28px;`,
@@ -118,7 +118,7 @@ function ensureBaStyles() {
         `    letter-spacing: 0.03em;`,
         `}`,
         `.ba-card-body {`,
-        `    padding: 20px 24px;`,
+        `    padding: 24px 30px;`,
         `    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);`,
         `}`,
         `.ba-card.legacy {`,
@@ -128,15 +128,15 @@ function ensureBaStyles() {
         `.ba-metric-card {`,
         `    background: ${THEME.surface};`,
         `    border: 1px solid ${THEME.glassBorder};`,
-        `    border-radius: 16px;`,
-        `    padding: 20px 24px;`,
-        `    display: flex; flex-direction: column; gap: 10px;`,
+        `    border-radius: 20px;`,
+        `    padding: 24px 30px;`,
+        `    display: flex; flex-direction: column; gap: 22px;`,
         `    position: relative; overflow: hidden;`,
         `    transition: transform .2s, border-color .2s;`,
         `    cursor: default;`,
         `    animation: baFadeUp .4s ease both;`,
         `}`,
-        `.ba-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.glassBorderHover}; }`,
+        `.ba-metric-card:hover { transform: translateY(-4px); border-color: ${THEME.glassBorderHover}; }`,
         `.ba-metric-card::after {`,
         `    content: '';`,
         `    position: absolute;`,
@@ -160,8 +160,8 @@ function ensureBaStyles() {
         '',
         `.ba-head {`,
         `    display: grid;`,
-        `    gap: 8px;`,
-        `    padding: 10px 16px;`,
+        `    gap: 20px;`,
+        `    padding: 16px 22px;`,
         `    font-size: 10px;`,
         `    font-weight: 700;`,
         `    color: ${THEME.textDim};`,
@@ -175,7 +175,7 @@ function ensureBaStyles() {
         `    background: ${THEME.surfaceHover};`,
         `    border: 1px solid ${THEME.grid};`,
         `    color: ${THEME.textMain};`,
-        `    border-radius: 12px;`,
+        `    border-radius: 22px;`,
         `    padding: 11px 16px;`,
         `    font-size: 13px;`,
         `    outline: none;`,
@@ -209,7 +209,7 @@ function ensureBaStyles() {
         `.ba-badge {`,
         `    display: inline-flex; align-items: center; gap: 4px;`,
         `    padding: 3px 9px;`,
-        `    border-radius: 6px;`,
+        `    border-radius: 22px;`,
         `    font-size: 11px; font-weight: 700;`,
         `    animation: baCounter .3s ease;`,
         `}`,
@@ -311,7 +311,7 @@ const DeadBar = ({ pct }) => {
             ? `linear-gradient(90deg, ${THEME.warning}90, ${THEME.warning})`
             : `linear-gradient(90deg, ${THEME.success}90, ${THEME.success})`;
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <div className="ba-progress-track" style={{ flex: 1, minWidth: 60 }}>
                 <div className="ba-progress-fill" style={{ width: `${p}%`, background: grad }} />
             </div>
@@ -330,7 +330,7 @@ const IneffBar = ({ pct }) => {
             ? `linear-gradient(90deg, ${THEME.warning}70, ${THEME.warning})`
             : `linear-gradient(90deg, ${THEME.success}70, ${THEME.success})`;
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <div className="ba-progress-track" style={{ flex: 1, minWidth: 60 }}>
                 <div className="ba-progress-fill" style={{ width: `${p}%`, background: grad }} />
             </div>
@@ -343,10 +343,10 @@ const IneffBar = ({ pct }) => {
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: '1px solid ' + THEME.glassBorder, borderRadius: 10, padding: '10px 14px', fontSize: 12 }}>
+        <div style={{ background: THEME.surface, border: '1px solid ' + THEME.glassBorder, borderRadius: 16, padding: '22px 28px', fontSize: 12 }}>
             <div style={{ color: THEME.textDim, marginBottom: 6, fontSize: 11 }}>{label}</div>
             {payload.map(p => (
-                <div key={p.name} style={{ color: p.fill || THEME.primaryFaint, fontWeight: 700, display: 'flex', gap: 8 }}>
+                <div key={p.name} style={{ color: p.fill || THEME.primaryFaint, fontWeight: 700, display: 'flex', gap: 20 }}>
                     <span style={{ color: THEME.textDim, fontWeight: 400 }}>{p.name}</span>
                     <span>{typeof p.value === 'number' && p.value > 10000 ? fmtBytes(p.value) : typeof p.value === 'number' ? `${p.value}${p.name.includes('%') ? '%' : ''}` : p.value}</span>
                 </div>
@@ -365,7 +365,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, war
             style={{ borderColor, animationDelay: `${delay}ms` }}
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: `${accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${accent}30` }}>
+                <div style={{ width: 38, height: 38, borderRadius: 16, background: `${accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${accent}30` }}>
                     <Icon size={18} color={accent} />
                 </div>
                 {(warn || critical) && (
@@ -516,7 +516,7 @@ export default function BloatAnalysisTab() {
     const maxIndexBytes = useMemo(() => indexes.length > 0 ? Math.max(...indexes.map(i => Number(i.index_bytes) || 0)) : 1, [indexes]);
 
     if (loading) return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 320, gap: 16, color: THEME.textMuted }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 320, gap: 22, color: THEME.textMuted }}>
             <Styles />
             <div style={{ width: 48, height: 48, borderRadius: '50%', border: `2px solid ${THEME.primary}4D`, borderTopColor: THEME.primary, animation: 'baSpin 1s linear infinite' }} />
             <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: .5 }}>Analysing bloat…</span>
@@ -528,9 +528,9 @@ export default function BloatAnalysisTab() {
             <Styles />
 
             {/* ── Toolbar ──────────────────────────────────────────────────── */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', background: THEME.surface, borderRadius: 14, border: '1px solid ' + THEME.glassBorder }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: THEME.primary + '26', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.primary}4D` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', background: THEME.surface, borderRadius: 20, border: '1px solid ' + THEME.glassBorder }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 16, background: THEME.primary + '26', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${THEME.primary}4D` }}>
                         <Layers size={18} color={THEME.primaryFaint} />
                     </div>
                     <div>
@@ -549,7 +549,7 @@ export default function BloatAnalysisTab() {
                         </span>
                     )}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                     {lastAt && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: THEME.textDim }}>
                             <Clock size={11} />
@@ -559,7 +559,7 @@ export default function BloatAnalysisTab() {
                     <select
                         value={autoRfsh}
                         onChange={e => setAutoRfsh(+e.target.value)}
-                        style={{ background: THEME.surfaceHover, border: '1px solid ' + THEME.grid, color: THEME.textMain, borderRadius: 8, padding: '5px 10px', fontSize: 12, outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                        style={{ background: THEME.surfaceHover, border: '1px solid ' + THEME.grid, color: THEME.textMain, borderRadius: 20, padding: '5px 10px', fontSize: 12, outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                     >
                         <option value={30}>30s</option>
                         <option value={60}>1m</option>
@@ -569,7 +569,7 @@ export default function BloatAnalysisTab() {
                     <button
                         onClick={() => load(false)}
                         disabled={refreshing}
-                        style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 16px', borderRadius: 9, border: `1px solid ${THEME.primary}66`, background: THEME.primary + '1F', color: THEME.primaryFaint, cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', transition: 'all .2s' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 16px', borderRadius: 20, border: `1px solid ${THEME.primary}66`, background: THEME.primary + '1F', color: THEME.primaryFaint, cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', transition: 'all .2s' }}
                     >
                         <RefreshCw size={13} style={{ animation: refreshing ? 'baSpin 1s linear infinite' : 'none' }} />
                         Refresh
@@ -579,20 +579,20 @@ export default function BloatAnalysisTab() {
 
             {/* ── Error ────────────────────────────────────────────────────── */}
             {error && (
-                <div style={{ padding: 14, background: THEME.danger + '1A', border: `1px solid ${THEME.danger}4D`, borderRadius: 12, color: THEME.danger + 'CC', fontSize: 13, display: 'flex', alignItems: 'center', gap: 9 }}>
+                <div style={{ padding: 14, background: THEME.danger + '1A', border: `1px solid ${THEME.danger}4D`, borderRadius: 18, color: THEME.danger + 'CC', fontSize: 13, display: 'flex', alignItems: 'center', gap: 9 }}>
                     <AlertCircle size={16} /> {error}
                 </div>
             )}
 
             {/* ── Metrics row ──────────────────────────────────────────────── */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr 1fr auto', gap: 14, alignItems: 'stretch' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr 1fr auto', gap: 20, alignItems: 'stretch' }}>
                 <MetricCard icon={Database} label="Total DB Size" value={summary?.total_db_size || '—'} sub={`${fmt(summary?.total_tables)} tables`} accent={THEME.primary} delay={0} />
                 <MetricCard icon={AlertTriangle} label="High Bloat" value={fmt(summary?.high_bloat_tables)} sub=">10% dead tuples" accent={THEME.warning} warn={Number(summary?.high_bloat_tables) > 0} delay={60} />
                 <MetricCard icon={Zap} label="Critical Bloat" value={fmt(summary?.critical_bloat_tables)} sub=">20% dead tuples" accent={THEME.danger} critical={Number(summary?.critical_bloat_tables) > 0} delay={120} />
                 <MetricCard icon={TrendingUp} label="Avg Dead %" value={`${summary?.avg_dead_pct || 0}%`} sub={`${fmt(summary?.total_dead_tuples)} dead rows`} accent={Number(summary?.avg_dead_pct) > 10 ? THEME.warning : THEME.success} warn={Number(summary?.avg_dead_pct) > 10} delay={180} />
 
                 {/* Health score + severity donut */}
-                <div className="ba-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 20, minWidth: 200 }}>
+                <div className="ba-card" style={{ padding: '22px 28px', display: 'flex', alignItems: 'center', gap: 20, minWidth: 200 }}>
                     <HealthGauge score={score} />
                     <div>
                         <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted,  letterSpacing: .8, marginBottom: 8 }}>Severity</div>
@@ -617,7 +617,7 @@ export default function BloatAnalysisTab() {
                     {/* Dead % chart */}
                     <div className="ba-card">
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                 <Activity size={14} color={THEME.warning} />
                                 <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>Top 10 — Dead Tuple %</span>
                             </div>
@@ -644,7 +644,7 @@ export default function BloatAnalysisTab() {
 
                     {/* Size chart */}
                     <div className="ba-card">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 16 }}>
                             <HardDrive size={14} color={THEME.primary} />
                             <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>Top 10 — Total Size</span>
                         </div>
@@ -671,7 +671,7 @@ export default function BloatAnalysisTab() {
             )}
 
             {/* ── Sub-tabs ─────────────────────────────────────────────────── */}
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
                 {[{ id: 'tables', label: 'Table Bloat', icon: Database }, { id: 'indexes', label: 'Index Bloat', icon: BarChart2 }, { id: 'predictor', label: '📈 Growth Predictor', icon: TrendingUp }].map(({ id, label, icon: Icon }) => (
                     <button
                         key={id}
@@ -693,14 +693,14 @@ export default function BloatAnalysisTab() {
             {activeTab === 'tables' && (
                 <div className="ba-card" style={{ padding: 0 }}>
                     {/* Toolbar */}
-                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: '1px solid ' + THEME.grid }}>
+                    <div style={{ padding: '18px 22px', display: 'flex', gap: 22, alignItems: 'center', borderBottom: '1px solid ' + THEME.grid }}>
                         <div style={{ position: 'relative', flex: 1, maxWidth: 280 }}>
                             <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: THEME.textDim }} />
                             <input className="ba-input" placeholder="Search tables…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 34, width: '100%', boxSizing: 'border-box' }} />
                         </div>
                         <button
                             onClick={() => setFilterHigh(f => !f)}
-                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 13px', borderRadius: 9, border: `1px solid ${filterHigh ? THEME.warning + '80' : THEME.grid}`, background: filterHigh ? THEME.warning + '1F' : 'transparent', color: filterHigh ? THEME.warning + 'E0' : THEME.textMuted, cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit', transition: 'all .2s' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 13px', borderRadius: 20, border: `1px solid ${filterHigh ? THEME.warning + '80' : THEME.grid}`, background: filterHigh ? THEME.warning + '1F' : 'transparent', color: filterHigh ? THEME.warning + 'E0' : THEME.textMuted, cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit', transition: 'all .2s' }}
                         >
                             <Filter size={12} /> High Bloat Only
                         </button>
@@ -752,7 +752,7 @@ export default function BloatAnalysisTab() {
                         }
                     </div>
 
-                    <div style={{ padding: '10px 16px', borderTop: '1px solid ' + THEME.grid, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ padding: '16px 22px', borderTop: '1px solid ' + THEME.grid, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: 11, color: THEME.textDim }}>
                             {filteredTables.length} of {tables.length} tables
                         </span>
@@ -766,7 +766,7 @@ export default function BloatAnalysisTab() {
             {/* ── Index Bloat ──────────────────────────────────────────────── */}
             {activeTab === 'indexes' && (
                 <div className="ba-card" style={{ padding: 0 }}>
-                    <div style={{ padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', borderBottom: '1px solid ' + THEME.grid }}>
+                    <div style={{ padding: '18px 22px', display: 'flex', gap: 22, alignItems: 'center', borderBottom: '1px solid ' + THEME.grid }}>
                         <div style={{ position: 'relative', flex: 1, maxWidth: 280 }}>
                             <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: THEME.textDim }} />
                             <input className="ba-input" placeholder="Search indexes…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 34, width: '100%', boxSizing: 'border-box' }} />
@@ -818,7 +818,7 @@ export default function BloatAnalysisTab() {
                         }
                     </div>
 
-                    <div style={{ padding: '12px 16px', borderTop: '1px solid ' + THEME.grid, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ padding: '18px 22px', borderTop: '1px solid ' + THEME.grid, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: 11, color: THEME.textDim }}>{filteredIndexes.length} indexes</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: THEME.textDim }}>
                             <Eye size={11} />
@@ -844,7 +844,7 @@ export default function BloatAnalysisTab() {
                 return (
                     <div className="ba-card" style={{ padding: 0 }}>
                         {/* Header */}
-                        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ padding: '22px 28px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', alignItems: 'center', gap: 18 }}>
                             <TrendingUp size={16} color={THEME.warning} />
                             <div>
                                 <div style={{ fontWeight: 700, fontSize: 14, color: THEME.textMain }}>Bloat Growth Rate Predictor</div>
@@ -852,10 +852,10 @@ export default function BloatAnalysisTab() {
                                     Projected dead-tuple % if no VACUUM is run — based on current accumulation rate
                                 </div>
                             </div>
-                            <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
+                            <div style={{ marginLeft: 'auto', display: 'flex', gap: 18 }}>
                                 {horizons.map(h => (
                                     <div key={h.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
-                                        <span style={{ width: 10, height: 10, borderRadius: 10, background: h.color, display: 'inline-block' }} />
+                                        <span style={{ width: 10, height: 10, borderRadius: 16, background: h.color, display: 'inline-block' }} />
                                         <span style={{ color: THEME.textDim }}>{h.label}</span>
                                     </div>
                                 ))}

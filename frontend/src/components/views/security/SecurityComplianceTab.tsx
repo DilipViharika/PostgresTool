@@ -36,9 +36,9 @@ const SecStyles = () => (
         .sec-card {
             background: ${THEME.surface};
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             backdrop-filter: blur(12px);
             transition: all 0.25s ease;
             display: flex;
@@ -46,8 +46,8 @@ const SecStyles = () => (
         }
         .sec-card:hover {
             border-color: ${THEME.danger}40;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-4px);
         }
 
         .sec-card-stripe {
@@ -69,29 +69,29 @@ const SecStyles = () => (
             font-size: 13px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 22px;
         }
 
         /* Legacy .card fallback for compatibility */
         .card {
             background: ${THEME.surface};
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
             transition: border-color 0.2s, box-shadow 0.2s;
             position: relative;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             backdrop-filter: blur(12px);
         }
         .card:hover {
             border-color: ${THEME.primary}33;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-4px);
         }
 
         .card-glow-red:hover {
             border-color: ${THEME.danger}4d !important;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08) !important;
         }
 
         .mono { font-family: ${THEME.fontMono}; }
@@ -104,7 +104,7 @@ const SecStyles = () => (
         /* Tabs */
         .nav-tab {
             padding: 10px 20px;
-            border-radius: 12px;
+            border-radius: 22px;
             font-size: 12px;
             font-weight: 700;
             letter-spacing: 0.04em;
@@ -131,7 +131,7 @@ const SecStyles = () => (
             align-items: center;
             font-size: 12px;
             transition: background 0.15s;
-            gap: 14px;
+            gap: 20px;
         }
         .threat-row:hover { background: ${THEME.danger}0a; }
         .threat-row.critical-row { border-left: 2px solid ${THEME.danger}; }
@@ -149,7 +149,7 @@ const SecStyles = () => (
             text-transform: uppercase;
             color: ${THEME.textDim};
             border-bottom: 1px solid ${THEME.glassBorder};
-            gap: 14px;
+            gap: 20px;
         }
 
         /* Compliance items */
@@ -157,9 +157,9 @@ const SecStyles = () => (
             display: grid;
             grid-template-columns: 20px 1fr 70px 80px;
             align-items: center;
-            gap: 14px;
-            padding: 14px 18px;
-            border-radius: 12px;
+            gap: 20px;
+            padding: 24px 30px;
+            border-radius: 22px;
             border: 1px solid transparent;
             transition: all 0.2s;
             cursor: pointer;
@@ -220,15 +220,15 @@ const SecStyles = () => (
         /* Badge */
         .badge {
             display: inline-flex; align-items: center;
-            padding: 2px 8px; border-radius: 12px;
+            padding: 2px 8px; border-radius: 22px;
             font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
             text-transform: uppercase;
         }
 
         /* GEO heatmap cells */
         .geo-cell {
-            padding: 8px 12px;
-            border-radius: 10px;
+            padding: 24px 30px;
+            border-radius: 20px;
             font-size: 11px;
             display: flex;
             align-items: center;
@@ -239,7 +239,7 @@ const SecStyles = () => (
 
         /* Timeline event */
         .timeline-event {
-            display: flex; gap: 12px; align-items: flex-start;
+            display: flex; gap: 18px; align-items: flex-start;
             padding-bottom: 16px;
             position: relative;
         }
@@ -252,8 +252,8 @@ const SecStyles = () => (
 
         /* Key vault */
         .key-item {
-            padding: 12px 16px;
-            border-radius: 10px;
+            padding: 22px 28px;
+            border-radius: 20px;
             border: 1px solid ${THEME.glassBorder};
             background: ${THEME.surface};
             margin-bottom: 8px;
@@ -276,7 +276,7 @@ const SecStyles = () => (
         .search-input {
             background: ${THEME.surface};
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 12px; padding: 8px 14px 8px 36px;
+            border-radius: 22px; padding: 14px 20px 8px 36px;
             color: ${THEME.textMain}; font-size: 12px; width: 200px;
             outline: none; transition: all 0.2s;
             font-family: ${THEME.fontMono};
@@ -350,7 +350,7 @@ const ThreatBadge = ({ severity }) => (
 
 const SectionHeader = ({ icon: Icon, title, iconColor, right }) => (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
-        <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8, color: THEME.textMain, letterSpacing: '0.02em' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 20, color: THEME.textMain, letterSpacing: '0.02em' }}>
             <Icon size={15} color={iconColor || THEME.primary} />
             {title}
         </h3>
@@ -359,7 +359,7 @@ const SectionHeader = ({ icon: Icon, title, iconColor, right }) => (
 );
 
 const MiniStat = ({ label, value, sub, color, icon: Icon }) => (
-    <div style={{ padding: '14px 18px', background: THEME.surface, borderRadius: 10, border: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <div style={{ padding: '20px 24px', background: THEME.surface, borderRadius: 16, border: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.02em',  color: THEME.textMuted }}>
             {Icon && <Icon size={12} color={color} />} {label}
         </div>
@@ -410,7 +410,7 @@ const ScoreRing = ({ score }) => {
 const ChartTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.primary}33`, borderRadius: 8, padding: '8px 14px', fontSize: 12, fontFamily: THEME.fontMono }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.primary}33`, borderRadius: 20, padding: '14px 20px', fontSize: 12, fontFamily: THEME.fontMono }}>
             <div style={{ color: THEME.textMuted, marginBottom: 4 }}>{label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ color: p.color || THEME.info }}>{p.name}: <strong>{p.value}</strong></div>
@@ -439,7 +439,7 @@ const ThreatMonitor = ({ search, threatLogs = [] }) => {
                 title="Live Threat Monitor"
                 iconColor={THEME.danger}
                 right={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                         <span className="live-dot" />
                         <span style={{ fontSize: 11, color: THEME.danger, fontWeight: 700, fontFamily: THEME.fontMono }}>LIVE</span>
                     </div>
@@ -482,7 +482,7 @@ const ThreatMonitor = ({ search, threatLogs = [] }) => {
                         </div>
                         {expanded === log.id && (
                             <div className="fade-in" style={{ padding: '12px 20px 16px 52px', background: `${SEV_COLORS[log.severity]}06`, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                <div className="mono" style={{ fontSize: 11, color: THEME.primary, padding: '8px 12px', background: THEME.bg, borderRadius: 6, border: `1px solid ${THEME.primary}26`, marginBottom: 10 }}>
+                                <div className="mono" style={{ fontSize: 11, color: THEME.primary, padding: '20px 24px', background: THEME.bg, borderRadius: 18, border: `1px solid ${THEME.primary}26`, marginBottom: 10 }}>
                                     {log.query}
                                 </div>
                                 <div style={{ display: 'flex', gap: 24, fontSize: 11, color: THEME.textMuted }}>
@@ -539,11 +539,11 @@ const GeoThreatPanel = () => {
         <div style={{ marginTop: 16 }}>
             {safeGeoThreats.map((g, i) => (
                 <div key={i} className="geo-cell" style={{ background: `${g.color}08`, border: `1px solid ${g.color}15` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                         <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: g.color, width: 24 }}>{g.code}</span>
                         <span style={{ fontSize: 12, color: THEME.textMain }}>{g.country}</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                         <div style={{ width: 80, height: 4, background: THEME.glassBorder, borderRadius: 2 }}>
                             <div style={{ width: `${g.pct}%`, height: '100%', background: g.color, borderRadius: 2 }} />
                         </div>
@@ -573,14 +573,14 @@ const CompliancePanel = ({ complianceChecks = [] }) => {
                                </div>
                            }
             />
-            <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 4, overflowX: 'auto' }}>
+            <div style={{ padding: '16px 22px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 4, overflowX: 'auto' }}>
                 {standards.map(s => (
                     <button key={s} className={`nav-tab ${filter === s ? 'active' : ''}`}
                             style={{ padding: '4px 10px', fontSize: 10 }}
                             onClick={() => setFilter(s)}>{s}</button>
                 ))}
             </div>
-            <div className="sec-scroll" style={{ maxHeight: 320, overflowY: 'auto', padding: '10px 14px' }}>
+            <div className="sec-scroll" style={{ maxHeight: 320, overflowY: 'auto', padding: '22px 28px' }}>
                 {filtered.map(item => {
                     const color = item.status === 'pass' ? THEME.success : item.status === 'fail' ? THEME.danger : THEME.warning;
                     const Icon = item.status === 'pass' ? CheckCircle : item.status === 'fail' ? XCircle : AlertTriangle;
@@ -717,12 +717,12 @@ const KeyVault = () => {
         <div className="card" style={{ padding: 0 }}>
             <SectionHeader icon={Key} title="Encryption Key Vault" iconColor={THEME.warning}
                            right={
-                               <button style={{ fontSize: 11, color: THEME.info, background: `${THEME.info}14`, border: `1px solid ${THEME.info}33`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontFamily: THEME.fontBody, fontWeight: 700 }}>
+                               <button style={{ fontSize: 11, color: THEME.info, background: `${THEME.info}14`, border: `1px solid ${THEME.info}33`, borderRadius: 18, padding: '4px 10px', cursor: 'pointer', fontFamily: THEME.fontBody, fontWeight: 700 }}>
                                    Rotate Keys
                                </button>
                            }
             />
-            <div style={{ padding: '12px 16px' }}>
+            <div style={{ padding: '18px 22px' }}>
                 {safeEncryptionKeys.map((k, i) => {
                     const color = statusColors[k.status];
                     const pct = ((k.daysLeft || 0) / (k.total || 1)) * 100;
@@ -758,8 +758,8 @@ const AuditTimeline = ({ auditEvents = [] }) => {
     return (
     <div className="card" style={{ padding: 0 }}>
         <SectionHeader icon={Clock} title="Audit Events" iconColor={THEME.info}
-                       right={<button style={{ fontSize: 11, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Export</button>} />
-        <div style={{ padding: '16px 20px' }}>
+                       right={<button style={{ fontSize: 11, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 18, padding: '4px 10px', cursor: 'pointer' }}>Export</button>} />
+        <div style={{ padding: '22px 28px' }}>
             {safeAuditEvents.map((ev, i) => {
                 const color = SEV_COLORS[ev.severity] || '#888';
                 return (
@@ -827,9 +827,9 @@ const SuperuserMonitor = () => {
     return (
         <div>
             {/* Summary strip */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 18 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 18, marginBottom: 18 }}>
                 {['critical','high','medium','low'].map(lvl => (
-                    <div key={lvl} className="card" style={{ padding: '12px 16px', cursor: 'pointer', border: filter === lvl ? `1px solid ${RISK_COLOR[lvl]}` : '1px solid transparent' }}
+                    <div key={lvl} className="card" style={{ padding: '18px 22px', cursor: 'pointer', border: filter === lvl ? `1px solid ${RISK_COLOR[lvl]}` : '1px solid transparent' }}
                          onClick={() => setFilter(f => f === lvl ? 'all' : lvl)}>
                         <div style={{ fontSize: 22, fontWeight: 800, color: RISK_COLOR[lvl] }}>{counts[lvl] || 0}</div>
                         <div style={{ fontSize: 11, color: THEME.textDim, textTransform: 'capitalize', marginTop: 2 }}>{lvl} risk</div>
@@ -885,10 +885,10 @@ const SuperuserMonitor = () => {
                                     {expandedPid === r.pid && (
                                         <tr style={{ background: 'rgba(0,0,0,0.2)' }}>
                                             <td colSpan={9} style={{ padding: '12px 20px' }}>
-                                                <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.primary, background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '12px 16px', lineHeight: 1.6, wordBreak: 'break-all' }}>
+                                                <div style={{ fontFamily: THEME.fontMono, fontSize: 12, color: THEME.primary, background: 'rgba(0,0,0,0.3)', borderRadius: 20, padding: '18px 22px', lineHeight: 1.6, wordBreak: 'break-all' }}>
                                                     {r.query}
                                                 </div>
-                                                <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+                                                <div style={{ marginTop: 10, display: 'flex', gap: 20 }}>
                                                     {r.risk === 'critical' || r.risk === 'high' ? (
                                                         <div style={{ fontSize: 11, color: THEME.danger, display: 'flex', gap: 4, alignItems: 'center' }}>
                                                             <AlertCircle size={12} /> This operation warrants immediate review — consider revoking session if unauthorized
@@ -906,7 +906,7 @@ const SuperuserMonitor = () => {
                     </table>
                 </div>
 
-                <div style={{ marginTop: 14, padding: '10px 14px', background: 'rgba(99,215,255,0.06)', borderRadius: 8, fontSize: 11, color: THEME.textDim }}>
+                <div style={{ marginTop: 14, padding: '22px 28px', background: 'rgba(99,215,255,0.06)', borderRadius: 20, fontSize: 11, color: THEME.textDim }}>
                     <strong style={{ color: THEME.primary }}>Tip:</strong> To terminate a suspicious session run{' '}
                     <span className="mono" style={{ color: THEME.primary }}>SELECT pg_terminate_backend(&lt;pid&gt;);</span> in the SQL console.
                 </div>
@@ -958,10 +958,10 @@ const ComplianceReportGenerator = () => {
         <div className="card" style={{ padding: 20, marginTop: 18 }}>
             <SectionHeader icon={FileCheck} title="Compliance Report Generator" iconColor={THEME.primaryLight} />
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, margin: '16px 0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 18, margin: '16px 0' }}>
                 {safeFrameworks.map(f => (
                     <div key={f.id} onClick={() => setSelected(f.id)}
-                        style={{ padding: '14px 16px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${selected === f.id ? f.color : THEME.glassBorder}`, background: selected === f.id ? `${f.color}15` : 'transparent', transition: 'all 0.15s' }}>
+                        style={{ padding: '18px 22px', borderRadius: 16, cursor: 'pointer', border: `1px solid ${selected === f.id ? f.color : THEME.glassBorder}`, background: selected === f.id ? `${f.color}15` : 'transparent', transition: 'all 0.15s' }}>
                         <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
                         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{f.label}</div>
                         <div style={{ marginTop: 8 }}>
@@ -979,16 +979,16 @@ const ComplianceReportGenerator = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
                 {/* Config */}
-                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 16 }}>
+                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 16, padding: 16 }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 14 }}>Report Options</div>
                     {[
                         { label: 'Include detailed findings', val: includeDetails,     set: setIncludeDetails },
                         { label: 'Include remediation steps', val: includeRemediation, set: setIncludeRemediation },
                     ].map(opt => (
-                        <label key={opt.label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, cursor: 'pointer', fontSize: 12, color: THEME.textMuted }}>
+                        <label key={opt.label} style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 12, cursor: 'pointer', fontSize: 12, color: THEME.textMuted }}>
                             <div onClick={() => opt.set(v => !v)}
-                                style={{ width: 36, height: 20, borderRadius: 10, background: opt.val ? THEME.primary : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
-                                <div style={{ position: 'absolute', top: 3, left: opt.val ? 18 : 3, width: 14, height: 14, borderRadius: 7, background: THEME.textMain, transition: 'left 0.2s' }} />
+                                style={{ width: 36, height: 20, borderRadius: 16, background: opt.val ? THEME.primary : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.2s', cursor: 'pointer', flexShrink: 0 }}>
+                                <div style={{ position: 'absolute', top: 3, left: opt.val ? 18 : 3, width: 14, height: 14, borderRadius: 18, background: THEME.textMain, transition: 'left 0.2s' }} />
                             </div>
                             {opt.label}
                         </label>
@@ -996,19 +996,19 @@ const ComplianceReportGenerator = () => {
 
                     <div style={{ marginTop: 8 }}>
                         <div style={{ fontSize: 11, color: THEME.textDim, marginBottom: 8 }}>Export Format</div>
-                        <div style={{ display: 'flex', gap: 8 }}>
+                        <div style={{ display: 'flex', gap: 20 }}>
                             {['PDF', 'CSV', 'JSON'].map(fmt => (
-                                <div key={fmt} style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${THEME.glassBorder}`, fontSize: 11, color: THEME.textMuted, cursor: 'pointer' }}>{fmt}</div>
+                                <div key={fmt} style={{ padding: '5px 14px', borderRadius: 18, border: `1px solid ${THEME.glassBorder}`, fontSize: 11, color: THEME.textMuted, cursor: 'pointer' }}>{fmt}</div>
                             ))}
                         </div>
                     </div>
                 </div>
 
                 {/* Summary + Generate */}
-                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
                         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginBottom: 12 }}>{fw.label} Summary</div>
-                        <div style={{ display: 'flex', gap: 16, marginBottom: 14 }}>
+                        <div style={{ display: 'flex', gap: 22, marginBottom: 14 }}>
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: 32, fontWeight: 800, color: fw.color }}>{pct}%</div>
                                 <div style={{ fontSize: 10, color: THEME.textDim }}>Compliance</div>
@@ -1018,21 +1018,21 @@ const ComplianceReportGenerator = () => {
                                     <span style={{ color: THEME.success }}>✓ Passed: {fw.passed}</span>
                                     <span style={{ color: THEME.danger }}>✗ Failed: {fw.checks - fw.passed}</span>
                                 </div>
-                                <div style={{ height: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>
-                                    <div style={{ height: 8, width: `${pct}%`, background: fw.color, borderRadius: 4 }} />
+                                <div style={{ height: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 16 }}>
+                                    <div style={{ height: 8, width: `${pct}%`, background: fw.color, borderRadius: 16 }} />
                                 </div>
                                 <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 8 }}>Total checks: {fw.checks}</div>
                             </div>
                         </div>
                         {lastGenerated && (
-                            <div style={{ fontSize: 11, color: THEME.textDim, padding: '8px 12px', background: 'rgba(74,222,128,0.08)', borderRadius: 6, display: 'flex', gap: 6, alignItems: 'center' }}>
+                            <div style={{ fontSize: 11, color: THEME.textDim, padding: '20px 24px', background: 'rgba(74,222,128,0.08)', borderRadius: 18, display: 'flex', gap: 6, alignItems: 'center' }}>
                                 <CheckCircle size={11} color={THEME.success} /> Last report generated: {lastGenerated}
                             </div>
                         )}
                     </div>
 
                     <button onClick={handleGenerate} disabled={generating}
-                        style={{ marginTop: 16, background: generating ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)', color: THEME.primaryLight, padding: '10px 18px', borderRadius: 8, cursor: generating ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: THEME.fontBody, display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                        style={{ marginTop: 16, background: generating ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.4)', color: THEME.primaryLight, padding: '10px 18px', borderRadius: 20, cursor: generating ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: THEME.fontBody, display: 'flex', gap: 20, alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
                         {generating ? (
                             <><RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} /> Generating…</>
                         ) : (
@@ -1098,9 +1098,9 @@ const SecurityComplianceTab = () => {
 
             {/* ── Header ── */}
             <div style={{ padding: '16px 24px 0', marginBottom: 20 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 18 }}>
                     <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 4 }}>
                             <Shield size={22} color={THEME.info} />
                             <h1 style={{ fontSize: 22, fontWeight: 800, color: THEME.textMain, margin: 0, letterSpacing: '-0.02em' }}>
                                 Security & Compliance
@@ -1111,16 +1111,16 @@ const SecurityComplianceTab = () => {
                             Last scan: 12m ago &nbsp;·&nbsp; 4 active threats &nbsp;·&nbsp; 1 critical
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
                         {/* Search */}
                         <div style={{ position: 'relative' }}>
                             <Search size={13} color={THEME.textDim} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                             <input className="search-input" placeholder="Search threats..." value={search} onChange={e => setSearch(e.target.value)} />
                         </div>
-                        <button style={{ background: `${THEME.danger}1f`, color: THEME.danger, border: `1px solid ${THEME.danger}4d`, padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: THEME.fontBody }}>
+                        <button style={{ background: `${THEME.danger}1f`, color: THEME.danger, border: `1px solid ${THEME.danger}4d`, padding: '14px 20px', borderRadius: 20, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: THEME.fontBody }}>
                             <AlertOctagon size={13} /> Run Scan
                         </button>
-                        <button style={{ background: THEME.primary, color: THEME.bg, border: 'none', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: THEME.fontBody }}>
+                        <button style={{ background: THEME.primary, color: THEME.bg, border: 'none', padding: '14px 20px', borderRadius: 20, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', gap: 6, alignItems: 'center', fontFamily: THEME.fontBody }}>
                             <FileText size={13} /> Export Report
                         </button>
                     </div>
@@ -1140,7 +1140,7 @@ const SecurityComplianceTab = () => {
             {activeTab === 'overview' && (
                 <div style={{ padding: '0 24px' }} className="fade-in">
                     {/* Metric bar */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 22 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 22 }}>
                         <MiniStat label="Security Score" value={score} sub="↑ +3 from last week" color={THEME.success} icon={Shield} />
                         <MiniStat label="Active Threats" value="4" sub="1 critical, 2 medium" color={THEME.danger} icon={AlertOctagon} />
                         <MiniStat label="Failed Logins" value="42" sub="last 24 hours" color={THEME.warning} icon={UserCheck} />
@@ -1216,7 +1216,7 @@ const SecurityComplianceTab = () => {
                                             <div className="mono" style={{ fontSize: 12, color: THEME.textMain }}>{cert.domain}</div>
                                             <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 3 }}>Expires {cert.expires}</div>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                             <span className="mono" style={{ fontSize: 11, color: cert.days < 30 ? THEME.danger : THEME.success }}>{cert.days}d</span>
                                             <Badge label={cert.status} color={cert.status === 'valid' ? THEME.success : THEME.danger} />
                                         </div>
@@ -1242,7 +1242,7 @@ const SecurityComplianceTab = () => {
             {activeTab === 'superuser' && (
                 <div style={{ padding: '0 24px' }} className="fade-in">
                     <div style={{ marginBottom: 16 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 4 }}>
                             <UserCog size={16} color={THEME.danger} />
                             <span style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>Superuser Activity Monitor</span>
                             <Badge label="Live" color={THEME.success} />
@@ -1256,14 +1256,14 @@ const SecurityComplianceTab = () => {
                     {/* Role privilege summary */}
                     <div className="card" style={{ padding: 20, marginTop: 18 }}>
                         <SectionHeader icon={Shield} title="Superuser Role Summary" iconColor={THEME.info} />
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 14 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginTop: 14 }}>
                             {(Array.isArray(SUPERUSER_SAMPLE) && SUPERUSER_SAMPLE.length > 0 ? SUPERUSER_SAMPLE.map(s => ({ role: s.user || 'unknown', sessions: 1, queries_24h: 0, last_seen: s.ts || 'N/A', critical: s.risk === 'critical' ? 1 : 0 })) : []).map(r => (
-                                <div key={r.role} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '14px 16px', border: r.critical > 0 ? `1px solid ${THEME.danger}4d` : `1px solid ${THEME.glassBorder}` }}>
+                                <div key={r.role} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 16, padding: '18px 22px', border: r.critical > 0 ? `1px solid ${THEME.danger}4d` : `1px solid ${THEME.glassBorder}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                         <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{r.role}</span>
                                         {r.critical > 0 && <Badge label="⚠ Critical" color={THEME.danger} />}
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11 }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, fontSize: 11 }}>
                                         <div style={{ color: THEME.textDim }}>Active sessions</div><div style={{ color: THEME.textMain, textAlign: 'right' }}>{r.sessions}</div>
                                         <div style={{ color: THEME.textDim }}>Queries (24h)</div><div style={{ color: THEME.textMain, textAlign: 'right' }}>{r.queries_24h}</div>
                                         <div style={{ color: THEME.textDim }}>Last seen</div><div style={{ color: THEME.textDim, textAlign: 'right' }}>{r.last_seen}</div>

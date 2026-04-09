@@ -65,7 +65,7 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
         display: 'flex',
         alignItems: 'center',
         gap: '20px',
-        padding: '16px 20px',
+        padding: '22px 28px',
         backgroundColor: styles.bg,
         border: `1px solid T.glassBorder`,
         borderRadius: '16px',
@@ -86,7 +86,7 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
         backgroundColor: 'T.surfaceRaised',
         borderRadius: '12px',
         flexShrink: 0,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        boxShadow: '0 6px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05)',
         backdropFilter: 'blur(8px)',
     };
 

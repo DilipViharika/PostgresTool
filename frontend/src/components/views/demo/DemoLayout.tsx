@@ -151,14 +151,14 @@ const DemoLayout = ({
                     {/* Logo + Title + Demo Switcher */}
                     <div
                         style={{
-                            padding: '12px 14px',
+                            padding: '22px 28px',
                             borderBottom: `1px solid ${LT.glassBorder}`,
                             background: LT.surface,
                             flexShrink: 0,
                         }}
                     >
                         {/* Title row */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 10 }}>
                             {goToTab && (
                                 <button
                                     onClick={() => goToTab('connections')}
@@ -166,7 +166,7 @@ const DemoLayout = ({
                                     style={{
                                         width: 28,
                                         height: 28,
-                                        borderRadius: 7,
+                                        borderRadius: 18,
                                         border: `1px solid ${LT.glassBorder}`,
                                         background: LT.buttonBg,
                                         cursor: 'pointer',
@@ -196,7 +196,7 @@ const DemoLayout = ({
                                     style={{
                                         width: 32,
                                         height: 32,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -233,7 +233,7 @@ const DemoLayout = ({
                                             fontSize: 10,
                                             fontWeight: isActive ? 700 : 500,
                                             fontFamily: THEME.fontBody,
-                                            borderRadius: 12,
+                                            borderRadius: 18,
                                             border: isActive ? `1px solid ${LT.primary}` : `1px solid ${LT.glassBorder}`,
                                             background: isActive ? `${LT.primary}10` : LT.buttonBg,
                                             color: isActive ? LT.primary : LT.textMuted,
@@ -274,7 +274,7 @@ const DemoLayout = ({
                     {/* Active Cluster Dropdown */}
                     <div
                         style={{
-                            padding: '12px 14px',
+                            padding: '22px 28px',
                             borderBottom: `1px solid ${LT.glassBorder}`,
                             flexShrink: 0,
                         }}
@@ -299,7 +299,7 @@ const DemoLayout = ({
                             style={{
                                 width: '100%',
                                 padding: '6px 8px',
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 background: LT.buttonBg,
                                 border: `1px solid ${LT.glassBorder}`,
                                 color: LT.textMuted,
@@ -388,7 +388,7 @@ const DemoLayout = ({
                                                             width: '100%',
                                                             display: 'flex',
                                                             alignItems: 'center',
-                                                            gap: 8,
+                                                            gap: 20,
                                                             padding: '7px 14px 7px 28px',
                                                             background: isActive ? LT.activeItemBg : 'transparent',
                                                             border: 'none',
@@ -448,7 +448,7 @@ const DemoLayout = ({
                                                                     
                                                                     background: LT.badgeBg,
                                                                     color: LT.badgeColor,
-                                                                    borderRadius: 14,
+                                                                    borderRadius: 20,
                                                                     padding: '1px 6px',
                                                                     flexShrink: 0,
                                                                     fontFamily: THEME.fontMono,
@@ -486,7 +486,7 @@ const DemoLayout = ({
                                 padding: '6px 10px',
                                 fontSize: 11,
                                 fontWeight: 500,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 border: `1px solid ${LT.glassBorder}`,
                                 background: LT.buttonBg,
                                 color: LT.textMuted,
@@ -516,7 +516,7 @@ const DemoLayout = ({
                                         padding: '6px 10px',
                                         fontSize: 11,
                                         fontWeight: 500,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         border: `1px solid ${LT.glassBorder}`,
                                         background: LT.buttonBg,
                                         color: LT.textMuted,
@@ -543,7 +543,7 @@ const DemoLayout = ({
                                         padding: '8px 10px',
                                         fontSize: 11,
                                         fontWeight: 600,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         border: 'none',
                                         background: LT.accentGradient,
                                         color: '#ffffff',
@@ -620,7 +620,7 @@ const DemoLayout = ({
                         <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexShrink: 0 }}>
                             {/* Stat Pills */}
                             {headerStats && headerStats.length > 0 && (
-                                <div style={{ display: 'flex', gap: 16 }}>
+                                <div style={{ display: 'flex', gap: 22 }}>
                                     {headerStats.map((stat, i) => (
                                         <div
                                             key={i}
@@ -630,7 +630,7 @@ const DemoLayout = ({
                                                 alignItems: 'center',
                                                 padding: '6px 12px',
                                                 background: `${stat.color || LT.primary}10`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 border: `1px solid ${stat.color || LT.primary}20`,
                                             }}
                                         >
@@ -694,7 +694,7 @@ const DemoLayout = ({
                                 style={{
                                     width: 36,
                                     height: 36,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                     background: LT.buttonBg,
                                     border: `1px solid ${LT.glassBorder}`,
                                     display: 'flex',
@@ -828,7 +828,7 @@ export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentCo
         style={{
             background: LT.cardBg,
             border: `1px solid ${LT.cardBorder}`,
-            borderRadius: 14,
+            borderRadius: 20,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -858,13 +858,13 @@ export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentCo
                     background: LT.surfaceHover,
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                     {TIcon && (
                         <div
                             style={{
                                 width: 24,
                                 height: 24,
-                                borderRadius: 14,
+                                borderRadius: 20,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -903,7 +903,7 @@ export const StatusBadge = ({ label, color, pulse }) => (
             fontSize: 9.5,
             fontWeight: 700,
             padding: '4px 11px',
-            borderRadius: 14,
+            borderRadius: 20,
             background: `${color}12`,
             color,
             border: `1px solid ${color}20`,
@@ -1065,22 +1065,22 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
     <div
         style={{
             background: LT.cardBg,
-            borderRadius: 14,
+            borderRadius: 20,
             border: `1px solid ${LT.cardBorder}`,
-            padding: '14px 16px',
+            padding: '18px 22px',
             position: 'relative',
             overflow: 'hidden',
             boxShadow: LT.cardShadow,
             display: 'flex',
             alignItems: 'flex-start',
-            gap: 10,
+            gap: 22,
         }}
     >
         <div
             style={{
                 width: 36,
                 height: 36,
-                borderRadius: 12,
+                borderRadius: 18,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1132,9 +1132,9 @@ export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spa
             style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 10,
-                padding: '14px 16px',
-                borderRadius: 14,
+                gap: 22,
+                padding: '18px 22px',
+                borderRadius: 20,
                 background: LT.cardBg,
                 border: `1px solid ${LT.cardBorder}`,
                 position: 'relative',
@@ -1159,7 +1159,7 @@ export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spa
                     style={{
                         width: 30,
                         height: 30,
-                        borderRadius: 14,
+                        borderRadius: 20,
                         flexShrink: 0,
                         display: 'flex',
                         alignItems: 'center',
@@ -1235,8 +1235,8 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
             display: 'flex',
             flexDirection: 'column',
             gap: 6,
-            padding: '12px 14px',
-            borderRadius: 14,
+            padding: '22px 28px',
+            borderRadius: 20,
             background: LT.cardBg,
             border: `1px solid ${LT.cardBorder}`,
             position: 'relative',
@@ -1253,7 +1253,7 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
                         style={{
                             width: 22,
                             height: 22,
-                            borderRadius: 12,
+                            borderRadius: 18,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1350,7 +1350,7 @@ export const TabPills = ({ tabs, active, onChange, accentColor }) => (
                                 fontSize: 9,
                                 fontWeight: 700,
                                 padding: '2px 7px',
-                                borderRadius: 14,
+                                borderRadius: 20,
                                 background: isActive ? 'rgba(255,255,255,0.25)' : `${t.badgeColor || ac}15`,
                                 color: isActive ? '#fff' : t.badgeColor || ac,
                             }}
@@ -1370,7 +1370,7 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
         style={{
             display: 'flex',
             alignItems: 'flex-start',
-            gap: 10,
+            gap: 22,
             padding: '11px 14px',
             background: `${color}06`,
             borderBottom: `1px solid ${LT.glassBorder}`,
@@ -1391,7 +1391,7 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
         />
         <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 11.5, color: LT.textMain, fontWeight: 600, lineHeight: 1.35 }}>{title}</div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 3 }}>
+            <div style={{ display: 'flex', gap: 20, marginTop: 3 }}>
                 <span
                     style={{
                         fontSize: 9.5,
@@ -1409,7 +1409,7 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
                 fontSize: 9,
                 fontWeight: 700,
                 padding: '2px 8px',
-                borderRadius: 14,
+                borderRadius: 20,
                 background: `${color}12`,
                 color,
                 
@@ -1431,8 +1431,8 @@ export const DataTable = ({ columns, rows, accentColor }) => (
             style={{
                 display: 'grid',
                 gridTemplateColumns: columns.map((c) => c.width || '1fr').join(' '),
-                gap: 8,
-                padding: '8px 14px',
+                gap: 20,
+                padding: '14px 20px',
                 borderBottom: `1px solid ${LT.glassBorder}`,
                 fontWeight: 700,
                 fontSize: '9.5px',
@@ -1454,8 +1454,8 @@ export const DataTable = ({ columns, rows, accentColor }) => (
                 style={{
                     display: 'grid',
                     gridTemplateColumns: columns.map((c) => c.width || '1fr').join(' '),
-                    gap: 8,
-                    padding: '10px 14px',
+                    gap: 20,
+                    padding: '22px 28px',
                     borderBottom: `1px solid ${LT.glassBorderLight}`,
                     transition: 'background 0.15s',
                 }}
@@ -1491,8 +1491,8 @@ export const ChartTip = ({ active, payload, label }) => {
             style={{
                 background: LT.cardBg,
                 border: `1px solid ${LT.cardBorder}`,
-                borderRadius: 12,
-                padding: '10px 14px',
+                borderRadius: 18,
+                padding: '22px 28px',
                 fontSize: 12,
                 boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
             }}
@@ -1530,17 +1530,17 @@ export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '8px 16px',
+            padding: '14px 20px',
             background: LT.cardBg,
             border: `1px solid ${LT.cardBorder}`,
-            borderRadius: 12,
+            borderRadius: 18,
             fontSize: 11,
             color: LT.textDim,
             marginBottom: 4,
             boxShadow: LT.cardShadow,
         }}
     >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span
                     style={{
@@ -1560,7 +1560,7 @@ export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
                         key={i}
                         style={{
                             padding: '2px 6px',
-                            borderRadius: 14,
+                            borderRadius: 20,
                             fontSize: 10,
                             fontWeight: 600,
                             background: v === refreshInterval ? LT.primary : 'transparent',

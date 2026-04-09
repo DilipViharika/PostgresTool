@@ -426,10 +426,10 @@ function DemoPostgresTab({ tabId }) {
                                 <div
                                     key={name}
                                     style={{
-                                        padding: '12px 14px',
+                                        padding: '22px 28px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         fontSize: 11,
                                     }}
                                 >
@@ -459,7 +459,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                     }}
                                 >
                                     <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMuted }}>
@@ -565,7 +565,7 @@ function DemoPostgresTab({ tabId }) {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px' }}>
                         <Panel title="Last Backup" icon={Archive} accentColor={THEME.success}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 <div>
                                     <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 3 }}>Type</div>
                                     <div style={{ fontSize: 12, fontWeight: 600, color: THEME.textMain }}>
@@ -589,7 +589,7 @@ function DemoPostgresTab({ tabId }) {
                         </Panel>
 
                         <Panel title="Long-Running Txns" icon={Clock} accentColor={THEME.warning}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 <div style={{ fontSize: 9.5, color: THEME.textDim }}>
                                     <div style={{ fontWeight: 700, marginBottom: 4 }}>PID 54231</div>
                                     <div>UPDATE public.orders...</div>
@@ -633,7 +633,7 @@ function DemoPostgresTab({ tabId }) {
                         </Panel>
 
                         <Panel title="Vacuum Health" icon={RefreshCw} accentColor={THEME.success}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 <div>
                                     <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 3 }}>
                                         Tables tracked
@@ -646,7 +646,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             display: 'flex',
                                             height: 16,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                             overflow: 'hidden',
                                         }}
                                     >
@@ -711,7 +711,7 @@ function DemoPostgresTab({ tabId }) {
                         </Panel>
 
                         <Panel title="Top Impacted Tables" icon={TableProperties} accentColor={THEME.primary}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {[
                                     { name: 'public.orders', ops: '51.0K', reads: 65, writes: 35 },
                                     { name: 'public.events', ops: '45.0K', reads: 78, writes: 22 },
@@ -762,7 +762,7 @@ function DemoPostgresTab({ tabId }) {
                                 <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 6 }}>
                                     WAL GENERATION
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 20 }}>
                                     <div style={{ fontSize: 22, fontWeight: 700, color: THEME.primary }}>12.4</div>
                                     <div style={{ fontSize: 10, color: THEME.textDim }}>MB/s</div>
                                 </div>
@@ -779,7 +779,7 @@ function DemoPostgresTab({ tabId }) {
                                 <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 6 }}>
                                     CHECKPOINT AVG
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 20 }}>
                                     <div style={{ fontSize: 22, fontWeight: 700, color: THEME.success }}>428</div>
                                     <div style={{ fontSize: 10, color: THEME.textDim }}>ms</div>
                                 </div>
@@ -822,7 +822,7 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         display: 'grid',
                                         gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                                        gap: 12,
+                                        gap: 18,
                                     }}
                                 >
                                     {[
@@ -946,7 +946,7 @@ function DemoPostgresTab({ tabId }) {
                                                     style={{
                                                         display: 'grid',
                                                         gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                                        gap: 12,
+                                                        gap: 18,
                                                         marginBottom: 16,
                                                     }}
                                                 >
@@ -1090,7 +1090,7 @@ function DemoPostgresTab({ tabId }) {
                                                     style={{
                                                         display: 'grid',
                                                         gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                                        gap: 12,
+                                                        gap: 18,
                                                         marginBottom: 16,
                                                     }}
                                                 >
@@ -1201,7 +1201,7 @@ function DemoPostgresTab({ tabId }) {
                                                     style={{
                                                         display: 'grid',
                                                         gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                                        gap: 12,
+                                                        gap: 18,
                                                         marginBottom: 16,
                                                     }}
                                                 >
@@ -1316,7 +1316,7 @@ function DemoPostgresTab({ tabId }) {
                                                     style={{
                                                         display: 'grid',
                                                         gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                                        gap: 12,
+                                                        gap: 18,
                                                         marginBottom: 16,
                                                     }}
                                                 >
@@ -1446,7 +1446,7 @@ function DemoPostgresTab({ tabId }) {
                                                     style={{
                                                         display: 'grid',
                                                         gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                                        gap: 12,
+                                                        gap: 18,
                                                         marginBottom: 16,
                                                     }}
                                                 >
@@ -1536,7 +1536,7 @@ function DemoPostgresTab({ tabId }) {
                                                     style={{
                                                         display: 'grid',
                                                         gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                                        gap: 12,
+                                                        gap: 18,
                                                         marginBottom: 16,
                                                     }}
                                                 >
@@ -1630,7 +1630,7 @@ function DemoPostgresTab({ tabId }) {
                                                     style={{
                                                         display: 'grid',
                                                         gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                                        gap: 12,
+                                                        gap: 18,
                                                         marginBottom: 16,
                                                     }}
                                                 >
@@ -1719,7 +1719,7 @@ function DemoPostgresTab({ tabId }) {
                                                     style={{
                                                         display: 'grid',
                                                         gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                                        gap: 12,
+                                                        gap: 18,
                                                         marginBottom: 16,
                                                     }}
                                                 >
@@ -1837,7 +1837,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                    gap: 12,
+                                    gap: 18,
                                 }}
                             >
                                 {[
@@ -1849,7 +1849,7 @@ function DemoPostgresTab({ tabId }) {
                                     <Panel key={i} noPad title={p.label} accentColor={p.color}>
                                         <div
                                             style={{
-                                                padding: '14px 16px',
+                                                padding: '18px 22px',
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 gap: 6,
@@ -1904,7 +1904,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            gap: 12,
+                                            gap: 18,
                                             alignItems: 'center',
                                         }}
                                     >
@@ -1928,7 +1928,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            gap: 12,
+                                            gap: 18,
                                             alignItems: 'center',
                                         }}
                                     >
@@ -1952,7 +1952,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            gap: 12,
+                                            gap: 18,
                                             alignItems: 'center',
                                         }}
                                     >
@@ -2205,7 +2205,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            gap: 12,
+                                            gap: 18,
                                             alignItems: 'center',
                                         }}
                                     >
@@ -2230,7 +2230,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            gap: 12,
+                                            gap: 18,
                                             alignItems: 'center',
                                         }}
                                     >
@@ -2255,7 +2255,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            gap: 12,
+                                            gap: 18,
                                             alignItems: 'center',
                                         }}
                                     >
@@ -2478,13 +2478,13 @@ function DemoPostgresTab({ tabId }) {
                                 <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textMuted, marginBottom: 8 }}>
                                     TOPOLOGY
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 11 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 22, fontSize: 11 }}>
                                     <div
                                         style={{
                                             padding: '6px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 12,
+                                            borderRadius: 18,
                                             color: THEME.primary,
                                             fontWeight: 600,
                                         }}
@@ -2497,7 +2497,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '6px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 12,
+                                            borderRadius: 18,
                                             color: THEME.success,
                                         }}
                                     >
@@ -2509,7 +2509,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '6px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 12,
+                                            borderRadius: 18,
                                             color: THEME.success,
                                         }}
                                     >
@@ -2519,7 +2519,7 @@ function DemoPostgresTab({ tabId }) {
                             </div>
 
                             <div style={{ paddingTop: 8, borderTop: `1px solid ${THEME.glassBorder}` }}>
-                                <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                                <div style={{ display: 'flex', gap: 22, alignItems: 'center' }}>
                                     <StatusBadge label="BLOCKED QUERIES 3" color={THEME.warning} />
                                     <StatusBadge label="Lock contention • Elevated" color={THEME.warning} />
                                 </div>
@@ -2529,7 +2529,7 @@ function DemoPostgresTab({ tabId }) {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px' }}>
                         <Panel title="Backup History" icon={Archive} accentColor={THEME.success}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {[
                                     { type: 'Full', time: '4h ago', size: '12.4 GB', status: 'Verified' },
                                     { type: 'Incr', time: '1h ago', size: '340 MB', status: 'Pending' },
@@ -2563,7 +2563,7 @@ function DemoPostgresTab({ tabId }) {
                         </Panel>
 
                         <Panel title="Failover Status" icon={Shield} accentColor={THEME.success}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 <div>
                                     <div style={{ fontSize: 10, color: THEME.textDim, marginBottom: 6 }}>
                                         RTO (Recovery)
@@ -2599,10 +2599,10 @@ function DemoPostgresTab({ tabId }) {
                                 <div
                                     key={i}
                                     style={{
-                                        padding: '10px 12px',
+                                        padding: '20px 24px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                     }}
                                 >
                                     <div
@@ -2657,11 +2657,11 @@ function DemoPostgresTab({ tabId }) {
         // ACTIVE ALERTS
         if (sectionKey === 'alerts' && itemKey === 'active-alerts') {
             return (
-                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     {/* ── VIGIL Header ── */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 4 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 4 }}>
                                 <Terminal size={16} color={THEME.ai} />
                                 <span
                                     style={{
@@ -2678,7 +2678,7 @@ function DemoPostgresTab({ tabId }) {
                                         fontSize: 9,
                                         color: THEME.textDim,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         padding: '2px 6px',
                                         letterSpacing: '0.02em',
                                     }}
@@ -2692,7 +2692,7 @@ function DemoPostgresTab({ tabId }) {
                                     color: THEME.textDim,
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 12,
+                                    gap: 18,
                                 }}
                             >
                                 <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -2739,7 +2739,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                            gap: 12,
+                            gap: 18,
                         }}
                     >
                         {[
@@ -2751,10 +2751,10 @@ function DemoPostgresTab({ tabId }) {
                             <div
                                 key={i}
                                 style={{
-                                    padding: '14px 16px',
+                                    padding: '18px 22px',
                                     background: THEME.surface,
                                     border: `1px solid ${THEME.glassBorder}`,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                     position: 'relative',
                                     overflow: 'hidden',
                                 }}
@@ -2804,7 +2804,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
-                            gap: 12,
+                            gap: 18,
                         }}
                     >
                         <LiveMetric
@@ -2863,12 +2863,12 @@ function DemoPostgresTab({ tabId }) {
                             {/* Search & Filter Bar */}
                             <div
                                 style={{
-                                    padding: '10px 14px',
+                                    padding: '22px 28px',
                                     background: THEME.surface,
                                     border: `1px solid ${THEME.glassBorder}`,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                     display: 'flex',
-                                    gap: 10,
+                                    gap: 22,
                                     flexWrap: 'wrap',
                                     alignItems: 'center',
                                 }}
@@ -2890,7 +2890,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '7px 10px 7px 30px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 5,
+                                            borderRadius: 16,
                                             fontSize: 12,
                                             color: THEME.textDim,
                                         }}
@@ -2905,7 +2905,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '7px 12px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 5,
+                                            borderRadius: 16,
                                             fontSize: 11,
                                             color: THEME.textMuted,
                                             display: 'flex',
@@ -2921,7 +2921,7 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         marginLeft: 'auto',
                                         padding: '6px 12px',
-                                        borderRadius: 5,
+                                        borderRadius: 16,
                                         border: `1px solid ${THEME.glassBorder}`,
                                         fontSize: 11,
                                         color: THEME.textDim,
@@ -2938,13 +2938,13 @@ function DemoPostgresTab({ tabId }) {
                             {/* Approval Banner */}
                             <div
                                 style={{
-                                    padding: '10px 14px',
+                                    padding: '22px 28px',
                                     background: `${THEME.warning}08`,
                                     border: `1px solid ${THEME.warning}30`,
-                                    borderRadius: 12,
+                                    borderRadius: 18,
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 12,
+                                    gap: 18,
                                 }}
                             >
                                 <Lock size={13} color={THEME.warning} />
@@ -2962,7 +2962,7 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         style={{
                                             padding: '5px 12px',
-                                            borderRadius: 5,
+                                            borderRadius: 16,
                                             background: `${THEME.success}15`,
                                             border: `1px solid ${THEME.success}30`,
                                             color: THEME.success,
@@ -2979,7 +2979,7 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         style={{
                                             padding: '5px 12px',
-                                            borderRadius: 5,
+                                            borderRadius: 16,
                                             background: `${THEME.danger}15`,
                                             border: `1px solid ${THEME.danger}30`,
                                             color: THEME.danger,
@@ -3005,7 +3005,7 @@ function DemoPostgresTab({ tabId }) {
                                     fontWeight: 600,
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 8,
+                                    gap: 20,
                                 }}
                             >
                                 <span
@@ -3090,10 +3090,10 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         key={i}
                                         style={{
-                                            padding: '12px 16px',
+                                            padding: '18px 22px',
                                             borderBottom: `1px solid ${THEME.glassBorder}`,
                                             display: 'flex',
-                                            gap: 12,
+                                            gap: 18,
                                             alignItems: 'flex-start',
                                             borderLeft: `2px solid ${a.color}`,
                                         }}
@@ -3140,7 +3140,7 @@ function DemoPostgresTab({ tabId }) {
                                                     display: 'flex',
                                                     justifyContent: 'space-between',
                                                     alignItems: 'flex-start',
-                                                    gap: 12,
+                                                    gap: 18,
                                                     marginBottom: 4,
                                                 }}
                                             >
@@ -3148,7 +3148,7 @@ function DemoPostgresTab({ tabId }) {
                                                     style={{
                                                         display: 'flex',
                                                         alignItems: 'center',
-                                                        gap: 8,
+                                                        gap: 20,
                                                         flexWrap: 'wrap',
                                                     }}
                                                 >
@@ -3176,7 +3176,7 @@ function DemoPostgresTab({ tabId }) {
                                                                 background: `${THEME.ai}15`,
                                                                 border: `1px solid ${THEME.ai}25`,
                                                                 color: THEME.ai,
-                                                                borderRadius: 12,
+                                                                borderRadius: 18,
                                                                 padding: '1px 6px',
                                                                 fontSize: 10,
                                                                 fontWeight: 700,
@@ -3198,13 +3198,13 @@ function DemoPostgresTab({ tabId }) {
                                                 </span>
                                             </div>
                                             <div
-                                                style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 10 }}
+                                                style={{ display: 'flex', gap: 20, alignItems: 'center', fontSize: 10 }}
                                             >
                                                 <span
                                                     style={{
                                                         background: THEME.surface,
                                                         border: `1px solid ${THEME.glassBorder}`,
-                                                        borderRadius: 12,
+                                                        borderRadius: 18,
                                                         padding: '1px 7px',
                                                         color: THEME.textMuted,
                                                         fontFamily: THEME.fontMono,
@@ -3223,7 +3223,7 @@ function DemoPostgresTab({ tabId }) {
                                                 </span>
                                             </div>
                                             {i < 2 && (
-                                                <div style={{ display: 'flex', gap: 8, marginTop: 8, fontSize: 10 }}>
+                                                <div style={{ display: 'flex', gap: 20, marginTop: 8, fontSize: 10 }}>
                                                     <span
                                                         style={{
                                                             color: THEME.success,
@@ -3257,7 +3257,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: 16,
                                     background: THEME.surface,
                                     border: `1px solid ${THEME.ai}20`,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                 }}
                             >
                                 <div
@@ -3268,7 +3268,7 @@ function DemoPostgresTab({ tabId }) {
                                         marginBottom: 14,
                                     }}
                                 >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                         <Zap size={14} color={THEME.ai} />
                                         <div>
                                             <div style={{ fontSize: 12, color: THEME.textMain, fontWeight: 700 }}>
@@ -3285,7 +3285,7 @@ function DemoPostgresTab({ tabId }) {
                                             background: `${THEME.ai}10`,
                                             border: `1px solid ${THEME.ai}20`,
                                             color: THEME.ai,
-                                            borderRadius: 12,
+                                            borderRadius: 18,
                                             padding: '2px 8px',
                                             letterSpacing: '0.02em',
                                             fontWeight: 600,
@@ -3294,7 +3294,7 @@ function DemoPostgresTab({ tabId }) {
                                         SANDBOX
                                     </span>
                                 </div>
-                                <div style={{ display: 'flex', gap: 14, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                                <div style={{ display: 'flex', gap: 20, alignItems: 'flex-end', flexWrap: 'wrap' }}>
                                     <div style={{ flex: 1, minWidth: 180 }}>
                                         <div
                                             style={{
@@ -3310,10 +3310,10 @@ function DemoPostgresTab({ tabId }) {
                                         </div>
                                         <div
                                             style={{
-                                                padding: '8px 12px',
+                                                padding: '20px 24px',
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 5,
+                                                borderRadius: 16,
                                                 fontSize: 12,
                                                 color: THEME.textMuted,
                                                 display: 'flex',
@@ -3327,8 +3327,8 @@ function DemoPostgresTab({ tabId }) {
                                     </div>
                                     <div
                                         style={{
-                                            padding: '8px 16px',
-                                            borderRadius: 12,
+                                            padding: '14px 20px',
+                                            borderRadius: 18,
                                             background: `${THEME.success}15`,
                                             border: `1px solid ${THEME.success}30`,
                                             color: THEME.success,
@@ -3361,7 +3361,7 @@ function DemoPostgresTab({ tabId }) {
                                 <div
                                     style={{
                                         padding: '5px 12px',
-                                        borderRadius: 5,
+                                        borderRadius: 16,
                                         background: `${THEME.primary}15`,
                                         border: `1px solid ${THEME.primary}30`,
                                         color: THEME.primary,
@@ -3517,7 +3517,7 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         display: 'grid',
                                         gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                                        gap: 10,
+                                        gap: 22,
                                     }}
                                 >
                                     {[
@@ -3529,10 +3529,10 @@ function DemoPostgresTab({ tabId }) {
                                         <div
                                             key={i}
                                             style={{
-                                                padding: '10px 12px',
+                                                padding: '20px 24px',
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                             }}
                                         >
                                             <div
@@ -3623,7 +3623,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         fontSize: 12,
                                         color: THEME.textMain,
                                     }}
@@ -3775,7 +3775,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: 6,
                                                 textAlign: 'center',
                                                 fontSize: 10,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 background:
                                                     val === 100
                                                         ? `${THEME.primary}30`
@@ -3897,17 +3897,17 @@ function DemoPostgresTab({ tabId }) {
                             </div>
 
                             {/* Search / Filter Bar */}
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
                                 <div
                                     style={{
                                         flex: 1,
                                         minWidth: 200,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 8,
+                                        gap: 20,
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         padding: '6px 10px',
                                     }}
                                 >
@@ -3923,7 +3923,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '5px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 12,
+                                            borderRadius: 18,
                                             fontSize: 10,
                                             color: THEME.textMuted,
                                             cursor: 'pointer',
@@ -3986,7 +3986,7 @@ function DemoPostgresTab({ tabId }) {
                                                         padding: '3px 8px',
                                                         background: `${THEME.ai}20`,
                                                         border: `1px solid ${THEME.ai}40`,
-                                                        borderRadius: 14,
+                                                        borderRadius: 20,
                                                         fontSize: 9,
                                                         color: THEME.ai,
                                                         cursor: 'pointer',
@@ -4030,13 +4030,13 @@ function DemoPostgresTab({ tabId }) {
                         <>
                             <div
                                 style={{
-                                    padding: '12px 16px',
+                                    padding: '18px 22px',
                                     background: `${THEME.ai}12`,
                                     border: `1px solid ${THEME.ai}30`,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 10,
+                                    gap: 22,
                                 }}
                             >
                                 <Brain size={18} style={{ color: THEME.ai }} />
@@ -4055,13 +4055,13 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         key={i}
                                         style={{
-                                            padding: '14px 16px',
+                                            padding: '18px 22px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            gap: 8,
+                                            gap: 20,
                                         }}
                                     >
                                         <div
@@ -4071,7 +4071,7 @@ function DemoPostgresTab({ tabId }) {
                                                 alignItems: 'center',
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                                 <StatusBadge
                                                     label={q.impact}
                                                     color={q.impact === 'HIGH' ? THEME.danger : THEME.warning}
@@ -4099,7 +4099,7 @@ function DemoPostgresTab({ tabId }) {
                                                     padding: '3px 10px',
                                                     background: `${THEME.success}20`,
                                                     border: `1px solid ${THEME.success}40`,
-                                                    borderRadius: 14,
+                                                    borderRadius: 20,
                                                     fontSize: 9,
                                                     color: THEME.success,
                                                     cursor: 'pointer',
@@ -4113,7 +4113,7 @@ function DemoPostgresTab({ tabId }) {
                                                     padding: '3px 10px',
                                                     background: `${THEME.warning}15`,
                                                     border: `1px solid ${THEME.warning}30`,
-                                                    borderRadius: 14,
+                                                    borderRadius: 20,
                                                     fontSize: 9,
                                                     color: THEME.warning,
                                                     cursor: 'pointer',
@@ -4126,7 +4126,7 @@ function DemoPostgresTab({ tabId }) {
                                                     padding: '3px 10px',
                                                     background: THEME.surface,
                                                     border: `1px solid ${THEME.glassBorder}`,
-                                                    borderRadius: 14,
+                                                    borderRadius: 20,
                                                     fontSize: 9,
                                                     color: THEME.textMuted,
                                                     cursor: 'pointer',
@@ -4238,7 +4238,7 @@ function DemoPostgresTab({ tabId }) {
                                 color: '#24292f',
                                 background: '#ffffff',
                                 padding: 12,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 lineHeight: 1.6,
                             }}
                         >
@@ -4295,7 +4295,7 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         marginLeft: node.indent * 24,
                                         display: 'flex',
-                                        gap: 8,
+                                        gap: 20,
                                         alignItems: 'center',
                                     }}
                                 >
@@ -4306,7 +4306,7 @@ function DemoPostgresTab({ tabId }) {
                                             style={{
                                                 fontSize: 9,
                                                 padding: '1px 6px',
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 background: `${node.color}20`,
                                                 color: node.color,
                                                 fontWeight: 600,
@@ -4488,17 +4488,17 @@ function DemoPostgresTab({ tabId }) {
                         <MetricCard icon={HardDrive} label="Total Size" value="13.7 MB" color={THEME.textMuted} />
                     </div>
                     {/* Search / Filter Bar */}
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
                         <div
                             style={{
                                 flex: 1,
                                 minWidth: 200,
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: 8,
+                                gap: 20,
                                 background: THEME.surface,
                                 border: `1px solid ${THEME.glassBorder}`,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 padding: '6px 10px',
                             }}
                         >
@@ -4510,7 +4510,7 @@ function DemoPostgresTab({ tabId }) {
                                 padding: '5px 10px',
                                 background: `${THEME.warning}15`,
                                 border: `1px solid ${THEME.warning}30`,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 fontSize: 10,
                                 color: THEME.warning,
                                 cursor: 'pointer',
@@ -4524,7 +4524,7 @@ function DemoPostgresTab({ tabId }) {
                                 padding: '5px 10px',
                                 background: THEME.surface,
                                 border: `1px solid ${THEME.glassBorder}`,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 fontSize: 10,
                                 color: THEME.textMuted,
                                 cursor: 'pointer',
@@ -4579,7 +4579,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.danger}15`,
                                                 border: `1px solid ${THEME.danger}30`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 fontSize: 9,
                                                 color: THEME.danger,
                                                 cursor: 'pointer',
@@ -4679,17 +4679,17 @@ function DemoPostgresTab({ tabId }) {
                                 />
                             </div>
                             {/* Search / Filter Bar */}
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
                                 <div
                                     style={{
                                         flex: 1,
                                         minWidth: 200,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 8,
+                                        gap: 20,
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         padding: '6px 10px',
                                     }}
                                 >
@@ -4701,7 +4701,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '5px 10px',
                                         background: `${THEME.danger}15`,
                                         border: `1px solid ${THEME.danger}30`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         fontSize: 10,
                                         color: THEME.danger,
                                         cursor: 'pointer',
@@ -4715,7 +4715,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '5px 10px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         fontSize: 10,
                                         color: THEME.textMuted,
                                         cursor: 'pointer',
@@ -4955,17 +4955,17 @@ function DemoPostgresTab({ tabId }) {
                             </div>
 
                             {/* Search / Filter Bar */}
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
                                 <div
                                     style={{
                                         flex: 1,
                                         minWidth: 200,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 8,
+                                        gap: 20,
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         padding: '6px 10px',
                                     }}
                                 >
@@ -4981,7 +4981,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '5px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 12,
+                                            borderRadius: 18,
                                             fontSize: 10,
                                             color: THEME.textMuted,
                                             cursor: 'pointer',
@@ -5146,9 +5146,9 @@ function DemoPostgresTab({ tabId }) {
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                gap: 8,
+                                                gap: 20,
                                                 padding: '4px 8px',
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 background: i % 2 === 0 ? `${THEME.surface}` : 'transparent',
                                             }}
                                         >
@@ -5194,13 +5194,13 @@ function DemoPostgresTab({ tabId }) {
                         <>
                             <div
                                 style={{
-                                    padding: '12px 16px',
+                                    padding: '18px 22px',
                                     background: `${THEME.ai}12`,
                                     border: `1px solid ${THEME.ai}30`,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 10,
+                                    gap: 22,
                                 }}
                             >
                                 <Brain size={18} style={{ color: THEME.ai }} />
@@ -5216,27 +5216,27 @@ function DemoPostgresTab({ tabId }) {
                             </div>
 
                             {/* Chat input mockup */}
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
                                 <div
                                     style={{
                                         flex: 1,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 8,
+                                        gap: 20,
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.ai}30`,
-                                        borderRadius: 14,
-                                        padding: '8px 12px',
+                                        borderRadius: 20,
+                                        padding: '20px 24px',
                                     }}
                                 >
                                     <span style={{ fontSize: 11, color: THEME.textDim }}>Ask about your tables...</span>
                                 </div>
                                 <div
                                     style={{
-                                        padding: '8px 14px',
+                                        padding: '14px 20px',
                                         background: `${THEME.ai}20`,
                                         border: `1px solid ${THEME.ai}40`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         fontSize: 11,
                                         color: THEME.ai,
                                         fontWeight: 600,
@@ -5248,7 +5248,7 @@ function DemoPostgresTab({ tabId }) {
                             </div>
 
                             <Panel title="Recent Analysis" icon={Brain} accentColor={THEME.ai}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                     {[
                                         {
                                             q: 'Why is the users table growing faster than expected?',
@@ -5271,7 +5271,7 @@ function DemoPostgresTab({ tabId }) {
                                             style={{
                                                 padding: '12px',
                                                 background: THEME.surface,
-                                                borderRadius: 12,
+                                                borderRadius: 18,
                                                 borderLeft: `3px solid ${item.color}`,
                                             }}
                                         >
@@ -5341,13 +5341,13 @@ function DemoPostgresTab({ tabId }) {
                     {/* Pending migration banner */}
                     <div
                         style={{
-                            padding: '12px 16px',
+                            padding: '18px 22px',
                             background: `${THEME.warning}12`,
                             border: `1px solid ${THEME.warning}40`,
-                            borderRadius: 12,
+                            borderRadius: 18,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 12,
+                            gap: 18,
                         }}
                     >
                         <AlertTriangle size={16} style={{ color: THEME.warning, flexShrink: 0 }} />
@@ -5357,7 +5357,7 @@ function DemoPostgresTab({ tabId }) {
                         <div
                             style={{
                                 padding: '5px 12px',
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 fontSize: 10,
                                 fontWeight: 600,
                                 background: THEME.warning,
@@ -5570,7 +5570,7 @@ function DemoPostgresTab({ tabId }) {
                                     alignItems: 'center',
                                     padding: '8px',
                                     background: THEME.surface,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                 }}
                             >
                                 <span style={{ fontSize: 11, color: THEME.textMain }}>Most Referenced Table</span>
@@ -5585,7 +5585,7 @@ function DemoPostgresTab({ tabId }) {
                                     alignItems: 'center',
                                     padding: '8px',
                                     background: THEME.surface,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                 }}
                             >
                                 <span style={{ fontSize: 11, color: THEME.textMain }}>Deepest Dependency Chain</span>
@@ -5600,7 +5600,7 @@ function DemoPostgresTab({ tabId }) {
                                     alignItems: 'center',
                                     padding: '8px',
                                     background: THEME.surface,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                 }}
                             >
                                 <span style={{ fontSize: 11, color: THEME.textMain }}>Orphan Tables</span>
@@ -5650,7 +5650,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '6px 8px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         color: THEME.textMain,
                                         fontSize: 11,
                                     }}
@@ -5671,7 +5671,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '6px 8px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         color: THEME.textMain,
                                         fontSize: 11,
                                     }}
@@ -5692,7 +5692,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '6px 8px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         color: THEME.textMain,
                                         fontSize: 11,
                                     }}
@@ -5713,7 +5713,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '6px 8px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         color: THEME.textMain,
                                         fontSize: 11,
                                     }}
@@ -5805,7 +5805,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         fontSize: 11,
                                         fontWeight: 600,
                                         color: THEME.textMain,
@@ -6121,7 +6121,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: '12px',
                                     background: `${THEME.success}15`,
                                     border: `1px solid ${THEME.success}30`,
-                                    borderRadius: 12,
+                                    borderRadius: 18,
                                     fontSize: 11,
                                     color: THEME.textMain,
                                 }}
@@ -6147,7 +6147,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         fontSize: 11,
                                         color: THEME.textMain,
                                     }}
@@ -6160,7 +6160,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         fontSize: 11,
                                         color: THEME.textMain,
                                     }}
@@ -6314,13 +6314,13 @@ function DemoPostgresTab({ tabId }) {
                     {/* Urgent banner */}
                     <div
                         style={{
-                            padding: '10px 14px',
+                            padding: '22px 28px',
                             background: `${THEME.danger}12`,
                             border: `1px solid ${THEME.danger}30`,
-                            borderRadius: 14,
+                            borderRadius: 20,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 10,
+                            gap: 22,
                         }}
                     >
                         <AlertTriangle size={16} style={{ color: THEME.danger }} />
@@ -6338,7 +6338,7 @@ function DemoPostgresTab({ tabId }) {
                                 padding: '4px 12px',
                                 background: `${THEME.danger}20`,
                                 border: `1px solid ${THEME.danger}40`,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 fontSize: 10,
                                 color: THEME.danger,
                                 fontWeight: 600,
@@ -6374,7 +6374,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.danger}15`,
                                                 border: `1px solid ${THEME.danger}30`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 fontSize: 9,
                                                 color: THEME.danger,
                                                 cursor: 'pointer',
@@ -6397,7 +6397,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.danger}15`,
                                                 border: `1px solid ${THEME.danger}30`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 fontSize: 9,
                                                 color: THEME.danger,
                                                 cursor: 'pointer',
@@ -6420,7 +6420,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.warning}15`,
                                                 border: `1px solid ${THEME.warning}30`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 fontSize: 9,
                                                 color: THEME.warning,
                                                 cursor: 'pointer',
@@ -6443,7 +6443,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.warning}15`,
                                                 border: `1px solid ${THEME.warning}30`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 fontSize: 9,
                                                 color: THEME.warning,
                                                 cursor: 'pointer',
@@ -6590,7 +6590,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             height: '8px',
                                             background: THEME.surface,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                             overflow: 'hidden',
                                         }}
                                     >
@@ -6599,7 +6599,7 @@ function DemoPostgresTab({ tabId }) {
                                                 width: `${(r.current / r.max) * 100}%`,
                                                 height: '100%',
                                                 background: r.color,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 transition: 'width 0.3s',
                                             }}
                                         />
@@ -6697,13 +6697,13 @@ function DemoPostgresTab({ tabId }) {
                     {/* Success banner */}
                     <div
                         style={{
-                            padding: '10px 14px',
+                            padding: '22px 28px',
                             background: `${THEME.success}12`,
                             border: `1px solid ${THEME.success}30`,
-                            borderRadius: 14,
+                            borderRadius: 20,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 10,
+                            gap: 22,
                         }}
                     >
                         <CheckCircle size={16} style={{ color: THEME.success }} />
@@ -6898,7 +6898,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.warning}20`,
                                                 border: `1px solid ${THEME.warning}30`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 fontSize: 9,
                                                 color: THEME.warning,
                                                 cursor: 'pointer',
@@ -6919,7 +6919,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.warning}20`,
                                                 border: `1px solid ${THEME.warning}30`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                                 fontSize: 9,
                                                 color: THEME.warning,
                                                 cursor: 'pointer',
@@ -6934,7 +6934,7 @@ function DemoPostgresTab({ tabId }) {
                     </Panel>
 
                     <Panel title="Recent Security Events" icon={Shield} accentColor={THEME.danger}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             {[
                                 {
                                     time: '14:32',
@@ -6960,10 +6960,10 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 10,
-                                        padding: '8px 12px',
+                                        gap: 22,
+                                        padding: '20px 24px',
                                         background: THEME.surface,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         borderLeft: `3px solid ${e.color}`,
                                     }}
                                 >
@@ -7052,7 +7052,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         fontSize: 11,
                                         color: THEME.textMain,
                                     }}
@@ -7269,17 +7269,17 @@ function DemoPostgresTab({ tabId }) {
                                 <MetricCard icon={Cpu} label="CPU Waits" value="42" color={THEME.primary} />
                             </div>
                             {/* Search / Filter Bar */}
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
                                 <div
                                     style={{
                                         flex: 1,
                                         minWidth: 200,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 8,
+                                        gap: 20,
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         padding: '6px 10px',
                                     }}
                                 >
@@ -7295,7 +7295,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '5px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 12,
+                                            borderRadius: 18,
                                             fontSize: 10,
                                             color: THEME.textMuted,
                                             cursor: 'pointer',
@@ -7701,7 +7701,7 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         padding: '12px',
                                         background: THEME.surface,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         textAlign: 'center',
                                     }}
                                 >
@@ -7819,7 +7819,7 @@ function DemoPostgresTab({ tabId }) {
                                         alignItems: 'center',
                                         padding: '10px',
                                         background: THEME.surface,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                     }}
                                 >
                                     <span style={{ fontSize: 11, color: THEME.textMain }}>{c.component}</span>
@@ -7950,7 +7950,7 @@ function DemoPostgresTab({ tabId }) {
                                 { anomaly: 'Connection spike detected', score: 0.76, timestamp: '4h ago' },
                                 { anomaly: 'Memory usage trend change', score: 0.62, timestamp: '6h ago' },
                             ].map((a, i) => (
-                                <div key={i} style={{ padding: '12px', background: THEME.surface, borderRadius: 6 }}>
+                                <div key={i} style={{ padding: '12px', background: THEME.surface, borderRadius: 18 }}>
                                     <div
                                         style={{
                                             fontSize: 11,
@@ -8013,13 +8013,13 @@ function DemoPostgresTab({ tabId }) {
                         />
                     </div>
                     <Panel title="SQL Editor" icon={Terminal} accentColor={THEME.ai}>
-                        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                        <div style={{ display: 'flex', gap: 20, marginBottom: 12 }}>
                             {['Run Query', 'Explain', 'Format', 'Save'].map((btn, i) => (
                                 <div
                                     key={i}
                                     style={{
                                         padding: '6px 14px',
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         fontSize: 10,
                                         fontWeight: 600,
                                         cursor: 'pointer',
@@ -8036,7 +8036,7 @@ function DemoPostgresTab({ tabId }) {
                             style={{
                                 background: '#ffffff',
                                 border: `1px solid ${THEME.glassBorder}`,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 padding: '14px',
                                 fontFamily: THEME.fontMono,
                                 fontSize: 11.5,
@@ -8156,17 +8156,17 @@ function DemoPostgresTab({ tabId }) {
                         />
                     </div>
                     {/* Search/filter bar */}
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
                         <div
                             style={{
                                 flex: 1,
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: 8,
+                                gap: 20,
                                 background: THEME.surface,
                                 border: `1px solid ${THEME.glassBorder}`,
-                                borderRadius: 14,
-                                padding: '8px 12px',
+                                borderRadius: 20,
+                                padding: '20px 24px',
                             }}
                         >
                             <FileSearch size={14} style={{ color: THEME.textMuted, flexShrink: 0 }} />
@@ -8178,10 +8178,10 @@ function DemoPostgresTab({ tabId }) {
                             <div
                                 key={i}
                                 style={{
-                                    padding: '8px 12px',
+                                    padding: '20px 24px',
                                     background: THEME.surface,
                                     border: `1px solid ${THEME.glassBorder}`,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                     fontSize: 10,
                                     color: THEME.textMuted,
                                     whiteSpace: 'nowrap',
@@ -8569,14 +8569,14 @@ function DemoPostgresTab({ tabId }) {
                     </div>
                     {/* AI Chat-like input */}
                     <Panel title="Ask AI Query Advisor" icon={Brain} accentColor={THEME.ai}>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16 }}>
+                        <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginBottom: 16 }}>
                             <div
                                 style={{
                                     flex: 1,
-                                    padding: '10px 14px',
+                                    padding: '22px 28px',
                                     background: THEME.surface,
                                     border: `1px solid ${THEME.glassBorder}`,
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                     fontSize: 11,
                                     color: THEME.textDim,
                                 }}
@@ -8585,10 +8585,10 @@ function DemoPostgresTab({ tabId }) {
                             </div>
                             <div
                                 style={{
-                                    padding: '10px 16px',
+                                    padding: '16px 22px',
                                     background: THEME.ai,
                                     color: '#fff',
-                                    borderRadius: 14,
+                                    borderRadius: 20,
                                     fontSize: 11,
                                     fontWeight: 600,
                                     cursor: 'pointer',
@@ -8602,7 +8602,7 @@ function DemoPostgresTab({ tabId }) {
                                 padding: 12,
                                 background: `${THEME.ai}10`,
                                 border: `1px solid ${THEME.ai}30`,
-                                borderRadius: 14,
+                                borderRadius: 20,
                                 fontSize: 11,
                                 color: THEME.textMain,
                                 lineHeight: 1.6,
@@ -8661,7 +8661,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         display: 'flex',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
@@ -8710,7 +8710,7 @@ function DemoPostgresTab({ tabId }) {
                                         <div
                                             style={{
                                                 padding: '5px 10px',
-                                                borderRadius: 12,
+                                                borderRadius: 18,
                                                 fontSize: 9,
                                                 fontWeight: 600,
                                                 background: `${THEME.success}15`,
@@ -8724,7 +8724,7 @@ function DemoPostgresTab({ tabId }) {
                                         <div
                                             style={{
                                                 padding: '5px 10px',
-                                                borderRadius: 12,
+                                                borderRadius: 18,
                                                 fontSize: 9,
                                                 fontWeight: 600,
                                                 background: THEME.surface,
@@ -8749,11 +8749,11 @@ function DemoPostgresTab({ tabId }) {
         // ═══════════════════════════════════════════════════════════════════════
         if (sectionKey === 'admin' && itemKey === 'dba-tasks') {
             return (
-                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                         DBA Task Scheduler
                     </h1>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                         <MetricCard
                             icon={Calendar}
                             label="Scheduled Tasks"
@@ -8814,7 +8814,7 @@ function DemoPostgresTab({ tabId }) {
                             ]}
                         />
                     </Panel>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                         <Panel title="TASK EXECUTION HISTORY" icon={BarChart3} accentColor={THEME.success}>
                             <ResponsiveContainer width="100%" height={180}>
                                 <BarChart
@@ -8835,7 +8835,7 @@ function DemoPostgresTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Bar dataKey="success" fill={THEME.success} radius={[4, 4, 0, 0]} />
@@ -8844,7 +8844,7 @@ function DemoPostgresTab({ tabId }) {
                             </ResponsiveContainer>
                         </Panel>
                         <Panel title="UPCOMING SCHEDULE" icon={Clock} accentColor={THEME.warning}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {[
                                     { task: 'VACUUM ANALYZE public.orders', time: 'In 2m 14s', color: THEME.primary },
                                     { task: 'pg_dump full backup', time: 'In 8h 12m', color: THEME.success },
@@ -8875,11 +8875,11 @@ function DemoPostgresTab({ tabId }) {
 
         if (sectionKey === 'admin' && itemKey === 'user-management') {
             return (
-                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                         User Management
                     </h1>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                         <MetricCard
                             icon={Users}
                             label="Total Users"
@@ -8961,7 +8961,7 @@ function DemoPostgresTab({ tabId }) {
                         />
                     </Panel>
                     <Panel title="ROLE PERMISSIONS" icon={Shield} accentColor={THEME.danger}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                             {[
                                 {
                                     role: 'Super Admin',
@@ -8993,7 +8993,7 @@ function DemoPostgresTab({ tabId }) {
                                     key={i}
                                     style={{
                                         padding: 12,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         background: `${r.color}08`,
                                         border: `1px solid ${r.color}18`,
                                     }}
@@ -9013,11 +9013,11 @@ function DemoPostgresTab({ tabId }) {
 
         if (sectionKey === 'admin' && itemKey === 'admin-panel') {
             return (
-                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                         Admin Panel
                     </h1>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                         <MetricCard
                             icon={Server}
                             label="Server Uptime"
@@ -9052,9 +9052,9 @@ function DemoPostgresTab({ tabId }) {
                             spark={Array.from({ length: 12 }, () => 20 + Math.random() * 40)}
                         />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                         <Panel title="SYSTEM CONFIGURATION" icon={Settings} accentColor={THEME.primary}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {[
                                     { key: 'max_connections', val: '500', def: '100' },
                                     { key: 'shared_buffers', val: '4GB', def: '128MB' },
@@ -9087,7 +9087,7 @@ function DemoPostgresTab({ tabId }) {
                             </div>
                         </Panel>
                         <Panel title="RECENT ADMIN ACTIONS" icon={FileText} accentColor={THEME.warning}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {[
                                     {
                                         action: 'Updated max_connections to 500',
@@ -9144,11 +9144,11 @@ function DemoPostgresTab({ tabId }) {
 
         if (sectionKey === 'admin' && itemKey === 'data-retention') {
             return (
-                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                         Data Retention
                     </h1>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                         <MetricCard
                             icon={Archive}
                             label="Retention Policies"
@@ -9257,7 +9257,7 @@ function DemoPostgresTab({ tabId }) {
                                     contentStyle={{
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                     }}
                                 />
                                 <Area
@@ -9285,13 +9285,13 @@ function DemoPostgresTab({ tabId }) {
 
         if (sectionKey === 'admin' && itemKey === 'report-builder') {
             return (
-                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                         Report Builder
                     </h1>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                         <Panel title="REPORT CONFIGURATION" icon={Settings} accentColor={THEME.primary}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                 <div>
                                     <div
                                         style={{
@@ -9306,8 +9306,8 @@ function DemoPostgresTab({ tabId }) {
                                     </div>
                                     <div
                                         style={{
-                                            padding: '8px 12px',
-                                            borderRadius: 12,
+                                            padding: '20px 24px',
+                                            borderRadius: 18,
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
                                             fontSize: 12,
@@ -9331,8 +9331,8 @@ function DemoPostgresTab({ tabId }) {
                                     </div>
                                     <div
                                         style={{
-                                            padding: '8px 12px',
-                                            borderRadius: 12,
+                                            padding: '20px 24px',
+                                            borderRadius: 18,
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
                                             fontSize: 12,
@@ -9368,8 +9368,8 @@ function DemoPostgresTab({ tabId }) {
                                             <div
                                                 key={i}
                                                 style={{
-                                                    padding: '10px 12px',
-                                                    borderRadius: 12,
+                                                    padding: '20px 24px',
+                                                    borderRadius: 18,
                                                     background: t.active ? `${THEME.primary}15` : THEME.surface,
                                                     border: `1px solid ${t.active ? THEME.primary : THEME.glassBorder}`,
                                                     cursor: 'pointer',
@@ -9400,7 +9400,7 @@ function DemoPostgresTab({ tabId }) {
                                 <div
                                     style={{
                                         display: 'flex',
-                                        gap: 8,
+                                        gap: 20,
                                         justifyContent: 'center',
                                         marginTop: 16,
                                         flexWrap: 'wrap',
@@ -9438,11 +9438,11 @@ function DemoPostgresTab({ tabId }) {
 
         if (sectionKey === 'admin' && itemKey === 'terraform-export') {
             return (
-                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                         Terraform Export
                     </h1>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                         <MetricCard icon={Code} label="Resources" value="24" sub="Exportable" color={THEME.primary} />
                         <MetricCard
                             icon={Download}
@@ -9464,7 +9464,7 @@ function DemoPostgresTab({ tabId }) {
                             style={{
                                 background: THEME.surface,
                                 border: `1px solid ${THEME.glassBorder}`,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 padding: 12,
                                 fontFamily: THEME.fontMono,
                                 fontSize: 10,
@@ -9499,11 +9499,11 @@ function DemoPostgresTab({ tabId }) {
 
         if (sectionKey === 'admin' && itemKey === 'custom-dashboards') {
             return (
-                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                         Custom Dashboards
                     </h1>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                         <MetricCard
                             icon={LayoutDashboard}
                             label="Dashboards"
@@ -9528,7 +9528,7 @@ function DemoPostgresTab({ tabId }) {
                         />
                     </div>
                     <Panel title="MY DASHBOARDS" icon={LayoutDashboard} accentColor={THEME.primary}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                             {[
                                 { name: 'Production Overview', widgets: 8, shared: true, color: THEME.primary },
                                 { name: 'Performance Deep Dive', widgets: 6, shared: true, color: THEME.ai },
@@ -9540,7 +9540,7 @@ function DemoPostgresTab({ tabId }) {
                                     key={i}
                                     style={{
                                         padding: 14,
-                                        borderRadius: 12,
+                                        borderRadius: 18,
                                         background: THEME.surface,
                                         border: `1px solid ${d.color}18`,
                                         position: 'relative',
@@ -9567,7 +9567,7 @@ function DemoPostgresTab({ tabId }) {
                                     >
                                         {d.name}
                                     </div>
-                                    <div style={{ display: 'flex', gap: 8, fontSize: 10 }}>
+                                    <div style={{ display: 'flex', gap: 20, fontSize: 10 }}>
                                         <span style={{ color: THEME.textDim }}>{d.widgets} widgets</span>
                                         {d.shared && <StatusBadge label="Shared" color={THEME.success} />}
                                     </div>
@@ -9600,7 +9600,7 @@ function DemoPostgresTab({ tabId }) {
                                     contentStyle={{
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                     }}
                                 />
                                 <Bar dataKey="count" fill={THEME.ai} radius={[0, 4, 4, 0]} />

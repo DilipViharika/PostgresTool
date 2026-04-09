@@ -26,9 +26,9 @@ const Styles = () => (
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
             border-top: 3px solid #3E6D8E;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             backdrop-filter: blur(12px);
             transition: all 0.25s ease;
             animation: mysql-fade 0.3s ease;
@@ -36,7 +36,7 @@ const Styles = () => (
 
         .mysql-card:hover {
             box-shadow: 0 12px 28px rgba(62,109,142,0.16);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
 
         .mysql-card-head {
@@ -45,18 +45,18 @@ const Styles = () => (
             border-bottom: 1px solid ${DARK_THEME.border};
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 22px;
             font-weight: 700;
         }
 
         .mysql-card-body {
-            padding: 16px 18px;
+            padding: 22px 26px;
         }
 
         .mysql-metric-box {
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 20px;
             text-align: center;
         }
@@ -88,7 +88,7 @@ const Styles = () => (
             margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 20px;
         }
 
         .mysql-table {
@@ -126,7 +126,7 @@ const Styles = () => (
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 20px;
             padding: 40px 20px;
             color: ${DARK_THEME.textMuted};
             font-size: 14px;
@@ -139,19 +139,19 @@ const Styles = () => (
         .mysql-error {
             background: ${DARK_THEME.danger}15;
             border: 1px solid ${DARK_THEME.danger};
-            border-radius: 10px;
+            border-radius: 20px;
             padding: 16px;
             color: ${DARK_THEME.danger};
             margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 22px;
         }
 
         .mysql-empty {
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 8px;
+            border-radius: 20px;
             padding: 32px 20px;
             text-align: center;
             color: ${DARK_THEME.textMuted};
@@ -166,7 +166,7 @@ const Styles = () => (
         .mysql-progress-bar {
             height: 8px;
             background: ${DARK_THEME.border};
-            border-radius: 14px;
+            border-radius: 20px;
             overflow: hidden;
             margin-top: 8px;
         }
@@ -380,7 +380,7 @@ export default function MySQLPerformanceTab() {
                                                         background: DARK_THEME.bg,
                                                         color: DARK_THEME.accent,
                                                         padding: '2px 6px',
-                                                        borderRadius: 4,
+                                                        borderRadius: 16,
                                                         fontSize: 11,
                                                         fontWeight: 600,
                                                     }}
@@ -442,7 +442,7 @@ export default function MySQLPerformanceTab() {
                                                         background: DARK_THEME.bg,
                                                         color: DARK_THEME.accent,
                                                         padding: '2px 6px',
-                                                        borderRadius: 4,
+                                                        borderRadius: 16,
                                                         fontSize: 11,
                                                         fontWeight: 600,
                                                     }}

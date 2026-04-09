@@ -53,9 +53,9 @@ const Styles = () => (
     .sec-card {
       background: var(--theme-surface);
       border: 1px solid var(--theme-glassBorder);
-      border-radius: 16px;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
       backdrop-filter: blur(12px);
       transition: all 0.25s ease;
       display: flex;
@@ -63,8 +63,8 @@ const Styles = () => (
     }
     .sec-card:hover {
       border-color: var(--theme-danger);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-4px);
     }
 
     .sec-card-stripe {
@@ -86,7 +86,7 @@ const Styles = () => (
       font-size: 13px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 22px;
     }
   `}</style>
 );
@@ -677,7 +677,7 @@ export default function AlertCorrelationTab() {
                         onChange={(e) => setSessionFilter(e.target.value)}
                         style={{
                             width: '100%',
-                            padding: '8px 12px',
+                            padding: '20px 24px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
                             borderRadius: '4px',
@@ -824,7 +824,7 @@ export default function AlertCorrelationTab() {
     const renderSensitivityPanel = () => {
         return (
             <div style={{ padding: '24px 28px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 20 }}>
                     <span style={{ fontSize: 18 }}>🎯</span>
                     <h3 style={{ color: THEME.textMain, margin: 0, fontSize: 15, fontWeight: 700 }}>
                         Anomaly Detection Sensitivity
@@ -864,7 +864,7 @@ export default function AlertCorrelationTab() {
                         style={{
                             marginBottom: 24,
                             background: THEME.surface,
-                            borderRadius: 10,
+                            borderRadius: 16,
                             padding: 16,
                             border: `1px solid ${THEME.glassBorder}`,
                         }}
@@ -904,7 +904,7 @@ export default function AlertCorrelationTab() {
                 <div
                     style={{
                         background: THEME.surface,
-                        borderRadius: 10,
+                        borderRadius: 16,
                         padding: 16,
                         border: `1px solid ${THEME.glassBorder}`,
                         display: 'flex',
@@ -925,7 +925,7 @@ export default function AlertCorrelationTab() {
                         style={{
                             width: 44,
                             height: 24,
-                            borderRadius: 12,
+                            borderRadius: 18,
                             background: sensitivity.autoCorrelate ? 'var(--theme-primary)' : THEME.glassBorder,
                             cursor: 'pointer',
                             position: 'relative',
@@ -947,7 +947,7 @@ export default function AlertCorrelationTab() {
                         />
                     </div>
                 </div>
-                <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
+                <div style={{ marginTop: 16, display: 'flex', gap: 22 }}>
                     <button
                         onClick={() =>
                             setSensitivity({
@@ -960,7 +960,7 @@ export default function AlertCorrelationTab() {
                         style={{
                             flex: 1,
                             padding: '10px 0',
-                            borderRadius: 8,
+                            borderRadius: 20,
                             border: `1px solid ${THEME.glassBorder}`,
                             background: 'transparent',
                             color: THEME.textDim,
@@ -975,7 +975,7 @@ export default function AlertCorrelationTab() {
                         style={{
                             flex: 2,
                             padding: '10px 0',
-                            borderRadius: 8,
+                            borderRadius: 20,
                             border: 'none',
                             background: 'var(--theme-primary)',
                             color: '#fff',
@@ -994,7 +994,7 @@ export default function AlertCorrelationTab() {
     const renderCausalChainTab = () => {
         return (
             <div style={{ padding: '24px 28px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 20 }}>
                     <span style={{ fontSize: 18 }}>🔗</span>
                     <h3 style={{ color: THEME.textMain, margin: 0, fontSize: 15, fontWeight: 700 }}>
                         Causal Chain Visualization
@@ -1019,7 +1019,7 @@ export default function AlertCorrelationTab() {
                                 style={{
                                     marginBottom: 16,
                                     background: THEME.surface,
-                                    borderRadius: 10,
+                                    borderRadius: 16,
                                     padding: 16,
                                     border: `1px solid ${THEME.glassBorder}`,
                                 }}
@@ -1034,14 +1034,14 @@ export default function AlertCorrelationTab() {
                                 >
                                     Chain #{gi + 1}: {group.root_cause || group.type || 'Alert Group'}
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                     {(group.events || group.alerts || []).slice(0, 4).map((alert, ai) => (
                                         <div
                                             key={ai}
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                gap: 8,
+                                                gap: 20,
                                                 position: 'relative',
                                             }}
                                         >
@@ -1420,7 +1420,7 @@ export default function AlertCorrelationTab() {
                 {error && (
                     <div
                         style={{
-                            padding: '12px 16px',
+                            padding: '18px 22px',
                             background: `rgba(255, 69, 96, 0.1)`,
                             border: `1px solid ${THEME.danger}`,
                             borderRadius: '6px',
@@ -1456,7 +1456,7 @@ export default function AlertCorrelationTab() {
                             <button
                                 onClick={() => setActiveLeftTab('groups')}
                                 style={{
-                                    padding: '12px 16px',
+                                    padding: '18px 22px',
                                     background: activeLeftTab === 'groups' ? THEME.surface : 'transparent',
                                     border: 'none',
                                     color: activeLeftTab === 'groups' ? THEME.primary : THEME.textMuted,
@@ -1475,7 +1475,7 @@ export default function AlertCorrelationTab() {
                             <button
                                 onClick={() => setActiveLeftTab('sessions')}
                                 style={{
-                                    padding: '12px 16px',
+                                    padding: '18px 22px',
                                     background: activeLeftTab === 'sessions' ? THEME.surface : 'transparent',
                                     border: 'none',
                                     color: activeLeftTab === 'sessions' ? THEME.primary : THEME.textMuted,
@@ -1494,7 +1494,7 @@ export default function AlertCorrelationTab() {
                             <button
                                 onClick={() => setActiveLeftTab('sensitivity')}
                                 style={{
-                                    padding: '12px 16px',
+                                    padding: '18px 22px',
                                     background: activeLeftTab === 'sensitivity' ? THEME.surface : 'transparent',
                                     border: 'none',
                                     color: activeLeftTab === 'sensitivity' ? THEME.primary : THEME.textMuted,
@@ -1517,7 +1517,7 @@ export default function AlertCorrelationTab() {
                             <button
                                 onClick={() => setActiveLeftTab('causal')}
                                 style={{
-                                    padding: '12px 16px',
+                                    padding: '18px 22px',
                                     background: activeLeftTab === 'causal' ? THEME.surface : 'transparent',
                                     border: 'none',
                                     color: activeLeftTab === 'causal' ? THEME.primary : THEME.textMuted,

@@ -123,31 +123,31 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
     const accent = THEME.primary || '#6366f1';
 
     return (
-            <div style={{ background:bg, border:`1px solid ${border}`, borderRadius:12, padding:24, maxWidth:480, width:'90%' }}>
+            <div style={{ background:bg, border:`1px solid ${border}`, borderRadius: 18, padding:24, maxWidth:480, width:'90%' }}>
                 <h3 style={{ margin:'0 0 16px', fontSize:18, fontWeight:700, color:txt }}>Register New SDK Application</h3>
 
                 {generatedKey ? (
                     <div>
                         <p style={{ margin:'0 0 12px', fontSize:13, color:sub }}>Your API key (save it — shown only once):</p>
-                        <div style={{ background:THEME.surfaceHover||'#1a1f45', border:`1px solid ${border}`, borderRadius:12, padding:12, marginBottom:16, display:'flex', alignItems:'center', gap:18, fontFamily:'monospace', fontSize:12 }}>
+                        <div style={{ background:THEME.surfaceHover||'#1a1f45', border:`1px solid ${border}`, borderRadius: 18, padding:12, marginBottom:16, display:'flex', alignItems:'center', gap:18, fontFamily:'monospace', fontSize:12 }}>
                             <code style={{ flex:1, overflow:'auto', color:txt }}>{generatedKey}</code>
                             <button onClick={handleCopy} style={{ border:'none', background:'transparent', color:accent, cursor:'pointer', flexShrink:0 }}>
                                 {copied ? <CheckCircle size={16}/> : <Copy size={16}/>}
                             </button>
                         </div>
-                        <button onClick={() => { setGeneratedKey(null); onClose(); }} style={{ width:'100%', padding:'10px 16px', borderRadius:12, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>Done</button>
+                        <button onClick={() => { setGeneratedKey(null); onClose(); }} style={{ width:'100%', padding:'10px 16px', borderRadius: 18, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>Done</button>
                     </div>
                 ) : (
                     <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
                         <div>
                             <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, letterSpacing:'0.02em', marginBottom:6 }}>App Name</label>
                             <input type="text" placeholder="My Salesforce Integration" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
-                                style={{ width:'100%', padding:'10px 12px', borderRadius:12, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13 }} />
+                                style={{ width:'100%', padding:'10px 12px', borderRadius: 18, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13 }} />
                         </div>
                         <div>
                             <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, letterSpacing:'0.02em', marginBottom:6 }}>App Type</label>
                             <select value={form.appType} onChange={e => setForm({...form, appType: e.target.value})}
-                                style={{ width:'100%', padding:'10px 12px', borderRadius:12, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13, cursor:'pointer' }}>
+                                style={{ width:'100%', padding:'10px 12px', borderRadius: 18, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13, cursor:'pointer' }}>
                                 <option value="salesforce">Salesforce</option>
                                 <option value="mulesoft">MuleSoft</option>
                                 <option value="nodejs">Node.js</option>
@@ -160,20 +160,20 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
                         <div>
                             <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, letterSpacing:'0.02em', marginBottom:6 }}>Environment</label>
                             <select value={form.environment} onChange={e => setForm({...form, environment: e.target.value})}
-                                style={{ width:'100%', padding:'10px 12px', borderRadius:12, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13, cursor:'pointer' }}>
+                                style={{ width:'100%', padding:'10px 12px', borderRadius: 18, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13, cursor:'pointer' }}>
                                 <option value="development">Development</option>
                                 <option value="staging">Staging</option>
                                 <option value="production">Production</option>
                             </select>
                         </div>
-                        {error && <div style={{ padding:'10px 14px', borderRadius:12, background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'#ef4444', fontSize:12 }}>{error}</div>}
+                        {error && <div style={{ padding:'10px 14px', borderRadius: 18, background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'#ef4444', fontSize:12 }}>{error}</div>}
                         <div style={{ display:'flex', gap:18 }}>
                             <button onClick={handleSubmit} disabled={submitting}
-                                style={{ flex:1, padding:'10px 16px', borderRadius:12, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer', opacity:submitting?0.6:1 }}>
+                                style={{ flex:1, padding:'10px 16px', borderRadius: 18, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer', opacity:submitting?0.6:1 }}>
                                 {submitting ? 'Registering...' : 'Register Application'}
                             </button>
                             <button onClick={onClose}
-                                style={{ padding:'10px 16px', borderRadius:12, border:`1px solid ${border}`, background:'transparent', color:sub, fontWeight:700, fontSize:13, cursor:'pointer' }}>Cancel</button>
+                                style={{ padding:'10px 16px', borderRadius: 18, border:`1px solid ${border}`, background:'transparent', color:sub, fontWeight:700, fontSize:13, cursor:'pointer' }}>Cancel</button>
                         </div>
                     </div>
                 )}
@@ -187,7 +187,7 @@ const Styles = () => (
         .sdk-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
+            border-radius: 20px;
             padding: 20px;
             position: relative;
             overflow: hidden;
@@ -196,7 +196,7 @@ const Styles = () => (
         }
         .sdk-card:hover {
             box-shadow: ${THEME.shadowMd};
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
         .sdk-card::after {
             content: '';
@@ -305,7 +305,7 @@ export default function SDKDashboardTab() {
                 </div>
                 <div style={{ display:'flex', gap:18 }}>
                     <button onClick={() => setShowModal(true)}
-                        style={{ display:'flex', alignItems:'center', gap:18, padding:'10px 16px', borderRadius:12, border:'none', background:accent, color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                        style={{ display:'flex', alignItems:'center', gap:18, padding:'10px 16px', borderRadius: 18, border:'none', background:accent, color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer' }}>
                         <Plus size={16}/> Register App
                     </button>
                 </div>
@@ -313,7 +313,7 @@ export default function SDKDashboardTab() {
 
             {/* Error */}
             {error && (
-                <div style={{ display:'flex', alignItems:'center', gap:18, padding:'12px 16px', borderRadius:12, background:'rgba(239,68,68,0.1)', border:`1px solid ${red}`, color:red, marginBottom:24, fontSize:13 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:18, padding:'12px 16px', borderRadius: 18, background:'rgba(239,68,68,0.1)', border:`1px solid ${red}`, color:red, marginBottom:24, fontSize:13 }}>
                     <AlertCircle size={16}/> {error}
                 </div>
             )}
@@ -326,7 +326,7 @@ export default function SDKDashboardTab() {
                     { label:'Error Rate', value:`${stats.errors}%`, icon:AlertTriangle, color:stats.errors>5?red:green },
                     { label:'Avg Latency', value:`${stats.latency}ms`, icon:Clock, color:yellow },
                 ].map((card, i) => (
-                    <div key={i} style={{ background:surface, border:`1px solid ${border}`, borderRadius:12, padding:20, textAlign:'center' }}>
+                    <div key={i} style={{ background:surface, border:`1px solid ${border}`, borderRadius: 18, padding:20, textAlign:'center' }}>
                         <card.icon size={20} color={card.color} style={{ margin:'0 auto 12px' }}/>
                         <p style={{ margin:'0 0 8px', fontSize:12, color:sub }}>{card.label}</p>
                         <p style={{ margin:0, fontSize:28, fontWeight:700, color:txt }}>{card.value}</p>
@@ -338,20 +338,20 @@ export default function SDKDashboardTab() {
             {apps.length > 0 ? (
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(340px, 1fr))', gap:20 }}>
                     {apps.map(app => (
-                        <div key={app.id} style={{ background:surface, border:`1px solid ${confirmDeleteId===app.id?red:border}`, borderRadius:12, padding:20, transition:'all 0.2s' }}>
+                        <div key={app.id} style={{ background:surface, border:`1px solid ${confirmDeleteId===app.id?red:border}`, borderRadius: 18, padding:20, transition:'all 0.2s' }}>
                             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12, paddingBottom:12, borderBottom:`1px solid ${border}40` }}>
                                 <div>
                                     <h4 style={{ margin:'0 0 4px', color:txt, fontSize:14, fontWeight:700 }}>{app.name}</h4>
                                     <p style={{ margin:0, color:sub, fontSize:12 }}>{typeLabel(app.app_type || app.appType)}</p>
                                 </div>
                                 <div style={{ display:'flex', alignItems:'flex-start', gap:18 }}>
-                                    <span style={{ padding:'4px 10px', borderRadius:4, fontSize:11, fontWeight:700, background:`${envColor(app.environment)}20`, color:envColor(app.environment) }}>
+                                    <span style={{ padding:'4px 10px', borderRadius: 16, fontSize:11, fontWeight:700, background:`${envColor(app.environment)}20`, color:envColor(app.environment) }}>
                                         {app.environment}
                                     </span>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(confirmDeleteId === app.id ? null : app.id); }}
                                         title="Delete app"
-                                        style={{ background:'transparent', border:'none', color:confirmDeleteId===app.id?red:sub, cursor:'pointer', padding:4, borderRadius:4, transition:'color 0.2s' }}>
+                                        style={{ background:'transparent', border:'none', color:confirmDeleteId===app.id?red:sub, cursor:'pointer', padding:4, borderRadius: 16, transition:'color 0.2s' }}>
                                         <Trash2 size={14}/>
                                     </button>
                                 </div>
@@ -359,13 +359,13 @@ export default function SDKDashboardTab() {
 
                             {/* Delete confirmation */}
                             {confirmDeleteId === app.id && (
-                                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 12px', marginBottom:12, borderRadius:12, background:`${red}10`, border:`1px solid ${red}30` }}>
+                                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 12px', marginBottom:12, borderRadius: 18, background:`${red}10`, border:`1px solid ${red}30` }}>
                                     <span style={{ fontSize:12, color:red, fontWeight:600 }}>Delete this app?</span>
                                     <div style={{ display:'flex', gap:18 }}>
                                         <button onClick={() => setConfirmDeleteId(null)}
-                                            style={{ padding:'4px 12px', borderRadius:6, border:`1px solid ${border}`, background:'transparent', color:sub, fontSize:12, fontWeight:600, cursor:'pointer' }}>Cancel</button>
+                                            style={{ padding:'4px 12px', borderRadius: 18, border:`1px solid ${border}`, background:'transparent', color:sub, fontSize:12, fontWeight:600, cursor:'pointer' }}>Cancel</button>
                                         <button onClick={() => handleDelete(app.id)} disabled={deletingId === app.id}
-                                            style={{ padding:'4px 12px', borderRadius:6, border:'none', background:red, color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer', opacity:deletingId===app.id?0.6:1 }}>
+                                            style={{ padding:'4px 12px', borderRadius: 18, border:'none', background:red, color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer', opacity:deletingId===app.id?0.6:1 }}>
                                             {deletingId === app.id ? 'Deleting...' : 'Delete'}
                                         </button>
                                     </div>
@@ -381,12 +381,12 @@ export default function SDKDashboardTab() {
                     ))}
                 </div>
             ) : !error && (
-                <div style={{ padding:'60px 20px', textAlign:'center', borderRadius:12, border:`2px dashed ${border}`, background:surface }}>
+                <div style={{ padding:'60px 20px', textAlign:'center', borderRadius: 18, border:`2px dashed ${border}`, background:surface }}>
                     <Layers size={48} color={sub} style={{ margin:'0 auto 16px' }}/>
                     <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:700, color:txt }}>No SDK Applications Yet</h3>
                     <p style={{ margin:'0 0 16px', fontSize:13, color:sub }}>Register your first SDK application to start monitoring events and metrics.</p>
                     <button onClick={() => setShowModal(true)}
-                        style={{ padding:'10px 20px', borderRadius:12, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>
+                        style={{ padding:'10px 20px', borderRadius: 18, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>
                         <Plus size={16} style={{ display:'inline', marginRight:6, verticalAlign:'middle' }}/> Register First Application
                     </button>
                 </div>

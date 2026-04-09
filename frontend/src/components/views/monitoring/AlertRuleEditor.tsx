@@ -14,18 +14,18 @@ const Styles = () => (
         .are-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             transition: all 0.25s ease;
             animation: areFade 0.3s ease;
             backdrop-filter: blur(12px);
         }
         .are-card:hover {
             box-shadow: 0 8px 28px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
         .are-card::after {
             content: '';
@@ -37,7 +37,7 @@ const Styles = () => (
             background: var(--tile-accent, ${THEME.primary});
             opacity: 0.7;
         }
-        .are-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .are-badge { display: inline-block; padding: 4px 10px; border-radius: 22px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .are-spin { animation: areSpin 1s linear infinite; }
     `}</style>
 );
@@ -140,7 +140,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                         onChange={(e) => handleChange('name', e.target.value)}
                         style={{
                             width: '100%',
-                            padding: '10px 12px',
+                            padding: '20px 24px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
                             borderRadius: '14px',
@@ -165,7 +165,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                         onChange={(e) => handleChange('metric', e.target.value)}
                         style={{
                             width: '100%',
-                            padding: '10px 12px',
+                            padding: '20px 24px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
                             borderRadius: '14px',
@@ -192,7 +192,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                         onChange={(e) => handleChange('condition', e.target.value)}
                         style={{
                             width: '100%',
-                            padding: '10px 12px',
+                            padding: '20px 24px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
                             borderRadius: '14px',
@@ -221,7 +221,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                         onChange={(e) => handleChange('threshold', Number(e.target.value))}
                         style={{
                             width: '100%',
-                            padding: '10px 12px',
+                            padding: '20px 24px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
                             borderRadius: '14px',
@@ -246,7 +246,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                         onChange={(e) => handleChange('duration', e.target.value)}
                         style={{
                             width: '100%',
-                            padding: '10px 12px',
+                            padding: '20px 24px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
                             borderRadius: '14px',
@@ -273,7 +273,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                         onChange={(e) => handleChange('severity', e.target.value)}
                         style={{
                             width: '100%',
-                            padding: '10px 12px',
+                            padding: '20px 24px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
                             borderRadius: '14px',
@@ -306,7 +306,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                                 type="button"
                                 onClick={() => handleChannelToggle(channel.id)}
                                 style={{
-                                    padding: '8px 12px',
+                                    padding: '20px 24px',
                                     background: isActive ? `${THEME.primary}20` : THEME.surface,
                                     border: `1px solid ${isActive ? THEME.borderHot : THEME.glassBorder}`,
                                     borderRadius: '14px',
@@ -366,7 +366,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                     type="button"
                     onClick={onCancel}
                     style={{
-                        padding: '10px 16px',
+                        padding: '16px 22px',
                         background: THEME.surfaceLight,
                         color: THEME.textMain,
                         border: `1px solid ${THEME.glassBorder}`,
@@ -392,7 +392,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                     type="submit"
                     disabled={saving}
                     style={{
-                        padding: '10px 16px',
+                        padding: '16px 22px',
                         background: THEME.primary,
                         color: THEME.void,
                         border: 'none',
@@ -512,7 +512,7 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                 <button
                     onClick={() => onEdit(rule)}
                     style={{
-                        padding: '8px 12px',
+                        padding: '20px 24px',
                         background: THEME.surfaceLight,
                         color: THEME.textMain,
                         border: `1px solid ${THEME.glassBorder}`,
@@ -542,7 +542,7 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                     onClick={() => onDelete(rule.id)}
                     disabled={deleting}
                     style={{
-                        padding: '8px 12px',
+                        padding: '20px 24px',
                         background: `${THEME.danger}15`,
                         color: THEME.danger,
                         border: `1px solid ${THEME.danger}40`,
@@ -680,7 +680,7 @@ export default function AlertRuleEditor() {
                     <button
                         onClick={handleAddNew}
                         style={{
-                            padding: '10px 16px',
+                            padding: '16px 22px',
                             background: THEME.primary,
                             color: THEME.void,
                             border: 'none',
@@ -790,7 +790,7 @@ export default function AlertRuleEditor() {
                             <button
                                 onClick={handleAddNew}
                                 style={{
-                                    padding: '10px 16px',
+                                    padding: '16px 22px',
                                     background: THEME.primary,
                                     color: THEME.void,
                                     border: 'none',

@@ -233,7 +233,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
   }, [form.allowedScreens]);
 
   const strictInputStyle = {
-    padding: '10px 12px',
+    padding: '20px 24px',
     borderRadius: '8px',
     border: `1px solid ${T.glassBorder}`,
     background: T.surfaceRaised,
@@ -300,7 +300,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
               onClick={() => setActiveTab(tab)}
               style={{
                 flex: 1,
-                padding: '10px 16px',
+                padding: '16px 22px',
                 border: 'none',
                 background: activeTab === tab ? T.surface : 'transparent',
                 color: activeTab === tab ? T.primary : T.textDim,
@@ -455,7 +455,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                         type="button"
                         onClick={() => setForm(prev => ({ ...prev, role: role.id }))}
                         style={{
-                          padding: '12px 16px',
+                          padding: '18px 22px',
                           borderRadius: '8px',
                           border: `2px solid ${form.role === role.id ? role.color || T.primary : T.glassBorder}`,
                           background: form.role === role.id ? `${role.color || T.primary}20` : T.surfaceRaised,
@@ -514,7 +514,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                     type="button"
                     onClick={handleApplyRoleDefaults}
                     style={{
-                      padding: '8px 14px',
+                      padding: '14px 20px',
                       borderRadius: '6px',
                       border: `1px solid ${T.primary}`,
                       background: `${T.primary}20`,
@@ -542,7 +542,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                 {/* Role defaults banner */}
                 {showRoleDefaults && (
                   <div style={{
-                    padding: '12px 14px',
+                    padding: '22px 28px',
                     borderRadius: '8px',
                     background: `${T.primary}15`,
                     border: `1px solid ${T.primary}40`,
@@ -692,7 +692,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
 
                 {/* Summary */}
                 <div style={{
-                  padding: '12px 14px',
+                  padding: '22px 28px',
                   borderRadius: '8px',
                   background: T.surfaceRaised,
                   fontSize: '13px',
@@ -708,7 +708,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
             {activeTab === 'security' && (
               <div style={{ display: 'grid', gap: '16px' }}>
                 <div style={{
-                  padding: '14px 16px',
+                  padding: '18px 22px',
                   borderRadius: '8px',
                   border: `1px solid ${T.glassBorder}`,
                   background: T.surfaceRaised,
@@ -734,7 +734,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                 </div>
 
                 <div style={{
-                  padding: '14px 16px',
+                  padding: '18px 22px',
                   borderRadius: '8px',
                   border: `1px solid ${T.glassBorder}`,
                   background: T.surfaceRaised,
@@ -959,7 +959,7 @@ const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
             onClick={() => onResetPassword(user)}
             style={{
               flex: 1,
-              padding: '10px 16px',
+              padding: '16px 22px',
               borderRadius: '8px',
               border: `1px solid ${T.glassBorder}`,
               background: 'transparent',
@@ -975,7 +975,7 @@ const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
             onClick={() => onEdit(user)}
             style={{
               flex: 1,
-              padding: '10px 16px',
+              padding: '16px 22px',
               borderRadius: '8px',
               border: 'none',
               background: T.primary,
@@ -1066,7 +1066,7 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
                 placeholder="••••••••"
                 style={{
                   flex: 1,
-                  padding: '10px 12px',
+                  padding: '20px 24px',
                   borderRadius: '8px',
                   border: `1px solid ${T.glassBorder}`,
                   background: T.surfaceRaised,
@@ -1079,7 +1079,7 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
-                  padding: '10px 12px',
+                  padding: '20px 24px',
                   borderRadius: '8px',
                   border: `1px solid ${T.glassBorder}`,
                   background: T.surfaceRaised,
@@ -1096,7 +1096,7 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
             type="button"
             onClick={handleGeneratePassword}
             style={{
-              padding: '10px 16px',
+              padding: '16px 22px',
               borderRadius: '8px',
               border: `1px solid ${T.glassBorder}`,
               background: T.surfaceRaised,

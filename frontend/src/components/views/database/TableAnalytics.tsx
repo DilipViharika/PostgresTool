@@ -35,7 +35,7 @@ const CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:${THEME.textMuted}1a;border-radius:12px}
+::-webkit-scrollbar-thumb{background:${THEME.textMuted}1a;border-radius: 22px}
 @keyframes ud-spin  {to{transform:rotate(360deg)}}
 @keyframes ud-rise  {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ud-pulse {0%,100%{opacity:1}50%{opacity:.45}}
@@ -46,13 +46,13 @@ const CSS = `
 .ud-card {
     background:${THEME.surface};
     border:1px solid ${THEME.grid};
-    border-radius:16px;
+    border-radius: 20px;
     overflow:hidden;
     box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
     backdrop-filter:blur(12px);
     transition:all 0.2s ease;
 }
-.ud-card:hover{box-shadow:0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);transform:translateY(-2px)}
+.ud-card:hover{box-shadow:0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);transform:translateY(-4px)}
 .ud-card-header {
     height:30px;
     background:${THEME.textMain}06;
@@ -82,7 +82,7 @@ const CSS = `
 .ai-token{animation:ud-typewriter .15s ease both}
 .ud-group-tab{
     padding:8px 16px;
-    border-radius:12px;
+    border-radius: 22px;
     border:1px solid transparent;
     cursor:pointer;
     background:transparent;
@@ -104,7 +104,7 @@ const CSS = `
 }
 .ud-sub-tab{
     padding:7px 14px;
-    border-radius:10px;
+    border-radius: 20px;
     border:none;
     cursor:pointer;
     background:transparent;
@@ -172,7 +172,7 @@ const fmtMs = ms => ms >= 1000 ? `${(ms/1000).toFixed(2)}s` : `${ms}ms`;
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px', fontSize: 12, fontFamily: THEME.fontMono, color: THEME.textMain }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20, padding: '20px 24px', fontSize: 12, fontFamily: THEME.fontMono, color: THEME.textMain }}>
             {label && <div style={{ color: THEME.textDim, marginBottom: 4 }}>{label}</div>}
             {payload.map((p, i) => (
                 <div key={i} style={{ color: p.color, fontWeight: 600 }}>{p.name}: {typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</div>
@@ -214,7 +214,7 @@ const Chip = ({ children, color, size = 'md' }) => (
     <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 4,
         padding: size === 'sm' ? '2px 7px' : '3px 10px',
-        borderRadius: 5, fontFamily: THEME.fontMono,
+        borderRadius: 16, fontFamily: THEME.fontMono,
         fontSize: size === 'sm' ? 10 : 11, fontWeight: 600,
         background: `${color}1a`, color, border: `1px solid ${color}30`,
         whiteSpace: 'nowrap', letterSpacing: '.01em',
@@ -243,8 +243,8 @@ const SecHead = ({ Icon, title, sub, accent, right }) => {
     const ac = accent || THEME.primary;
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, paddingBottom: 14, borderBottom: `1px solid ${THEME.glassBorder}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${ac}10`, border: `1px solid ${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 20, background: `${ac}10`, border: `1px solid ${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Icon size={15} color={ac} strokeWidth={2} />
                 </div>
                 <div>
@@ -252,32 +252,32 @@ const SecHead = ({ Icon, title, sub, accent, right }) => {
                     {sub && <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 2 }}>{sub}</div>}
                 </div>
             </div>
-            {right && <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>{right}</div>}
+            {right && <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>{right}</div>}
         </div>
     );
 };
 
 const THead = ({ cols, labels }) => (
-    <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '9px 18px', gap: 12, borderBottom: `1px solid ${THEME.glassBorder}`, fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.08em', fontFamily: THEME.fontMono, background: `${THEME.primary}06` }}>
+    <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '9px 18px', gap: 18, borderBottom: `1px solid ${THEME.glassBorder}`, fontSize: 10, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.08em', fontFamily: THEME.fontMono, background: `${THEME.primary}06` }}>
         {labels.map(l => <span key={l}>{l}</span>)}
     </div>
 );
 
 const TRow = ({ cols, children, i = 0 }) => (
-    <div className="ud-row" style={{ display: 'grid', gridTemplateColumns: cols, padding: '12px 18px', gap: 12, borderBottom: `1px solid ${THEME.glassBorder}50`, alignItems: 'center', background: i % 2 !== 0 ? `${THEME.glassBorder}30` : 'transparent' }}>
+    <div className="ud-row" style={{ display: 'grid', gridTemplateColumns: cols, padding: '12px 18px', gap: 18, borderBottom: `1px solid ${THEME.glassBorder}50`, alignItems: 'center', background: i % 2 !== 0 ? `${THEME.glassBorder}30` : 'transparent' }}>
         {children}
     </div>
 );
 
 const Loader = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 200, gap: 14 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 200, gap: 20 }}>
         <div style={{ width: 36, height: 36, borderRadius: '50%', border: `2px solid ${THEME.primary}30`, borderTopColor: THEME.primary, animation: 'ud-spin 1s linear infinite' }} />
         <span style={{ fontSize: 12, color: THEME.textDim, fontFamily: THEME.fontMono }}>Loading…</span>
     </div>
 );
 
 const ErrUI = ({ msg }) => (
-    <div style={{ padding: '14px 18px', borderRadius: 10, background: `${THEME.danger}0d`, border: `1px solid ${THEME.danger}25`, color: THEME.danger, fontSize: 13, display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div style={{ padding: '20px 24px', borderRadius: 16, background: `${THEME.danger}0d`, border: `1px solid ${THEME.danger}25`, color: THEME.danger, fontSize: 13, display: 'flex', alignItems: 'center', gap: 22 }}>
         <AlertCircle size={16} />{msg}
     </div>
 );
@@ -303,7 +303,7 @@ const FilterSelect = React.memo(function FilterSelect({ label, filterKey, val, o
                     onChange={e => onUpd(filterKey, e.target.value)}
                     disabled={opts.length === 0}
                     style={{
-                        width: '100%', padding: '9px 32px 9px 12px', borderRadius: 8,
+                        width: '100%', padding: '9px 32px 9px 12px', borderRadius: 20,
                         border: `1px solid ${active ? THEME.primary + '55' : THEME.glassBorder}`,
                         background: active ? `${THEME.primary}0c` : THEME.surface,
                         color: active ? THEME.textMain : THEME.textMuted,
@@ -343,9 +343,9 @@ const FilterBar = React.memo(function FilterBar({ filter, setFilter, allTables, 
     }, [setFilter]);
     const hasFilter = filter.db || filter.schema || filter.table;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, padding: '16px 20px', display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 18, padding: '22px 28px', display: 'flex', gap: 22, alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, paddingBottom: 2 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 8, background: `${THEME.cyan}12`, border: `1px solid ${THEME.cyan}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 20, background: `${THEME.cyan}12`, border: `1px solid ${THEME.cyan}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Filter size={15} color={THEME.cyan} />
                 </div>
                 <div>
@@ -353,18 +353,18 @@ const FilterBar = React.memo(function FilterBar({ filter, setFilter, allTables, 
                     <div style={{ fontSize: 11, color: THEME.textDim }}>{hasFilter ? `${[filter.db, filter.schema, filter.table].filter(Boolean).length} active` : 'Showing all'}</div>
                 </div>
             </div>
-            <div style={{ display: 'flex', gap: 12, flex: 1, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 18, flex: 1, flexWrap: 'wrap' }}>
                 {dbs.length > 0 && <FilterSelect label="Database" filterKey="db" val={filter.db} opts={dbs} ph="All databases" onUpd={upd} />}
                 <FilterSelect label="Schema" filterKey="schema" val={filter.schema} opts={schemas} ph="All schemas" onUpd={upd} />
                 <FilterSelect label="Table"  filterKey="table"  val={filter.table}  opts={tableList} ph="All tables" onUpd={upd} />
             </div>
             {hasFilter && (
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, paddingBottom: 2 }}>
-                    <div style={{ padding: '8px 12px', borderRadius: 8, background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}25`, fontSize: 12, color: THEME.primary, fontFamily: THEME.fontMono, fontWeight: 600, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 20, paddingBottom: 2 }}>
+                    <div style={{ padding: '20px 24px', borderRadius: 20, background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}25`, fontSize: 12, color: THEME.primary, fontFamily: THEME.fontMono, fontWeight: 600, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>
                         {[filter.db, filter.schema, filter.table].filter(Boolean).join(' › ')}
                     </div>
                     <button className="ud-btn" onClick={() => setFilter({ db: '', schema: '', table: '' })}
-                            style={{ padding: '8px 12px', borderRadius: 8, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textDim, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+                            style={{ padding: '20px 24px', borderRadius: 20, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textDim, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
                         ✕ Clear
                     </button>
                 </div>
@@ -403,7 +403,7 @@ function S_Health() {
                     </BarChart>
                 </ResponsiveContainer>
             </Card>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(250px,1fr))', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(250px,1fr))', gap: 20 }}>
                 {rows.map((t, i) => {
                     const dead   = Number(t.deadPct);
                     const health = Math.max(0, Math.round(100 - dead * 2));
@@ -423,7 +423,7 @@ function S_Health() {
                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 12, color: dClr(dead), fontWeight: 600 }}>{dead}%</span>
                             </div>
                             <Bar2 v={dead} max={50} color={dClr(dead)} h={4} />
-                            <div style={{ marginTop: 12, padding: '5px 10px', borderRadius: 6, background: `${color}0f`, border: `1px solid ${color}20`, fontSize: 11, fontWeight: 600, color }}>
+                            <div style={{ marginTop: 12, padding: '5px 10px', borderRadius: 18, background: `${color}0f`, border: `1px solid ${color}20`, fontSize: 11, fontWeight: 600, color }}>
                                 → {rec}
                             </div>
                         </Card>
@@ -461,7 +461,7 @@ function S_Activity() {
                         {metrics.map(m => <Bar key={m.key} dataKey={m.key} name={m.label} fill={m.color} radius={[3,3,0,0]} />)}
                     </BarChart>
                 </ResponsiveContainer>
-                <div style={{ display: 'flex', gap: 16, justifyContent: 'center', paddingTop: 6 }}>
+                <div style={{ display: 'flex', gap: 22, justifyContent: 'center', paddingTop: 6 }}>
                     {metrics.map(m => (
                         <div key={m.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                             <div style={{ width: 8, height: 8, borderRadius: 2, background: m.color }} />
@@ -522,7 +522,7 @@ function S_Forecast() {
                     </BarChart>
                 </ResponsiveContainer>
             </Card>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 20 }}>
                 {rows.map((r, i) => {
                     const dead = Number(r.deadPct);
                     const risk = dead > 20 ? 'Critical' : dead > 10 ? 'High' : 'Normal';
@@ -543,7 +543,7 @@ function S_Forecast() {
                                 <span style={{ color: THEME.warning }}>20% threshold</span>
                                 <span>50%</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, padding: '10px 14px', borderRadius: 8, background: `${THEME.glassBorder}40` }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, padding: '22px 28px', borderRadius: 20, background: `${THEME.glassBorder}40` }}>
                                 <div>
                                     <div style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono,  letterSpacing: '.05em' }}>Current</div>
                                     <div style={{ fontSize: 18, fontWeight: 700, color: c, fontFamily: THEME.fontMono, marginTop: 2 }}>{dead}%</div>
@@ -656,8 +656,8 @@ function S_Columns() {
             <SecHead Icon={Search} accent={THEME.purple} title="Column Stats Explorer"
                      sub="Null percentage, distinct counts, and most common values"
                      right={<Chip color={THEME.purple}>{rows.length} columns</Chip>} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
-                <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 20 }}>
+                <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 22 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.07em', fontFamily: THEME.fontMono }}>Null Distribution</div>
                     <PieChart width={140} height={140}>
                         <Pie data={nullDist} cx={65} cy={65} innerRadius={38} outerRadius={60} dataKey="value" paddingAngle={3}>
@@ -770,16 +770,16 @@ function S_Schema() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <SecHead Icon={HardDrive} accent={THEME.purple} title="Schema Change History" sub="DDL audit log — requires pgAudit extension for live tracking" />
             {!rows.length ? <EmptyUI msg="No DDL events for the selected scope." /> : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     {rows.map((e, i) => {
                         const tc = e.risk === 'high' ? THEME.danger : e.risk === 'medium' ? THEME.warning : THEME.success;
                         return (
                             <Card key={i} style={{ padding: 0, overflow: 'hidden' }}>
                                 <div style={{ display: 'flex' }}>
                                     <div style={{ width: 3, background: tc, flexShrink: 0 }} />
-                                    <div style={{ padding: '14px 18px', flex: 1 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <div style={{ padding: '20px 24px', flex: 1 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 22, marginBottom: 8 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                                                 <Chip color={tc} size="sm">{e.type}</Chip>
                                                 <span style={{ fontFamily: THEME.fontMono, fontSize: 13, fontWeight: 600, color: THEME.textMain }}>{e.schema}.{e.obj}</span>
                                             </div>
@@ -1252,7 +1252,7 @@ function S_Deps() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
             {/* Header + toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 22 }}>
                 <SecHead Icon={Zap} accent={THEME.cyan}
                          title="Dependency Mind Map"
                          sub="FK relationships & cascade chains — click any branch to explore" />
@@ -1260,7 +1260,7 @@ function S_Deps() {
                     {['map', 'table'].map(m => (
                         <button key={m} className="ud-btn" onClick={() => setViewMode(m)}
                                 style={{
-                                    padding: '5px 12px', borderRadius: 7, fontSize: 11, fontWeight: 600,
+                                    padding: '5px 12px', borderRadius: 18, fontSize: 11, fontWeight: 600,
                                     fontFamily: THEME.fontMono, cursor: 'pointer',
                                     background: viewMode === m ? `${THEME.cyan}20` : 'transparent',
                                     border: `1px solid ${viewMode === m ? THEME.cyan : THEME.glassBorder}`,
@@ -1271,7 +1271,7 @@ function S_Deps() {
                     ))}
                     {selected && (
                         <button className="ud-btn" onClick={() => setSelected(null)}
-                                style={{ padding: '5px 10px', borderRadius: 7, fontSize: 11,
+                                style={{ padding: '5px 10px', borderRadius: 18, fontSize: 11,
                                     fontFamily: THEME.fontMono, cursor: 'pointer',
                                     background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}40`,
                                     color: THEME.danger }}>
@@ -1282,7 +1282,7 @@ function S_Deps() {
             </div>
 
             {/* Legend */}
-            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', padding: '7px 14px', borderRadius: 8, background: `${THEME.glassBorder}22` }}>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', padding: '7px 14px', borderRadius: 20, background: `${THEME.glassBorder}22` }}>
                 {[
                     { color: CHART_COLORS[0], label: 'Depends On (outgoing FK)' },
                     { color: CHART_COLORS[1], label: 'Referenced By (incoming FK)' },
@@ -1301,7 +1301,7 @@ function S_Deps() {
 
             {viewMode === 'map' ? (
                 <div style={{
-                    borderRadius: 14, overflow: 'hidden',
+                    borderRadius: 20, overflow: 'hidden',
                     border: `1px solid ${THEME.glassBorder}`,
                     background: `radial-gradient(ellipse at 50% 50%, ${THEME.cyan}05 0%, ${THEME.deepTeal} 70%)`,
                 }}>
@@ -1435,9 +1435,9 @@ function S_Indexes() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <SecHead Icon={Eye} accent={THEME.primary} title="Index Analysis"
                      sub="Usage rates, sizes, scan counts, and unused index detection"
-                     right={<div style={{ display: 'flex', gap: 8 }}><Chip color={THEME.primary}>{rows.length} indexes</Chip>{unused.length > 0 && <Chip color={THEME.danger}>{unused.length} unused</Chip>}</div>} />
+                     right={<div style={{ display: 'flex', gap: 20 }}><Chip color={THEME.primary}>{rows.length} indexes</Chip>{unused.length > 0 && <Chip color={THEME.danger}>{unused.length} unused</Chip>}</div>} />
             {unused.length > 0 && (
-                <div style={{ padding: '12px 16px', borderRadius: 10, background: `${THEME.danger}0d`, border: `1px solid ${THEME.danger}25`, fontSize: 13, color: THEME.danger, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ padding: '18px 22px', borderRadius: 16, background: `${THEME.danger}0d`, border: `1px solid ${THEME.danger}25`, fontSize: 13, color: THEME.danger, display: 'flex', alignItems: 'center', gap: 22 }}>
                     <AlertTriangle size={15} />
                     {unused.length} unused index{unused.length > 1 ? 'es' : ''} detected — consuming write overhead with no read benefit.
                 </div>
@@ -1512,7 +1512,7 @@ function S_Sizes() {
                     </BarChart>
                 </ResponsiveContainer>
             </Card>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: 20 }}>
                 {rows.map((s, i) => {
                     const heap  = Number(s.heapBytes  ?? 0);
                     const idx   = Number(s.indexBytes ?? 0);
@@ -1535,10 +1535,10 @@ function S_Sizes() {
                                 <Chip color={bc}>Bloat {bloat}%</Chip>
                             </div>
                             <StackBar segs={segs} h={9} />
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 12 }}>
                                 {segs.map(seg => (
                                     <div key={seg.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                             <div style={{ width: 8, height: 8, borderRadius: 2, background: seg.color }} />
                                             <span style={{ fontSize: 12, color: THEME.textDim }}>{seg.label}</span>
                                         </div>
@@ -1547,7 +1547,7 @@ function S_Sizes() {
                                 ))}
                             </div>
                             {bloat > 30 && (
-                                <div style={{ marginTop: 12, padding: '7px 10px', borderRadius: 6, background: `${THEME.danger}0d`, border: `1px solid ${THEME.danger}20`, fontSize: 11, color: THEME.danger }}>
+                                <div style={{ marginTop: 12, padding: '7px 10px', borderRadius: 18, background: `${THEME.danger}0d`, border: `1px solid ${THEME.danger}20`, fontSize: 11, color: THEME.danger }}>
                                     → Consider VACUUM FULL or pg_repack
                                 </div>
                             )}
@@ -1582,18 +1582,18 @@ function S_QueryPerf() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <SecHead Icon={FileText} accent={THEME.warning} title="Query Performance"
                      sub="Slow queries, call frequency, and execution time from pg_stat_statements"
-                     right={<div style={{ display: 'flex', gap: 8 }}>
+                     right={<div style={{ display: 'flex', gap: 20 }}>
                          <Chip color={THEME.primary}>{totalCalls.toLocaleString()} calls</Chip>
                          {slowQueries > 0 && <Chip color={THEME.danger}>{slowQueries} slow</Chip>}
                      </div>} />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
                 {[
                     { label: 'Total Queries', val: rows.length, color: THEME.primary },
                     { label: 'Total Calls',   val: totalCalls.toLocaleString(), color: THEME.cyan },
                     { label: 'Slow (>100ms)', val: slowQueries, color: slowQueries > 0 ? THEME.danger : THEME.success },
                     { label: 'Avg Mean Time', val: fmtMs(Math.round(rows.reduce((s,q) => s + safeNum(q.meanMs ?? q.mean_exec_time), 0) / rows.length)), color: THEME.warning },
                 ].map((k, i) => (
-                    <Card key={i} style={{ padding: '14px 16px', textAlign: 'center' }}>
+                    <Card key={i} style={{ padding: '18px 22px', textAlign: 'center' }}>
                         <div style={{ fontSize: 22, fontWeight: 800, color: k.color, fontFamily: THEME.fontMono }}>{k.val}</div>
                         <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4 }}>{k.label}</div>
                     </Card>
@@ -1664,18 +1664,18 @@ function S_Locks() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <SecHead Icon={Lock} accent={THEME.danger} title="Lock & Contention Monitor"
                      sub="Active locks, blocking chains, and deadlock risk from pg_locks"
-                     right={<div style={{ display: 'flex', gap: 8 }}>
+                     right={<div style={{ display: 'flex', gap: 20 }}>
                          <Chip color={THEME.primary}>{data.length} locks</Chip>
                          {blocked.length > 0 && <Chip color={THEME.danger}>{blocked.length} blocked</Chip>}
                      </div>} />
             {blocked.length > 0 && (
-                <div style={{ padding: '12px 16px', borderRadius: 10, background: `${THEME.danger}0d`, border: `1px solid ${THEME.danger}25`, fontSize: 13, color: THEME.danger, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ padding: '18px 22px', borderRadius: 16, background: `${THEME.danger}0d`, border: `1px solid ${THEME.danger}25`, fontSize: 13, color: THEME.danger, display: 'flex', alignItems: 'center', gap: 22 }}>
                     <AlertTriangle size={15} />
                     {blocked.length} session{blocked.length > 1 ? 's are' : ' is'} blocked — potential deadlock or long-running transaction holding locks.
                 </div>
             )}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
-                <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 20 }}>
+                <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.07em', fontFamily: THEME.fontMono }}>Lock Types</div>
                     {pieData.length > 0 ? (
                         <>
@@ -1750,7 +1750,7 @@ function S_Autovacuum() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <SecHead Icon={RefreshCw} accent={THEME.success} title="Autovacuum Tracker"
                      sub="Last vacuum/analyze timestamps, daemon run counts, and overdue tables"
-                     right={<div style={{ display: 'flex', gap: 8 }}>
+                     right={<div style={{ display: 'flex', gap: 20 }}>
                          {neverVacuumed > 0 && <Chip color={THEME.danger}>{neverVacuumed} never vacuumed</Chip>}
                          {overdue > 0 && <Chip color={THEME.warning}>{overdue} overdue</Chip>}
                      </div>} />
@@ -1817,7 +1817,7 @@ function S_Connections() {
             <SecHead Icon={Users} accent={THEME.cyan} title="Connection Pool Stats"
                      sub="Active, idle, and waiting connections from pg_stat_activity"
                      right={<Chip color={total > 80 ? THEME.danger : THEME.primary}>{total} total</Chip>} />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
                 {[
                     { label: 'Total',   val: total,   color: THEME.primary },
                     { label: 'Active',  val: active,  color: THEME.success },
@@ -1832,8 +1832,8 @@ function S_Connections() {
                 ))}
             </div>
             {total > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
-                    <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 20 }}>
+                    <Card style={{ padding: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textDim,  letterSpacing: '.07em', fontFamily: THEME.fontMono }}>By State</div>
                         <PieChart width={140} height={140}>
                             <Pie data={chartData} cx={65} cy={65} innerRadius={38} outerRadius={60} dataKey="count" paddingAngle={3}>
@@ -1860,7 +1860,7 @@ function S_Connections() {
                                     <span style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted }}>{c.appName || c.application_name || '—'}</span>
                                     <span style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textDim }}>{c.useName || c.user || '—'}</span>
                                     <span style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textDim }}>{c.datName || c.db || '—'}</span>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                         <span style={{ fontFamily: THEME.fontMono, fontSize: 12, fontWeight: 700, color: sc }}>{cnt}</span>
                                         <Chip color={sc} size="sm">{c.state || '—'}</Chip>
                                     </div>
@@ -1899,9 +1899,9 @@ const FindingCard = ({ finding, delay = 0 }) => {
                 : THEME.success;
     return (
         <Card accent={sevColor} style={{ padding: 0, overflow: 'hidden', animationDelay: `${delay}ms` }} className="ud-rise">
-            <button onClick={() => setOpen(o => !o)} style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', padding: '14px 18px', textAlign: 'left' }}>
+            <button onClick={() => setOpen(o => !o)} style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', padding: '20px 24px', textAlign: 'left' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 18, flex: 1 }}>
                         <SeverityBadge level={finding.severity} />
                         <div style={{ flex: 1 }}>
                             <div style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>{finding.title}</div>
@@ -1915,19 +1915,19 @@ const FindingCard = ({ finding, delay = 0 }) => {
                 <div style={{ padding: '0 18px 16px', borderTop: `1px solid ${THEME.glassBorder}` }}>
                     <p style={{ fontSize: 13, color: THEME.textMuted, lineHeight: 1.7, marginTop: 12 }}>{finding.description}</p>
                     {finding.impact && (
-                        <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 8, background: `${THEME.warning}0d`, border: `1px solid ${THEME.warning}20` }}>
+                        <div style={{ marginTop: 10, padding: '20px 24px', borderRadius: 20, background: `${THEME.warning}0d`, border: `1px solid ${THEME.warning}20` }}>
                             <div style={{ fontSize: 10, fontWeight: 700, color: THEME.warning,  letterSpacing: '.06em', marginBottom: 4 }}>Impact</div>
                             <p style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>{finding.impact}</p>
                         </div>
                     )}
                     {finding.recommendation && (
-                        <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 8, background: `${THEME.success}0d`, border: `1px solid ${THEME.success}20` }}>
+                        <div style={{ marginTop: 10, padding: '20px 24px', borderRadius: 20, background: `${THEME.success}0d`, border: `1px solid ${THEME.success}20` }}>
                             <div style={{ fontSize: 10, fontWeight: 700, color: THEME.success,  letterSpacing: '.06em', marginBottom: 4 }}>Recommendation</div>
                             <p style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>{finding.recommendation}</p>
                         </div>
                     )}
                     {finding.sql && (
-                        <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 8, background: `${THEME.glassBorder}60`, border: `1px solid ${THEME.glassBorder}` }}>
+                        <div style={{ marginTop: 10, padding: '22px 28px', borderRadius: 20, background: `${THEME.glassBorder}60`, border: `1px solid ${THEME.glassBorder}` }}>
                             <div style={{ fontSize: 10, fontWeight: 700, color: THEME.cyan,  letterSpacing: '.06em', marginBottom: 6 }}>SQL Fix</div>
                             <pre style={{ fontFamily: THEME.fontMono, fontSize: 11, color: THEME.textMuted, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>{finding.sql}</pre>
                         </div>
@@ -1947,7 +1947,7 @@ const AskBox = ({ onAsk, disabled }) => {
         'Explain the HOT update issue',
     ];
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {presets.map((p, i) => (
                     <button key={i} onClick={() => onAsk(p)} disabled={disabled}
@@ -1957,7 +1957,7 @@ const AskBox = ({ onAsk, disabled }) => {
                     </button>
                 ))}
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 20 }}>
                 <input
                     value={val}
                     onChange={e => setVal(e.target.value)}
@@ -1965,7 +1965,7 @@ const AskBox = ({ onAsk, disabled }) => {
                     placeholder="Ask a follow-up question about your database…"
                     disabled={disabled}
                     style={{
-                        flex: 1, padding: '10px 14px', borderRadius: 8,
+                        flex: 1, padding: '22px 28px', borderRadius: 20,
                         border: `1px solid ${THEME.glassBorder}`, background: THEME.surface,
                         color: THEME.textMain, fontSize: 13, fontFamily: THEME.fontMono,
                         outline: 'none', transition: 'border-color .2s',
@@ -1975,7 +1975,7 @@ const AskBox = ({ onAsk, disabled }) => {
                 />
                 <button onClick={() => { if (val.trim()) { onAsk(val.trim()); setVal(''); } }}
                         disabled={disabled || !val.trim()} className="ud-btn"
-                        style={{ padding: '10px 16px', borderRadius: 8, border: 'none', background: THEME.purple, color: '#fff', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, opacity: (!val.trim() || disabled) ? .5 : 1 }}>
+                        style={{ padding: '16px 22px', borderRadius: 20, border: 'none', background: THEME.purple, color: '#fff', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, opacity: (!val.trim() || disabled) ? .5 : 1 }}>
                     <Sparkles size={14} /> Ask
                 </button>
             </div>
@@ -2163,7 +2163,7 @@ Rules:
             <SecHead Icon={BrainCircuit} accent={THEME.purple} title="AI Deep Analysis"
                      sub="Groq-powered PostgreSQL diagnostics with actionable findings and follow-up Q&A"
                      right={
-                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                         <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
                              {score !== null && (
                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 14px', borderRadius: 20, background: `${scoreColor}15`, border: `1px solid ${scoreColor}30` }}>
                                      <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>Health</span>
@@ -2172,7 +2172,7 @@ Rules:
                              )}
                              <button onClick={runAnalysis} disabled={loading} className="ud-btn ai-glow"
                                      style={{
-                                         padding: '9px 18px', borderRadius: 9,
+                                         padding: '9px 18px', borderRadius: 20,
                                          border: `1px solid ${THEME.purple}40`,
                                          background: loading ? `${THEME.purple}15` : `linear-gradient(135deg, ${THEME.purple}25, ${THEME.purple}10)`,
                                          color: THEME.purple, fontSize: 13, fontWeight: 700,
@@ -2195,13 +2195,13 @@ Rules:
                     <div style={{ fontSize: 13, color: THEME.textDim, maxWidth: 480, margin: '0 auto', lineHeight: 1.7, marginBottom: 24 }}>
                         Claude will analyze your live database telemetry — including table health, index efficiency, bloat, write patterns, and more — then generate prioritized findings with SQL fixes.
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 28 }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 22, marginBottom: 28 }}>
                         {['Dead tuple analysis', 'Index efficiency', 'Write amplification', 'VACUUM scheduling', 'Bloat estimation', 'Schema risks'].map((feat, i) => (
                             <div key={i} style={{ padding: '5px 12px', borderRadius: 20, background: `${THEME.purple}10`, border: `1px solid ${THEME.purple}20`, fontSize: 11, color: THEME.purple, fontFamily: THEME.fontMono }}>{feat}</div>
                         ))}
                     </div>
                     <button onClick={runAnalysis} className="ud-btn"
-                            style={{ padding: '12px 28px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg, ${THEME.purple}, ${THEME.primary})`, color: '#fff', fontSize: 14, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                            style={{ padding: '12px 28px', borderRadius: 16, border: 'none', background: `linear-gradient(135deg, ${THEME.purple}, ${THEME.primary})`, color: '#fff', fontSize: 14, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 20 }}>
                         <Sparkles size={16} /> Run Deep Analysis
                     </button>
                 </Card>
@@ -2210,7 +2210,7 @@ Rules:
             {/* Loading shimmer */}
             {loading && (
                 <Card style={{ padding: 32, border: `1px solid ${THEME.purple}30` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
                         <div style={{ width: 40, height: 40, borderRadius: '50%', border: `2px solid ${THEME.purple}30`, borderTopColor: THEME.purple, animation: 'ud-spin 1s linear infinite', flexShrink: 0 }} />
                         <div>
                             <div style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain }}>Running deep analysis…</div>
@@ -2218,7 +2218,7 @@ Rules:
                         </div>
                     </div>
                     {['Scanning table health metrics', 'Analysing index usage patterns', 'Computing write amplification', 'Evaluating bloat thresholds', 'Generating prioritized findings'].map((step, i) => (
-                        <div key={i} className="ai-thinking" style={{ height: 14, borderRadius: 7, marginBottom: 8, width: `${60 + (i * 7)}%`, opacity: .7 }} />
+                        <div key={i} className="ai-thinking" style={{ height: 14, borderRadius: 18, marginBottom: 8, width: `${60 + (i * 7)}%`, opacity: .7 }} />
                     ))}
                 </Card>
             )}
@@ -2229,13 +2229,13 @@ Rules:
             {!loading && findings.length > 0 && (
                 <>
                     {summary && (
-                        <Card style={{ padding: '16px 20px', borderLeft: `3px solid ${THEME.purple}`, background: `${THEME.purple}06` }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+                        <Card style={{ padding: '22px 28px', borderLeft: `3px solid ${THEME.purple}`, background: `${THEME.purple}06` }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 22 }}>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 700, color: THEME.purple,  letterSpacing: '.07em', fontFamily: THEME.fontMono, marginBottom: 6 }}>Executive Summary</div>
                                     <p style={{ fontSize: 13, color: THEME.textMuted, lineHeight: 1.7 }}>{summary}</p>
                                 </div>
-                                <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+                                <div style={{ display: 'flex', gap: 20, flexShrink: 0, flexWrap: 'wrap' }}>
                                     {criticals > 0 && <Chip color={THEME.danger}>{criticals} critical</Chip>}
                                     {warnings  > 0 && <Chip color={THEME.warning}>{warnings} warnings</Chip>}
                                     <Chip color={THEME.success}>{findings.filter(f => f.severity === 'success').length} healthy</Chip>
@@ -2244,14 +2244,14 @@ Rules:
                         </Card>
                     )}
 
-                    <div style={{ display: 'flex', gap: 4, padding: 3, borderRadius: 10, background: `${THEME.glassBorder}60`, width: 'fit-content' }}>
+                    <div style={{ display: 'flex', gap: 4, padding: 3, borderRadius: 16, background: `${THEME.glassBorder}60`, width: 'fit-content' }}>
                         {[
                             { id: 'findings', label: `Findings (${findings.length})`, Icon: AlertCircle },
                             { id: 'chat',     label: 'Ask Claude',                    Icon: MessageSquare },
                         ].map(tab => (
                             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                                     style={{
-                                        padding: '7px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                                        padding: '7px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
                                         background: activeTab === tab.id ? THEME.surface : 'transparent',
                                         color: activeTab === tab.id ? THEME.textMain : THEME.textDim,
                                         fontWeight: activeTab === tab.id ? 700 : 500,
@@ -2265,19 +2265,19 @@ Rules:
                     </div>
 
                     {activeTab === 'findings' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                             {['critical', 'warning', 'info', 'success'].map(sev => {
                                 const group = findings.filter(f => f.severity === sev);
                                 if (!group.length) return null;
                                 const sevColor = sev === 'critical' ? THEME.danger : sev === 'warning' ? THEME.warning : sev === 'info' ? THEME.primary : THEME.success;
                                 return (
                                     <div key={sev}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, marginTop: 4 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 8, marginTop: 4 }}>
                                             <div style={{ height: 1, flex: 1, background: `${sevColor}25` }} />
                                             <SeverityBadge level={sev} />
                                             <div style={{ height: 1, flex: 1, background: `${sevColor}25` }} />
                                         </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                             {group.map((finding, i) => <FindingCard key={i} finding={finding} delay={i * 50} />)}
                                         </div>
                                     </div>
@@ -2287,11 +2287,11 @@ Rules:
                     )}
 
                     {activeTab === 'chat' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                             <Card style={{ padding: 0, overflow: 'hidden' }}>
-                                <div style={{ maxHeight: 400, overflowY: 'auto', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                <div style={{ maxHeight: 400, overflowY: 'auto', padding: '22px 26px', display: 'flex', flexDirection: 'column', gap: 18 }}>
                                     {chatLog.map((msg, i) => (
-                                        <div key={i} style={{ display: 'flex', gap: 10, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
+                                        <div key={i} style={{ display: 'flex', gap: 22, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
                                             <div style={{
                                                 width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
                                                 background: msg.role === 'user' ? `${THEME.primary}30` : `${THEME.purple}30`,
@@ -2300,7 +2300,7 @@ Rules:
                                                 {msg.role === 'user' ? '👤' : '🧠'}
                                             </div>
                                             <div style={{
-                                                maxWidth: '78%', padding: '10px 14px',
+                                                maxWidth: '78%', padding: '22px 28px',
                                                 borderRadius: msg.role === 'user' ? '14px 2px 14px 14px' : '2px 14px 14px 14px',
                                                 background: msg.role === 'user' ? `${THEME.primary}15` : `${THEME.purple}10`,
                                                 border: `1px solid ${msg.role === 'user' ? THEME.primary : THEME.purple}25`,
@@ -2313,9 +2313,9 @@ Rules:
                                         </div>
                                     ))}
                                     {chatLoading && (
-                                        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+                                        <div style={{ display: 'flex', gap: 22, alignItems: 'flex-end' }}>
                                             <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${THEME.purple}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}>🧠</div>
-                                            <div style={{ padding: '12px 16px', borderRadius: '2px 14px 14px 14px', background: `${THEME.purple}10`, border: `1px solid ${THEME.purple}25` }}>
+                                            <div style={{ padding: '18px 22px', borderRadius: '2px 14px 14px 14px', background: `${THEME.purple}10`, border: `1px solid ${THEME.purple}25` }}>
                                                 <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                                                     {[0, 1, 2].map(j => (
                                                         <div key={j} style={{ width: 6, height: 6, borderRadius: '50%', background: THEME.purple, animation: `ud-pulse 1.2s ease ${j * 0.2}s infinite` }} />
@@ -2437,7 +2437,7 @@ export default function UnifiedDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', fontFamily: THEME.fontBody, color: THEME.textMain, overflow: 'hidden' }}>
 
                 {/* ── TOP BAR: Group tabs ── */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px', borderBottom: `1px solid ${THEME.glassBorder}`, background: THEME.surface, flexShrink: 0, gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px', borderBottom: `1px solid ${THEME.glassBorder}`, background: THEME.surface, flexShrink: 0, gap: 22 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'auto' }}>
                         {visibleGroups.map(g => {
                             const isActive = activeGroup?.id === g.id;
@@ -2451,7 +2451,7 @@ export default function UnifiedDashboard() {
                                 >
                                     <g.Icon size={13} />
                                     {g.label}
-                                    {g.id === 'ai' && <span style={{ fontSize: 8, fontWeight: 700, color: THEME.purple, background: `${THEME.purple}20`, padding: '1px 5px', borderRadius: 10 }}>AI</span>}
+                                    {g.id === 'ai' && <span style={{ fontSize: 8, fontWeight: 700, color: THEME.purple, background: `${THEME.purple}20`, padding: '1px 5px', borderRadius: 16 }}>AI</span>}
                                 </button>
                             );
                         })}
@@ -2482,11 +2482,11 @@ export default function UnifiedDashboard() {
                 )}
 
                 {/* ── MAIN CONTENT ── */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 32px', display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <FilterBar filter={filter} setFilter={handleFilter} allTables={allTables} dbRaw={dbRaw} />
 
                     <div key={`${activeItem?.id}-${filter.db}-${filter.schema}-${filter.table}`} className="ud-rise"
-                         style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 14, padding: 22, minHeight: 280 }}>
+                         style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20, padding: 22, minHeight: 280 }}>
                         {Preview && <Preview />}
                     </div>
                 </div>

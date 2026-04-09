@@ -41,9 +41,9 @@ const Styles = () => (
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
             border-left: 3px solid #00684A;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             backdrop-filter: blur(12px);
             transition: all 0.25s ease;
             position: relative;
@@ -52,7 +52,7 @@ const Styles = () => (
 
         .mongo-card:hover {
             box-shadow: 0 12px 28px rgba(0,104,74,0.12);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
 
         .mongo-card::after {
@@ -71,12 +71,12 @@ const Styles = () => (
             border-bottom: 1px solid ${DARK_THEME.border};
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 22px;
             font-weight: 700;
         }
 
         .mongo-card-body {
-            padding: 16px 18px;
+            padding: 22px 26px;
         }
 
         .mongo-table {
@@ -91,7 +91,7 @@ const Styles = () => (
         }
 
         .mongo-table-head th {
-            padding: 12px 16px;
+            padding: 22px 28px;
             text-align: left;
             font-weight: 700;
             color: ${DARK_THEME.textMuted};
@@ -100,7 +100,7 @@ const Styles = () => (
         }
 
         .mongo-table-body td {
-            padding: 12px 16px;
+            padding: 22px 28px;
             border-bottom: 1px solid ${DARK_THEME.border};
             color: ${DARK_THEME.text};
         }
@@ -122,13 +122,13 @@ const Styles = () => (
             margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 20px;
         }
 
         .mongo-metric-box {
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 20px;
             text-align: center;
         }
@@ -150,7 +150,7 @@ const Styles = () => (
         .mongo-badge {
             display: inline-block;
             padding: 4px 8px;
-            border-radius: 4px;
+            border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
             margin-right: 4px;
@@ -175,7 +175,7 @@ const Styles = () => (
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 20px;
             padding: 40px 20px;
             color: ${DARK_THEME.textMuted};
             font-size: 14px;
@@ -188,20 +188,20 @@ const Styles = () => (
         .mongo-error {
             background: ${DARK_THEME.danger}15;
             border: 1px solid ${DARK_THEME.danger};
-            border-radius: 10px;
+            border-radius: 20px;
             padding: 16px;
             color: ${DARK_THEME.danger};
             margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 22px;
         }
 
         .mongo-info-box {
             background: ${DARK_THEME.accent}15;
             border: 1px solid ${DARK_THEME.accent}30;
             border-left: 3px solid ${DARK_THEME.accent};
-            border-radius: 10px;
+            border-radius: 20px;
             padding: 12px;
             margin-bottom: 12px;
             font-size: 12px;
@@ -225,8 +225,8 @@ const ChartTooltip = ({ active, payload }) => {
             style={{
                 background: DARK_THEME.card,
                 border: `1px solid ${DARK_THEME.border}`,
-                borderRadius: 8,
-                padding: '8px 12px',
+                borderRadius: 20,
+                padding: '20px 24px',
                 fontSize: 12,
             }}
         >
@@ -347,7 +347,7 @@ export default function MongoStorageTab() {
                             style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                                gap: 16,
+                                gap: 22,
                                 marginBottom: 16,
                             }}
                         >
@@ -427,7 +427,7 @@ export default function MongoStorageTab() {
                             style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                                gap: 16,
+                                gap: 22,
                                 marginBottom: 16,
                             }}
                         >
@@ -451,7 +451,7 @@ export default function MongoStorageTab() {
                                     style={{
                                         height: 8,
                                         background: DARK_THEME.border,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         overflow: 'hidden',
                                     }}
                                 >
@@ -489,7 +489,7 @@ export default function MongoStorageTab() {
                                     style={{
                                         height: 8,
                                         background: DARK_THEME.border,
-                                        borderRadius: 14,
+                                        borderRadius: 20,
                                         overflow: 'hidden',
                                     }}
                                 >
@@ -518,7 +518,7 @@ export default function MongoStorageTab() {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                                    gap: 16,
+                                    gap: 22,
                                 }}
                             >
                                 <div>
@@ -595,7 +595,7 @@ export default function MongoStorageTab() {
                             style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                                gap: 16,
+                                gap: 22,
                                 marginBottom: 16,
                             }}
                         >
@@ -631,7 +631,7 @@ export default function MongoStorageTab() {
                                 style={{
                                     height: 12,
                                     background: DARK_THEME.border,
-                                    borderRadius: 6,
+                                    borderRadius: 18,
                                     overflow: 'hidden',
                                     marginBottom: 12,
                                 }}

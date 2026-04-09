@@ -206,28 +206,28 @@ const GlobalStylesInjector = () => (
     @keyframes umLivePulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
 
     .um-root *, .um-root *::before, .um-root *::after { box-sizing: border-box; }
-    .shimmer-skeleton { background: linear-gradient(90deg, ${T.surfaceRaised} 25%, ${T.grid} 50%, ${T.surfaceRaised} 75%); background-size: 200% 100%; animation: umShimmer 1.5s infinite ease-in-out; border-radius: 12px; }
+    .shimmer-skeleton { background: linear-gradient(90deg, ${T.surfaceRaised} 25%, ${T.grid} 50%, ${T.surfaceRaised} 75%); background-size: 200% 100%; animation: umShimmer 1.5s infinite ease-in-out; border-radius: 22px; }
     .um-revalidating-bar { position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, ${T.primary}, transparent); background-size:200% 100%; animation:umShimmer 1s infinite linear; border-radius:2px; z-index:10; }
     .um-live-dot { width:8px; height:8px; border-radius:50%; background:${T.success}; animation:umLivePulse 2s ease-in-out infinite; display:inline-block; flex-shrink:0; }
     
-    .um-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; border:none; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s ease; font-family:inherit; line-height:1; }
+    .um-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius: 20px; border:none; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s ease; font-family:inherit; line-height:1; }
     .um-btn:disabled { opacity:.5; cursor:not-allowed; }
     .um-btn-primary  { background:${T.primary}; color:${T.textInverse}; }
-    .um-btn-primary:hover:not(:disabled) { filter:brightness(1.1); transform:translateY(-1px); }
+    .um-btn-primary:hover:not(:disabled) { filter:brightness(1.1); transform:translateY(-3px); }
     .um-btn-ghost    { background:transparent; color:${T.textDim}; border:1px solid ${T.glassBorder}; }
     .um-btn-ghost:hover:not(:disabled) { background:${T.surfaceHover}; color:${T.textMain}; }
     .um-btn-danger   { background:${T.danger}; color:#fff; }
     .um-btn-danger:hover:not(:disabled) { filter:brightness(1.1); }
     .um-btn-sm   { padding:5px 10px; font-size:12px; }
-    .um-btn-icon { padding:6px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; }
+    .um-btn-icon { padding:6px; border-radius: 22px; display:inline-flex; align-items:center; justify-content:center; }
 
     .um-tab { display:inline-flex; align-items:center; gap:6px; padding:12px 16px; border:none; background:transparent; color:${T.textMuted}; font-size:12px; font-weight:500; cursor:pointer; transition:color .15s; font-family:inherit; position:relative; }
     .um-tab:hover  { color:${T.textMain}; }
     .um-tab.active { color:${T.primary}; font-weight:700; }
     .um-tab.active::after { content:''; position:absolute; bottom:0; left:12px; right:12px; height:2px; background:${T.primary}; border-radius:2px; }
 
-    .um-grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
-    .um-grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+    .um-grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap: 20px; }
+    .um-grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap: 20px; }
     @media(max-width:900px){ .um-grid-4{ grid-template-columns:repeat(2,1fr); } }
     @media(max-width:600px){ .um-grid-4,.um-grid-2{ grid-template-columns:1fr; } }
     .um-scroll { overflow-y:auto; scrollbar-width:thin; scrollbar-color:${T.glassBorder} transparent; }
@@ -241,13 +241,13 @@ GlobalStylesInjector.displayName = 'GlobalStylesInjector';
 const ToastContainer = memo(({ toasts }) => {
     if (!toasts.length) return null;
     return createPortal(
-        <div style={{ position:'fixed', top:20, right:20, zIndex:600, display:'flex', flexDirection:'column', gap:8 }} aria-live="polite">
+        <div style={{ position:'fixed', top:20, right:20, zIndex:600, display:'flex', flexDirection:'column', gap: 20 }} aria-live="polite">
             {toasts.map(t => (
                 <div key={t.id} style={{
-                    padding:'10px 16px', borderRadius:10, fontSize:13, fontWeight:500, color:'#fff', maxWidth:360,
+                    padding:'10px 16px', borderRadius: 16, fontSize:13, fontWeight:500, color:'#fff', maxWidth:360,
                     background: t.type === 'error' ? (T.danger) : (T.primary),
                     boxShadow:T.shadowLg, animation:'umSlideUp .2s ease-out',
-                    display:'flex', alignItems:'center', gap:8,
+                    display:'flex', alignItems:'center', gap: 20,
                 }}>
                     <Ico name={t.type === 'error' ? 'alert' : 'check'} size={14} color="#fff" />
                     {t.message}
@@ -274,8 +274,8 @@ const ConfirmDialog = memo(({ title, message, confirmLabel, variant = 'danger', 
             style={{ position:'fixed', inset:0, zIndex:500, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,.55)', backdropFilter:'blur(4px)' }}
         >
             <div style={{ background:T.surface, border:`1px solid ${T.glassBorder}`, borderRadius:16, padding:'24px 28px', maxWidth:420, width:'90vw', boxShadow:T.shadowMd, animation:'umSlideUp .2s ease' }}>
-                <div style={{ display:'flex', alignItems:'flex-start', gap:12, marginBottom:18 }}>
-                    <div style={{ width:38, height:38, borderRadius:8, flexShrink:0, background:variant === 'danger' ? `${T.danger}18` : `${T.primary}18`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <div style={{ display:'flex', alignItems:'flex-start', gap: 18, marginBottom:18 }}>
+                    <div style={{ width:38, height:38, borderRadius: 20, flexShrink:0, background:variant === 'danger' ? `${T.danger}18` : `${T.primary}18`, display:'flex', alignItems:'center', justifyContent:'center' }}>
                         <Ico name={variant === 'danger' ? 'alert' : 'check'} size={18} color={variant === 'danger' ? (T.danger) : (T.primary)} />
                     </div>
                     <div>
@@ -283,7 +283,7 @@ const ConfirmDialog = memo(({ title, message, confirmLabel, variant = 'danger', 
                         <div style={{ fontSize:12, color:T.textDim, marginTop:6, lineHeight:1.6 }}>{message}</div>
                     </div>
                 </div>
-                <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
+                <div style={{ display:'flex', justifyContent:'flex-end', gap: 22 }}>
                     <button className="um-btn um-btn-ghost" onClick={onCancel}>Cancel</button>
                     <button className={`um-btn ${variant === 'danger' ? 'um-btn-danger' : 'um-btn-primary'}`} onClick={onConfirm}>{confirmLabel || 'Confirm'}</button>
                 </div>
@@ -395,9 +395,9 @@ const UserManagementTab = ({ initialUsers = [] }) => {
                 {isRevalidating && <div className="um-revalidating-bar" />}
 
                 {/* Header */}
-                <header style={{ marginBottom:24, display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:16 }}>
+                <header style={{ marginBottom:24, display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap: 22 }}>
                     <div>
-                        <h1 style={{ fontSize:24, fontWeight:900, color:T.textMain, margin:0, display:'flex', alignItems:'center', gap:10 }}>
+                        <h1 style={{ fontSize:24, fontWeight:900, color:T.textMain, margin:0, display:'flex', alignItems:'center', gap: 22 }}>
                             User Management
                             {isLive && <span className="um-live-dot" title="Live sync enabled" />}
                         </h1>
@@ -406,8 +406,8 @@ const UserManagementTab = ({ initialUsers = [] }) => {
                             {lastSynced && <span style={{ marginLeft: '8px' }}>• Last synced {formatTimeAgo(lastSynced)} ago</span>}
                         </div>
                     </div>
-                    <div style={{ display:'flex', gap:10, alignItems:'center' }}>
-                        <div style={{ fontSize:11, color:T.textDim, padding:'6px 12px', background:T.surfaceRaised, borderRadius:8, border:`1px solid ${T.glassBorder}`, display:'flex', alignItems:'center', gap:8, boxShadow:T.shadowMd }}>
+                    <div style={{ display:'flex', gap: 22, alignItems:'center' }}>
+                        <div style={{ fontSize:11, color:T.textDim, padding:'6px 12px', background:T.surfaceRaised, borderRadius: 20, border:`1px solid ${T.glassBorder}`, display:'flex', alignItems:'center', gap: 20, boxShadow:T.shadowMd }}>
                             <span style={{ width:6, height:6, borderRadius:'50%', background: activeCount > 0 ? '#22c55e' : (T.textMuted || '#6b6f82'), display:'inline-block' }} />
                             {users.length} users · {activeCount} active
                         </div>
@@ -423,7 +423,7 @@ const UserManagementTab = ({ initialUsers = [] }) => {
 
                 {/* Error Block */}
                 {error && (
-                    <div role="alert" style={{ marginBottom:18, padding:'12px 16px', borderRadius:16, background:`${T.danger}08`, border:`1px solid ${T.danger}30`, display:'flex', alignItems:'center', gap:12, color:T.danger, boxShadow:T.shadowMd }}>
+                    <div role="alert" style={{ marginBottom:18, padding:'12px 16px', borderRadius:16, background:`${T.danger}08`, border:`1px solid ${T.danger}30`, display:'flex', alignItems:'center', gap: 18, color:T.danger, boxShadow:T.shadowMd }}>
                         <Ico name="alert" size={16} color={T.danger} />
                         <div style={{ flex:1 }}>{error}</div>
                     </div>

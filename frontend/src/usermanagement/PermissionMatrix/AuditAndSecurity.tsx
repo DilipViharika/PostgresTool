@@ -38,7 +38,7 @@ function ensureStyles() {
         '.as2 { font-family: ' + THEME.fontBody + '; color:' + T.textMain + '; }',
         '.as2 *, .as2 *::before, .as2 *::after { box-sizing: border-box; }',
 
-        '.as2-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px; border:none; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; white-space:nowrap; }',
+        '.as2-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius: 20px; border:none; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; white-space:nowrap; }',
         '.as2-btn-ghost { background:transparent; color:' + T.textDim + '; border:1px solid ' + T.glassBorder + '; }',
         '.as2-btn-ghost:hover { background:' + T.surfaceRaised + '; color:' + T.textMain + '; }',
         '.as2-btn-danger { background:' + T.danger + '; color:#fff; }',
@@ -49,7 +49,7 @@ function ensureStyles() {
         '.as2-pill:hover { border-color:#2e2e48; color:' + T.textMain + '; }',
         '.as2-pill.on { font-weight:700; }',
 
-        '.as2-card { background:' + T.surface + '; border:1px solid ' + T.glassBorder + '; border-radius:12px; }',
+        '.as2-card { background:' + T.surface + '; border:1px solid ' + T.glassBorder + '; border-radius: 22px; }',
 
         '@keyframes as2-in { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }',
         '.as2-in { animation: as2-in .2s ease-out both; }',
@@ -198,7 +198,7 @@ export var AuditLog = function AuditLog() {
 
         /* Filter bar */
         React.createElement('div', {
-                style:{ display:'flex', gap:8, marginBottom:16, alignItems:'center', flexWrap:'wrap' }
+                style:{ display:'flex', gap: 20, marginBottom:16, alignItems:'center', flexWrap:'wrap' }
             },
             ['all','info','warn','critical','success'].map(function(l) {
                 var lc = l !== 'all' ? LEVEL_COLOR[l] : undefined;
@@ -220,7 +220,7 @@ export var AuditLog = function AuditLog() {
         ),
 
         /* Event list */
-        React.createElement('div', { style:{ display:'flex', flexDirection:'column', gap:8 } },
+        React.createElement('div', { style:{ display:'flex', flexDirection:'column', gap: 20 } },
             filtered.length === 0
                 ? React.createElement('div', { style:{ textAlign:'center', padding:'40px', color:T.textMuted, fontSize:13 } }, 'No events found')
                 : filtered.map(function(entry, i) {
@@ -232,10 +232,10 @@ export var AuditLog = function AuditLog() {
                             className: 'as2-card as2-in',
                             style: { padding:'14px 16px', animationDelay: (i*40)+'ms' }
                         },
-                        React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:14 } },
+                        React.createElement('div', { style:{ display:'flex', alignItems:'center', gap: 20 } },
                             /* level icon */
                             React.createElement('div', {
-                                style:{ width:38, height:38, borderRadius:10, flexShrink:0,
+                                style:{ width:38, height:38, borderRadius: 16, flexShrink:0,
                                     background:lc+'15', border:'1px solid '+lc+'30',
                                     display:'flex', alignItems:'center', justifyContent:'center' }
                             }, React.createElement(Ico, { name:iconName, size:16, color:lc })),
@@ -244,7 +244,7 @@ export var AuditLog = function AuditLog() {
                             React.createElement('div', {
                                     style:{ flex:1, display:'grid',
                                         gridTemplateColumns:'1.4fr 1fr 2fr 90px',
-                                        gap:12, alignItems:'center' }
+                                        gap: 18, alignItems:'center' }
                                 },
                                 /* action + time */
                                 React.createElement('div', null,
@@ -269,14 +269,14 @@ export var AuditLog = function AuditLog() {
                                     style:{ fontSize:11, color:T.textDim,
                                         fontFamily: THEME.fontMono,
                                         background:T.surfaceRaised, padding:'4px 8px',
-                                        borderRadius:5, overflow:'hidden',
+                                        borderRadius: 16, overflow:'hidden',
                                         textOverflow:'ellipsis', whiteSpace:'nowrap' }
                                 }, entry.detail),
                                 /* badge */
                                 React.createElement('div', { style:{ textAlign:'right' } },
                                     React.createElement('span', {
                                         style:{ display:'inline-flex', alignItems:'center', gap:5,
-                                            padding:'3px 9px', borderRadius:6, fontSize:10,
+                                            padding:'3px 9px', borderRadius: 18, fontSize:10,
                                             fontWeight:700, background:lc+'18', color:lc,
                                             border:'1px solid '+lc+'30' }
                                     }, entry.level.toUpperCase())
@@ -317,26 +317,26 @@ export var SecurityPanel = function SecurityPanel(props) {
                     background:T.danger+'0d', border:'1px solid '+T.danger+'30' }
             },
             React.createElement('div', {
-                    style:{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }
+                    style:{ display:'flex', alignItems:'center', gap: 18, marginBottom:12 }
                 },
                 React.createElement(Ico, { name:'alert', size:18, color:T.danger }),
                 React.createElement('div', {
                     style:{ fontSize:14, fontWeight:700, color:T.danger }
                 }, highRisk.length + ' High-Risk User' + (highRisk.length !== 1 ? 's' : '') + ' Detected')
             ),
-            React.createElement('div', { style:{ display:'flex', flexWrap:'wrap', gap:8 } },
+            React.createElement('div', { style:{ display:'flex', flexWrap:'wrap', gap: 20 } },
                 highRisk.map(function(u) {
                     return React.createElement('div', {
                             key: u.id,
-                            style:{ display:'flex', alignItems:'center', gap:8, padding:'6px 12px',
-                                borderRadius:8, background:T.danger+'15', border:'1px solid '+T.danger+'30' }
+                            style:{ display:'flex', alignItems:'center', gap: 20, padding:'6px 12px',
+                                borderRadius: 20, background:T.danger+'15', border:'1px solid '+T.danger+'30' }
                         },
                         React.createElement('span', {
                             style:{ fontSize:13, fontWeight:600, color:T.textMain }
                         }, u.name),
                         React.createElement('span', {
                             style:{ fontSize:11, fontWeight:700, color:T.danger,
-                                background:T.danger+'20', padding:'2px 6px', borderRadius:4 }
+                                background:T.danger+'20', padding:'2px 6px', borderRadius: 16 }
                         }, 'Risk: ' + u.riskScore)
                     );
                 })
@@ -349,13 +349,13 @@ export var SecurityPanel = function SecurityPanel(props) {
                     style:{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }
                 },
                 React.createElement('div', {
-                        style:{ display:'flex', alignItems:'center', gap:8,
+                        style:{ display:'flex', alignItems:'center', gap: 20,
                             fontSize:14, fontWeight:700, color:T.textMain }
                     },
                     React.createElement(Ico, { name:'globe', size:15, color:T.primary }),
                     'Active Sessions',
                     React.createElement('span', {
-                        style:{ display:'inline-flex', padding:'3px 9px', borderRadius:6,
+                        style:{ display:'inline-flex', padding:'3px 9px', borderRadius: 18,
                             fontSize:10, fontWeight:700,
                             background:T.primaryDim, color:T.primary }
                     }, sessions.filter(function(s) { return s.active; }).length + ' live')
@@ -387,18 +387,18 @@ export var SecurityPanel = function SecurityPanel(props) {
                                     background: s.risk === 'critical' ? T.danger+'08' : T.surface }
                             },
                             React.createElement('div', {
-                                    style:{ display:'flex', alignItems:'center', gap:14 }
+                                    style:{ display:'flex', alignItems:'center', gap: 20 }
                                 },
                                 /* device icon */
                                 React.createElement('div', {
-                                    style:{ width:40, height:40, borderRadius:10,
+                                    style:{ width:40, height:40, borderRadius: 16,
                                         background:rc+'15', border:'1px solid '+rc+'30',
                                         display:'flex', alignItems:'center', justifyContent:'center' }
                                 }, React.createElement(Ico, { name:'monitor', size:18, color:rc })),
 
                                 React.createElement('div', null,
                                     React.createElement('div', {
-                                            style:{ display:'flex', alignItems:'center', gap:8,
+                                            style:{ display:'flex', alignItems:'center', gap: 20,
                                                 fontSize:13, fontWeight:600, color:T.textMain }
                                         },
                                         s.user,
@@ -409,7 +409,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                                         }),
                                         React.createElement('span', {
                                             style:{ display:'inline-flex', padding:'2px 7px',
-                                                borderRadius:5, fontSize:9, fontWeight:700,
+                                                borderRadius: 16, fontSize:9, fontWeight:700,
                                                 background:rc+'18', color:rc, border:'1px solid '+rc+'30' }
                                         }, s.risk.toUpperCase())
                                     ),
@@ -437,7 +437,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                     style:{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }
                 },
                 React.createElement('div', {
-                        style:{ display:'flex', alignItems:'center', gap:8,
+                        style:{ display:'flex', alignItems:'center', gap: 20,
                             fontSize:14, fontWeight:700, color:T.textMain }
                     },
                     React.createElement(Ico, { name:'key', size:15, color:T.warning }),
@@ -449,7 +449,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                 )
             ),
 
-            React.createElement('div', { style:{ display:'flex', flexDirection:'column', gap:10 } },
+            React.createElement('div', { style:{ display:'flex', flexDirection:'column', gap: 22 } },
                 apiKeys.map(function(key) {
                     return React.createElement('div', {
                             key: key.id,
@@ -458,10 +458,10 @@ export var SecurityPanel = function SecurityPanel(props) {
                                 justifyContent:'space-between', padding:'14px 16px' }
                         },
                         React.createElement('div', {
-                                style:{ display:'flex', alignItems:'center', gap:14 }
+                                style:{ display:'flex', alignItems:'center', gap: 20 }
                             },
                             React.createElement('div', {
-                                style:{ width:36, height:36, borderRadius:9,
+                                style:{ width:36, height:36, borderRadius: 20,
                                     background:T.warningDim, border:'1px solid '+T.warning+'30',
                                     display:'flex', alignItems:'center', justifyContent:'center' }
                             }, React.createElement(Ico, { name:'key', size:16, color:T.warning })),
@@ -471,12 +471,12 @@ export var SecurityPanel = function SecurityPanel(props) {
                                     style:{ fontSize:13, fontWeight:600, color:T.textMain }
                                 }, key.name),
                                 React.createElement('div', {
-                                        style:{ display:'flex', alignItems:'center', gap:8, marginTop:3 }
+                                        style:{ display:'flex', alignItems:'center', gap: 20, marginTop:3 }
                                     },
                                     React.createElement('code', {
                                         style:{ fontSize:11, color:T.textDim,
                                             fontFamily: THEME.fontMono,
-                                            background:T.surfaceRaised, padding:'2px 6px', borderRadius:4 }
+                                            background:T.surfaceRaised, padding:'2px 6px', borderRadius: 16 }
                                     }, key.prefix + '............'),
                                     React.createElement('span', {
                                         style:{ fontSize:10, color:T.textDim }
@@ -486,7 +486,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                         ),
 
                         React.createElement('div', {
-                                style:{ display:'flex', alignItems:'center', gap:12 }
+                                style:{ display:'flex', alignItems:'center', gap: 18 }
                             },
                             React.createElement('div', { style:{ textAlign:'right' } },
                                 React.createElement('div', {
@@ -513,7 +513,7 @@ export var SecurityPanel = function SecurityPanel(props) {
         React.createElement('div', {
                 style:{ padding:'16px 20px', borderRadius:16,
                     background:T.surfaceMid, border:'1px solid '+T.glassBorder,
-                    display:'flex', alignItems:'center', gap:12 }
+                    display:'flex', alignItems:'center', gap: 18 }
             },
             React.createElement(Ico, { name:'shield', size:16, color:T.primary }),
             React.createElement('div', null,

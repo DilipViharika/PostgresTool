@@ -51,18 +51,18 @@ const Styles = () => (
         .oh-card {
             background: linear-gradient(180deg, ${T.surface} 0%, ${T.surface}f8 100%);
             border: 1px solid ${T.border};
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             transition: all 0.25s ease;
             margin-bottom: 20px;
             backdrop-filter: blur(12px);
         }
         .oh-card:hover {
             box-shadow: 0 8px 28px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
         .oh-card::after {
             content: '';
@@ -77,11 +77,11 @@ const Styles = () => (
         .oh-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
         .oh-grid-3 { display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; }
         .oh-grid-6 { display:grid; grid-template-columns:repeat(6, 1fr); gap:18px; }
-        .oh-metric-card { background:${T.raised}; border:1px solid ${T.border}; border-radius:10px; padding:16px; text-align:center; }
+        .oh-metric-card { background:${T.raised}; border:1px solid ${T.border}; border-radius: 20px; padding:16px; text-align:center; }
         .oh-metric-value { font-size:28px; font-weight:700; color:${T.primary}; margin:8px 0; }
         .oh-metric-label { font-size:12px; color:${T.text2}; text-transform:uppercase; }
         .oh-metric-trend { font-size:12px; margin-top:8px; }
-        .oh-tab-buttons { display:flex; gap:8px; margin-bottom:20px; border-bottom:2px solid ${T.border}; padding-bottom:12px; }
+        .oh-tab-buttons { display:flex; gap: 20px; margin-bottom:20px; border-bottom:2px solid ${T.border}; padding-bottom:12px; }
         .oh-tab-btn { padding:8px 16px; border:none; background:transparent; color:${T.text2}; cursor:pointer; font-size:12px; font-weight:600; transition:all 0.2s; border-bottom:2px solid transparent; margin-bottom:-14px; }
         .oh-tab-btn:hover { color:${T.text1}; }
         .oh-tab-btn.active { color:${T.primary}; border-bottom-color:${T.primary}; }
@@ -89,7 +89,7 @@ const Styles = () => (
         .oh-table th { background:${T.raised}; color:${T.text2}; padding:12px; text-align:left; font-weight:600; border-bottom:1px solid ${T.border}; }
         .oh-table td { padding:12px; border-bottom:1px solid ${T.border}; }
         .oh-table tr:hover { background:${T.raised}; }
-        .oh-status-badge { display:inline-block; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+        .oh-status-badge { display:inline-block; padding:4px 8px; border-radius: 20px; font-size:11px; font-weight:600; }
         .oh-status-ok { background:${T.success}20; color:${T.success}; }
         .oh-status-warn { background:${T.warning}20; color:${T.warning}; }
         .oh-status-critical { background:${T.danger}20; color:${T.danger}; }
@@ -97,7 +97,7 @@ const Styles = () => (
         .oh-expandable { cursor:pointer; user-select:none; }
         .oh-expandable-content { display:none; padding-top:8px; border-top:1px solid ${T.border}; margin-top:8px; }
         .oh-expandable.expanded .oh-expandable-content { display:block; }
-        .oh-badge { display:inline-block; padding:4px 10px; background:${T.primary}20; color:${T.primary}; border-radius:4px; font-size:11px; font-weight:600; }
+        .oh-badge { display:inline-block; padding:4px 10px; background:${T.primary}20; color:${T.primary}; border-radius: 20px; font-size:11px; font-weight:600; }
         .oh-loading { text-align:center; padding:40px; }
         .oh-spinner { animation:spin 1s linear infinite; display:inline-block; }
         @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
@@ -136,8 +136,8 @@ const ChartTooltip = ({ active, payload, label }) => {
         <div style={{
             background: T.surface,
             border: `1px solid ${T.border}`,
-            borderRadius: 12,
-            padding: '8px 12px',
+            borderRadius: 18,
+            padding: '20px 24px',
             fontSize: 12,
         }}>
             <div style={{ color: T.text2, marginBottom: 4 }}>{label}</div>
@@ -247,17 +247,17 @@ export default function ObservabilityHub() {
                 <button
                     onClick={() => window.location.reload()}
                     style={{
-                        padding: '8px 16px',
+                        padding: '14px 20px',
                         background: T.primary,
                         color: THEME.textInverse,
                         border: 'none',
-                        borderRadius: 12,
+                        borderRadius: 18,
                         cursor: 'pointer',
                         fontSize: 12,
                         fontWeight: 600,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 12,
+                        gap: 18,
                     }}
                 >
                     <RefreshCw size={14} />
@@ -423,7 +423,7 @@ export default function ObservabilityHub() {
                                 style={{
                                     padding: 12,
                                     background: i % 2 === 0 ? T.raised : 'transparent',
-                                    borderRadius: 12,
+                                    borderRadius: 18,
                                     marginBottom: 8,
                                     borderLeft: `3px solid ${T.warning}`,
                                 }}
@@ -436,7 +436,7 @@ export default function ObservabilityHub() {
                                     <span style={{ color: T.text2 }}>►</span>
                                 </div>
                                 <div className="oh-expandable-content">
-                                    <div style={{ background: T.surface, padding: 12, borderRadius: 6, marginTop: 8 }}>
+                                    <div style={{ background: T.surface, padding: 12, borderRadius: 18, marginTop: 8 }}>
                                         <div style={{ fontSize: 10, color: T.text2, fontFamily: THEME.fontMono, wordBreak: 'break-all' }}>
                                             {exc.stack}
                                         </div>
@@ -548,7 +548,7 @@ export default function ObservabilityHub() {
                                 style={{
                                     padding: 12,
                                     background: T.raised,
-                                    borderRadius: 12,
+                                    borderRadius: 18,
                                     marginBottom: 8,
                                     borderLeft: `3px solid ${T.danger}`,
                                 }}
@@ -583,10 +583,10 @@ export default function ObservabilityHub() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             style={{
                                 flex: 1,
-                                padding: '8px 12px',
+                                padding: '20px 24px',
                                 background: T.surface,
                                 border: `1px solid ${T.border}`,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 color: T.text1,
                                 fontSize: 12,
                                 minWidth: 0,
@@ -596,10 +596,10 @@ export default function ObservabilityHub() {
                             value={filterAction}
                             onChange={(e) => setFilterAction(e.target.value)}
                             style={{
-                                padding: '8px 12px',
+                                padding: '20px 24px',
                                 background: T.surface,
                                 border: `1px solid ${T.border}`,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 color: T.text1,
                                 fontSize: 12,
                             }}
@@ -735,8 +735,8 @@ export default function ObservabilityHub() {
                                             <div style={{
                                                 background: T.surface,
                                                 border: `1px solid ${T.border}`,
-                                                borderRadius: 12,
-                                                padding: '8px 12px',
+                                                borderRadius: 18,
+                                                padding: '20px 24px',
                                                 fontSize: 12,
                                             }}>
                                                 <div style={{ color: T.text2 }}>{data.jobName}</div>

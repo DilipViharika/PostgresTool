@@ -182,7 +182,7 @@ const LicenseManagement = () => {
             maxWidth: '400px',
         },
         input: {
-            padding: '14px 16px',
+            padding: '18px 22px',
             backgroundColor: 'T.surfaceHover',
             border: '1px solid T.glassBorder',
             borderRadius: '16px',
@@ -197,7 +197,7 @@ const LicenseManagement = () => {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            padding: '10px 16px',
+            padding: '16px 22px',
             backgroundColor: 'T.primary',
             color: '#fff',
             border: 'none',
@@ -208,7 +208,7 @@ const LicenseManagement = () => {
             transition: 'all 0.2s ease',
         },
         message: {
-            padding: '10px 12px',
+            padding: '20px 24px',
             borderRadius: '16px',
             fontSize: '13px',
             marginBottom: '12px',

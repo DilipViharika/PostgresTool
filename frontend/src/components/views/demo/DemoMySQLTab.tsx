@@ -353,7 +353,7 @@ function DemoMySQLTab({ tabId }) {
         if (sectionKey === 'overview') {
             if (itemKey === 'fleet') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Fleet Overview
                         </h1>
@@ -361,7 +361,7 @@ function DemoMySQLTab({ tabId }) {
                             style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                                gap: 12,
+                                gap: 18,
                             }}
                             className="dpg-stagger"
                         >
@@ -406,16 +406,16 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'database') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Database Overview
                         </h1>
 
                         {/* Status & Key Metrics Row */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <Panel title="STATUS" icon={CheckCircle} accentColor={THEME.success}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                         <StatusBadge label="Operational" color={THEME.success} pulse />
                                         <StatusBadge label="Production" color={THEME.primary} />
                                         <StatusBadge label="MySQL 8.0.36" color={THEME.ai} />
@@ -472,7 +472,7 @@ function DemoMySQLTab({ tabId }) {
                                     <div
                                         style={{
                                             background: THEME.gridDark,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                             height: 4,
                                             overflow: 'hidden',
                                         }}
@@ -507,7 +507,7 @@ function DemoMySQLTab({ tabId }) {
                         </div>
 
                         {/* More KPIs Row */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={HardDrive}
                                 label="Buffer Pool Usage"
@@ -535,9 +535,9 @@ function DemoMySQLTab({ tabId }) {
                         </div>
 
                         {/* Detailed Info Panels */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                             <Panel title="LAST BACKUP" icon={Archive} accentColor={THEME.primary}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                     <div>
                                         <div
                                             style={{
@@ -604,7 +604,7 @@ function DemoMySQLTab({ tabId }) {
                             </Panel>
 
                             <Panel title="SLOW QUERIES" icon={AlertTriangle} accentColor={THEME.warning}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                     {[
                                         { query: 'SELECT orders WHERE id=?', duration: '45.2ms', pct: 85 },
                                         { query: 'UPDATE inventory SET qty', duration: '78.4ms', pct: 95 },
@@ -658,7 +658,7 @@ function DemoMySQLTab({ tabId }) {
                             </Panel>
 
                             <Panel title="INNODB STATUS" icon={Activity} accentColor={THEME.primary}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 11 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20, fontSize: 11 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <span style={{ color: THEME.textDim }}>Hit Rate</span>
                                         <span style={{ color: THEME.success, fontWeight: 600 }}>99.2%</span>
@@ -700,7 +700,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Area
@@ -715,7 +715,7 @@ function DemoMySQLTab({ tabId }) {
                         </Panel>
 
                         {/* InnoDB Health & Resource Gauges */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr', gap: 22 }}>
                             <Panel
                                 title="BUFFER POOL"
                                 icon={HardDrive}
@@ -914,8 +914,8 @@ function DemoMySQLTab({ tabId }) {
                                         style={{
                                             background: THEME.primary,
                                             color: THEME.bg,
-                                            padding: '8px 12px',
-                                            borderRadius: 12,
+                                            padding: '20px 24px',
+                                            borderRadius: 18,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -942,8 +942,8 @@ function DemoMySQLTab({ tabId }) {
                                         style={{
                                             background: THEME.success,
                                             color: THEME.bg,
-                                            padding: '8px 12px',
-                                            borderRadius: 12,
+                                            padding: '20px 24px',
+                                            borderRadius: 18,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -970,8 +970,8 @@ function DemoMySQLTab({ tabId }) {
                                         style={{
                                             background: THEME.success,
                                             color: THEME.bg,
-                                            padding: '8px 12px',
-                                            borderRadius: 12,
+                                            padding: '20px 24px',
+                                            borderRadius: 18,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -995,7 +995,7 @@ function DemoMySQLTab({ tabId }) {
 
                         {/* Top Tables by Operations */}
                         <Panel title="TOP TABLES BY OPERATIONS" icon={Database} accentColor={THEME.ai}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                 {[
                                     { name: 'orders', reads: 8400000, writes: 2100000, selects: 1840000 },
                                     { name: 'users', reads: 5200000, writes: 800000, selects: 680000 },
@@ -1051,7 +1051,7 @@ function DemoMySQLTab({ tabId }) {
 
                         {/* Binary Log Status */}
                         <Panel title="BINARY LOG STATUS" icon={Radio} accentColor={THEME.primary}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {demoData.binlog.map((b, i) => (
                                     <div
                                         key={i}
@@ -1091,13 +1091,13 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'performance') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Performance
                         </h1>
 
                         {/* KPIs */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Zap}
                                 label="QPS"
@@ -1133,7 +1133,7 @@ function DemoMySQLTab({ tabId }) {
                         </div>
 
                         {/* Query Performance Charts */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                             <Panel title="QUERIES PER SECOND (24H)" icon={Zap} accentColor={THEME.primary}>
                                 <ResponsiveContainer width="100%" height={220}>
                                     <AreaChart data={demoData.qps}>
@@ -1150,7 +1150,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                             }}
                                         />
                                         <Area
@@ -1180,7 +1180,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                             }}
                                         />
                                         <Area
@@ -1196,7 +1196,7 @@ function DemoMySQLTab({ tabId }) {
                         </div>
 
                         {/* Connection & Lock Stats */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                             <Panel title="ACTIVE CONNECTIONS" icon={Network} accentColor={THEME.warning}>
                                 <ResponsiveContainer width="100%" height={220}>
                                     <LineChart data={demoData.connections}>
@@ -1207,7 +1207,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                             }}
                                         />
                                         <Legend />
@@ -1230,7 +1230,7 @@ function DemoMySQLTab({ tabId }) {
                             </Panel>
 
                             <Panel title="TOP QUERIES" icon={Code} accentColor={THEME.ai}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                     {demoData.topQueries.map((q, i) => (
                                         <div
                                             key={i}
@@ -1277,9 +1277,9 @@ function DemoMySQLTab({ tabId }) {
                         </div>
 
                         {/* Index Stats & Table Analysis */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                             <Panel title="INDEX STATS" icon={Database} accentColor={THEME.primary}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                     {demoData.indexes.map((idx, i) => (
                                         <div
                                             key={i}
@@ -1324,7 +1324,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                             }}
                                         />
                                         <Legend />
@@ -1353,13 +1353,13 @@ function DemoMySQLTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                                    gap: 12,
+                                    gap: 18,
                                 }}
                             >
                                 {demoData.databases.map((db, i) => (
                                     <div
                                         key={i}
-                                        style={{ padding: '12px', borderRadius: 14, background: `${THEME.primary}08` }}
+                                        style={{ padding: '12px', borderRadius: 20, background: `${THEME.primary}08` }}
                                     >
                                         <div
                                             style={{
@@ -1405,13 +1405,13 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'resources') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Resources
                         </h1>
 
                         {/* Resource Metrics */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Cpu}
                                 label="CPU Usage"
@@ -1447,7 +1447,7 @@ function DemoMySQLTab({ tabId }) {
                         </div>
 
                         {/* Detailed Resource Gauges */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 22 }}>
                             <Panel
                                 title="CPU"
                                 icon={Cpu}
@@ -1604,7 +1604,7 @@ function DemoMySQLTab({ tabId }) {
                         </div>
 
                         {/* CPU & Memory Timeline */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                             <Panel title="CPU TIMELINE (24H)" icon={Cpu} accentColor={THEME.warning}>
                                 <ResponsiveContainer width="100%" height={220}>
                                     <AreaChart data={demoData.qps.map((d) => ({ ...d, value: Math.random() * 60 }))}>
@@ -1621,7 +1621,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                             }}
                                         />
                                         <Area
@@ -1653,7 +1653,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                             }}
                                         />
                                         <Area
@@ -1669,7 +1669,7 @@ function DemoMySQLTab({ tabId }) {
                         </div>
 
                         {/* Disk & Network Stats */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                             <Panel title="DISK I/O TIMELINE (24H)" icon={HardDrive} accentColor={THEME.primary}>
                                 <ResponsiveContainer width="100%" height={220}>
                                     <LineChart
@@ -1686,7 +1686,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                             }}
                                         />
                                         <Legend />
@@ -1724,7 +1724,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                             }}
                                         />
                                         <Legend />
@@ -1748,9 +1748,9 @@ function DemoMySQLTab({ tabId }) {
                         </div>
 
                         {/* Process & Thread Stats */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                             <Panel title="PROCESS STATS" icon={Activity} accentColor={THEME.primary}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontSize: 11 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20, fontSize: 11 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <span style={{ color: THEME.textDim }}>Running Threads</span>
                                         <span style={{ color: THEME.primary, fontWeight: 600 }}>24</span>
@@ -1771,7 +1771,7 @@ function DemoMySQLTab({ tabId }) {
                             </Panel>
 
                             <Panel title="MEMORY BREAKDOWN" icon={Droplet} accentColor={THEME.ai}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                     {[
                                         { label: 'Buffer Pool', value: '8.2 GB', pct: 48 },
                                         { label: 'Query Cache', value: '1.6 GB', pct: 9 },
@@ -1819,7 +1819,7 @@ function DemoMySQLTab({ tabId }) {
                             </Panel>
 
                             <Panel title="STORAGE BREAKDOWN" icon={HardDrive} accentColor={THEME.primary}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                     {[
                                         { label: 'Data Files', value: '224 GB', pct: 72 },
                                         { label: 'Indexes', value: '56 GB', pct: 18 },
@@ -1872,13 +1872,13 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'reliability') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Reliability
                         </h1>
 
                         {/* Reliability KPIs */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={CheckCircle}
                                 label="Uptime"
@@ -1915,9 +1915,9 @@ function DemoMySQLTab({ tabId }) {
                         </div>
 
                         {/* Reliability Panels */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                             <Panel title="UPTIME HISTORY" icon={CheckCircle} accentColor={THEME.success}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 11 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20, fontSize: 11 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <span style={{ color: THEME.textDim }}>24h Uptime</span>
                                         <span style={{ color: THEME.success, fontWeight: 600 }}>100%</span>
@@ -1956,7 +1956,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 14,
+                                                borderRadius: 20,
                                             }}
                                         />
                                         <Line
@@ -1971,7 +1971,7 @@ function DemoMySQLTab({ tabId }) {
                             </Panel>
 
                             <Panel title="REPLICATION STATUS" icon={GitBranch} accentColor={THEME.primary}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontSize: 11 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20, fontSize: 11 }}>
                                     <div
                                         style={{
                                             display: 'flex',
@@ -2012,7 +2012,7 @@ function DemoMySQLTab({ tabId }) {
 
                         {/* Backup & Recovery */}
                         <Panel title="BACKUP STATUS & RECOVERY" icon={Archive} accentColor={THEME.primary}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                                 <div>
                                     <div
                                         style={{
@@ -2110,7 +2110,7 @@ function DemoMySQLTab({ tabId }) {
 
                         {/* Incident Log */}
                         <Panel title="INCIDENT LOG" icon={AlertCircle} accentColor={THEME.danger}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {[
                                     {
                                         time: '12d 3h ago',
@@ -2170,7 +2170,7 @@ function DemoMySQLTab({ tabId }) {
 
                         {/* SLA Compliance */}
                         <Panel title="SLA COMPLIANCE" icon={Shield} accentColor={THEME.success}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                                 {[
                                     { sla: '99.9% Uptime', actual: '99.98%', status: 'success', pct: 100 },
                                     { sla: '5m MTTR', actual: '4.2m', status: 'success', pct: 116 },
@@ -2180,7 +2180,7 @@ function DemoMySQLTab({ tabId }) {
                                         key={i}
                                         style={{
                                             padding: '10px',
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                             background:
                                                 s.status === 'success' ? `${THEME.success}08` : `${THEME.warning}08`,
                                         }}
@@ -2229,11 +2229,11 @@ function DemoMySQLTab({ tabId }) {
         if (sectionKey === 'alerts') {
             if (itemKey === 'activeAlerts') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Active Alerts
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={AlertCircle}
                                 label="Critical"
@@ -2255,7 +2255,7 @@ function DemoMySQLTab({ tabId }) {
                             />
                         </div>
                         <Panel title="ALERTS" icon={Bell} accentColor={THEME.danger}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {demoData.alertList.map((alert, i) => (
                                     <AlertRow key={i} {...alert} />
                                 ))}
@@ -2267,7 +2267,7 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'alertRules') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Alert Rules
                         </h1>
@@ -2282,7 +2282,7 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'correlation') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Alert Correlation
                         </h1>
@@ -2302,11 +2302,11 @@ function DemoMySQLTab({ tabId }) {
         if (sectionKey === 'query') {
             if (itemKey === 'queryOptimizer') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Query Optimizer
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Zap}
                                 label="Total Queries"
@@ -2371,7 +2371,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Bar dataKey="count" fill={THEME.ai} radius={[4, 4, 0, 0]} />
@@ -2384,11 +2384,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'queryPlan') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Query Plan Viewer
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={FileText}
                                 label="Plans Analyzed"
@@ -2411,7 +2411,7 @@ function DemoMySQLTab({ tabId }) {
                                 style={{
                                     background: THEME.gridDark,
                                     padding: 12,
-                                    borderRadius: 12,
+                                    borderRadius: 18,
                                     fontFamily: THEME.fontMono,
                                     fontSize: 11,
                                     color: THEME.textMuted,
@@ -2453,11 +2453,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'planRegression') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Plan Regression
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={AlertTriangle}
                                 label="Regressions"
@@ -2508,7 +2508,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Line
@@ -2537,11 +2537,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'indexes') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Indexes
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Database}
                                 label="Total Indexes"
@@ -2586,7 +2586,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Bar dataKey="indexSize" fill={THEME.success} radius={[4, 4, 0, 0]} />
@@ -2599,11 +2599,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'bloatAnalysis') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Table Bloat
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Database}
                                 label="Tables Scanned"
@@ -2645,7 +2645,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Bar dataKey="bloat" fill={THEME.warning} radius={[4, 4, 0, 0]} />
@@ -2668,11 +2668,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'tableAnalysis') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Table Analysis
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Database}
                                 label="Tables"
@@ -2745,11 +2745,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'tableDeps') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Table Dependencies
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Anchor}
                                 label="Foreign Keys"
@@ -2801,11 +2801,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'chartBuilder') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Chart Builder
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={BarChart3}
                                 label="Charts Created"
@@ -2830,7 +2830,7 @@ function DemoMySQLTab({ tabId }) {
                             <MetricCard icon={Clock} label="Last Used" value="8m" sub="ago" color={THEME.warning} />
                         </div>
                         <Panel title="CHART CONFIGURATION" icon={Settings} accentColor={THEME.primary}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, fontSize: 11 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22, fontSize: 11 }}>
                                 <div>
                                     <div style={{ color: THEME.textDim, marginBottom: 4 }}>Chart Type</div>
                                     <div style={{ color: THEME.textMuted }}>Line Chart</div>
@@ -2865,7 +2865,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Area
@@ -2889,11 +2889,11 @@ function DemoMySQLTab({ tabId }) {
         if (sectionKey === 'infra') {
             if (itemKey === 'connPool') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Connection Pool
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Network}
                                 label="Max Connections"
@@ -2917,7 +2917,7 @@ function DemoMySQLTab({ tabId }) {
                                 color={THEME.ai}
                             />
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                             <Panel title="POOL USAGE" icon={Gauge} accentColor={THEME.warning} noPad={true}>
                                 <div
                                     style={{
@@ -2968,7 +2968,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Line
@@ -2987,11 +2987,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'poolMetrics') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Pool Metrics
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard icon={Zap} label="Created" value="14.2K" sub="Total" color={THEME.primary} />
                             <MetricCard
                                 icon={AlertTriangle}
@@ -3036,7 +3036,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Area
@@ -3066,7 +3066,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Bar dataKey="count" fill={THEME.ai} radius={[4, 4, 0, 0]} />
@@ -3079,11 +3079,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'replication') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Replication & Binlog
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={CheckCircle}
                                 label="Slave IO"
@@ -3127,8 +3127,8 @@ function DemoMySQLTab({ tabId }) {
                                         style={{
                                             background: THEME.primary,
                                             color: THEME.bg,
-                                            padding: '8px 12px',
-                                            borderRadius: 12,
+                                            padding: '20px 24px',
+                                            borderRadius: 18,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -3143,8 +3143,8 @@ function DemoMySQLTab({ tabId }) {
                                         style={{
                                             background: THEME.success,
                                             color: THEME.bg,
-                                            padding: '8px 12px',
-                                            borderRadius: 12,
+                                            padding: '20px 24px',
+                                            borderRadius: 18,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -3159,8 +3159,8 @@ function DemoMySQLTab({ tabId }) {
                                         style={{
                                             background: THEME.success,
                                             color: THEME.bg,
-                                            padding: '8px 12px',
-                                            borderRadius: 12,
+                                            padding: '20px 24px',
+                                            borderRadius: 18,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -3181,7 +3181,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Line type="monotone" dataKey="lag" stroke={THEME.ai} strokeWidth={2} dot={false} />
@@ -3200,11 +3200,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'checkpoints') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Checkpoint Monitor
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Zap}
                                 label="Flush Rate"
@@ -3249,7 +3249,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Area
@@ -3279,11 +3279,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'maintenance') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Optimize & Maintenance
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={CheckCircle}
                                 label="Optimized"
@@ -3334,7 +3334,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Bar dataKey="space" fill={THEME.success} radius={[4, 4, 0, 0]} />
@@ -3347,11 +3347,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'capacity') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Capacity Planning
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={HardDrive}
                                 label="Total Storage"
@@ -3402,7 +3402,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Area
@@ -3432,11 +3432,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'backup') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Backup & Recovery
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard icon={Archive} label="Last Backup" value="4h" sub="ago" color={THEME.success} />
                             <MetricCard
                                 icon={HardDrive}
@@ -3459,7 +3459,7 @@ function DemoMySQLTab({ tabId }) {
                             />
                         </Panel>
                         <Panel title="RECOVERY TEST RESULTS" icon={CheckCircle} accentColor={THEME.success}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
                                     <span style={{ color: THEME.textMuted }}>Last Test Date</span>
                                     <span style={{ color: THEME.textMain }}>2024-03-20</span>
@@ -3489,11 +3489,11 @@ function DemoMySQLTab({ tabId }) {
         if (sectionKey === 'security') {
             if (itemKey === 'secCompliance') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Security & Compliance
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Users}
                                 label="Users"
@@ -3534,7 +3534,7 @@ function DemoMySQLTab({ tabId }) {
                             />
                         </Panel>
                         <Panel title="SECURITY AUDIT" icon={Shield} accentColor={THEME.success}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 <div>
                                     <StatusBadge label="Password Policy" color={THEME.success} />{' '}
                                     <span style={{ fontSize: 10, color: THEME.textDim, marginLeft: 8 }}>Enforced</span>
@@ -3554,7 +3554,7 @@ function DemoMySQLTab({ tabId }) {
                             </div>
                         </Panel>
                         <Panel title="COMPLIANCE CHECKS" icon={CheckCircle} accentColor={THEME.ai}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
                                     <span style={{ color: THEME.textMuted }}>GDPR</span>
                                     <StatusBadge label="Compliant" color={THEME.success} />
@@ -3580,11 +3580,11 @@ function DemoMySQLTab({ tabId }) {
         if (sectionKey === 'observability') {
             if (itemKey === 'obsHub') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Observability Hub
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Network}
                                 label="Integrations"
@@ -3615,7 +3615,7 @@ function DemoMySQLTab({ tabId }) {
                             />
                         </div>
                         <Panel title="INTEGRATION STATUS" icon={Network} accentColor={THEME.primary}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                                 {[
                                     { name: 'Datadog', status: 'Connected' },
                                     { name: 'Prometheus', status: 'Connected' },
@@ -3627,7 +3627,7 @@ function DemoMySQLTab({ tabId }) {
                                         style={{
                                             background: THEME.gridDark,
                                             padding: 12,
-                                            borderRadius: 12,
+                                            borderRadius: 18,
                                             display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
@@ -3663,7 +3663,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Area
@@ -3682,11 +3682,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'cloudwatch') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             CloudWatch
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard icon={Bell} label="Alarms" value="24" sub="Configured" color={THEME.warning} />
                             <MetricCard icon={Zap} label="Metrics" value="340" sub="Custom" color={THEME.primary} />
                             <MetricCard icon={Eye} label="Dashboards" value="12" sub="Created" color={THEME.ai} />
@@ -3713,7 +3713,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Line
@@ -3742,11 +3742,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'logPatterns') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Log Pattern Analysis
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={FileText}
                                 label="Patterns Found"
@@ -3804,11 +3804,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'otel') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             OpenTelemetry
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Zap}
                                 label="Spans/sec"
@@ -3837,24 +3837,24 @@ function DemoMySQLTab({ tabId }) {
                                 style={{
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: 8,
+                                    gap: 20,
                                     fontSize: 10,
                                     fontFamily: THEME.fontMono,
                                 }}
                             >
-                                <div style={{ display: 'flex', gap: 8 }}>
+                                <div style={{ display: 'flex', gap: 20 }}>
                                     <span style={{ color: THEME.ai }}>├─ query-execution</span>
                                     <span style={{ color: THEME.textDim }}>12.4ms</span>
                                 </div>
-                                <div style={{ display: 'flex', gap: 8, marginLeft: 16 }}>
+                                <div style={{ display: 'flex', gap: 20, marginLeft: 16 }}>
                                     <span style={{ color: THEME.primary }}>├─ parse</span>
                                     <span style={{ color: THEME.textDim }}>1.2ms</span>
                                 </div>
-                                <div style={{ display: 'flex', gap: 8, marginLeft: 16 }}>
+                                <div style={{ display: 'flex', gap: 20, marginLeft: 16 }}>
                                     <span style={{ color: THEME.primary }}>├─ optimize</span>
                                     <span style={{ color: THEME.textDim }}>2.1ms</span>
                                 </div>
-                                <div style={{ display: 'flex', gap: 8, marginLeft: 16 }}>
+                                <div style={{ display: 'flex', gap: 20, marginLeft: 16 }}>
                                     <span style={{ color: THEME.primary }}>└─ execute</span>
                                     <span style={{ color: THEME.textDim }}>9.1ms</span>
                                 </div>
@@ -3871,11 +3871,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'k8s') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Kubernetes
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard icon={Network} label="Pods" value="24" sub="Running" color={THEME.primary} />
                             <MetricCard
                                 icon={CheckCircle}
@@ -3888,13 +3888,13 @@ function DemoMySQLTab({ tabId }) {
                             <MetricCard icon={Cpu} label="CPU Request" value="8.2" sub="cores" color={THEME.ai} />
                         </div>
                         <Panel title="POD STATUS" icon={Network} accentColor={THEME.primary}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 20 }}>
                                 {Array.from({ length: 24 }).map((_, i) => (
                                     <div
                                         key={i}
                                         style={{
                                             background: i < 23 ? THEME.success : THEME.warning,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                             height: 24,
                                             display: 'flex',
                                             alignItems: 'center',
@@ -3925,7 +3925,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Bar dataKey="used" fill={THEME.primary} radius={[4, 4, 0, 0]} />
@@ -3938,12 +3938,12 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'statusPage') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Status Page
                         </h1>
                         <Panel title="SYSTEM STATUS" icon={CheckCircle} accentColor={THEME.success}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <span style={{ color: THEME.textMuted }}>Primary Database</span>
                                     <StatusBadge label="Operational" color={THEME.success} pulse />
@@ -3962,7 +3962,7 @@ function DemoMySQLTab({ tabId }) {
                                 </div>
                             </div>
                         </Panel>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Activity}
                                 label="Uptime"
@@ -3995,11 +3995,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'aiMonitoring') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             AI Monitoring
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={AlertTriangle}
                                 label="Anomalies"
@@ -4038,7 +4038,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Line
@@ -4072,11 +4072,11 @@ function DemoMySQLTab({ tabId }) {
         if (sectionKey === 'dev') {
             if (itemKey === 'sqlConsole') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             SQL Console
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Terminal}
                                 label="Queries Run"
@@ -4099,7 +4099,7 @@ function DemoMySQLTab({ tabId }) {
                                 style={{
                                     background: THEME.gridDark,
                                     padding: 12,
-                                    borderRadius: 12,
+                                    borderRadius: 18,
                                     fontFamily: THEME.fontMono,
                                     fontSize: 11,
                                     color: THEME.textMuted,
@@ -4152,11 +4152,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'apiTracing') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             API Tracing
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard
                                 icon={Network}
                                 label="Endpoints"
@@ -4198,7 +4198,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Bar dataKey="latency" fill={THEME.primary} radius={[4, 4, 0, 0]} />
@@ -4221,11 +4221,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'repository') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             Repository
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard icon={Code} label="Stored Procs" value="52" sub="Total" color={THEME.primary} />
                             <MetricCard icon={Code} label="Functions" value="28" sub="User-defined" color={THEME.ai} />
                             <MetricCard icon={Code} label="Triggers" value="18" sub="Active" color={THEME.success} />
@@ -4246,7 +4246,7 @@ function DemoMySQLTab({ tabId }) {
                                 style={{
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: 8,
+                                    gap: 20,
                                     fontSize: 10,
                                     color: THEME.textMuted,
                                 }}
@@ -4271,11 +4271,11 @@ function DemoMySQLTab({ tabId }) {
 
             if (itemKey === 'aiAdvisor') {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="dpg-stagger">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="dpg-stagger">
                         <h1 style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, margin: '0 0 12px' }}>
                             AI Query Advisor
                         </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             <MetricCard icon={Zap} label="Suggestions" value="48" sub="This month" color={THEME.ai} />
                             <MetricCard
                                 icon={CheckCircle}
@@ -4324,7 +4324,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 14,
+                                            borderRadius: 20,
                                         }}
                                     />
                                     <Area

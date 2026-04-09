@@ -165,8 +165,8 @@ const RepoStyles = () => (
         .r8-stagger > *:nth-child(3) { animation-delay:120ms; }
         .r8-stagger > *:nth-child(4) { animation-delay:180ms; }
 
-        .r8-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:0; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s ease; backdrop-filter:blur(12px); }
-        .r8-card:hover { border-color:${THEME.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+        .r8-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius: 20px; padding:0; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .r8-card:hover { border-color:${THEME.primary}30; transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
         .r8-card-remote:hover { border-color:${THEME.primary}30 !important; }
         .r8-card-local:hover  { border-color:${THEME.info}30 !important; }
 
@@ -177,11 +177,11 @@ const RepoStyles = () => (
         .r8-line:hover { background:${THEME.primary}07 !important; }
         .r8-tab:hover:not(.r8-tab-on) { background:${THEME.primary}10 !important; color:${THEME.textMain} !important; }
         .r8-metric { transition:transform .2s, box-shadow .2s; }
-        .r8-metric:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,.14); }
+        .r8-metric:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(0,0,0,.14); }
 
         .r8-scroll::-webkit-scrollbar { width:4px; height:4px; }
         .r8-scroll::-webkit-scrollbar-track { background:transparent; }
-        .r8-scroll::-webkit-scrollbar-thumb { background:${THEME.primary}28; border-radius:8px; }
+        .r8-scroll::-webkit-scrollbar-thumb { background:${THEME.primary}28; border-radius: 20px; }
         .r8-scroll::-webkit-scrollbar-thumb:hover { background:${THEME.primary}55; }
 
         .r8-bar-fill { animation:rBarGrow .9s ease both; }
@@ -192,17 +192,17 @@ const RepoStyles = () => (
         }
         .r8-input:focus { border-color:${THEME.primary} !important; box-shadow:0 0 0 3px ${THEME.primary}18 !important; }
         .r8-input-local:focus { border-color:${THEME.info} !important; box-shadow:0 0 0 3px ${THEME.info}18 !important; }
-        .r8-shimmer { background:linear-gradient(90deg, ${THEME.surface} 25%, ${THEME.glassBorder} 50%, ${THEME.surface} 75%); background-size:200% 100%; animation:rShimmer 1.5s infinite; border-radius:10px; }
+        .r8-shimmer { background:linear-gradient(90deg, ${THEME.surface} 25%, ${THEME.glassBorder} 50%, ${THEME.surface} 75%); background-size:200% 100%; animation:rShimmer 1.5s infinite; border-radius: 20px; }
 
-        .r8-btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:10px; border:none; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .16s; white-space:nowrap; }
+        .r8-btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius: 20px; border:none; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .16s; white-space:nowrap; }
         .r8-btn-p  { background:linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary}); color:${THEME.textMain}; box-shadow:0 4px 14px ${THEME.primary}28; }
-        .r8-btn-p:hover:not(:disabled)  { filter:brightness(1.1); transform:translateY(-1px); }
+        .r8-btn-p:hover:not(:disabled)  { filter:brightness(1.1); transform:translateY(-3px); }
         .r8-btn-p:disabled { opacity: 0.5; cursor: not-allowed; }
         .r8-btn-g  { background:transparent; color:${THEME.textDim}; border:1px solid ${THEME.glassBorder}; }
         .r8-btn-g:hover  { background:${THEME.surface}; color:${THEME.textMain}; }
         .r8-btn-c  { background:${THEME.info}15; color:${THEME.info}; border:1px solid ${THEME.info}30; }
         .r8-btn-c:hover  { background:${THEME.info}25; }
-        .r8-btn-sm { padding:5px 11px; font-size:11px; border-radius:7px; }
+        .r8-btn-sm { padding:5px 11px; font-size:11px; border-radius: 22px; }
     `}</style>
 );
 
@@ -225,7 +225,7 @@ const Panel = ({ title, icon:TIcon, rightNode, noPad, children, style={} }) => (
     <div style={{ background: THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden', height:'100%', boxShadow:'0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)', backdropFilter:'blur(12px)', ...style }}>
         {title && (
             <div style={{ padding:'14px 20px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, background:`${THEME.bg}06`, fontWeight:700 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ display:'flex', alignItems:'center', gap: 20 }}>
                     {TIcon && <TIcon size={13} color={THEME.primary} />}
                     <span style={{ fontSize:10.5, fontWeight:800, color:THEME.textMain, letterSpacing:'0.02em' }}>{title}</span>
                 </div>
@@ -237,7 +237,7 @@ const Panel = ({ title, icon:TIcon, rightNode, noPad, children, style={} }) => (
 );
 
 const StatusBadge = ({ label, color, pulse, size='md' }) => (
-    <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:size==='sm'?9.5:10.5, fontWeight:700, padding:size==='sm'?'3px 7px':'4px 10px', borderRadius:5, background:`${color}14`, color, border:`1px solid ${color}25`, lineHeight:1.2, whiteSpace:'nowrap' }}>
+    <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:size==='sm'?9.5:10.5, fontWeight:700, padding:size==='sm'?'3px 7px':'4px 10px', borderRadius: 16, background:`${color}14`, color, border:`1px solid ${color}25`, lineHeight:1.2, whiteSpace:'nowrap' }}>
         <span style={{ width:5, height:5, borderRadius:'50%', background:color, flexShrink:0, animation:pulse?'rPulse 1.5s infinite':'none' }}/>{label}
     </span>
 );
@@ -314,7 +314,7 @@ const FsTreeNode = ({ node, depth, selectedId, onSelect, onToggle, openDirs }) =
         );
     }
     return (
-        <div className={`r8-tree-item${isSelected ? ' r8-sel' : ''}`} onClick={() => onSelect(node)} style={{ display:'flex', alignItems:'center', gap:8, padding:`5px 12px 5px ${12 + depth * 14}px`, borderLeft: isSelected ? `2px solid ${THEME.primary}` : '2px solid transparent', cursor: 'pointer' }}>
+        <div className={`r8-tree-item${isSelected ? ' r8-sel' : ''}`} onClick={() => onSelect(node)} style={{ display:'flex', alignItems:'center', gap: 20, padding:`5px 12px 5px ${12 + depth * 14}px`, borderLeft: isSelected ? `2px solid ${THEME.primary}` : '2px solid transparent', cursor: 'pointer' }}>
             <Icon size={12} color={isSelected ? THEME.primary : THEME.textDim}/>
             <span style={{ fontSize:11.5, color:isSelected ? THEME.primary : THEME.textMuted }}>{node.name}</span>
         </div>
@@ -446,7 +446,7 @@ const CodeView = ({ activeRepo }) => {
     };
 
     return (
-        <div style={{ display:'grid', gridTemplateColumns:'260px 1fr', gap:16, height:'100%', minHeight:0 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'260px 1fr', gap: 22, height:'100%', minHeight:0 }}>
 
             {/* SIDEBAR: REAL FILE SYSTEM */}
             <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
@@ -459,7 +459,7 @@ const CodeView = ({ activeRepo }) => {
                     {fsLoading && <div style={{ padding:20, textAlign:'center' }}><Loader size={18} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite', margin:'0 auto' }}/></div>}
 
                     {!fsTree && !fsLoading && (
-                        <div style={{ padding:24, textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+                        <div style={{ padding:24, textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', gap: 18 }}>
                             <FolderOpen size={32} color={THEME.info}/>
                             <div>
                                 <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain, marginBottom:6 }}>Authorization Required</div>
@@ -478,13 +478,13 @@ const CodeView = ({ activeRepo }) => {
             </div>
 
             {/* MAIN EDITOR & AI SPLIT */}
-            <div style={{ display:'grid', gridTemplateColumns: (aiEngine.loading || aiResult || aiEngine.error) ? '1fr 420px' : '1fr', gap:16, minHeight:0 }}>
+            <div style={{ display:'grid', gridTemplateColumns: (aiEngine.loading || aiResult || aiEngine.error) ? '1fr 420px' : '1fr', gap: 22, minHeight:0 }}>
 
                 {/* CODE EDITOR */}
                 <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
 
                     {/* Editor header */}
-                    <div style={{ padding:'10px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+                    <div style={{ padding:'10px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', gap: 20, flexShrink:0 }}>
                         <Code size={14} color={THEME.primary}/>
                         <span style={{ fontSize:12, fontWeight:700, color:THEME.textMain, fontFamily:'monospace', flex:1 }}>{selNode ? selNode.name : 'No file selected'}</span>
                         {aiResult?.issues?.length > 0 && (
@@ -495,7 +495,7 @@ const CodeView = ({ activeRepo }) => {
                         {selNode && fileContent && (
                             <button
                                 onClick={() => copyToClipboard(fileContent, 'editor')}
-                                style={{ background:'none', border:`1px solid ${THEME.glassBorder}`, borderRadius:5, color:THEME.textDim, fontSize:10, padding:'2px 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
+                                style={{ background:'none', border:`1px solid ${THEME.glassBorder}`, borderRadius: 16, color:THEME.textDim, fontSize:10, padding:'2px 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
                             >
                                 {copiedFix==='editor' ? <><Check size={10} color={THEME.success}/> Copied!</> : <><Copy size={10}/> Copy</>}
                             </button>
@@ -503,7 +503,7 @@ const CodeView = ({ activeRepo }) => {
                     </div>
 
                     {!selNode && !fileLoading && (
-                        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:16, color:THEME.textDim }}>
+                        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap: 22, color:THEME.textDim }}>
                             <Sparkles size={24} color={`${THEME.primary}50`}/>
                             <div style={{ fontSize:13 }}>Select a file to begin Deep AI Analysis</div>
                         </div>
@@ -555,13 +555,13 @@ const CodeView = ({ activeRepo }) => {
 
                                             {/* Issue badge */}
                                             {hasIssue && !allApplied && (
-                                                <span style={{ marginLeft:10, flexShrink:0, fontSize:9, fontWeight:700, color:issueColor, padding:'1px 7px', background:`${issueColor}18`, borderRadius:4, alignSelf:'center', display:'flex', alignItems:'center', gap:4 }}>
+                                                <span style={{ marginLeft:10, flexShrink:0, fontSize:9, fontWeight:700, color:issueColor, padding:'1px 7px', background:`${issueColor}18`, borderRadius: 16, alignSelf:'center', display:'flex', alignItems:'center', gap:4 }}>
                                                     <AlertTriangle size={9}/> {issuesOnLine.length > 1 ? `${issuesOnLine.length} issues` : topIssue.title}
                                                     <span style={{ opacity:0.6, fontSize:8 }}>{isExpanded ? '▲' : '▼'}</span>
                                                 </span>
                                             )}
                                             {allApplied && (
-                                                <span style={{ marginLeft:10, flexShrink:0, fontSize:9, fontWeight:700, color:THEME.success, padding:'1px 7px', background:`${THEME.success}15`, borderRadius:4, alignSelf:'center', display:'flex', alignItems:'center', gap:3 }}>
+                                                <span style={{ marginLeft:10, flexShrink:0, fontSize:9, fontWeight:700, color:THEME.success, padding:'1px 7px', background:`${THEME.success}15`, borderRadius: 16, alignSelf:'center', display:'flex', alignItems:'center', gap:3 }}>
                                                     <CheckCircle size={9}/> Fixed
                                                 </span>
                                             )}
@@ -571,7 +571,7 @@ const CodeView = ({ activeRepo }) => {
                                         {isExpanded && issuesOnLine.map(iss => !appliedFixes.has(iss.idx) && (
                                             <div key={iss.idx} style={{ margin:'0 0 2px 41px', background:`${THEME.bg}`, border:`1px solid ${issueColor}30`, borderLeft:`3px solid ${issueColor}`, borderRadius:'0 6px 6px 0', overflow:'hidden' }}>
                                                 {/* Issue header */}
-                                                <div style={{ padding:'7px 12px', background:`${issueColor}10`, display:'flex', alignItems:'center', gap:8 }}>
+                                                <div style={{ padding:'7px 12px', background:`${issueColor}10`, display:'flex', alignItems:'center', gap: 20 }}>
                                                     <RiskBadge risk={iss.severity}/>
                                                     <span style={{ fontSize:11, fontWeight:700, color:issueColor, flex:1 }}>{iss.title}</span>
                                                     <button
@@ -587,21 +587,21 @@ const CodeView = ({ activeRepo }) => {
                                                 {iss.fix && (
                                                     <div style={{ padding:'8px 12px' }}>
                                                         <div style={{ fontSize:10, color:THEME.textDim, fontWeight:700, letterSpacing:'0.02em', marginBottom:5 }}>Suggested Fix</div>
-                                                        <div style={{ position:'relative', background:`${THEME.surface}`, border:`1px solid ${THEME.success}30`, borderRadius:5, padding:'7px 70px 7px 10px', fontFamily:'monospace', fontSize:11, color:THEME.success, whiteSpace:'pre-wrap', lineHeight:1.5 }}>
+                                                        <div style={{ position:'relative', background:`${THEME.surface}`, border:`1px solid ${THEME.success}30`, borderRadius: 16, padding:'7px 70px 7px 10px', fontFamily:'monospace', fontSize:11, color:THEME.success, whiteSpace:'pre-wrap', lineHeight:1.5 }}>
                                                             {iss.fix}
                                                             {/* Action buttons */}
                                                             <div style={{ position:'absolute', top:5, right:5, display:'flex', gap:4 }}>
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); copyToClipboard(iss.fix, `fix-${iss.idx}`); }}
                                                                     title="Copy fix"
-                                                                    style={{ background:`${THEME.surface}`, border:`1px solid ${THEME.glassBorder}`, borderRadius:4, cursor:'pointer', color:copiedFix===`fix-${iss.idx}` ? THEME.success : THEME.textDim, padding:'2px 6px', fontSize:9, display:'flex', alignItems:'center', gap:3 }}
+                                                                    style={{ background:`${THEME.surface}`, border:`1px solid ${THEME.glassBorder}`, borderRadius: 16, cursor:'pointer', color:copiedFix===`fix-${iss.idx}` ? THEME.success : THEME.textDim, padding:'2px 6px', fontSize:9, display:'flex', alignItems:'center', gap:3 }}
                                                                 >
                                                                     {copiedFix===`fix-${iss.idx}` ? <Check size={9}/> : <Copy size={9}/>}
                                                                 </button>
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); applyLineFix(iss.idx); }}
                                                                     title="Apply this fix"
-                                                                    style={{ background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, border:'none', borderRadius:4, cursor:'pointer', color:THEME.textMain, padding:'2px 8px', fontSize:9, fontWeight:700, display:'flex', alignItems:'center', gap:3, boxShadow:`0 2px 6px ${THEME.success}40` }}
+                                                                    style={{ background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, border:'none', borderRadius: 16, cursor:'pointer', color:THEME.textMain, padding:'2px 8px', fontSize:9, fontWeight:700, display:'flex', alignItems:'center', gap:3, boxShadow:`0 2px 6px ${THEME.success}40` }}
                                                                 >
                                                                     <Check size={9}/> Apply Fix
                                                                 </button>
@@ -625,7 +625,7 @@ const CodeView = ({ activeRepo }) => {
                 {(aiEngine.loading || aiResult || aiEngine.error) && (
                     <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden' }}>
                         <div style={{ padding:'14px 20px', borderBottom:`1px solid ${THEME.glassBorder}`, background:`${THEME.primary}06`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap: 20 }}>
                                 <Sparkles size={14} color={THEME.primary}/>
                                 <span style={{ fontSize:11, fontWeight:800, color:THEME.textMain, letterSpacing:'0.02em' }}>Deep Analysis</span>
                             </div>
@@ -634,20 +634,20 @@ const CodeView = ({ activeRepo }) => {
 
                         <div className="r8-scroll" style={{ flex:1, overflowY:'auto', padding:20 }}>
                             {aiEngine.loading && (
-                                <div style={{ display:'flex', flexDirection:'column', gap:16, alignItems:'center', justifyContent:'center', height:'100%' }}>
+                                <div style={{ display:'flex', flexDirection:'column', gap: 22, alignItems:'center', justifyContent:'center', height:'100%' }}>
                                     <Loader size={32} color={THEME.primary} style={{ animation:'rSpin 1s linear infinite' }}/>
                                     <div style={{ fontSize:12, color:THEME.textDim }}>Running advanced static analysis...</div>
                                 </div>
                             )}
 
                             {aiEngine.error && (
-                                <div style={{ padding:16, color:THEME.danger, fontSize:12, background:`${THEME.danger}10`, borderRadius:8, lineHeight:1.6 }}>
+                                <div style={{ padding:16, color:THEME.danger, fontSize:12, background:`${THEME.danger}10`, borderRadius: 20, lineHeight:1.6 }}>
                                     <div style={{ fontWeight:700, marginBottom:6, display:'flex', alignItems:'center', gap:6 }}>
                                         <AlertTriangle size={13}/> Analysis Error
                                     </div>
                                     {aiEngine.error}
                                     {aiEngine.error.includes('not enabled') && (
-                                        <div style={{ marginTop:10, padding:10, background:`${THEME.surface}`, borderRadius:6, fontSize:11, color:THEME.textDim, lineHeight:1.7 }}>
+                                        <div style={{ marginTop:10, padding:10, background:`${THEME.surface}`, borderRadius: 18, fontSize:11, color:THEME.textDim, lineHeight:1.7 }}>
                                             <b style={{ color:THEME.warning }}>Fix:</b> Add your AI API key to the backend <code>.env</code> file and redeploy.
                                         </div>
                                     )}
@@ -657,7 +657,7 @@ const CodeView = ({ activeRepo }) => {
                             {aiResult && !aiEngine.loading && (
                                 <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
                                     {/* Health Overview */}
-                                    <div style={{ padding:16, borderRadius:12, background:`${THEME.surface}`, border:`1px solid ${THEME.glassBorder}`, display:'flex', gap:16 }}>
+                                    <div style={{ padding:16, borderRadius: 18, background:`${THEME.surface}`, border:`1px solid ${THEME.glassBorder}`, display:'flex', gap: 22 }}>
                                         <div style={{ fontSize:48, fontWeight:900, color: aiResult.healthScore > 75 ? THEME.success : THEME.warning, lineHeight:1 }}>
                                             {aiResult.healthScore}
                                         </div>
@@ -668,12 +668,12 @@ const CodeView = ({ activeRepo }) => {
                                     </div>
 
                                     {/* Metrics Grid */}
-                                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-                                        <div style={{ padding:12, borderRadius:8, background:`${THEME.primary}08`, border:`1px solid ${THEME.primary}20` }}>
+                                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 22 }}>
+                                        <div style={{ padding:12, borderRadius: 20, background:`${THEME.primary}08`, border:`1px solid ${THEME.primary}20` }}>
                                             <div style={{ fontSize:10, color:THEME.textDim, fontWeight:700, marginBottom:4 }}>Complexity</div>
                                             <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain }}>{aiResult.complexityMetrics?.cyclomaticComplexity || 'Normal'}</div>
                                         </div>
-                                        <div style={{ padding:12, borderRadius:8, background:`${THEME.info}08`, border:`1px solid ${THEME.info}20` }}>
+                                        <div style={{ padding:12, borderRadius: 20, background:`${THEME.info}08`, border:`1px solid ${THEME.info}20` }}>
                                             <div style={{ fontSize:10, color:THEME.textDim, fontWeight:700, marginBottom:4 }}>Testability</div>
                                             <div style={{ fontSize:13, fontWeight:700, color:THEME.textMain }}>{aiResult.complexityMetrics?.testability || 'Fair'}</div>
                                         </div>
@@ -686,7 +686,7 @@ const CodeView = ({ activeRepo }) => {
                                                 <CheckCircle size={12} color={THEME.success}/> Strengths
                                             </div>
                                             {aiResult.strengths.map((s, i) => (
-                                                <div key={i} style={{ display:'flex', gap:8, marginBottom:8, padding:'9px 12px', borderRadius:8, background:`${THEME.success}06`, border:`1px solid ${THEME.success}15` }}>
+                                                <div key={i} style={{ display:'flex', gap: 20, marginBottom:8, padding:'9px 12px', borderRadius: 20, background:`${THEME.success}06`, border:`1px solid ${THEME.success}15` }}>
                                                     <CheckCircle size={12} color={THEME.success} style={{ flexShrink:0, marginTop:2 }}/>
                                                     <span style={{ fontSize:11.5, color:THEME.textMuted, lineHeight:1.5 }}>{s}</span>
                                                 </div>
@@ -706,13 +706,13 @@ const CodeView = ({ activeRepo }) => {
                                                 const issColor = sevColor(iss.severity);
                                                 const isApplied = appliedFixes.has(i);
                                                 return (
-                                                    <div key={i} style={{ marginBottom:10, padding:12, borderRadius:8, background: isApplied ? `${THEME.success}06` : `${issColor}08`, border:`1px solid ${isApplied ? THEME.success : issColor}25`, opacity: isApplied ? 0.7 : 1, transition:'all .2s' }}>
+                                                    <div key={i} style={{ marginBottom:10, padding:12, borderRadius: 20, background: isApplied ? `${THEME.success}06` : `${issColor}08`, border:`1px solid ${isApplied ? THEME.success : issColor}25`, opacity: isApplied ? 0.7 : 1, transition:'all .2s' }}>
                                                         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:6, gap:6 }}>
                                                             <span style={{ fontSize:12, fontWeight:700, color: isApplied ? THEME.success : issColor, flex:1 }}>
                                                                 {iss.line ? <span style={{ fontFamily:'monospace', marginRight:4, opacity:0.7 }}>L{iss.line}</span> : null}{iss.title}
                                                             </span>
                                                             {isApplied
-                                                                ? <span style={{ fontSize:9, fontWeight:700, color:THEME.success, padding:'2px 7px', background:`${THEME.success}18`, borderRadius:4, flexShrink:0, display:'flex', alignItems:'center', gap:3 }}><CheckCircle size={9}/> Fixed</span>
+                                                                ? <span style={{ fontSize:9, fontWeight:700, color:THEME.success, padding:'2px 7px', background:`${THEME.success}18`, borderRadius: 16, flexShrink:0, display:'flex', alignItems:'center', gap:3 }}><CheckCircle size={9}/> Fixed</span>
                                                                 : <RiskBadge risk={iss.severity}/>
                                                             }
                                                         </div>
@@ -722,7 +722,7 @@ const CodeView = ({ activeRepo }) => {
                                                                 {iss.line && (
                                                                     <button
                                                                         onClick={() => goToLine(i, iss.line)}
-                                                                        style={{ fontSize:10, padding:'3px 9px', borderRadius:5, border:`1px solid ${issColor}40`, background:`${issColor}10`, color:issColor, cursor:'pointer', fontWeight:600, display:'flex', alignItems:'center', gap:4 }}
+                                                                        style={{ fontSize:10, padding:'3px 9px', borderRadius: 16, border:`1px solid ${issColor}40`, background:`${issColor}10`, color:issColor, cursor:'pointer', fontWeight:600, display:'flex', alignItems:'center', gap:4 }}
                                                                     >
                                                                         <ArrowRight size={10}/> Go to Line {iss.line}
                                                                     </button>
@@ -730,7 +730,7 @@ const CodeView = ({ activeRepo }) => {
                                                                 {iss.fix && (
                                                                     <button
                                                                         onClick={() => applyLineFix(i)}
-                                                                        style={{ fontSize:10, padding:'3px 9px', borderRadius:5, border:'none', background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, color:THEME.textMain, cursor:'pointer', fontWeight:700, display:'flex', alignItems:'center', gap:4, boxShadow:`0 2px 6px ${THEME.success}30` }}
+                                                                        style={{ fontSize:10, padding:'3px 9px', borderRadius: 16, border:'none', background:`linear-gradient(135deg,${THEME.success},${THEME.info})`, color:THEME.textMain, cursor:'pointer', fontWeight:700, display:'flex', alignItems:'center', gap:4, boxShadow:`0 2px 6px ${THEME.success}30` }}
                                                                     >
                                                                         <Wrench size={10}/> Apply Fix
                                                                     </button>
@@ -750,7 +750,7 @@ const CodeView = ({ activeRepo }) => {
                                                 <Shield size={12}/> Security Vectors
                                             </div>
                                             {aiResult.securityFlags.map((sec, i) => (
-                                                <div key={i} style={{ marginBottom:8, padding:12, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                                <div key={i} style={{ marginBottom:8, padding:12, borderRadius: 20, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
                                                     <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
                                                         <span style={{ fontSize:12, fontWeight:700, color:THEME.warning }}>{sec.title}</span>
                                                         <RiskBadge risk={sec.severity}/>
@@ -768,7 +768,7 @@ const CodeView = ({ activeRepo }) => {
                                                 <Zap size={12} color={THEME.warning}/> Performance
                                             </div>
                                             {aiResult.performanceInsights.map((p, i) => (
-                                                <div key={i} style={{ marginBottom:8, padding:12, borderRadius:8, background:`${THEME.warning}06`, border:`1px solid ${THEME.warning}20` }}>
+                                                <div key={i} style={{ marginBottom:8, padding:12, borderRadius: 20, background:`${THEME.warning}06`, border:`1px solid ${THEME.warning}20` }}>
                                                     <div style={{ fontSize:12, fontWeight:700, color:THEME.warning, marginBottom:4 }}>{p.title}</div>
                                                     <div style={{ fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>{p.suggestion}</div>
                                                 </div>
@@ -783,7 +783,7 @@ const CodeView = ({ activeRepo }) => {
                                                 <Lightbulb size={12} color={THEME.primary}/> Recommendations
                                             </div>
                                             {aiResult.aiRecommendations.sort((a,b) => a.priority - b.priority).map((rec, i) => (
-                                                <div key={i} style={{ display:'flex', gap:10, marginBottom:10, padding:'10px 12px', borderRadius:8, background:`${THEME.primary}06`, border:`1px solid ${THEME.primary}15` }}>
+                                                <div key={i} style={{ display:'flex', gap: 22, marginBottom:10, padding:'10px 12px', borderRadius: 20, background:`${THEME.primary}06`, border:`1px solid ${THEME.primary}15` }}>
                                                     <div style={{ width:20, height:20, borderRadius:'50%', background:`${THEME.primary}18`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                                                         <span style={{ fontSize:10, fontWeight:900, color:THEME.primary }}>{rec.priority}</span>
                                                     </div>
@@ -819,7 +819,7 @@ const InsightsView = ({ activeRepo }) => {
     const r = ai.result;
 
     return (
-        <div style={{ display:'flex', flexDirection:'column', gap:16, height:'100%' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap: 22, height:'100%' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <div style={{ fontSize:16, fontWeight:800, color:THEME.textMain }}>Repository Intelligence</div>
                 <button onClick={runAnalysis} disabled={!activeRepo||ai.loading} className="r8-btn r8-btn-p">
@@ -838,13 +838,13 @@ const InsightsView = ({ activeRepo }) => {
                 )}
 
                 {ai.error && (
-                    <div style={{ padding:16, background:`${THEME.danger}10`, color:THEME.danger, borderRadius:12, lineHeight:1.6, fontSize:12 }}>
+                    <div style={{ padding:16, background:`${THEME.danger}10`, color:THEME.danger, borderRadius: 18, lineHeight:1.6, fontSize:12 }}>
                         <div style={{ fontWeight:700, marginBottom:6, display:'flex', alignItems:'center', gap:6 }}>
                             <AlertTriangle size={13}/> Analysis Error
                         </div>
                         {ai.error}
                         {ai.error.includes('not enabled') && (
-                            <div style={{ marginTop:10, padding:10, background:`rgba(0,0,0,.2)`, borderRadius:6, fontSize:11, color:THEME.textDim, lineHeight:1.7 }}>
+                            <div style={{ marginTop:10, padding:10, background:`rgba(0,0,0,.2)`, borderRadius: 18, fontSize:11, color:THEME.textDim, lineHeight:1.7 }}>
                                 <b style={{ color:THEME.warning }}>Fix:</b> Add your AI API key to the backend <code>.env</code> file and redeploy.
                             </div>
                         )}
@@ -852,8 +852,8 @@ const InsightsView = ({ activeRepo }) => {
                 )}
 
                 {!ai.loading && !ai.result && !ai.error && (
-                    <div style={{ padding:'60px 20px', textAlign:'center', border:`2px dashed ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', alignItems:'center', gap:16 }}>
-                        <div style={{ width:60, height:60, borderRadius:14, background:`${THEME.primary}10`, display:'flex', alignItems:'center', justifyContent:'center' }}><Activity size={26} color={THEME.primary}/></div>
+                    <div style={{ padding:'60px 20px', textAlign:'center', border:`2px dashed ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', alignItems:'center', gap: 22 }}>
+                        <div style={{ width:60, height:60, borderRadius: 20, background:`${THEME.primary}10`, display:'flex', alignItems:'center', justifyContent:'center' }}><Activity size={26} color={THEME.primary}/></div>
                         <div style={{ fontSize:16, fontWeight:800, color:THEME.textMuted }}>No Analysis Run Yet</div>
                         <div style={{ fontSize:12.5, color:THEME.textDim, maxWidth:360, lineHeight:1.7 }}>Click <b>Run Full Audit</b> to evaluate this repository's tech debt, overall health, and hidden vulnerabilities.</div>
                     </div>
@@ -862,32 +862,32 @@ const InsightsView = ({ activeRepo }) => {
                 {r && !ai.loading && (() => {
                     const hc = r.overallHealthScore >= 80 ? THEME.success : r.overallHealthScore >= 60 ? THEME.warning : THEME.danger;
                     return (
-                        <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-                            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }} className="r8-stagger">
+                        <div style={{ display:'flex', flexDirection:'column', gap: 22 }}>
+                            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap: 22 }} className="r8-stagger">
                                 <MetricCard label="Overall Health" value={`${r.overallHealthScore}/100`} icon={Activity}    color={hc}/>
                                 <MetricCard label="Code Quality"   value={`${r.metricsEstimate?.codeQuality||0}/100`} icon={Code}  color={THEME.primary}/>
                                 <MetricCard label="Security"       value={`${r.metricsEstimate?.securityScore||0}/100`} icon={Shield} color={THEME.info}/>
                                 <MetricCard label="Tech Debt"      value={r.techDebtEstimate?.toUpperCase()} icon={Wrench}  color={r.techDebtEstimate==='high'?THEME.danger:THEME.warning}/>
                             </div>
 
-                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 22 }}>
                                 <Panel title="Architecture Review" icon={Workflow}>
                                     <p style={{ fontSize:12.5, color:THEME.textDim, lineHeight:1.7, marginBottom:16 }}>{r.repoSummary}</p>
-                                    <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:16 }}>
-                                        {r.primaryLanguages?.map((l,i) => <span key={i} style={{ padding:'3px 10px', borderRadius:6, fontSize:10.5, fontWeight:700, background:`${THEME.primary}12`, color:THEME.primary, border:`1px solid ${THEME.primary}20` }}>{l}</span>)}
-                                        <span style={{ padding:'3px 10px', borderRadius:6, fontSize:10.5, fontWeight:700, background:`${THEME.info}12`, color:THEME.info, border:`1px solid ${THEME.info}20` }}>{r.architecturePattern}</span>
+                                    <div style={{ display:'flex', gap: 20, flexWrap:'wrap', marginBottom:16 }}>
+                                        {r.primaryLanguages?.map((l,i) => <span key={i} style={{ padding:'3px 10px', borderRadius: 18, fontSize:10.5, fontWeight:700, background:`${THEME.primary}12`, color:THEME.primary, border:`1px solid ${THEME.primary}20` }}>{l}</span>)}
+                                        <span style={{ padding:'3px 10px', borderRadius: 18, fontSize:10.5, fontWeight:700, background:`${THEME.info}12`, color:THEME.info, border:`1px solid ${THEME.info}20` }}>{r.architecturePattern}</span>
                                     </div>
                                 </Panel>
 
                                 <Panel title="Top Risks & Quick Wins" icon={Flame}>
                                     {r.quickWins?.map((w,i)=>(
-                                        <div key={i} style={{ display:'flex', gap:8, marginBottom:10, padding:'9px 12px', borderRadius:8, background:`${THEME.success}06`, border:`1px solid ${THEME.success}15` }}>
+                                        <div key={i} style={{ display:'flex', gap: 20, marginBottom:10, padding:'9px 12px', borderRadius: 20, background:`${THEME.success}06`, border:`1px solid ${THEME.success}15` }}>
                                             <CheckCircle size={12} color={THEME.success} style={{ flexShrink:0, marginTop:2 }}/>
                                             <span style={{ fontSize:11.5, color:THEME.textMuted, lineHeight:1.5 }}>{w}</span>
                                         </div>
                                     ))}
                                     {r.topRisks?.map((risk,i)=>(
-                                        <div key={i} style={{ display:'flex', gap:8, marginTop:10, padding:'9px 12px', borderRadius:8, background:`${THEME.danger}06`, border:`1px solid ${THEME.danger}15` }}>
+                                        <div key={i} style={{ display:'flex', gap: 20, marginTop:10, padding:'9px 12px', borderRadius: 20, background:`${THEME.danger}06`, border:`1px solid ${THEME.danger}15` }}>
                                             <AlertTriangle size={12} color={THEME.danger} style={{ flexShrink:0, marginTop:2 }}/>
                                             <span style={{ fontSize:11.5, color:THEME.textMuted, lineHeight:1.5 }}><b>{risk.risk}:</b> {risk.description}</span>
                                         </div>
@@ -898,11 +898,11 @@ const InsightsView = ({ activeRepo }) => {
                             {/* Insights */}
                             {r.insights?.length > 0 && (
                                 <Panel title="Deep Insights" icon={Lightbulb}>
-                                    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                                    <div style={{ display:'flex', flexDirection:'column', gap: 22 }}>
                                         {r.insights.map((ins, i) => (
-                                            <div key={i} style={{ padding:'12px 14px', borderRadius:10, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
-                                                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
-                                                    <span style={{ fontSize:10, fontWeight:800, padding:'2px 8px', borderRadius:4, background:`${THEME.primary}15`, color:THEME.primary }}>{ins.category}</span>
+                                            <div key={i} style={{ padding:'12px 14px', borderRadius: 16, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+                                                <div style={{ display:'flex', alignItems:'center', gap: 20, marginBottom:6 }}>
+                                                    <span style={{ fontSize:10, fontWeight:800, padding:'2px 8px', borderRadius: 16, background:`${THEME.primary}15`, color:THEME.primary }}>{ins.category}</span>
                                                 </div>
                                                 <div style={{ fontSize:12, color:THEME.textMuted, lineHeight:1.5, marginBottom:6 }}>{ins.finding}</div>
                                                 <div style={{ fontSize:11.5, color:THEME.success, lineHeight:1.5 }}>→ {ins.recommendation}</div>
@@ -941,8 +941,8 @@ const LocalRepoForm = ({ onConnect, onClose }) => {
 
     return (
         <div style={{ padding:22, display:'flex', flexDirection:'column', gap:18 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                <div style={{ width:40, height:40, borderRadius:10, background:`${THEME.info}18`, border:`1px solid ${THEME.info}30`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <div style={{ display:'flex', alignItems:'center', gap: 18 }}>
+                <div style={{ width:40, height:40, borderRadius: 16, background:`${THEME.info}18`, border:`1px solid ${THEME.info}30`, display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <HardDrive size={18} color={THEME.info}/>
                 </div>
                 <div>
@@ -953,14 +953,14 @@ const LocalRepoForm = ({ onConnect, onClose }) => {
 
             <div>
                 <label style={{ fontSize:10.5, fontWeight:700, color:THEME.textDim, letterSpacing:'0.02em', display:'block', marginBottom:8 }}>Absolute Path</label>
-                <input value={path} onChange={e=>setPath(e.target.value)} placeholder="/path/to/project or C:\Projects\app" className="r8-input r8-input-local" style={{ width:'100%', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, padding:'12px', color:THEME.textMain, fontFamily:THEME.fontMono, fontSize:12.5, boxSizing:'border-box', outline:'none' }}/>
+                <input value={path} onChange={e=>setPath(e.target.value)} placeholder="/path/to/project or C:\Projects\app" className="r8-input r8-input-local" style={{ width:'100%', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius: 16, padding:'12px', color:THEME.textMain, fontFamily:THEME.fontMono, fontSize:12.5, boxSizing:'border-box', outline:'none' }}/>
             </div>
 
-            <div style={{ padding:'10px 14px', borderRadius:8, background:`${THEME.info}08`, border:`1px solid ${THEME.info}20`, fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>
+            <div style={{ padding:'10px 14px', borderRadius: 20, background:`${THEME.info}08`, border:`1px solid ${THEME.info}20`, fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>
                 <b style={{color:THEME.info}}>Note:</b> When accessing local folders, branch details and git commit history cannot be retrieved automatically without a local proxy server. Code analysis will work perfectly on raw files.
             </div>
 
-            <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+            <div style={{ display:'flex', gap: 20, justifyContent:'flex-end' }}>
                 <button onClick={onClose} className="r8-btn r8-btn-g">Cancel</button>
                 <button onClick={connect} disabled={!path.trim()} className="r8-btn r8-btn-p" style={{ opacity:!path.trim()?0.5:1 }}><HardDrive size={13}/> Register Local</button>
             </div>
@@ -983,7 +983,7 @@ const AddRepoModal = ({ onAdd, onClose }) => {
     };
 
     return (
-        <div style={{ background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', maxWidth: 560, animation: 'fadeIn 0.2s ease' }}>
+        <div style={{ background: THEME.surface, borderRadius: 18, border: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', maxWidth: 560, animation: 'fadeIn 0.2s ease' }}>
             <div style={{ padding:'18px 22px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <div style={{ fontSize:15, fontWeight:800, color:THEME.textMain }}>Connect Repository</div>
                 <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim }}><X size={16}/></button>
@@ -991,19 +991,19 @@ const AddRepoModal = ({ onAdd, onClose }) => {
 
                 <div style={{ display:'flex', gap:5, padding:'14px 22px 0' }}>
                     {Object.entries(PROV).map(([key, p]) => (
-                        <button key={key} onClick={()=>setProvider(key)} style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 13px', borderRadius:9, border:`1px solid ${provider===key?p.color+'40':THEME.glassBorder}`, background:provider===key?`${p.color}14`:'transparent', color:provider===key?p.color:THEME.textDim, fontSize:12, fontWeight:700, cursor:'pointer' }}>
+                        <button key={key} onClick={()=>setProvider(key)} style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 13px', borderRadius: 20, border:`1px solid ${provider===key?p.color+'40':THEME.glassBorder}`, background:provider===key?`${p.color}14`:'transparent', color:provider===key?p.color:THEME.textDim, fontSize:12, fontWeight:700, cursor:'pointer' }}>
                             <p.Icon size={13}/>{p.label}
                         </button>
                     ))}
                 </div>
 
                 {provider==='local' ? <LocalRepoForm onConnect={handleLocal} onClose={onClose}/> : (
-                    <div style={{ padding:22, display:'flex', flexDirection:'column', gap:16 }}>
+                    <div style={{ padding:22, display:'flex', flexDirection:'column', gap: 22 }}>
                         <div>
                             <label style={{ fontSize:10.5, fontWeight:700, color:THEME.textDim, marginBottom:8, display:'block' }}>Repository URL</label>
-                            <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://github.com/user/repo" style={{ width:'100%', padding:'11px 12px', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:9, color:THEME.textMain, outline:'none', fontSize:13, boxSizing:'border-box' }}/>
+                            <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://github.com/user/repo" style={{ width:'100%', padding:'11px 12px', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius: 20, color:THEME.textMain, outline:'none', fontSize:13, boxSizing:'border-box' }}/>
                         </div>
-                        <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+                        <div style={{ display:'flex', gap: 20, justifyContent:'flex-end' }}>
                             <button onClick={onClose} className="r8-btn r8-btn-g">Cancel</button>
                             <button onClick={handleRemote} disabled={!url.trim()} className="r8-btn r8-btn-p"><Plus size={13}/> Connect</button>
                         </div>
@@ -1022,9 +1022,9 @@ const RepoCard = ({ repo, onOpen, onDelete }) => {
     const accent = isLocal ? THEME.info : THEME.primary;
 
     return (
-        <div className={`r8-card r8-card-${isLocal?'local':'remote'}`} onClick={()=>onOpen(repo)} style={{ padding:22, borderRadius:14, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
+        <div className={`r8-card r8-card-${isLocal?'local':'remote'}`} onClick={()=>onOpen(repo)} style={{ padding:22, borderRadius: 20, background:THEME.surface, border:`1px solid ${THEME.glassBorder}` }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:14 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                <div style={{ display:'flex', alignItems:'center', gap: 18 }}>
                     <div style={{ width:40, height:40, borderRadius:11, background:`${accent}14`, border:`1px solid ${accent}25`, display:'flex', alignItems:'center', justifyContent:'center' }}>
                         <prov.Icon size={18} color={accent}/>
                     </div>
@@ -1085,14 +1085,14 @@ const RepositoryTab = () => {
                         <h2 style={{ fontSize:26, fontWeight:900, color:THEME.textMain, margin:0 }}>Repositories</h2>
                         <div style={{ fontSize:12.5, color:THEME.textDim, marginTop:5 }}>Manage your connected codebases</div>
                     </div>
-                    <div style={{ display:'flex', gap:10 }}>
-                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{ padding:'9px 12px', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:9, color:THEME.textMain, outline:'none' }}/>
+                    <div style={{ display:'flex', gap: 22 }}>
+                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{ padding:'9px 12px', background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius: 20, color:THEME.textMain, outline:'none' }}/>
                         <button onClick={()=>setShowAdd(true)} className="r8-btn r8-btn-p"><Plus size={14}/> Add Repository</button>
                     </div>
                 </div>
 
                 {filtered.length > 0 ? (
-                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:14 }} className="r8-stagger">
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap: 20 }} className="r8-stagger">
                         {filtered.map(repo => <RepoCard key={repo.id} repo={repo} onOpen={openRepo} onDelete={handleDelete}/>)}
                     </div>
                 ) : (
@@ -1108,15 +1108,15 @@ const RepositoryTab = () => {
     return (
         <div style={{ display:'flex', flexDirection:'column', height:'100vh', padding:'0 28px 24px' }}>
             <RepoStyles/>
-            <div style={{ padding:'14px 0', display:'flex', alignItems:'center', gap:10 }}>
+            <div style={{ padding:'14px 0', display:'flex', alignItems:'center', gap: 22 }}>
                 <button onClick={()=>setView('repos')} className="r8-btn r8-btn-g r8-btn-sm">Repositories</button>
                 <ChevronRight size={11} color={THEME.textDim}/>
                 <span style={{ fontWeight:800, color:THEME.textMain, fontSize:14 }}>{activeRepo?.name}</span>
             </div>
 
-            <div style={{ display:'flex', gap:4, padding:4, background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, marginBottom:14, width:'fit-content' }}>
+            <div style={{ display:'flex', gap:4, padding:4, background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius: 16, marginBottom:14, width:'fit-content' }}>
                 {NAV_TABS.map(tab=>(
-                    <button key={tab.id} onClick={()=>setSubView(tab.id)} className={`r8-tab${subView===tab.id?' r8-tab-on':''}`} style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 15px', borderRadius:8, border:'none', cursor:'pointer', background:subView===tab.id?`linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`:'transparent', color:subView===tab.id?THEME.textMain:THEME.textDim, fontSize:12, fontWeight:700 }}>
+                    <button key={tab.id} onClick={()=>setSubView(tab.id)} className={`r8-tab${subView===tab.id?' r8-tab-on':''}`} style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 15px', borderRadius: 20, border:'none', cursor:'pointer', background:subView===tab.id?`linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})`:'transparent', color:subView===tab.id?THEME.textMain:THEME.textDim, fontSize:12, fontWeight:700 }}>
                         <tab.icon size={12}/> {tab.label}
                     </button>
                 ))}

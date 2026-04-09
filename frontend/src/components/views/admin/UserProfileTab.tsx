@@ -37,27 +37,27 @@ const Styles: FC = () => (
     <style>{`
         @keyframes upFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes upSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .up-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:20px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); animation:upFade .3s ease; transition:all 0.2s ease; backdrop-filter:blur(12px); }
-        .up-card:hover { border-color:${THEME.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+        .up-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius: 20px; padding:20px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); animation:upFade .3s ease; transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .up-card:hover { border-color:${THEME.primary}30; transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
         .up-card-section { padding:14px 20px; border-bottom:1px solid ${THEME.glassBorder}; background:${THEME.bg}06; }
         .up-card-section:last-child { border-bottom:none; }
         .up-card-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:${THEME.textMuted}; margin-bottom:12px; }
         .up-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .up-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:12px 14px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .up-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius: 22px; padding:12px 14px; color:${THEME.textMain}; font-size:13px; width:100%; }
         .up-input:focus { outline:none; border-color:${THEME.primary}; }
-        .up-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:12px; padding:12px 18px; font-weight:700; font-size:13px; cursor:pointer; }
+        .up-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius: 22px; padding:12px 18px; font-weight:700; font-size:13px; cursor:pointer; }
         .up-button:hover { background:${THEME.primaryLight}; }
         .up-button-secondary { background:${THEME.secondary}; }
         .up-button-secondary:hover { background:${THEME.primary}; }
         .up-spinner { animation:upSpin 1s linear infinite; }
         .up-avatar { width:80px; height:80px; border-radius:50%; background:${THEME.primary}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:24px; color:${THEME.textInverse}; }
-        .up-toggle { display:flex; align-items:center; gap:10px; padding:10px 0; }
-        .up-toggle-switch { width:40px; height:24px; background:${THEME.glassBorder}; border-radius:12px; position:relative; cursor:pointer; }
+        .up-toggle { display:flex; align-items:center; gap: 22px; padding:10px 0; }
+        .up-toggle-switch { width:40px; height:24px; background:${THEME.glassBorder}; border-radius: 22px; position:relative; cursor:pointer; }
         .up-toggle-switch.on { background:${THEME.success}; }
         .up-toggle-switch span { width:20px; height:20px; background:white; border-radius:50%; position:absolute; top:2px; left:2px; transition:left 0.2s; }
         .up-toggle-switch.on span { left:18px; }
         .up-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
-        .up-activity-item { background:${THEME.surfaceHover}; border-left:3px solid ${THEME.primary}; border-radius:12px; padding:14px 18px; margin-bottom:12px; }
+        .up-activity-item { background:${THEME.surfaceHover}; border-left:3px solid ${THEME.primary}; border-radius: 22px; padding:14px 18px; margin-bottom:12px; }
         .up-activity-time { font-size:11px; color:${THEME.textMuted}; text-transform:uppercase; }
         .up-activity-action { font-weight:600; color:${THEME.textMain}; margin:4px 0; }
         .up-activity-desc { font-size:12px; color:${THEME.textMuted}; }
@@ -205,8 +205,8 @@ const UserProfileTab: FC = () => {
                 <div style={{
                     background: `${THEME.danger}15`,
                     border: `1px solid ${THEME.danger}40`,
-                    borderRadius: 10,
-                    padding: '12px 16px',
+                    borderRadius: 16,
+                    padding: '18px 22px',
                     marginBottom: 20,
                     color: THEME.danger,
                     fontSize: 13
@@ -220,8 +220,8 @@ const UserProfileTab: FC = () => {
                 <div style={{
                     background: `${THEME.success}15`,
                     border: `1px solid ${THEME.success}40`,
-                    borderRadius: 10,
-                    padding: '12px 16px',
+                    borderRadius: 16,
+                    padding: '18px 22px',
                     marginBottom: 20,
                     color: THEME.success,
                     fontSize: 13
@@ -238,15 +238,15 @@ const UserProfileTab: FC = () => {
                 <div style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>
                     {profile?.fullName}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 12, alignItems: 'center', marginBottom: 8 }}>
-                    <div style={{ background: THEME.primary, color: THEME.textInverse, padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 18, alignItems: 'center', marginBottom: 8 }}>
+                    <div style={{ background: THEME.primary, color: THEME.textInverse, padding: '4px 10px', borderRadius: 18, fontSize: 11, fontWeight: 700 }}>
                         {profile?.role || 'User'}
                     </div>
                     <div style={{ color: THEME.textMuted, fontSize: 12 }}>
                         {profile?.email}
                     </div>
                 </div>
-                <div style={{ color: THEME.textMuted, fontSize: 12, display: 'flex', justifyContent: 'center', gap: 8, alignItems: 'center' }}>
+                <div style={{ color: THEME.textMuted, fontSize: 12, display: 'flex', justifyContent: 'center', gap: 20, alignItems: 'center' }}>
                     <Clock size={12} />
                     Last login: {lastLoginTime}
                 </div>
@@ -295,7 +295,7 @@ const UserProfileTab: FC = () => {
                         Change Password
                     </button>
                 ) : (
-                    <div style={{ background: THEME.surfaceHover, borderRadius: 8, padding: 16, marginTop: 16 }}>
+                    <div style={{ background: THEME.surfaceHover, borderRadius: 20, padding: 16, marginTop: 16 }}>
                         <div style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain, marginBottom: 16 }}>
                             Change Password
                         </div>
@@ -384,7 +384,7 @@ const UserProfileTab: FC = () => {
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: 10 }}>
+                        <div style={{ display: 'flex', gap: 22 }}>
                             <button className="up-button" onClick={handleChangePassword} disabled={saving}>
                                 {saving ? <RefreshCw size={14} className="up-spinner" style={{ marginRight: 6, display: 'inline' }} /> : <Lock size={14} style={{ marginRight: 6, display: 'inline' }} />}
                                 {saving ? 'Updating...' : 'Update Password'}

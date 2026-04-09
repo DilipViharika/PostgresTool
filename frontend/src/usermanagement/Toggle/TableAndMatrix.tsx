@@ -97,7 +97,7 @@ function ensureStyles() {
         '.ut2-btn-g{background:transparent;color:' + T.textDim + ';border:1px solid ' + T.glassBorder + '}',
         '.ut2-btn-g:hover{background:' + T.surfaceRaised + ';color:' + T.textMain + '}',
         '.ut2-btn-p{background:' + T.primary + ';color:#fff}',
-        '.ut2-btn-p:hover{filter:brightness(1.12);transform:translateY(-1px)}',
+        '.ut2-btn-p:hover{filter:brightness(1.12);transform:translateY(-3px)}',
 
         '.ut2-tbl{width:100%;border-collapse:collapse;table-layout:fixed}',
         '.ut2-tbl thead tr{background:' + T.surfaceMid + ';border-bottom:1px solid ' + T.glassBorder + '}',
@@ -110,20 +110,20 @@ function ensureStyles() {
         '.ut2-tbl tbody tr.sel{background:' + T.primaryGlow + '}',
         '.ut2-tbl td{padding:13px 14px;vertical-align:middle}',
 
-        '.ut2-cb{width:15px;height:15px;border-radius:4px;border:1.5px solid ' + T.glassBorder + ';background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;position:relative;transition:all .15s;display:block}',
+        '.ut2-cb{width:15px;height:15px;border-radius: 20px;border:1.5px solid ' + T.glassBorder + ';background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;position:relative;transition:all .15s;display:block}',
         '.ut2-cb:checked{background:' + T.primary + ';border-color:' + T.primary + '}',
         '.ut2-cb:checked::after{content:"";position:absolute;left:2px;top:0px;width:8px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg)}',
 
         '.ut2-av{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.04em}',
 
-        '.ut2-ib{width:28px;height:28px;border-radius:7px;border:1px solid ' + T.glassBorder + ';background:transparent;color:' + T.textDim + ';cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}',
+        '.ut2-ib{width:28px;height:28px;border-radius: 22px;border:1px solid ' + T.glassBorder + ';background:transparent;color:' + T.textDim + ';cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}',
         '.ut2-ib:hover{border-color:' + T.primary + ';color:' + T.primary + ';background:' + T.primaryGlow + '}',
         '.ut2-ib.d:hover{border-color:' + T.red + ';color:' + T.red + ';background:' + T.red + '15}',
 
         '.ut2-rbar{height:3px;border-radius:2px;background:' + T.glassBorder + ';width:56px;margin-top:3px}',
         '.ut2-rfil{height:100%;border-radius:2px}',
 
-        '.ut2-pg{width:28px;height:28px;border-radius:7px;border:1px solid ' + T.glassBorder + ';background:transparent;color:' + T.textDim + ';font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:all .15s}',
+        '.ut2-pg{width:28px;height:28px;border-radius: 22px;border:1px solid ' + T.glassBorder + ';background:transparent;color:' + T.textDim + ';font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:all .15s}',
         '.ut2-pg:hover:not(:disabled){border-color:' + T.primary + ';color:' + T.primary + '}',
         '.ut2-pg.on{background:' + T.primary + ';border-color:' + T.primary + ';color:#fff}',
         '.ut2-pg:disabled{opacity:.3;cursor:not-allowed}',
@@ -300,7 +300,7 @@ export var UsersTable = memo(function UsersTable(props) {
     return React.createElement('div', { className:'ut2' },
 
         /* Toolbar */
-        React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:14 } },
+        React.createElement('div', { style:{ display:'flex', alignItems:'center', gap: 20, flexWrap:'wrap', marginBottom:14 } },
 
             /* Search */
             React.createElement('div', { className:'ut2-search' },
@@ -351,12 +351,12 @@ export var UsersTable = memo(function UsersTable(props) {
                     marginBottom:10, fontSize:12, color:T.textMuted }
             },
             React.createElement('span', null, filtered.length + ' result' + (filtered.length!==1?'s':'')),
-            sel.size > 0 && React.createElement('span', { style:{ display:'flex', alignItems:'center', gap:8 } },
+            sel.size > 0 && React.createElement('span', { style:{ display:'flex', alignItems:'center', gap: 20 } },
                 React.createElement('span', { style:{ color:T.primary, fontWeight:600 } }, sel.size + ' selected'),
                 React.createElement('button', {
                     onClick:function(){ if(onDeleteUsers) onDeleteUsers([...sel]); },
                     style:{ fontSize:11, fontWeight:600, color:T.red, background:T.red+'15',
-                        border:'1px solid '+T.red+'40', borderRadius:6, padding:'2px 8px',
+                        border:'1px solid '+T.red+'40', borderRadius: 18, padding:'2px 8px',
                         cursor:'pointer', fontFamily:'inherit' }
                 }, 'Delete selected')
             )
@@ -425,7 +425,7 @@ export var UsersTable = memo(function UsersTable(props) {
                                 ),
                                 /* user */
                                 React.createElement('td', null,
-                                    React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:10, overflow:'hidden' } },
+                                    React.createElement('div', { style:{ display:'flex', alignItems:'center', gap: 22, overflow:'hidden' } },
                                         React.createElement('div', { className:'ut2-av', style:{ background:ac+'22', color:ac } },
                                             getInitials(u.name)
                                         ),
@@ -547,8 +547,8 @@ export var PermissionMatrix = memo(function PermissionMatrix() {
                             perms[role].map(function(on, ai) {
                                 return React.createElement('td', { key:ai, style:{ padding:'13px 14px', textAlign:'center' } },
                                     on
-                                        ? React.createElement('span', { style:{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:22, height:22, borderRadius:6, background:T.green+'1a', color:T.green, fontSize:12, fontWeight:700 } }, 'Y')
-                                        : React.createElement('span', { style:{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:22, height:22, borderRadius:6, background:T.glassBorder+'55', color:T.textMuted, fontSize:11 } }, '-')
+                                        ? React.createElement('span', { style:{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:22, height:22, borderRadius: 18, background:T.green+'1a', color:T.green, fontSize:12, fontWeight:700 } }, 'Y')
+                                        : React.createElement('span', { style:{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:22, height:22, borderRadius: 18, background:T.glassBorder+'55', color:T.textMuted, fontSize:11 } }, '-')
                                 );
                             })
                         );

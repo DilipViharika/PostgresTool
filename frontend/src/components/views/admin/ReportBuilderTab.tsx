@@ -16,7 +16,7 @@ const Styles = () => (
         .rb-panel {
             background:${THEME.surface};
             border:1px solid ${THEME.glassBorder};
-            border-radius:16px;
+            border-radius: 20px;
             padding:20px;
             animation:rbFade .3s ease;
             max-height:calc(100vh - 100px);
@@ -26,10 +26,10 @@ const Styles = () => (
             transition:all 0.2s ease;
         }
         .rb-panel:hover {
-            transform:translateY(-2px);
+            transform:translateY(-4px);
             box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
         }
-        .rb-preview { background:${THEME.surfaceRaised}; border-radius:16px; }
+        .rb-preview { background:${THEME.surfaceRaised}; border-radius: 20px; }
         .rb-section-title {
             font-size:14px;
             font-weight:700;
@@ -42,7 +42,7 @@ const Styles = () => (
             width:100%;
             background:${THEME.bg};
             border:1px solid ${THEME.glassBorder};
-            border-radius:10px;
+            border-radius: 20px;
             padding:10px 12px;
             color:${THEME.textMain};
             font-size:13px;
@@ -52,16 +52,16 @@ const Styles = () => (
         .rb-input:focus { outline:none; border-color:${THEME.primary}; box-shadow:0 0 0 2px ${THEME.primary}20; }
         .rb-checkbox-group {
             display:grid;
-            gap:8px;
+            gap: 20px;
             margin-bottom:12px;
         }
         .rb-checkbox-item {
             display:flex;
             align-items:center;
-            gap:8px;
+            gap: 20px;
             padding:10px;
             background:${THEME.bg};
-            border-radius:12px;
+            border-radius: 22px;
             cursor:pointer;
             transition:background .2s;
         }
@@ -78,7 +78,7 @@ const Styles = () => (
             width:100%;
             background:${THEME.bg};
             border:1px solid ${THEME.glassBorder};
-            border-radius:10px;
+            border-radius: 20px;
             padding:10px 12px;
             color:${THEME.textMain};
             font-size:13px;
@@ -90,7 +90,7 @@ const Styles = () => (
             background:${THEME.primary};
             color:${THEME.textInverse};
             border:none;
-            border-radius:10px;
+            border-radius: 20px;
             padding:12px;
             font-weight:700;
             font-size:13px;
@@ -98,7 +98,7 @@ const Styles = () => (
             display:flex;
             align-items:center;
             justify-content:center;
-            gap:8px;
+            gap: 20px;
             transition:background .2s;
         }
         .rb-button:hover { background:${THEME.primaryLight}; }
@@ -109,7 +109,7 @@ const Styles = () => (
         .rb-report-card {
             background:${THEME.surface};
             border:1px solid ${THEME.glassBorder};
-            border-radius:16px;
+            border-radius: 20px;
             padding:0;
             margin-bottom:20px;
             overflow:hidden;
@@ -119,7 +119,7 @@ const Styles = () => (
         }
         .rb-report-card:hover {
             border-color:${THEME.primary}30;
-            transform:translateY(-2px);
+            transform:translateY(-4px);
             box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
         }
         .rb-report-card > * {
@@ -136,7 +136,7 @@ const Styles = () => (
             margin-bottom:12px;
             display:flex;
             align-items:center;
-            gap:8px;
+            gap: 20px;
             background:${THEME.bg}06;
             padding:14px 20px;
             margin:-20px -20px 12px -20px;
@@ -149,7 +149,7 @@ const Styles = () => (
         }
         .rb-metric-item {
             background:${THEME.bg};
-            border-radius:12px;
+            border-radius: 22px;
             padding:16px;
         }
         .rb-metric-label {
@@ -172,7 +172,7 @@ const Styles = () => (
         .rb-status-badge {
             display:inline-block;
             padding:4px 8px;
-            border-radius:8px;
+            border-radius: 20px;
             font-size:11px;
             font-weight:700;
             text-transform:uppercase;
@@ -215,7 +215,7 @@ const Styles = () => (
             background:${THEME.danger}15;
             border:1px solid ${THEME.danger};
             color:${THEME.danger};
-            border-radius:8px;
+            border-radius: 20px;
             padding:12px;
             margin-bottom:12px;
             font-size:12px;
@@ -224,7 +224,7 @@ const Styles = () => (
             background:${THEME.success}15;
             border:1px solid ${THEME.success};
             color:${THEME.success};
-            border-radius:8px;
+            border-radius: 20px;
             padding:12px;
             margin-bottom:12px;
             font-size:12px;
@@ -232,7 +232,7 @@ const Styles = () => (
         .rb-template-card {
             background:${THEME.bg};
             border:1px solid ${THEME.glassBorder};
-            border-radius:12px;
+            border-radius: 22px;
             padding:14px;
             margin-bottom:8px;
             cursor:pointer;
@@ -242,7 +242,7 @@ const Styles = () => (
         .rb-template-card:hover {
             border-color:${THEME.primary};
             background:${THEME.primary}08;
-            transform:translateY(-1px);
+            transform:translateY(-3px);
             box-shadow:0 4px 12px rgba(0,0,0,0.08);
         }
         .rb-template-card.active {
@@ -406,7 +406,7 @@ export default function ReportBuilderTab() {
             <div className="rb-layout">
                 {/* ── Configuration Panel ────────────────────────────────────── */}
                 <div className="rb-panel">
-                    <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20 }}>
                         <Settings size={18} color={THEME.primary} />
                         Report Configuration
                     </div>
@@ -433,7 +433,7 @@ export default function ReportBuilderTab() {
 
                     {/* Templates */}
                     <div className="rb-section-title">Templates</div>
-                    <div style={{ display: 'grid', gap: 8, marginBottom: 20 }}>
+                    <div style={{ display: 'grid', gap: 20, marginBottom: 20 }}>
                         {Object.entries(TEMPLATES).map(([key, template]) => (
                             <div
                                 key={key}
@@ -533,7 +533,7 @@ export default function ReportBuilderTab() {
 
                 {/* ── Preview Panel ────────────────────────────────────────── */}
                 <div className="rb-panel rb-preview">
-                    <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20 }}>
                         <Eye size={18} color={THEME.secondary} />
                         Report Preview
                     </div>
@@ -934,7 +934,7 @@ function ProgressBar({ value }) {
             width: '100%',
             height: 6,
             background: THEME.bg,
-            borderRadius: 10,
+            borderRadius: 16,
             marginTop: 6,
             overflow: 'hidden'
         }}>

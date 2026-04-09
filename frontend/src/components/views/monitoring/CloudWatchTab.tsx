@@ -204,17 +204,17 @@ const CW_STYLES = `
     .cw-card {
         background: linear-gradient(180deg, #120A1F 0%, #120A1Ff8 100%);
         border: 1px solid rgba(139,92,246,0.2);
-        border-radius: 16px;
+        border-radius: 20px;
         padding: 24px;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
         transition: all 0.25s ease;
         backdrop-filter: blur(12px);
     }
     .cw-card:hover {
         box-shadow: 0 8px 28px rgba(0,0,0,0.12);
-        transform: translateY(-2px);
+        transform: translateY(-4px);
     }
     .cw-card::after {
         content: '';
@@ -256,8 +256,8 @@ const CWTooltip = ({ active, payload, label, unit, T }) => {
             style={{
                 background: T.glassHeavy,
                 border: `1px solid ${T.glassBorder}`,
-                borderRadius: 12,
-                padding: '8px 14px',
+                borderRadius: 18,
+                padding: '14px 20px',
                 fontSize: 12,
                 color: T.textMain,
                 fontFamily: T.fontBody,
@@ -310,11 +310,11 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
 
     const inputStyle = (k) => ({
         width: '100%',
-        padding: '10px 14px',
+        padding: '22px 28px',
         fontSize: 13,
         background: T.bg,
         border: `1px solid ${errors[k] ? T.danger + '60' : T.glassBorder}`,
-        borderRadius: 12,
+        borderRadius: 18,
         color: T.textMain,
         outline: 'none',
         fontFamily: T.fontMono,
@@ -323,7 +323,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
     });
 
     const SectionDivider = ({ label }) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <div style={{ height: 1, flex: 1, background: T.glassBorder, minWidth: 0 }} />
             <span
                 style={{
@@ -416,7 +416,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                             style={{
                                 width: 36,
                                 height: 36,
-                                borderRadius: 10,
+                                borderRadius: 16,
                                 background: `${T.primary}15`,
                                 border: `1px solid ${T.primary}30`,
                                 display: 'flex',
@@ -444,7 +444,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                             cursor: 'pointer',
                             padding: 4,
                             display: 'flex',
-                            borderRadius: 6,
+                            borderRadius: 18,
                         }}
                     >
                         <X size={16} />
@@ -543,9 +543,9 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                     <div
                         style={{
                             display: 'flex',
-                            gap: 10,
-                            padding: '12px 14px',
-                            borderRadius: 10,
+                            gap: 22,
+                            padding: '22px 28px',
+                            borderRadius: 16,
                             background: `${T.warning}08`,
                             border: `1px solid ${T.warning}20`,
                         }}
@@ -567,7 +567,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                     style={{
                         padding: '16px 26px 22px',
                         display: 'flex',
-                        gap: 10,
+                        gap: 22,
                         justifyContent: 'flex-end',
                         borderTop: `1px solid ${T.glassBorder}`,
                     }}
@@ -580,7 +580,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                             fontWeight: 500,
                             background: 'transparent',
                             border: `1px solid ${T.glassBorder}`,
-                            borderRadius: 12,
+                            borderRadius: 18,
                             color: T.textMuted,
                             cursor: 'pointer',
                             fontFamily: T.fontBody,
@@ -596,7 +596,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                             fontWeight: 600,
                             background: `${T.primary}15`,
                             border: `1px solid ${T.primary}35`,
-                            borderRadius: 12,
+                            borderRadius: 18,
                             color: T.primary,
                             cursor: 'pointer',
                             fontFamily: T.fontBody,
@@ -654,13 +654,13 @@ const EmptyState = ({ T, onAdd }) => (
             style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 8,
+                gap: 20,
                 padding: '11px 24px',
                 fontSize: 14,
                 fontWeight: 600,
                 background: `${T.primary}15`,
                 border: `1px solid ${T.primary}35`,
-                borderRadius: 10,
+                borderRadius: 16,
                 color: T.primary,
                 cursor: 'pointer',
                 fontFamily: T.fontBody,
@@ -674,7 +674,7 @@ const EmptyState = ({ T, onAdd }) => (
                 marginTop: 48,
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: 14,
+                gap: 20,
                 maxWidth: 700,
                 margin: '48px auto 0',
             }}
@@ -700,7 +700,7 @@ const EmptyState = ({ T, onAdd }) => (
                     key={title}
                     style={{
                         padding: '18px 16px',
-                        borderRadius: 12,
+                        borderRadius: 18,
                         background: T.glass,
                         border: `1px solid ${T.glassBorder}`,
                         textAlign: 'left',
@@ -710,7 +710,7 @@ const EmptyState = ({ T, onAdd }) => (
                         style={{
                             width: 28,
                             height: 28,
-                            borderRadius: 12,
+                            borderRadius: 18,
                             background: `${T.primary}12`,
                             border: `1px solid ${T.primary}25`,
                             display: 'flex',
@@ -762,17 +762,17 @@ const MetricCard = ({ def, datapoints, metricsLoading, T }) => {
                 background: T.glass,
                 border: `1px solid ${T.glassBorder}`,
                 borderTop: `2px solid ${color}40`,
-                borderRadius: 14,
+                borderRadius: 20,
                 padding: '18px 20px',
                 transition: 'all 0.3s ease',
             }}
         >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 12 }}>
                 <div
                     style={{
                         width: 28,
                         height: 28,
-                        borderRadius: 12,
+                        borderRadius: 18,
                         background: `${color}15`,
                         border: `1px solid ${color}30`,
                         display: 'flex',
@@ -803,7 +803,7 @@ const MetricCard = ({ def, datapoints, metricsLoading, T }) => {
                 <div
                     style={{
                         height: 36,
-                        borderRadius: 12,
+                        borderRadius: 18,
                         marginBottom: 14,
                         background: `linear-gradient(90deg, ${T.surface} 20%, ${T.surfaceHover} 50%, ${T.surface} 80%)`,
                         backgroundSize: '300% 100%',
@@ -833,7 +833,7 @@ const MetricCard = ({ def, datapoints, metricsLoading, T }) => {
                 <div
                     style={{
                         height: 60,
-                        borderRadius: 6,
+                        borderRadius: 18,
                         background: `linear-gradient(90deg, ${T.surface} 20%, ${T.surfaceHover} 50%, ${T.surface} 80%)`,
                         backgroundSize: '300% 100%',
                         animation: 'cwShimmer 2.5s infinite',
@@ -940,7 +940,7 @@ const InstanceDashboard = ({ instance, timeRange, refreshInterval, T }) => {
             <div
                 style={{
                     padding: '40px 32px',
-                    borderRadius: 14,
+                    borderRadius: 20,
                     background: `${T.danger}08`,
                     border: `1px solid ${T.danger}20`,
                     textAlign: 'center',
@@ -977,7 +977,7 @@ const InstanceDashboard = ({ instance, timeRange, refreshInterval, T }) => {
                         fontWeight: 600,
                         background: `${T.primary}15`,
                         border: `1px solid ${T.primary}35`,
-                        borderRadius: 12,
+                        borderRadius: 18,
                         color: T.primary,
                         cursor: 'pointer',
                         fontFamily: T.fontBody,
@@ -998,16 +998,16 @@ const InstanceDashboard = ({ instance, timeRange, refreshInterval, T }) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '10px 16px',
-                    borderRadius: 10,
+                    padding: '16px 22px',
+                    borderRadius: 16,
                     marginBottom: 20,
                     background: `${T.success}08`,
                     border: `1px solid ${T.success}25`,
                     flexWrap: 'wrap',
-                    gap: 8,
+                    gap: 20,
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
                     <CheckCircle size={14} color={T.success} />
                     <span style={{ fontSize: 13, color: T.success, fontFamily: T.fontBody }}>Connected</span>
                     <span
@@ -1053,7 +1053,7 @@ const InstanceDashboard = ({ instance, timeRange, refreshInterval, T }) => {
                             padding: '5px 12px',
                             background: `${T.primary}15`,
                             border: `1px solid ${T.primary}35`,
-                            borderRadius: 7,
+                            borderRadius: 18,
                             color: T.primary,
                             fontSize: 12,
                             fontWeight: 600,
@@ -1072,7 +1072,7 @@ const InstanceDashboard = ({ instance, timeRange, refreshInterval, T }) => {
             </div>
 
             {/* Metrics Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 22 }}>
                 {METRIC_DEFS.map((def) => (
                     <MetricCard
                         key={def.key}
@@ -1145,7 +1145,7 @@ export default function CloudWatchTab() {
                         style={{
                             width: 36,
                             height: 36,
-                            borderRadius: 10,
+                            borderRadius: 16,
                             background: `${T.primary}15`,
                             border: `1px solid ${T.primary}30`,
                             display: 'flex',
@@ -1166,13 +1166,13 @@ export default function CloudWatchTab() {
                 </div>
 
                 {instances.length > 0 && (
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
                         {/* Time Range */}
                         <div
                             style={{
                                 display: 'flex',
                                 background: T.surface,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 overflow: 'hidden',
                                 border: `1px solid ${T.glassBorder}`,
                             }}
@@ -1205,7 +1205,7 @@ export default function CloudWatchTab() {
                                 style={{
                                     display: 'flex',
                                     background: T.surface,
-                                    borderRadius: 12,
+                                    borderRadius: 18,
                                     overflow: 'hidden',
                                     border: `1px solid ${T.glassBorder}`,
                                 }}
@@ -1270,7 +1270,7 @@ export default function CloudWatchTab() {
                                             fontSize: 12,
                                             background: T.surface,
                                             border: `1px solid ${T.glassBorder}`,
-                                            borderRadius: 6,
+                                            borderRadius: 18,
                                             color: T.textMain,
                                             outline: 'none',
                                             fontFamily: T.fontMono,
@@ -1291,7 +1291,7 @@ export default function CloudWatchTab() {
                                             fontWeight: 600,
                                             background: `${T.primary}15`,
                                             border: `1px solid ${T.primary}35`,
-                                            borderRadius: 6,
+                                            borderRadius: 18,
                                             color: T.primary,
                                             cursor: 'pointer',
                                             fontFamily: T.fontBody,
@@ -1312,7 +1312,7 @@ export default function CloudWatchTab() {
                                 padding: '6px 14px',
                                 background: `${T.secondary}15`,
                                 border: `1px solid ${T.secondary}35`,
-                                borderRadius: 12,
+                                borderRadius: 18,
                                 color: T.secondary,
                                 fontSize: 12,
                                 fontWeight: 600,
@@ -1415,7 +1415,7 @@ export default function CloudWatchTab() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 5,
-                                padding: '10px 14px',
+                                padding: '22px 28px',
                                 fontSize: 12,
                                 border: 'none',
                                 borderBottom: '2px solid transparent',
@@ -1447,13 +1447,13 @@ export default function CloudWatchTab() {
                     <div
                         style={{
                             marginTop: 20,
-                            padding: '12px 16px',
-                            borderRadius: 10,
+                            padding: '18px 22px',
+                            borderRadius: 16,
                             background: `${T.info}08`,
                             border: `1px solid ${T.info}20`,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 10,
+                            gap: 22,
                         }}
                     >
                         <Info size={13} color={T.info} />

@@ -18,18 +18,18 @@ const Styles = () => (
         .pmd-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 20px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             transition: all 0.25s ease;
             animation: pmdFade 0.3s ease;
             backdrop-filter: blur(12px);
         }
         .pmd-card:hover {
             box-shadow: 0 8px 28px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
         }
         .pmd-card::after {
             content: '';
@@ -41,7 +41,7 @@ const Styles = () => (
             background: var(--tile-accent, ${THEME.primary});
             opacity: 0.7;
         }
-        .pmd-metric { display: flex; align-items: center; gap: 18px; padding: 16px; background: ${THEME.surface}; border: 1px solid ${THEME.glassBorder}; border-radius: 16px; }
+        .pmd-metric { display: flex; align-items: center; gap: 18px; padding: 16px; background: ${THEME.surface}; border: 1px solid ${THEME.glassBorder}; border-radius: 20px; }
         .pmd-spin { animation: pmdSpin 1s linear infinite; }
         .pmd-slider { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: ${THEME.grid}; outline: none; cursor: pointer; }
         .pmd-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${THEME.primary}; cursor: pointer; }
@@ -78,7 +78,7 @@ const MetricCard = ({ icon: Icon, label, value, unit = '', sub, color = THEME.pr
             style={{
                 width: 40,
                 height: 40,
-                borderRadius: 14,
+                borderRadius: 20,
                 background: `${color}15`,
                 display: 'flex',
                 alignItems: 'center',
@@ -110,8 +110,8 @@ const ChartTip = ({ active, payload, label }) => {
             style={{
                 background: THEME.surface,
                 border: `1px solid ${THEME.glassBorder}`,
-                borderRadius: 14,
-                padding: '8px 12px',
+                borderRadius: 20,
+                padding: '20px 24px',
                 fontSize: 12,
                 boxShadow: THEME.shadowSm,
             }}
@@ -219,7 +219,7 @@ const PoolConfigSection = ({ config, onUpdate }) => {
                     <button
                         onClick={() => setLocalConfig(config || { min: 0, max: 0, idleTimeout: 0 })}
                         style={{
-                            padding: '8px 16px',
+                            padding: '14px 20px',
                             background: THEME.surfaceLight,
                             color: THEME.textMain,
                             border: `1px solid ${THEME.border}`,
@@ -242,7 +242,7 @@ const PoolConfigSection = ({ config, onUpdate }) => {
                     <button
                         onClick={handleApply}
                         style={{
-                            padding: '8px 16px',
+                            padding: '14px 20px',
                             background: THEME.primary,
                             color: THEME.void,
                             border: 'none',

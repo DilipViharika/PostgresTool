@@ -108,30 +108,30 @@ const AdminStyles = () => (
 
         .adm-scrollbar::-webkit-scrollbar { width:4px; height:4px; }
         .adm-scrollbar::-webkit-scrollbar-track { background:transparent; }
-        .adm-scrollbar::-webkit-scrollbar-thumb { background:${T.grid}; border-radius:8px; }
+        .adm-scrollbar::-webkit-scrollbar-thumb { background:${T.grid}; border-radius: 20px; }
 
-        .adm-ext-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:16px; padding:0; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s ease; backdrop-filter:blur(12px); }
-        .adm-ext-card:hover { border-color:${T.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+        .adm-ext-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius: 20px; padding:0; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .adm-ext-card:hover { border-color:${T.primary}30; transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
 
         .adm-input-field:focus { outline:none; border-color:${T.primary} !important; box-shadow:0 0 0 2px ${T.primary}25; }
         .adm-spin { animation:admSpin 1s linear infinite; }
 
-        .adm-stat-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:16px; padding:0; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s ease; backdrop-filter:blur(12px); }
-        .adm-stat-card:hover { border-color:${T.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+        .adm-stat-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius: 20px; padding:0; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .adm-stat-card:hover { border-color:${T.primary}30; transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
         .adm-stat-section { padding:14px 20px; border-bottom:1px solid ${T.glassBorder}; background:${T.bg}06; }
         .adm-stat-section:last-child { border-bottom:none; }
 
         .adm-tab-btn { transition:all 0.2s cubic-bezier(0.22,1,0.36,1); position:relative; overflow:hidden; }
-        .adm-tab-btn:hover { transform:translateY(-1px); }
+        .adm-tab-btn:hover { transform:translateY(-3px); }
         .adm-btn { transition:all 0.15s cubic-bezier(0.22,1,0.36,1); }
-        .adm-btn:hover { transform:translateY(-1px); }
+        .adm-btn:hover { transform:translateY(-3px); }
         .adm-btn:active { transform:translateY(0); }
 
-        .adm-kbd { display:inline-flex; align-items:center; justify-content:center; padding:1px 5px; border-radius:6px; font-size:9px; font-weight:700; background:${T.surface}; border:1px solid ${T.glassBorder}; color:${T.textDim}; font-family:${T.fontMono}; }
+        .adm-kbd { display:inline-flex; align-items:center; justify-content:center; padding:1px 5px; border-radius: 22px; font-size:9px; font-weight:700; background:${T.surface}; border:1px solid ${T.glassBorder}; color:${T.textDim}; font-family:${T.fontMono}; }
 
         .adm-tooltip { position:relative; }
         .adm-tooltip:hover .adm-tooltip-content { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
-        .adm-tooltip-content { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(4px); background:rgba(8,8,12,0.96); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 11px; font-size:10px; white-space:nowrap; color:#fff; pointer-events:none; opacity:0; transition:all 0.15s; z-index:9999; }
+        .adm-tooltip-content { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(4px); background:rgba(8,8,12,0.96); border:1px solid rgba(255,255,255,0.12); border-radius: 22px; padding:6px 11px; font-size:10px; white-space:nowrap; color:#fff; pointer-events:none; opacity:0; transition:all 0.15s; z-index:9999; }
 
         .adm-progress-animated { transition:width 1.2s cubic-bezier(0.22,1,0.36,1); }
         .adm-conn-row:hover .adm-kill-btn { opacity:1 !important; }
@@ -146,9 +146,9 @@ const AdminStyles = () => (
             background-size: 24px 24px;
         }
 
-        .adm-segment-bar { position:relative; overflow:hidden; border-radius:8px; }
+        .adm-segment-bar { position:relative; overflow:hidden; border-radius: 20px; }
 
-        .adm-heatmap-cell { transition:all 0.2s; border-radius:6px; }
+        .adm-heatmap-cell { transition:all 0.2s; border-radius: 22px; }
         .adm-heatmap-cell:hover { transform:scale(1.3); z-index:2; position:relative; }
 
         .panel-glow { box-shadow:0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06); }
@@ -254,7 +254,7 @@ const StatusBadge = ({ label, color, pulse, size = 'md' }) => (
     <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         fontSize: size === 'sm' ? 9 : 10, fontWeight: 700,
-        padding: size === 'sm' ? '2px 7px' : '3px 9px', borderRadius: 5,
+        padding: size === 'sm' ? '2px 7px' : '3px 9px', borderRadius: 16,
         background: `${color}14`, color, border: `1px solid ${color}25`,
         lineHeight: 1.2, whiteSpace: 'nowrap', letterSpacing: '0.04em',
     }}>
@@ -366,10 +366,10 @@ const StatCard = ({ label, value, icon: Icon, color, sub, spark, trend }) => {
     const safeTrend = typeof trend === 'number' && !isNaN(trend) ? trend : null;
     const safeSpark = Array.isArray(spark) ? spark : null;
     return (
-    <div className="adm-stat-card" style={{ '--card-color': color, padding: '16px 18px', borderRadius: 14, background: T.glass, border: `1px solid ${T.glassBorder}`, position: 'relative', overflow: 'hidden' }}>
+    <div className="adm-stat-card" style={{ '--card-color': color, padding: '22px 26px', borderRadius: 20, background: T.glass, border: `1px solid ${T.glassBorder}`, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: `${color}06`, filter: 'blur(20px)' }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-            <div style={{ padding: 8, borderRadius: 9, background: `${color}14`, border: `1px solid ${color}20` }}>
+            <div style={{ padding: 8, borderRadius: 20, background: `${color}14`, border: `1px solid ${color}20` }}>
                 <Icon size={14} color={color} />
             </div>
             {safeTrend != null && (
@@ -400,7 +400,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
                 background: accent ? `linear-gradient(90deg, ${accent}08 0%, transparent 60%)` : 'linear-gradient(90deg, rgba(255,255,255,0.01), transparent)',
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     {TIcon && <TIcon size={13} color={accent || T.primary} />}
                     <span style={{ fontSize: 11, fontWeight: 700, color: T.textMuted,  letterSpacing: '0.02em', fontFamily: T.fontBody }}>{title}</span>
                 </div>
@@ -417,8 +417,8 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, acc
 const ConfirmDialog = ({ title, body, onConfirm, onCancel, danger = false }) => (
     <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
         <div style={{ width: 420, background: T.surface, borderRadius: 16, border: `1px solid ${danger ? T.danger+'40' : T.glassBorder}`, padding: 28, boxShadow: `0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)`, animation: 'admSlideUp 0.2s ease' }}>
-            <div style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: danger ? `${T.danger}15` : `${T.primary}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${danger ? T.danger : T.primary}25` }}>
+            <div style={{ display: 'flex', gap: 20, marginBottom: 20 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 16, background: danger ? `${T.danger}15` : `${T.primary}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${danger ? T.danger : T.primary}25` }}>
                     {danger ? <AlertTriangle size={18} color={T.danger} /> : <Info size={18} color={T.primary} />}
                 </div>
                 <div>
@@ -426,9 +426,9 @@ const ConfirmDialog = ({ title, body, onConfirm, onCancel, danger = false }) => 
                     <div style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.6 }}>{body}</div>
                 </div>
             </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button onClick={onCancel} style={{ padding: '9px 18px', borderRadius: 8, background: T.surface, border: `1px solid ${T.grid}50`, color: T.textMuted, cursor: 'pointer', fontSize: 12 }}>Cancel</button>
-                <button onClick={onConfirm} style={{ padding: '9px 18px', borderRadius: 8, background: danger ? T.danger : T.primary, border: 'none', color: THEME.textMain, cursor: 'pointer', fontSize: 12, fontWeight: 700, boxShadow: `0 4px 14px ${danger ? T.danger : T.primary}40` }}>
+            <div style={{ display: 'flex', gap: 20, justifyContent: 'flex-end' }}>
+                <button onClick={onCancel} style={{ padding: '9px 18px', borderRadius: 20, background: T.surface, border: `1px solid ${T.grid}50`, color: T.textMuted, cursor: 'pointer', fontSize: 12 }}>Cancel</button>
+                <button onClick={onConfirm} style={{ padding: '9px 18px', borderRadius: 20, background: danger ? T.danger : T.primary, border: 'none', color: THEME.textMain, cursor: 'pointer', fontSize: 12, fontWeight: 700, boxShadow: `0 4px 14px ${danger ? T.danger : T.primary}40` }}>
                     {danger ? 'Yes, proceed' : 'Confirm'}
                 </button>
             </div>
@@ -440,7 +440,7 @@ const ConfirmDialog = ({ title, body, onConfirm, onCancel, danger = false }) => 
 const DiffTag = ({ before, after }) => {
     if (!before || before === after) return null;
     return (
-        <span style={{ fontSize: 9, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 14, background: `${T.warning}14`, color: T.warning, border: `1px solid ${T.warning}25`, fontFamily: T.fontMono }}>
+        <span style={{ fontSize: 9, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 20, background: `${T.warning}14`, color: T.warning, border: `1px solid ${T.warning}25`, fontFamily: T.fontMono }}>
             <span style={{ opacity: 0.6, textDecoration: 'line-through' }}>{before}</span>
             <ArrowUpRight size={7} />
             <strong>{after}</strong>
@@ -457,8 +457,8 @@ const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS
     const diskPct = Math.round((s.disk.usedGB / s.disk.totalGB) * 100);
 
     if (collapsed) return (
-        <div style={{ width: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, paddingTop: 16 }}>
-            <button onClick={onToggle} style={{ background: 'none', border: `1px solid ${T.grid}60`, borderRadius: 8, cursor: 'pointer', color: T.textDim, padding: 6, display: 'flex' }}>
+        <div style={{ width: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, paddingTop: 16 }}>
+            <button onClick={onToggle} style={{ background: 'none', border: `1px solid ${T.grid}60`, borderRadius: 20, cursor: 'pointer', color: T.textDim, padding: 6, display: 'flex' }}>
                 <Server size={13} />
             </button>
             <div title={`CPU ${s.cpu.pct}%`}><RingGauge value={s.cpu.pct} color={cpuColor} size={30} strokeWidth={4} /></div>
@@ -468,14 +468,14 @@ const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS
     );
 
     return (
-        <div style={{ width: 210, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ width: 210, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 22 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 0 8px' }}>
                 <span style={{ fontSize: 9.5, fontWeight: 800, color: T.textDim,  letterSpacing: '0.02em', fontFamily: T.fontBody }}>Server Status</span>
                 <button onClick={onToggle} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim, padding: 2 }}><ChevronRight size={12} /></button>
             </div>
 
             {/* Version + TPS */}
-            <div style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${T.glassBorder}`, borderRadius: 12, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ padding: '22px 28px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${T.glassBorder}`, borderRadius: 18, position: 'relative', overflow: 'hidden' }}>
                 <div className="adm-grid-pattern" style={{ position: 'absolute', inset: 0, opacity: 0.4 }} />
                 <div style={{ position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
@@ -488,13 +488,13 @@ const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS
             </div>
 
             {/* Gauges Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
                 {[
                     { label: 'CPU', value: s.cpu.pct, color: cpuColor },
                     { label: 'RAM', value: ramPct, color: T.primary },
                     { label: 'Disk', value: diskPct, color: T.secondary },
                 ].map(g => (
-                    <div key={g.label} style={{ padding: '10px 8px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <div key={g.label} style={{ padding: '10px 8px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                         <RingGauge value={g.value} color={g.color} size={52} strokeWidth={5} />
                         <span style={{ fontSize: 9, color: T.textDim, fontWeight: 700 }}>{g.label}</span>
                     </div>
@@ -502,7 +502,7 @@ const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS
             </div>
 
             {/* CPU Sparkline */}
-            <div style={{ padding: '10px 14px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 11 }}>
+            <div style={{ padding: '22px 28px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 11 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <Cpu size={10} color={T.textDim} />
@@ -513,7 +513,7 @@ const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS
             </div>
 
             {/* Memory */}
-            <div style={{ padding: '10px 14px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 11 }}>
+            <div style={{ padding: '22px 28px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 11 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <MemoryStick size={10} color={T.textDim} />
@@ -521,13 +521,13 @@ const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS
                     </div>
                     <span style={{ fontSize: 10, fontWeight: 800, color: T.primary, fontFamily: T.fontMono }}>{s.ram.usedGB}/{s.ram.totalGB}GB</span>
                 </div>
-                <div style={{ height: 5, background: `${T.grid}50`, borderRadius: 10, overflow: 'hidden' }}>
-                    <div style={{ width: `${ramPct}%`, height: '100%', background: `linear-gradient(90deg, ${T.primary}, ${T.secondary})`, borderRadius: 10, transition: 'width 1s ease' }} />
+                <div style={{ height: 5, background: `${T.grid}50`, borderRadius: 16, overflow: 'hidden' }}>
+                    <div style={{ width: `${ramPct}%`, height: '100%', background: `linear-gradient(90deg, ${T.primary}, ${T.secondary})`, borderRadius: 16, transition: 'width 1s ease' }} />
                 </div>
             </div>
 
             {/* Disk I/O */}
-            <div style={{ padding: '10px 14px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 11 }}>
+            <div style={{ padding: '22px 28px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 11 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <HardDrive size={10} color={T.textDim} />
@@ -545,7 +545,7 @@ const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS
             </div>
 
             {/* Network */}
-            <div style={{ padding: '10px 14px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 11 }}>
+            <div style={{ padding: '22px 28px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 11 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
                     <Wifi size={10} color={T.textDim} />
                     <span style={{ fontSize: 9.5, color: T.textDim, fontWeight: 600 }}>Network</span>
@@ -557,7 +557,7 @@ const ServerSidebar = ({ collapsed, onToggle, serverStats = DEFAULT_SERVER_STATS
             </div>
 
             {/* Replication */}
-            <div style={{ padding: '10px 14px', background: `${s.replication.streaming ? T.success : T.danger}06`, border: `1px solid ${s.replication.streaming ? T.success+'30' : T.danger+'30'}`, borderRadius: 11 }}>
+            <div style={{ padding: '22px 28px', background: `${s.replication.streaming ? T.success : T.danger}06`, border: `1px solid ${s.replication.streaming ? T.success+'30' : T.danger+'30'}`, borderRadius: 11 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <GitBranch size={10} color={s.replication.streaming ? T.success : T.danger} />
@@ -601,8 +601,8 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                 {/* Header */}
                 <div style={{ padding: '18px 26px', borderBottom: `1px solid ${T.grid}30`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `linear-gradient(135deg, ${T.primary}08, ${T.secondary}04)`, position: 'relative', overflow: 'hidden' }}>
                     <div className="adm-grid-pattern" style={{ position: 'absolute', inset: 0, opacity: 0.3 }} />
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14 }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 6px 20px ${T.primary}50` }} className="adm-float">
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 20 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 18, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 6px 20px ${T.primary}50` }} className="adm-float">
                             <Sparkles size={20} color={THEME.textMain} />
                         </div>
                         <div>
@@ -610,11 +610,11 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                             <div style={{ fontSize: 10, color: T.textDim }}>Step {step} of 2 · {step === 1 ? 'System Specifications' : 'Review Recommendations'}</div>
                         </div>
                     </div>
-                    <button onClick={onClose} style={{ position: 'relative', background: `${T.grid}60`, border: `1px solid ${T.grid}80`, cursor: 'pointer', color: T.textDim, width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} /></button>
+                    <button onClick={onClose} style={{ position: 'relative', background: `${T.grid}60`, border: `1px solid ${T.grid}80`, cursor: 'pointer', color: T.textDim, width: 30, height: 30, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} /></button>
                 </div>
 
                 {/* Step Bar */}
-                <div style={{ padding: '12px 26px', borderBottom: `1px solid ${T.grid}20`, display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ padding: '12px 26px', borderBottom: `1px solid ${T.grid}20`, display: 'flex', gap: 20, alignItems: 'center' }}>
                     {[1,2].map(i => (
                         <React.Fragment key={i}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -631,7 +631,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                 <div className="adm-scrollbar" style={{ padding: '24px 26px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
                     {step === 1 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
                                 {[
                                     { key: 'ram', label: 'System RAM', unit: 'GB', icon: MemoryStick },
                                     { key: 'cpus', label: 'CPU Cores', unit: 'cores', icon: Cpu },
@@ -639,7 +639,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                 ].map(f => (
                                     <div key={f.key}>
                                         <label style={{ display: 'block', fontSize: 9.5, fontWeight: 800, color: T.textDim, marginBottom: 7,  letterSpacing: '0.02em' }}>{f.label}</label>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 13px', background: T.surface, border: `1px solid ${T.grid}50`, borderRadius: 9 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '10px 13px', background: T.surface, border: `1px solid ${T.grid}50`, borderRadius: 20 }}>
                                             <f.icon size={14} color={T.primary} />
                                             <input type="number" value={inputs[f.key]} min={f.min||1} max={f.max||2048}
                                                    onChange={e => setInputs({...inputs, [f.key]: Number(e.target.value)})}
@@ -652,10 +652,10 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
 
                             <div>
                                 <label style={{ display: 'block', fontSize: 9.5, fontWeight: 800, color: T.textDim, marginBottom: 8 }}>Storage Type</label>
-                                <div style={{ display: 'flex', gap: 8 }}>
+                                <div style={{ display: 'flex', gap: 20 }}>
                                     {[{v:'ssd',l:'SSD',i:Zap,d:'Solid State'},{v:'nvme',l:'NVMe',i:Flame,d:'Ultra Fast'},{v:'hdd',l:'HDD',i:HardDrive,d:'Spinning Disk'}].map(t => (
                                         <button key={t.v} onClick={() => setInputs({...inputs, storage: t.v})} style={{
-                                            flex: 1, minWidth: 0, padding: '12px', borderRadius: 10, border: `1px solid ${inputs.storage === t.v ? T.primary : T.grid}50`,
+                                            flex: 1, minWidth: 0, padding: '12px', borderRadius: 16, border: `1px solid ${inputs.storage === t.v ? T.primary : T.grid}50`,
                                             background: inputs.storage === t.v ? `${T.primary}14` : 'transparent',
                                             cursor: 'pointer', transition: 'all 0.2s',
                                         }}>
@@ -669,7 +669,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
 
                             <div>
                                 <label style={{ display: 'block', fontSize: 9.5, fontWeight: 800, color: T.textDim, marginBottom: 8 }}>Workload Profile</label>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                                     {[
                                         {id:'web',l:'Web Application',d:'High concurrency, short queries',i:Network},
                                         {id:'oltp',l:'OLTP',d:'Transaction safety, mixed workloads',i:Zap},
@@ -678,9 +678,9 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                         {id:'readonly',l:'Read-Only',d:'Reporting replica, low writes',i:Eye},
                                     ].map(p => (
                                         <button key={p.id} onClick={() => setInputs({...inputs, profile: p.id})} style={{
-                                            padding: '12px 14px', borderRadius: 10, border: `1px solid ${inputs.profile === p.id ? T.secondary : T.grid}50`,
+                                            padding: '22px 28px', borderRadius: 16, border: `1px solid ${inputs.profile === p.id ? T.secondary : T.grid}50`,
                                             background: inputs.profile === p.id ? `${T.secondary}10` : 'transparent',
-                                            textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 12,
+                                            textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 18,
                                         }}>
                                             <p.i size={14} color={inputs.profile === p.id ? T.secondary : T.textDim} style={{ flexShrink: 0 }} />
                                             <div>
@@ -692,14 +692,14 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                 </div>
                             </div>
 
-                            <button onClick={handleCalculate} style={{ padding: '14px', borderRadius: 12, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, color: THEME.textMain, border: 'none', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, fontSize: 13, fontFamily: T.fontBody, boxShadow: `0 6px 20px ${T.primary}50`, letterSpacing: '-0.01em' }}>
+                            <button onClick={handleCalculate} style={{ padding: '14px', borderRadius: 18, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, color: THEME.textMain, border: 'none', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, fontSize: 13, fontFamily: T.fontBody, boxShadow: `0 6px 20px ${T.primary}50`, letterSpacing: '-0.01em' }}>
                                 <Sparkles size={16} /> Generate Recommendations
                             </button>
                         </div>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: restartCount > 0 ? '1fr 1fr' : '1fr', gap: 10 }}>
-                                <div style={{ padding: '12px 16px', borderRadius: 10, background: `${T.success}08`, border: `1px solid ${T.success}20`, display: 'flex', gap: 12, alignItems: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: restartCount > 0 ? '1fr 1fr' : '1fr', gap: 22 }}>
+                                <div style={{ padding: '18px 22px', borderRadius: 16, background: `${T.success}08`, border: `1px solid ${T.success}20`, display: 'flex', gap: 18, alignItems: 'center' }}>
                                     <CheckCircle size={20} color={T.success} style={{ flexShrink: 0 }} />
                                     <div>
                                         <div style={{ fontSize: 12, fontWeight: 700, color: T.success }}>{recommendations.length} parameters optimized</div>
@@ -707,7 +707,7 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                     </div>
                                 </div>
                                 {restartCount > 0 && (
-                                    <div style={{ padding: '12px 16px', borderRadius: 10, background: `${T.warning}08`, border: `1px solid ${T.warning}20`, display: 'flex', gap: 12, alignItems: 'center' }}>
+                                    <div style={{ padding: '18px 22px', borderRadius: 16, background: `${T.warning}08`, border: `1px solid ${T.warning}20`, display: 'flex', gap: 18, alignItems: 'center' }}>
                                         <AlertTriangle size={20} color={T.warning} style={{ flexShrink: 0 }} />
                                         <div>
                                             <div style={{ fontSize: 12, fontWeight: 700, color: T.warning }}>{restartCount} require restart</div>
@@ -720,12 +720,12 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: 11, color: T.textDim }}>{selected.size} of {safeRecommendations.length} selected</span>
                                 <div style={{ display: 'flex', gap: 6 }}>
-                                    <button onClick={() => setSelected(new Set(safeRecommendations.map(r => r?.name).filter(n => n)))} style={{ fontSize: 10, padding: '4px 9px', borderRadius: 5, background: 'transparent', border: `1px solid ${T.grid}50`, color: T.textDim, cursor: 'pointer' }}>All</button>
-                                    <button onClick={() => setSelected(new Set())} style={{ fontSize: 10, padding: '4px 9px', borderRadius: 5, background: 'transparent', border: `1px solid ${T.grid}50`, color: T.textDim, cursor: 'pointer' }}>None</button>
+                                    <button onClick={() => setSelected(new Set(safeRecommendations.map(r => r?.name).filter(n => n)))} style={{ fontSize: 10, padding: '4px 9px', borderRadius: 16, background: 'transparent', border: `1px solid ${T.grid}50`, color: T.textDim, cursor: 'pointer' }}>All</button>
+                                    <button onClick={() => setSelected(new Set())} style={{ fontSize: 10, padding: '4px 9px', borderRadius: 16, background: 'transparent', border: `1px solid ${T.grid}50`, color: T.textDim, cursor: 'pointer' }}>None</button>
                                 </div>
                             </div>
 
-                            <div style={{ border: `1px solid ${T.grid}40`, borderRadius: 12, overflow: 'hidden' }}>
+                            <div style={{ border: `1px solid ${T.grid}40`, borderRadius: 18, overflow: 'hidden' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
                                     <thead style={{ background: `${T.surface}` }}>
                                     <tr>
@@ -743,21 +743,21 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                         const isSel = selected.has(rec?.name);
                                         return (
                                             <tr key={rec.name} onClick={() => toggleSel(rec.name)} style={{ borderTop: `1px solid ${T.grid}20`, background: isSel && changed ? `${T.success}04` : 'transparent', cursor: 'pointer', transition: 'background 0.15s' }}>
-                                                <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                                                    <div style={{ width: 16, height: 16, borderRadius: 14, border: `2px solid ${isSel ? T.primary : T.grid}60`, background: isSel ? T.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                                                <td style={{ padding: '22px 28px', textAlign: 'center' }}>
+                                                    <div style={{ width: 16, height: 16, borderRadius: 20, border: `2px solid ${isSel ? T.primary : T.grid}60`, background: isSel ? T.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
                                                         {isSel && <Check size={10} color={THEME.textMain} />}
                                                     </div>
                                                 </td>
-                                                <td style={{ padding: '10px 14px' }}>
+                                                <td style={{ padding: '22px 28px' }}>
                                                     <div style={{ fontWeight: 600, color: T.textMain, fontFamily: T.fontMono, fontSize: 11 }}>{rec?.name || '—'}</div>
                                                     <div style={{ fontSize: 9, color: T.textDim }}>{rec?.reason || ''}</div>
                                                 </td>
-                                                <td style={{ padding: '10px 14px', fontFamily: T.fontMono, color: T.textMuted, fontSize: 11 }}>{curr || '—'}</td>
-                                                <td style={{ padding: '10px 14px', fontFamily: T.fontMono, fontWeight: 700, color: changed ? T.success : T.textDim, fontSize: 11 }}>
+                                                <td style={{ padding: '22px 28px', fontFamily: T.fontMono, color: T.textMuted, fontSize: 11 }}>{curr || '—'}</td>
+                                                <td style={{ padding: '22px 28px', fontFamily: T.fontMono, fontWeight: 700, color: changed ? T.success : T.textDim, fontSize: 11 }}>
                                                     {rec?.val || '—'}{changed && <ArrowUpRight size={9} style={{ marginLeft: 3, display: 'inline', verticalAlign: 'middle' }} />}
                                                 </td>
-                                                <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: (rec?.impact === 'restart') ? `${T.warning}15` : `${T.success}10`, color: (rec?.impact === 'restart') ? T.warning : T.success, fontWeight: 700 }}>
+                                                <td style={{ padding: '22px 28px', textAlign: 'center' }}>
+                                                        <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 20, background: (rec?.impact === 'restart') ? `${T.warning}15` : `${T.success}10`, color: (rec?.impact === 'restart') ? T.warning : T.success, fontWeight: 700 }}>
                                                             {(rec?.impact === 'restart') ? '⚡ restart' : '↺ reload'}
                                                         </span>
                                                 </td>
@@ -768,11 +768,11 @@ const TuningModal = ({ onClose, onApply, currentSettings }) => {
                                 </table>
                             </div>
 
-                            <div style={{ display: 'flex', gap: 10 }}>
-                                <button onClick={() => setStep(1)} style={{ flex: 1, minWidth: 0, padding: '12px', background: 'transparent', border: `1px solid ${T.grid}50`, borderRadius: 10, color: T.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12 }}>
+                            <div style={{ display: 'flex', gap: 22 }}>
+                                <button onClick={() => setStep(1)} style={{ flex: 1, minWidth: 0, padding: '12px', background: 'transparent', border: `1px solid ${T.grid}50`, borderRadius: 16, color: T.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12 }}>
                                     <CornerUpLeft size={13} /> Back
                                 </button>
-                                <button onClick={() => onApply(safeRecommendations.filter(r => selected.has(r?.name)))} disabled={!selected.size} style={{ flex: 2, padding: '12px', background: selected.size ? `linear-gradient(135deg, ${T.success}, ${T.teal})` : T.grid, border: 'none', borderRadius: 10, color: selected.size ? '#000' : T.textDim, fontWeight: 800, cursor: selected.size ? 'pointer' : 'not-allowed', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: T.fontBody, boxShadow: selected.size ? `0 4px 16px ${T.success}40` : 'none' }}>
+                                <button onClick={() => onApply(safeRecommendations.filter(r => selected.has(r?.name)))} disabled={!selected.size} style={{ flex: 2, padding: '12px', background: selected.size ? `linear-gradient(135deg, ${T.success}, ${T.teal})` : T.grid, border: 'none', borderRadius: 16, color: selected.size ? '#000' : T.textDim, fontWeight: 800, cursor: selected.size ? 'pointer' : 'not-allowed', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: T.fontBody, boxShadow: selected.size ? `0 4px 16px ${T.success}40` : 'none' }}>
                                     <Save size={14} /> Apply {selected.size} Recommendations
                                 </button>
                             </div>
@@ -806,24 +806,24 @@ const ChangeLogModal = ({ onClose }) => (
                     </div>
                 )}
                 {MOCK_CHANGE_LOG.map((entry, i) => (
-                    <div key={entry.id} style={{ display: 'flex', gap: 14, marginBottom: 20, position: 'relative' }}>
+                    <div key={entry.id} style={{ display: 'flex', gap: 20, marginBottom: 20, position: 'relative' }}>
                         {i < MOCK_CHANGE_LOG.length - 1 && <div style={{ position: 'absolute', left: 11, top: 22, bottom: -20, width: 1, background: `${T.grid}40` }} />}
                         <div style={{ width: 22, height: 22, borderRadius: '50%', background: `${T.primary}16`, border: `1px solid ${T.primary}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, zIndex: 1 }}>
                             <GitBranch size={10} color={T.primary} />
                         </div>
-                        <div style={{ flex: 1, minWidth: 0, padding: '12px 14px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 10 }}>
+                        <div style={{ flex: 1, minWidth: 0, padding: '22px 28px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 16 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                                 <span style={{ fontFamily: T.fontMono, fontSize: 12, fontWeight: 700, color: T.primary }}>{entry.param}</span>
                                 <span style={{ fontSize: 9.5, color: T.textDim }}>{new Date(entry.ts).toLocaleDateString()} {new Date(entry.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 6 }}>
                                 <span style={{ fontFamily: T.fontMono, fontSize: 11, color: T.textDim, textDecoration: 'line-through' }}>{entry.before}</span>
                                 <ArrowUpRight size={10} color={T.textDim} />
                                 <span style={{ fontFamily: T.fontMono, fontSize: 11, fontWeight: 700, color: T.success }}>{entry.after}</span>
                             </div>
-                            <div style={{ display: 'flex', gap: 8 }}>
+                            <div style={{ display: 'flex', gap: 20 }}>
                                 <span style={{ fontSize: 9.5, color: T.textDim }}>by <strong style={{ color: T.textMuted }}>{entry.user}</strong></span>
-                                <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 10, background: `${T.primary}10`, color: T.primary, border: `1px solid ${T.primary}20` }}>{entry.source}</span>
+                                <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 16, background: `${T.primary}10`, color: T.primary, border: `1px solid ${T.primary}20` }}>{entry.source}</span>
                             </div>
                         </div>
                     </div>
@@ -852,9 +852,9 @@ const CacheView = ({ onClear }) => {
     const usedPct = Math.round((c.size / c.maxSize) * 100);
 
     return (
-        <div className="adm-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="adm-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
             {/* Stats Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 18 }}>
                 <StatCard label="Hit Rate"  value={`${c.hitRate}%`}   icon={CheckCircle} color={T.success} spark={c.recentHits} trend={2.1}  />
                 <StatCard label="Miss Rate" value={`${c.missRate}%`}  icon={XCircle}     color={T.danger}  trend={-0.4}                      />
                 <StatCard label="Entries"   value={c.entries}         icon={Hash}        color={T.primary} sub="cached objects"               />
@@ -862,7 +862,7 @@ const CacheView = ({ onClear }) => {
             </div>
 
             {/* Main panels */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: 22 }}>
                 {/* Ring + Controls */}
                 <Panel title="Memory Usage" icon={Gauge} accent={T.primary}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, padding: '8px 0' }}>
@@ -871,23 +871,23 @@ const CacheView = ({ onClear }) => {
                         </div>
 
                         {/* Stats below ring */}
-                        <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                             {[
                                 { label: 'Avg TTL',       val: c?.avgTtl || '—',       color: T.info    },
                                 { label: 'Last Cleared',  val: c?.lastCleared ? new Date(c.lastCleared).toLocaleDateString() : '—', color: T.textMuted },
                             ].map(item => (
-                                <div key={item.label} style={{ padding: '9px 10px', background: T.surface, borderRadius: 8, border: `1px solid ${T.grid}40` }}>
+                                <div key={item.label} style={{ padding: '9px 10px', background: T.surface, borderRadius: 20, border: `1px solid ${T.grid}40` }}>
                                     <div style={{ fontSize: 9, color: T.textDim, marginBottom: 3 }}>{item.label}</div>
                                     <div style={{ fontSize: 11, fontWeight: 700, color: item.color, fontFamily: T.fontMono }}>{item.val}</div>
                                 </div>
                             ))}
                         </div>
 
-                        <div style={{ width: '100%', display: 'flex', gap: 8 }}>
-                            <button onClick={onClear} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '10px', background: `${T.danger}10`, color: T.danger, border: `1px solid ${T.danger}25`, borderRadius: 9, fontSize: 11, cursor: 'pointer', fontWeight: 700, transition: 'all 0.2s' }}>
+                        <div style={{ width: '100%', display: 'flex', gap: 20 }}>
+                            <button onClick={onClear} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '10px', background: `${T.danger}10`, color: T.danger, border: `1px solid ${T.danger}25`, borderRadius: 20, fontSize: 11, cursor: 'pointer', fontWeight: 700, transition: 'all 0.2s' }}>
                                 <Trash2 size={12} /> Clear Cache
                             </button>
-                            <button style={{ padding: '10px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <button style={{ padding: '10px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <RefreshCw size={13} color={T.textDim} />
                             </button>
                         </div>
@@ -899,14 +899,14 @@ const CacheView = ({ onClear }) => {
                     {/* Stacked bar */}
                     <div style={{ marginBottom: 18 }}>
                         <div style={{ fontSize: 9.5, color: T.textDim, marginBottom: 6,  letterSpacing: '0.02em' }}>Composition</div>
-                        <div style={{ display: 'flex', height: 12, borderRadius: 6, overflow: 'hidden', gap: 1 }}>
+                        <div style={{ display: 'flex', height: 12, borderRadius: 18, overflow: 'hidden', gap: 1 }}>
                             {Array.isArray(c?.breakdown) && c.breakdown.map((b, i) => (
                                 <Tooltip key={i} content={`${b?.label || 'Item'}: ${b?.pct || 0}%`}>
                                     <div style={{ flex: (typeof b?.pct === 'number' ? b.pct : 0), background: b?.color || T.grid, transition: 'flex 0.8s ease', minWidth: 4 }} />
                                 </Tooltip>
                             ))}
                         </div>
-                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
+                        <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', marginTop: 8 }}>
                             {Array.isArray(c?.breakdown) && c.breakdown.map((b, i) => (
                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                     <div style={{ width: 8, height: 8, borderRadius: 2, background: b?.color || T.grid, flexShrink: 0 }} />
@@ -916,21 +916,21 @@ const CacheView = ({ onClear }) => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                         {c.breakdown.map((b, i) => (
                             <div key={i}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                         <div style={{ width: 9, height: 9, borderRadius: 2, background: b.color }} />
                                         <span style={{ fontSize: 12, color: T.textMuted, fontWeight: 600 }}>{b.label}</span>
                                     </div>
-                                    <div style={{ display: 'flex', gap: 12 }}>
+                                    <div style={{ display: 'flex', gap: 18 }}>
                                         <span style={{ fontSize: 9.5, color: T.textDim }}>{b.count} entries</span>
                                         <span style={{ fontSize: 12, fontWeight: 800, color: T.textMain, fontFamily: T.fontMono }}>{b.size} KB</span>
                                     </div>
                                 </div>
-                                <div style={{ height: 5, background: `${T.grid}40`, borderRadius: 10, overflow: 'hidden' }}>
-                                    <div className="adm-progress-animated" style={{ width: `${b.pct * 2.5}%`, height: '100%', background: `linear-gradient(90deg, ${b.color}, ${b.color}bb)`, borderRadius: 10, maxWidth: '100%' }} />
+                                <div style={{ height: 5, background: `${T.grid}40`, borderRadius: 16, overflow: 'hidden' }}>
+                                    <div className="adm-progress-animated" style={{ width: `${b.pct * 2.5}%`, height: '100%', background: `linear-gradient(90deg, ${b.color}, ${b.color}bb)`, borderRadius: 16, maxWidth: '100%' }} />
                                 </div>
                             </div>
                         ))}
@@ -941,7 +941,7 @@ const CacheView = ({ onClear }) => {
             {/* Hit Rate Trend */}
             <Panel title="Hit Rate Over Time" icon={TrendingUp} accent={T.success}>
                 <div style={{ padding: '4px 0 12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 20, marginBottom: 12 }}>
                         <span style={{ fontSize: 32, fontWeight: 900, color: T.success, fontFamily: T.fontMono, lineHeight: 1 }}>{(typeof c?.hitRate === 'number' ? c.hitRate : 0)}%</span>
                         <span style={{ fontSize: 11, color: T.success }}>↑ 2.1% vs yesterday</span>
                     </div>
@@ -1007,7 +1007,7 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
     };
 
     const ColHeader = ({ field, children }) => (
-        <th onClick={() => toggleSort(field)} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 9.5, fontWeight: 700, color: sortField === field ? T.primary : T.textDim, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', letterSpacing: '0.02em' }}>
+        <th onClick={() => toggleSort(field)} style={{ padding: '22px 28px', textAlign: 'left', fontSize: 9.5, fontWeight: 700, color: sortField === field ? T.primary : T.textDim, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', letterSpacing: '0.02em' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                 {children}
                 {sortField === field && (sortDir === 'asc' ? <ChevronUp size={9} /> : <ChevronDown size={9} />)}
@@ -1016,9 +1016,9 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
     );
 
     return (
-        <div className="adm-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="adm-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
             {/* Stats row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 22 }}>
                 {[
                     { label: 'Total',    value: stats.total,   color: T.textMain, icon: Network  },
                     { label: 'Active',   value: stats.active,  color: T.success,  icon: Activity },
@@ -1034,12 +1034,12 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', gap: 6 }}>
                     {[{v:'all',l:'All'},  {v:'active',l:'Active'}, {v:'idle',l:'Idle'}, {v:'transaction',l:'In Txn'}].map(f => (
-                        <button key={f.v} onClick={() => setFilterState(f.v)} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${filterState===f.v ? T.primary : T.grid}50`, background: filterState===f.v ? `${T.primary}12` : 'transparent', color: filterState===f.v ? T.primary : T.textDim, cursor: 'pointer', fontSize: 10.5, fontWeight: 600 }}>
+                        <button key={f.v} onClick={() => setFilterState(f.v)} style={{ padding: '5px 12px', borderRadius: 18, border: `1px solid ${filterState===f.v ? T.primary : T.grid}50`, background: filterState===f.v ? `${T.primary}12` : 'transparent', color: filterState===f.v ? T.primary : T.textDim, cursor: 'pointer', fontSize: 10.5, fontWeight: 600 }}>
                             {f.l}
                         </button>
                     ))}
                 </div>
-                <button onClick={onRefresh} style={{ background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 8, padding: '6px', cursor: 'pointer', display: 'flex', color: T.textDim }}>
+                <button onClick={onRefresh} style={{ background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 20, padding: '6px', cursor: 'pointer', display: 'flex', color: T.textDim }}>
                     <RefreshCw size={13} />
                 </button>
             </div>
@@ -1063,7 +1063,7 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
                             <ColHeader field="durationMs">Duration</ColHeader>
                             <ColHeader field="cpu">CPU</ColHeader>
                             <ColHeader field="wait">Wait</ColHeader>
-                            <th style={{ padding: '10px 14px', fontSize: 9.5, color: T.textDim, textAlign: 'left' }}>QUERY</th>
+                            <th style={{ padding: '22px 28px', fontSize: 9.5, color: T.textDim, textAlign: 'left' }}>QUERY</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -1074,22 +1074,22 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
                             const rowBg = isBlocked ? `${T.danger}05` : isLong ? `${T.warning}04` : 'transparent';
                             return (
                                 <tr key={c.pid} className="adm-conn-row" style={{ borderBottom: `1px solid ${T.grid}12`, background: rowBg, transition: 'background 0.15s' }}>
-                                    <td style={{ padding: '10px 14px', fontSize: 12, color: T.primary, fontFamily: T.fontMono, fontWeight: 800 }}>{c.pid}</td>
-                                    <td style={{ padding: '10px 14px' }}>
+                                    <td style={{ padding: '22px 28px', fontSize: 12, color: T.primary, fontFamily: T.fontMono, fontWeight: 800 }}>{c.pid}</td>
+                                    <td style={{ padding: '22px 28px' }}>
                                         <div style={{ fontSize: 12, color: T.textMuted, fontWeight: 600 }}>{c.user}</div>
                                         <div style={{ fontSize: 9, color: T.textDim }}>{c.appName}</div>
                                     </td>
-                                    <td style={{ padding: '10px 14px', fontSize: 11, color: T.textDim, fontFamily: T.fontMono }}>{c.db}</td>
-                                    <td style={{ padding: '10px 14px' }}>
+                                    <td style={{ padding: '22px 28px', fontSize: 11, color: T.textDim, fontFamily: T.fontMono }}>{c.db}</td>
+                                    <td style={{ padding: '22px 28px' }}>
                                         <StatusBadge label={c.state} color={c.state==='active'?T.success:c.state==='idle'?T.textDim:T.warning} size="sm" pulse={c.state==='active'} />
                                     </td>
-                                    <td style={{ padding: '10px 14px' }}>
+                                    <td style={{ padding: '22px 28px' }}>
                                             <span style={{ fontSize: 12, fontFamily: T.fontMono, fontWeight: 700, color: isLong ? T.danger : T.textMuted }}>
                                                 {c.duration}
                                                 {isLong && <AlertTriangle size={10} color={T.danger} style={{ marginLeft: 5, display: 'inline', verticalAlign: 'middle' }} />}
                                             </span>
                                     </td>
-                                    <td style={{ padding: '10px 14px' }}>
+                                    <td style={{ padding: '22px 28px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                             <div style={{ width: 44, height: 4, background: `${T.grid}40`, borderRadius: 2, overflow: 'hidden' }}>
                                                 <div style={{ width: `${Math.min(c.cpu,100)}%`, height: '100%', background: c.cpu>80?T.danger:c.cpu>40?T.warning:T.success, borderRadius: 2, transition: 'width 0.5s' }} />
@@ -1097,17 +1097,17 @@ const ConnectionsView = ({ connData, onKill, onRefresh }) => {
                                             <span style={{ fontSize: 10, color: T.textDim, fontFamily: T.fontMono }}>{c.cpu}%</span>
                                         </div>
                                     </td>
-                                    <td style={{ padding: '10px 14px' }}>
+                                    <td style={{ padding: '22px 28px' }}>
                                         {c.wait ? <StatusBadge label={c.wait} color={c.wait==='Lock'?T.danger:T.warning} size="sm" /> : <span style={{ fontSize: 11, color: T.textDim }}>—</span>}
                                     </td>
-                                    <td style={{ padding: '10px 14px', maxWidth: 220 }}>
+                                    <td style={{ padding: '22px 28px', maxWidth: 220 }}>
                                         <Tooltip content={c.query}>
                                             <span style={{ fontSize: 10.5, color: T.textDim, fontFamily: T.fontMono, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'default' }}>{c.query}</span>
                                         </Tooltip>
                                     </td>
-                                    <td style={{ padding: '10px 14px', textAlign: 'right', paddingRight: 16 }}>
+                                    <td style={{ padding: '22px 28px', textAlign: 'right', paddingRight: 16 }}>
                                         <button className="adm-kill-btn" onClick={() => onKill(c.pid)} disabled={c.state==='idle'}
-                                                style={{ background: `${T.danger}12`, border: `1px solid ${T.danger}28`, borderRadius: 6, cursor: c.state==='idle'?'not-allowed':'pointer', opacity: c.state==='idle'?0.3:1, color: T.danger, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '5px 9px', fontSize: 10, fontWeight: 700, transition: 'all 0.15s' }}>
+                                                style={{ background: `${T.danger}12`, border: `1px solid ${T.danger}28`, borderRadius: 18, cursor: c.state==='idle'?'not-allowed':'pointer', opacity: c.state==='idle'?0.3:1, color: T.danger, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '5px 9px', fontSize: 10, fontWeight: 700, transition: 'all 0.15s' }}>
                                             <Power size={11} /> Kill
                                         </button>
                                     </td>
@@ -1159,9 +1159,9 @@ const ExtensionsView = ({ extData, onInstall }) => {
     };
 
     return (
-        <div className="adm-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="adm-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
             {/* Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 22 }}>
                 <StatCard label="Installed"  value={(Array.isArray(extData) ? extData : []).filter(e=>e?.installed).length} icon={PlugZap}  color={T.success} />
                 <StatCard label="Active"     value={(Array.isArray(extData) ? extData : []).filter(e=>e?.active).length}    icon={Zap}       color={T.primary} />
                 <StatCard label="Available"  value={(Array.isArray(extData) ? extData : []).filter(e=>!e?.installed).length} icon={Package}  color={T.info}    />
@@ -1169,15 +1169,15 @@ const ExtensionsView = ({ extData, onInstall }) => {
             </div>
 
             {/* Toolbar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', borderRadius: 9, background: T.surface, border: `1px solid ${T.grid}60`, flex: 1, minWidth: 0, maxWidth: 300 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '7px 12px', borderRadius: 20, background: T.surface, border: `1px solid ${T.grid}60`, flex: 1, minWidth: 0, maxWidth: 300 }}>
                     <Search size={12} color={T.textDim} />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search extensions…"
                            style={{ border: 'none', background: 'transparent', color: T.textMain, outline: 'none', flex: 1, minWidth: 0, fontSize: 12 }} />
                     {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={11} color={T.textDim} /></button>}
                 </div>
                 {['all','installed','available'].map(f => (
-                    <button key={f} onClick={() => setFilter(f)} style={{ padding: '6px 14px', borderRadius: 7, border: `1px solid ${filter===f?T.primary:T.grid}50`, background: filter===f?`${T.primary}12`:'transparent', color: filter===f?T.primary:T.textDim, cursor: 'pointer', fontSize: 10.5, fontWeight: 700, textTransform: 'capitalize' }}>{f}</button>
+                    <button key={f} onClick={() => setFilter(f)} style={{ padding: '6px 14px', borderRadius: 18, border: `1px solid ${filter===f?T.primary:T.grid}50`, background: filter===f?`${T.primary}12`:'transparent', color: filter===f?T.primary:T.textDim, cursor: 'pointer', fontSize: 10.5, fontWeight: 700, textTransform: 'capitalize' }}>{f}</button>
                 ))}
                 <div style={{ marginLeft: 'auto', fontSize: 11, color: T.textDim }}>{filtered.length} shown</div>
             </div>
@@ -1197,16 +1197,16 @@ const ExtensionsView = ({ extData, onInstall }) => {
                 const catItems = filtered.filter(e => e.category === cat);
                 return (
                     <div key={cat}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 10 }}>
                             <div style={{ width: 4, height: 16, borderRadius: 2, background: catColor }} />
                             <span style={{ fontSize: 10, fontWeight: 800, color: catColor,  letterSpacing: '0.02em', fontFamily: T.fontBody }}>{cat}</span>
                             <div style={{ flex: 1, minWidth: 0, height: 1, background: `${catColor}15` }} />
                             <span style={{ fontSize: 9.5, color: T.textDim }}>{catItems.length} extension{catItems.length !== 1 ? 's' : ''}</span>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px,1fr))', gap: 12 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px,1fr))', gap: 18 }}>
                             {catItems.map(ext => (
                                 <div key={ext.name} className="adm-ext-card" style={{
-                                    padding: '18px 20px', borderRadius: 14,
+                                    padding: '18px 20px', borderRadius: 20,
                                     background: ext.active ? `${catColor}04` : T.glass,
                                     border: `1px solid ${ext.active ? catColor+'30' : ext.installed ? T.primary+'15' : T.glassBorder}`,
                                     position: 'relative', overflow: 'hidden',
@@ -1219,14 +1219,14 @@ const ExtensionsView = ({ extData, onInstall }) => {
                                                 {ext.superuser && <Tooltip content="Requires superuser"><Lock size={9} color={T.warning} /></Tooltip>}
                                             </div>
                                             <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                                                <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 14, background: `${catColor}14`, color: catColor, border: `1px solid ${catColor}20`, fontFamily: T.fontMono }}>v{ext.version}</span>
+                                                <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 20, background: `${catColor}14`, color: catColor, border: `1px solid ${catColor}20`, fontFamily: T.fontMono }}>v{ext.version}</span>
                                                 {ext.installed && <StatusBadge label={ext.active ? 'Active' : 'Installed'} color={ext.active ? T.success : T.warning} size="sm" />}
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                                             {ext.installed ? <PlugZap size={16} color={ext.active ? T.success : T.warning} /> : <Plug size={16} color={T.textDim} />}
                                             {!ext.installed && (
-                                                <button onClick={() => onInstall(ext)} style={{ fontSize: 10, padding: '4px 10px', borderRadius: 6, background: `${T.primary}14`, border: `1px solid ${T.primary}30`, color: T.primary, cursor: 'pointer', fontWeight: 700, transition: 'all 0.2s' }}>
+                                                <button onClick={() => onInstall(ext)} style={{ fontSize: 10, padding: '4px 10px', borderRadius: 18, background: `${T.primary}14`, border: `1px solid ${T.primary}30`, color: T.primary, cursor: 'pointer', fontWeight: 700, transition: 'all 0.2s' }}>
                                                     + Install
                                                 </button>
                                             )}
@@ -1259,13 +1259,13 @@ const METHOD_CLR   = { trust:THEME.danger, reject:THEME.textMuted, md5:THEME.war
 /* ── Shared mini form controls — defined OUTSIDE HBAView so React doesn't remount on each render ── */
 const HBASelect = ({ val, opts, onChange, w = 120 }) => (
     <select value={val} onChange={e => onChange(e.target.value)}
-        style={{ background: T.surface, border:`1px solid ${T.grid}`, color:T.textMain, borderRadius:5, padding:'3px 6px', fontSize:11, fontFamily:T.fontMono, cursor:'pointer', width:w }}>
+        style={{ background: T.surface, border:`1px solid ${T.grid}`, color:T.textMain, borderRadius: 16, padding:'3px 6px', fontSize:11, fontFamily:T.fontMono, cursor:'pointer', width:w }}>
         {opts.map(o => <option key={o} value={o}>{o}</option>)}
     </select>
 );
 const HBAInput = ({ val, onChange, ph, w = 120 }) => (
     <input value={val} onChange={e => onChange(e.target.value)} placeholder={ph}
-        style={{ background:T.surface, border:`1px solid ${T.grid}`, color:T.textMain, borderRadius:5, padding:'3px 8px', fontSize:11, fontFamily:T.fontMono, width:w, outline:'none' }} />
+        style={{ background:T.surface, border:`1px solid ${T.grid}`, color:T.textMain, borderRadius: 16, padding:'3px 8px', fontSize:11, fontFamily:T.fontMono, width:w, outline:'none' }} />
 );
 
 const HBAView = () => {
@@ -1293,42 +1293,42 @@ const HBAView = () => {
     const addRule = () => { setRules(r => [...r, { ...newRow, id: Date.now() }]); setNewRow({ type:'host', database:'all', user:'all', address:'127.0.0.1/32', method:'scram-sha-256', comment:'' }); setShowAdd(false); };
 
     return (
-        <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+        <div style={{ display:'flex', flexDirection:'column', gap: 22 }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <div>
-                    <div style={{ fontSize:15, fontWeight:800, color:T.textMain, display:'flex', alignItems:'center', gap:8 }}>
+                    <div style={{ fontSize:15, fontWeight:800, color:T.textMain, display:'flex', alignItems:'center', gap: 20 }}>
                         <FileText size={16} color={T.primary} /> pg_hba.conf Visual Editor
                     </div>
                     <div style={{ fontSize:11, color:T.textDim, marginTop:3 }}>
                         Host-based authentication rules · changes take effect after <span style={{ fontFamily:T.fontMono, color:T.primary }}>SELECT pg_reload_conf()</span>
                     </div>
                 </div>
-                <div style={{ display:'flex', gap:8 }}>
+                <div style={{ display:'flex', gap: 20 }}>
                     <button onClick={() => setShowAdd(s=>!s)}
-                        style={{ background:`${T.primary}18`, border:`1px solid ${T.primary}35`, color:T.primary, padding:'7px 14px', borderRadius:8, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody, display:'flex', gap:6, alignItems:'center' }}>
+                        style={{ background:`${T.primary}18`, border:`1px solid ${T.primary}35`, color:T.primary, padding:'7px 14px', borderRadius: 20, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody, display:'flex', gap:6, alignItems:'center' }}>
                         <Plus size={12}/> Add Rule
                     </button>
                     <button onClick={save}
-                        style={{ background: saved ? `${T.success}18` : `${T.primary}12`, border:`1px solid ${saved ? T.success : T.primary}35`, color: saved ? T.success : T.primary, padding:'7px 14px', borderRadius:8, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody, display:'flex', gap:6, alignItems:'center' }}>
+                        style={{ background: saved ? `${T.success}18` : `${T.primary}12`, border:`1px solid ${saved ? T.success : T.primary}35`, color: saved ? T.success : T.primary, padding:'7px 14px', borderRadius: 20, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody, display:'flex', gap:6, alignItems:'center' }}>
                         {saved ? <><Check size={12}/> Saved!</> : <><Save size={12}/> Save & Reload</>}
                     </button>
                 </div>
             </div>
 
             {showAdd && (
-                <div style={{ background:`${T.primary}08`, border:`1px solid ${T.primary}25`, borderRadius:10, padding:'12px 16px', display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' }}>
+                <div style={{ background:`${T.primary}08`, border:`1px solid ${T.primary}25`, borderRadius: 16, padding:'12px 16px', display:'flex', gap: 20, alignItems:'center', flexWrap:'wrap' }}>
                     <HBASelect val={newRow.type}     opts={HBA_TYPES}   onChange={v=>setNewRow(p=>({...p,type:v}))}     w={110}/>
                     <HBAInput val={newRow.database} onChange={v=>setNewRow(p=>({...p,database:v}))} ph="database" w={100}/>
                     <HBAInput val={newRow.user}     onChange={v=>setNewRow(p=>({...p,user:v}))}     ph="user"     w={90}/>
                     <HBAInput val={newRow.address}  onChange={v=>setNewRow(p=>({...p,address:v}))}  ph="address"  w={130}/>
                     <HBASelect val={newRow.method}   opts={HBA_METHODS} onChange={v=>setNewRow(p=>({...p,method:v}))}   w={130}/>
                     <HBAInput val={newRow.comment}  onChange={v=>setNewRow(p=>({...p,comment:v}))}  ph="comment"  w={160}/>
-                    <button onClick={addRule} style={{ background:T.success, color:THEME.textMain, border:'none', padding:'5px 12px', borderRadius:6, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody }}>Add</button>
+                    <button onClick={addRule} style={{ background:T.success, color:THEME.textMain, border:'none', padding:'5px 12px', borderRadius: 18, cursor:'pointer', fontSize:12, fontWeight:700, fontFamily:T.fontBody }}>Add</button>
                     <button onClick={()=>setShowAdd(false)} style={{ background:'transparent', color:T.textDim, border:'none', cursor:'pointer' }}><X size={14}/></button>
                 </div>
             )}
 
-            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius:12, overflow:'hidden' }}>
+            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius: 18, overflow:'hidden' }}>
                 <div style={{ overflowX:'auto' }}>
                     <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
                         <thead>
@@ -1359,7 +1359,7 @@ const HBAView = () => {
                                     <td style={{ padding:'8px 6px' }}>
                                         {editing===row.id
                                             ? <HBASelect val={row.method} opts={HBA_METHODS} onChange={v=>upd(row.id,'method',v)} w={130}/>
-                                            : <span style={{ padding:'2px 8px', borderRadius:4, fontSize:11, fontFamily:T.fontMono, background:`${METHOD_CLR[row.method]||'#94a3b8'}18`, color:METHOD_CLR[row.method]||'#94a3b8', border:`1px solid ${METHOD_CLR[row.method]||'#94a3b8'}35` }}>{row.method}</span>}
+                                            : <span style={{ padding:'2px 8px', borderRadius: 16, fontSize:11, fontFamily:T.fontMono, background:`${METHOD_CLR[row.method]||'#94a3b8'}18`, color:METHOD_CLR[row.method]||'#94a3b8', border:`1px solid ${METHOD_CLR[row.method]||'#94a3b8'}35` }}>{row.method}</span>}
                                     </td>
                                     <td style={{ padding:'8px 6px' }}>
                                         {editing===row.id ? <HBAInput val={row.comment} onChange={v=>upd(row.id,'comment',v)} ph="comment" w={150}/> : <span style={{ fontSize:11, color:T.textDim, fontStyle:row.comment?'normal':'italic' }}>{row.comment||'—'}</span>}
@@ -1399,8 +1399,8 @@ const ExtDashboard = ({ extData = [] }) => {
     const secFlags = extData.filter(e => e.installed && (e.name==='dblink'||e.name==='pg_tle'||e.superuser)).length;
 
     return (
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:18 }}>
-            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius:10, padding:'14px 16px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap: 18, marginBottom:18 }}>
+            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius: 16, padding:'14px 16px' }}>
                 <div style={{ fontSize:24, fontWeight:800, color:T.primary }}>{installed.length}</div>
                 <div style={{ fontSize:11, color:T.textDim, marginTop:3 }}>Installed</div>
                 <div style={{ marginTop:8, height:3, background:T.grid, borderRadius:2 }}>
@@ -1408,17 +1408,17 @@ const ExtDashboard = ({ extData = [] }) => {
                 </div>
                 <div style={{ fontSize:10, color:T.textDim, marginTop:4 }}>{extData.length} available</div>
             </div>
-            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius:10, padding:'14px 16px' }}>
+            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius: 16, padding:'14px 16px' }}>
                 <div style={{ fontSize:24, fontWeight:800, color:T.success }}>{installed.filter(e=>e.active).length}</div>
                 <div style={{ fontSize:11, color:T.textDim, marginTop:3 }}>Active</div>
                 <div style={{ fontSize:10, color:T.textDim, marginTop:10 }}>{installed.filter(e=>!e.active).length} inactive</div>
             </div>
-            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius:10, padding:'14px 16px' }}>
+            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius: 16, padding:'14px 16px' }}>
                 <div style={{ fontSize:24, fontWeight:800, color:secFlags>0?T.warning:T.success }}>{secFlags}</div>
                 <div style={{ fontSize:11, color:T.textDim, marginTop:3 }}>Security Flags</div>
                 <div style={{ fontSize:10, color:secFlags>0?T.warning:T.textDim, marginTop:10 }}>{secFlags>0?'⚠ Review needed':'✓ No issues'}</div>
             </div>
-            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius:10, padding:'14px 16px' }}>
+            <div style={{ background:T.glass, border:`1px solid ${T.glassBorder}`, borderRadius: 16, padding:'14px 16px' }}>
                 <div style={{ fontSize:12, fontWeight:700, color:T.textMain, marginBottom:8 }}>Categories</div>
                 {catEntries.slice(0,4).map(([cat,cnt],i)=>(
                     <div key={cat} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4, fontSize:11 }}>
@@ -1503,7 +1503,7 @@ const SettingsView = ({
         if (isBool) {
             const isActive = currentVal === 'on';
             return (
-                <button onClick={() => onChange(isActive ? 'off' : 'on')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 7, border: 'none', background: isActive ? `${T.success}18` : `${T.grid}40`, color: isActive ? T.success : T.textDim, cursor: 'pointer', fontWeight: 700, fontSize: 11, transition: 'all 0.2s' }}>
+                <button onClick={() => onChange(isActive ? 'off' : 'on')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 18, border: 'none', background: isActive ? `${T.success}18` : `${T.grid}40`, color: isActive ? T.success : T.textDim, cursor: 'pointer', fontWeight: 700, fontSize: 11, transition: 'all 0.2s' }}>
                     {isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />} {isActive ? 'ON' : 'OFF'}
                 </button>
             );
@@ -1512,7 +1512,7 @@ const SettingsView = ({
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
                 <input className="adm-input-field" type={isNum ? 'number' : 'text'} value={currentVal} onChange={e => onChange(e.target.value)} placeholder={s.boot_val}
-                       style={{ background: errs.length ? `${T.danger}08` : T.surface, border: `1px solid ${errs.length ? T.danger : T.grid}60`, color: T.textMain, borderRadius: 6, padding: '5px 9px', fontSize: 12, width: isNum ? 92 : 135, fontFamily: T.fontMono }} />
+                       style={{ background: errs.length ? `${T.danger}08` : T.surface, border: `1px solid ${errs.length ? T.danger : T.grid}60`, color: T.textMain, borderRadius: 18, padding: '5px 9px', fontSize: 12, width: isNum ? 92 : 135, fontFamily: T.fontMono }} />
                 {errs.map((e,i) => <span key={i} style={{ fontSize: 9, color: T.danger }}>{e}</span>)}
             </div>
         );
@@ -1537,7 +1537,7 @@ const SettingsView = ({
                 borderLeft: `2px solid ${hasError ? T.danger : hasPending ? T.success : isModified && !hasPending ? T.secondary : 'transparent'}`,
                 transition: 'all 0.15s',
             }} onClick={() => !isEditMode && setExpandedSetting(isExpanded ? null : s.name)}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                     {catDef && <catDef.icon size={11} color={catDef.color} style={{ flexShrink: 0, opacity: 0.7 }} />}
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
@@ -1548,7 +1548,7 @@ const SettingsView = ({
                             {riskDef?.label === 'HIGH RISK' && <StatusBadge label="HIGH RISK" color={T.danger} size="sm" />}
                         </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                         <button className="adm-row-actions" onClick={e => { e.stopPropagation(); togglePin(s.name); }}
                                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: isPinned ? T.warning : T.textDim }}>
                             {isPinned ? <Pin size={11} fill="currentColor" color={T.warning} /> : <Pin size={11} />}
@@ -1590,20 +1590,20 @@ const SettingsView = ({
                             <span style={{ color: T.textDim }}>Source: <strong style={{ color: T.textMuted }}>{s.source}</strong></span>
                         </div>
                         {riskDef && riskDef.label !== 'LOW RISK' && (
-                            <div style={{ padding: '10px 13px', borderRadius: 8, background: `${riskDef.color}10`, border: `1px solid ${riskDef.color}25`, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                            <div style={{ padding: '10px 13px', borderRadius: 20, background: `${riskDef.color}10`, border: `1px solid ${riskDef.color}25`, display: 'flex', gap: 22, alignItems: 'flex-start' }}>
                                 <riskDef.icon size={15} color={riskDef.color} style={{ flexShrink: 0, marginTop: 1 }} />
                                 <span style={{ fontSize: 11, color: riskDef.color, fontWeight: 600 }}>
                                     {s.riskLevel === 'high' ? 'Changing this setting can lead to data loss or corruption. Proceed with extreme caution.' : 'This setting carries moderate risk. Test changes in staging before production.'}
                                 </span>
                             </div>
                         )}
-                        <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+                        <div style={{ marginTop: 10, display: 'flex', gap: 20 }}>
                             <button onClick={e => { e.stopPropagation(); setIsEditMode(true); setExpandedSetting(null); }}
-                                    style={{ fontSize: 10, padding: '5px 11px', borderRadius: 6, border: `1px solid ${T.primary}30`, background: `${T.primary}10`, color: T.primary, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    style={{ fontSize: 10, padding: '5px 11px', borderRadius: 18, border: `1px solid ${T.primary}30`, background: `${T.primary}10`, color: T.primary, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
                                 <Edit3 size={10} /> Edit Value
                             </button>
                             <button onClick={e => { e.stopPropagation(); copyVal(`${s.name} = '${s.setting}'`, s.name + '_pg'); }}
-                                    style={{ fontSize: 10, padding: '5px 11px', borderRadius: 6, border: `1px solid ${T.grid}40`, background: 'transparent', color: T.textDim, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    style={{ fontSize: 10, padding: '5px 11px', borderRadius: 18, border: `1px solid ${T.grid}40`, background: 'transparent', color: T.textDim, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
                                 <Terminal size={10} /> Copy as conf
                             </button>
                         </div>
@@ -1614,22 +1614,22 @@ const SettingsView = ({
     };
 
     return (
-        <div className="adm-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="adm-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Pending Banner */}
             {Object.keys(pendingChanges).length > 0 && (
-                <div style={{ padding: '12px 16px', borderRadius: 11, background: `${T.warning}08`, border: `1px solid ${T.warning}25`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, animation: 'admFadeIn 0.2s ease' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ padding: '18px 22px', borderRadius: 11, background: `${T.warning}08`, border: `1px solid ${T.warning}25`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18, animation: 'admFadeIn 0.2s ease' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                         <AlertCircle size={16} color={T.warning} />
                         <span style={{ fontSize: 12, color: T.warning, fontWeight: 700 }}>{Object.keys(pendingChanges).length} unsaved change{Object.keys(pendingChanges).length > 1 ? 's' : ''}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 7 }}>
-                        <button onClick={() => dispatch({ type: 'UNDO' })} disabled={!history.past.length} style={{ background: 'none', border: `1px solid ${T.grid}50`, borderRadius: 6, padding: '4px 9px', cursor: history.past.length ? 'pointer' : 'not-allowed', color: T.textMuted, fontSize: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <button onClick={() => dispatch({ type: 'UNDO' })} disabled={!history.past.length} style={{ background: 'none', border: `1px solid ${T.grid}50`, borderRadius: 18, padding: '4px 9px', cursor: history.past.length ? 'pointer' : 'not-allowed', color: T.textMuted, fontSize: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <RotateCcw size={10} /> Undo
                         </button>
-                        <button onClick={triggerSave} style={{ background: T.warning, border: 'none', borderRadius: 6, padding: '4px 13px', cursor: 'pointer', color: THEME.bg, fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <button onClick={triggerSave} style={{ background: T.warning, border: 'none', borderRadius: 18, padding: '4px 13px', cursor: 'pointer', color: THEME.bg, fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5 }}>
                             <Save size={11} /> Save
                         </button>
-                        <button onClick={() => { dispatch({ type: 'CLEAR' }); setValidationErrors({}); }} style={{ background: 'none', border: `1px solid ${T.grid}50`, borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: T.textDim, display: 'flex' }}>
+                        <button onClick={() => { dispatch({ type: 'CLEAR' }); setValidationErrors({}); }} style={{ background: 'none', border: `1px solid ${T.grid}50`, borderRadius: 18, padding: '4px 8px', cursor: 'pointer', color: T.textDim, display: 'flex' }}>
                             <X size={12} />
                         </button>
                     </div>
@@ -1637,18 +1637,18 @@ const SettingsView = ({
             )}
 
             {/* Toolbar */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 13px', borderRadius: 9, background: T.surface, border: `1px solid ${T.grid}60`, flex: 1, minWidth: 0, maxWidth: 360 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '8px 13px', borderRadius: 20, background: T.surface, border: `1px solid ${T.grid}60`, flex: 1, minWidth: 0, maxWidth: 360 }}>
                     <Search size={12} color={T.textDim} />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search parameters…"
                            style={{ border: 'none', background: 'transparent', color: T.textMain, outline: 'none', flex: 1, minWidth: 0, fontSize: 12 }} />
                     {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={11} color={T.textDim} /></button>}
                 </div>
 
-                <div style={{ display: 'flex', gap: 4, background: T.surface, border: `1px solid ${T.grid}50`, borderRadius: 8, padding: 3 }}>
+                <div style={{ display: 'flex', gap: 4, background: T.surface, border: `1px solid ${T.grid}50`, borderRadius: 20, padding: 3 }}>
                     {[{v:'grouped',i:Layers,t:'Grouped'},{v:'flat',i:List,t:'Flat'},{v:'diff',i:GitCompare,t:'Changed Only'}].map(m => (
                         <Tooltip key={m.v} content={m.t}>
-                            <button onClick={() => setViewMode(m.v)} style={{ padding: '5px 9px', borderRadius: 6, border: 'none', background: viewMode===m.v ? T.glass : 'transparent', cursor: 'pointer', color: viewMode===m.v ? T.textMain : T.textDim, display: 'flex', alignItems: 'center', gap: 4, fontSize: 10.5, fontWeight: 600 }}>
+                            <button onClick={() => setViewMode(m.v)} style={{ padding: '5px 9px', borderRadius: 18, border: 'none', background: viewMode===m.v ? T.glass : 'transparent', cursor: 'pointer', color: viewMode===m.v ? T.textMain : T.textDim, display: 'flex', alignItems: 'center', gap: 4, fontSize: 10.5, fontWeight: 600 }}>
                                 <m.i size={11} /> {viewMode===m.v && <span>{m.t}</span>}
                             </button>
                         </Tooltip>
@@ -1657,30 +1657,30 @@ const SettingsView = ({
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Tooltip content="Configuration History">
-                        <button onClick={() => setShowChangelog(true)} className="adm-btn" style={{ background: 'transparent', border: `1px solid ${T.grid}60`, padding: '7px', borderRadius: 8, cursor: 'pointer', color: T.textDim, display: 'flex' }}>
+                        <button onClick={() => setShowChangelog(true)} className="adm-btn" style={{ background: 'transparent', border: `1px solid ${T.grid}60`, padding: '7px', borderRadius: 20, cursor: 'pointer', color: T.textDim, display: 'flex' }}>
                             <History size={13} />
                         </button>
                     </Tooltip>
                     <Tooltip content="Export JSON">
-                        <button onClick={() => { const b = new Blob([JSON.stringify(settingsData, null, 2)], {type:'application/json'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`vigil-config-${new Date().toISOString().slice(0,10)}.json`; a.click(); }} className="adm-btn" style={{ background: 'transparent', border: `1px solid ${T.grid}60`, padding: '7px', borderRadius: 8, cursor: 'pointer', color: T.textDim, display: 'flex' }}>
+                        <button onClick={() => { const b = new Blob([JSON.stringify(settingsData, null, 2)], {type:'application/json'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`vigil-config-${new Date().toISOString().slice(0,10)}.json`; a.click(); }} className="adm-btn" style={{ background: 'transparent', border: `1px solid ${T.grid}60`, padding: '7px', borderRadius: 20, cursor: 'pointer', color: T.textDim, display: 'flex' }}>
                             <Download size={13} />
                         </button>
                     </Tooltip>
-                    <button onClick={() => setShowWizard(true)} className="adm-btn" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 8, border: `1px solid ${T.primary}35`, cursor: 'pointer', background: `linear-gradient(135deg, ${T.primary}14, ${T.secondary}08)`, color: T.primary, fontSize: 11.5, fontWeight: 700 }}>
+                    <button onClick={() => setShowWizard(true)} className="adm-btn" style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 20, border: `1px solid ${T.primary}35`, cursor: 'pointer', background: `linear-gradient(135deg, ${T.primary}14, ${T.secondary}08)`, color: T.primary, fontSize: 11.5, fontWeight: 700 }}>
                         <Sparkles size={12} /> Tuning Wizard
                     </button>
                     <div style={{ width: 1, height: 20, background: `${T.grid}60` }} />
                     {isEditMode ? (
                         <>
-                            <button onClick={triggerSave} className="adm-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${T.success}, ${T.teal})`, color: THEME.bg, fontSize: 11.5, fontWeight: 800 }}>
+                            <button onClick={triggerSave} className="adm-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${T.success}, ${T.teal})`, color: THEME.bg, fontSize: 11.5, fontWeight: 800 }}>
                                 <Save size={12} /> Save{Object.keys(pendingChanges).length > 0 ? ` (${Object.keys(pendingChanges).length})` : ''}
                             </button>
-                            <button onClick={() => { setIsEditMode(false); dispatch({ type: 'CLEAR' }); setValidationErrors({}); }} style={{ padding: '7px', borderRadius: 8, border: 'none', cursor: 'pointer', background: T.surface, color: T.textDim, display: 'flex' }}>
+                            <button onClick={() => { setIsEditMode(false); dispatch({ type: 'CLEAR' }); setValidationErrors({}); }} style={{ padding: '7px', borderRadius: 20, border: 'none', cursor: 'pointer', background: T.surface, color: T.textDim, display: 'flex' }}>
                                 <X size={14} />
                             </button>
                         </>
                     ) : (
-                        <button onClick={() => setIsEditMode(true)} className="adm-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: `1px solid ${T.grid}60`, cursor: 'pointer', background: T.surface, color: T.textMuted, fontSize: 11.5, fontWeight: 600 }}>
+                        <button onClick={() => setIsEditMode(true)} className="adm-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, border: `1px solid ${T.grid}60`, cursor: 'pointer', background: T.surface, color: T.textMuted, fontSize: 11.5, fontWeight: 600 }}>
                             <Edit3 size={12} /> Edit <Kbd>E</Kbd>
                         </button>
                     )}
@@ -1704,14 +1704,14 @@ const SettingsView = ({
                     const catDef = isPinCat ? null : SETTING_CATEGORIES[cat];
                     return (
                         <Panel key={cat} title={isPinCat ? 'Pinned' : catDef?.label || 'Other'} icon={isPinCat ? Pin : catDef?.icon || Settings} noPad accent={isPinCat ? T.warning : catDef?.color}
-                               rightNode={<span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: `${T.grid}40`, color: T.textDim }}>{items.length}</span>}>
+                               rightNode={<span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 16, background: `${T.grid}40`, color: T.textDim }}>{items.length}</span>}>
                             {items.map(renderRow)}
                         </Panel>
                     );
                 })
             ) : (
                 <Panel title={viewMode==='diff'?'Changed Parameters':'All Parameters'} icon={viewMode==='diff'?GitCompare:List} noPad
-                       rightNode={<span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: `${T.grid}40`, color: T.textDim }}>{filteredSettings.length}</span>}>
+                       rightNode={<span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 16, background: `${T.grid}40`, color: T.textDim }}>{filteredSettings.length}</span>}>
                     {filteredSettings.length === 0 ? (
                         <div style={{ padding: 40, textAlign: 'center', color: T.textDim }}>
                             <CheckCircle size={32} color={T.grid} style={{ marginBottom: 12, display: 'block', margin: '0 auto 12px' }} />
@@ -1869,7 +1869,7 @@ const AdminTab = () => {
     if (loading) return (
         <div style={{ padding: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
             <AdminStyles />
-            <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="adm-float">
+            <div style={{ width: 48, height: 48, borderRadius: 20, background: `linear-gradient(135deg, ${T.primary}, ${T.secondary})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="adm-float">
                 <Settings size={22} color={THEME.textMain} className="adm-spin" />
             </div>
             <div style={{ color: T.textDim, fontSize: 12 }}>Loading Admin Panel…</div>
@@ -1883,10 +1883,10 @@ const AdminTab = () => {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
                 {/* Nav Tabs */}
-                <div style={{ display: 'flex', gap: 5, padding: '4px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 12 }}>
+                <div style={{ display: 'flex', gap: 5, padding: '4px', background: T.glass, border: `1px solid ${T.glassBorder}`, borderRadius: 18 }}>
                     {NAV_TABS.map(t => (
                         <button key={t.id} className="adm-tab-btn" onClick={() => setActiveSub(t.id)} style={{
-                            padding: '9px 18px', borderRadius: 9, cursor: 'pointer', border: 'none',
+                            padding: '9px 18px', borderRadius: 20, cursor: 'pointer', border: 'none',
                             display: 'flex', alignItems: 'center', gap: 7, fontSize: 12.5, fontWeight: 700,
                             background: activeSub === t.id ? `linear-gradient(135deg, ${T.primary}, ${T.secondary})` : 'transparent',
                             color: activeSub === t.id ? THEME.textMain : T.textMuted,
@@ -1902,11 +1902,11 @@ const AdminTab = () => {
                 </div>
 
                 {/* Status */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <button onClick={loadData} style={{ background: T.surface, border: `1px solid ${T.grid}50`, borderRadius: 7, padding: '6px', cursor: 'pointer', color: T.textDim, display: 'flex' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+                    <button onClick={loadData} style={{ background: T.surface, border: `1px solid ${T.grid}50`, borderRadius: 18, padding: '6px', cursor: 'pointer', color: T.textDim, display: 'flex' }}>
                         <RefreshCw size={12} />
                     </button>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 12px', background: `${T.success}08`, border: `1px solid ${T.success}20`, borderRadius: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 12px', background: `${T.success}08`, border: `1px solid ${T.success}20`, borderRadius: 20 }}>
                         <LiveDot color={T.success} size={6} />
                         <span style={{ fontSize: 10.5, color: T.textDim, fontWeight: 600 }}>Connected</span>
                     </div>
@@ -1962,7 +1962,7 @@ const AdminTab = () => {
 
             {/* Toast */}
             {toast && (
-                <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 600, padding: '13px 18px', borderRadius: 12, background: T.surface, border: `1px solid ${toast.type === 'error' ? T.danger : T.success}35`, boxShadow: `0 10px 36px rgba(0,0,0,0.6), 0 0 0 1px ${toast.type === 'error' ? T.danger : T.success}12, 0 0 24px ${toast.type === 'error' ? T.danger : T.success}15`, display: 'flex', alignItems: 'center', gap: 11, animation: 'admSlideUp 0.3s cubic-bezier(0.22,1,0.36,1)' }}>
+                <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 600, padding: '13px 18px', borderRadius: 18, background: T.surface, border: `1px solid ${toast.type === 'error' ? T.danger : T.success}35`, boxShadow: `0 10px 36px rgba(0,0,0,0.6), 0 0 0 1px ${toast.type === 'error' ? T.danger : T.success}12, 0 0 24px ${toast.type === 'error' ? T.danger : T.success}15`, display: 'flex', alignItems: 'center', gap: 11, animation: 'admSlideUp 0.3s cubic-bezier(0.22,1,0.36,1)' }}>
                     {toast.type === 'error' ? <XCircle size={18} color={T.danger} /> : <CheckCircle size={18} color={T.success} />}
                     <span style={{ fontWeight: 700, color: T.textMain, fontSize: 13, fontFamily: T.fontBody }}>{toast.msg}</span>
                     <button onClick={() => setToast(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textDim, padding: 0, marginLeft: 4 }}><X size={12} /></button>

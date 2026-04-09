@@ -891,7 +891,7 @@ const styles = {
   titleSection: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
+    gap: 18,
   },
 
   title: {
@@ -905,13 +905,13 @@ const styles = {
   statsRow: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: 16,
+    gap: 22,
   },
 
   statCard: {
     display: 'flex',
     alignItems: 'center',
-    gap: 16,
+    gap: 22,
     padding: 16,
     backgroundColor: THEME.surface,
     border: 'none',
@@ -953,24 +953,24 @@ const styles = {
   controlsRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: 16,
+    gap: 22,
     marginBottom: 32,
     flexWrap: 'wrap',
   },
 
   filterTabs: {
     display: 'flex',
-    gap: 8,
+    gap: 20,
     flex: 1,
     minWidth: 200,
   },
 
   filterTab: {
-    padding: '8px 16px',
+    padding: '14px 20px',
     backgroundColor: 'transparent',
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMuted,
-    borderRadius: 10,
+    borderRadius: 16,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 500,
@@ -986,11 +986,11 @@ const styles = {
   },
 
   searchInput: {
-    padding: '8px 12px',
+    padding: '20px 24px',
     backgroundColor: THEME.surface,
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
-    borderRadius: 10,
+    borderRadius: 16,
     fontSize: 13,
     minWidth: 180,
     transition: 'all 0.2s ease',
@@ -1000,11 +1000,11 @@ const styles = {
   addButton: {
     display: 'flex',
     alignItems: 'center',
-    padding: '8px 16px',
+    padding: '14px 20px',
     backgroundColor: THEME.primary,
     border: 'none',
     color: THEME.bg,
-    borderRadius: 10,
+    borderRadius: 16,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 600,
@@ -1013,11 +1013,11 @@ const styles = {
   },
 
   resetButton: {
-    padding: '8px 12px',
+    padding: '20px 24px',
     backgroundColor: 'transparent',
     border: `1px solid ${THEME.textMuted}40`,
     color: THEME.textMuted,
-    borderRadius: 10,
+    borderRadius: 16,
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -1046,27 +1046,27 @@ const styles = {
   formGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-    gap: 16,
+    gap: 22,
     marginBottom: 20,
   },
 
   formInput: {
-    padding: '10px 14px',
+    padding: '22px 28px',
     backgroundColor: THEME.surfaceHover,
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
-    borderRadius: 12,
+    borderRadius: 18,
     fontSize: 13,
     fontFamily: THEME.fontBody,
     transition: 'all 0.2s ease',
   },
 
   formSelect: {
-    padding: '10px 14px',
+    padding: '22px 28px',
     backgroundColor: THEME.surfaceHover,
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
-    borderRadius: 12,
+    borderRadius: 18,
     fontSize: 13,
     fontFamily: THEME.fontBody,
     transition: 'all 0.2s ease',
@@ -1074,7 +1074,7 @@ const styles = {
 
   formActions: {
     display: 'flex',
-    gap: 14,
+    gap: 20,
     justifyContent: 'flex-end',
   },
 
@@ -1083,7 +1083,7 @@ const styles = {
     backgroundColor: THEME.primary,
     border: 'none',
     color: THEME.bg,
-    borderRadius: 12,
+    borderRadius: 18,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 600,
@@ -1096,7 +1096,7 @@ const styles = {
     backgroundColor: 'transparent',
     border: `1px solid ${THEME.textMuted}40`,
     color: THEME.textMuted,
-    borderRadius: 12,
+    borderRadius: 18,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 600,
@@ -1114,12 +1114,12 @@ const styles = {
   errorState: {
     display: 'flex',
     alignItems: 'center',
-    gap: 14,
+    gap: 20,
     padding: 18,
     backgroundColor: `${THEME.danger}20`,
     border: `1px solid ${THEME.danger}40`,
     color: THEME.danger,
-    borderRadius: 12,
+    borderRadius: 18,
     marginBottom: 20,
     fontSize: 13,
   },
@@ -1140,16 +1140,16 @@ const styles = {
   categoryGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 8,
+    gap: 20,
   },
 
   categoryHeader: {
     display: 'flex',
     alignItems: 'center',
-    gap: 14,
+    gap: 20,
     padding: '14px 20px',
     backgroundColor: THEME.surfaceHover,
-    borderRadius: 12,
+    borderRadius: 18,
     borderLeft: '4px solid',
     marginBottom: 12,
   },
@@ -1166,7 +1166,7 @@ const styles = {
     color: THEME.textMuted,
     backgroundColor: THEME.surface,
     padding: '2px 8px',
-    borderRadius: 14,
+    borderRadius: 20,
     fontWeight: 500,
     fontFamily: THEME.fontMono,
   },
@@ -1189,7 +1189,7 @@ const styles = {
   taskMainRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: 14,
+    gap: 20,
   },
 
   taskCheckbox: {
@@ -1222,7 +1222,7 @@ const styles = {
   taskMeta: {
     display: 'flex',
     alignItems: 'center',
-    gap: 8,
+    gap: 20,
     flexWrap: 'wrap',
   },
 
@@ -1232,7 +1232,7 @@ const styles = {
     backgroundColor: `${THEME.primary}20`,
     color: THEME.primary,
     padding: '2px 8px',
-    borderRadius: 10,
+    borderRadius: 16,
     fontWeight: 500,
     textTransform: 'capitalize',
   },
@@ -1243,7 +1243,7 @@ const styles = {
     backgroundColor: `${THEME.secondary}20`,
     color: THEME.secondary,
     padding: '2px 8px',
-    borderRadius: 10,
+    borderRadius: 16,
     fontWeight: 500,
   },
 
@@ -1252,7 +1252,7 @@ const styles = {
     fontSize: 11,
     backgroundColor: `${THEME.textMuted}10`,
     padding: '2px 8px',
-    borderRadius: 10,
+    borderRadius: 16,
     fontWeight: 500,
   },
 
@@ -1261,7 +1261,7 @@ const styles = {
     backgroundColor: 'transparent',
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMuted,
-    borderRadius: 14,
+    borderRadius: 20,
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -1274,7 +1274,7 @@ const styles = {
     backgroundColor: 'transparent',
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMuted,
-    borderRadius: 14,
+    borderRadius: 20,
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -1287,7 +1287,7 @@ const styles = {
     backgroundColor: 'transparent',
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.danger,
-    borderRadius: 14,
+    borderRadius: 20,
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -1307,7 +1307,7 @@ const styles = {
     lineHeight: 1.6,
     padding: '10px',
     backgroundColor: THEME.surfaceHover,
-    borderRadius: 12,
+    borderRadius: 18,
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-word',
   },
@@ -1316,49 +1316,49 @@ const styles = {
     padding: 16,
     backgroundColor: THEME.surface,
     border: `2px solid ${THEME.primary}`,
-    borderRadius: 12,
+    borderRadius: 18,
   },
 
   editFormInline: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-    gap: 12,
+    gap: 18,
   },
 
   editInput: {
-    padding: '10px 14px',
+    padding: '22px 28px',
     backgroundColor: THEME.surfaceHover,
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
-    borderRadius: 12,
+    borderRadius: 18,
     fontSize: 12,
     fontFamily: THEME.fontBody,
   },
 
   editSelect: {
-    padding: '10px 14px',
+    padding: '22px 28px',
     backgroundColor: THEME.surfaceHover,
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
-    borderRadius: 12,
+    borderRadius: 18,
     fontSize: 12,
     fontFamily: THEME.fontBody,
   },
 
   editActions: {
     display: 'flex',
-    gap: 10,
+    gap: 22,
     gridColumn: '1 / -1',
     justifyContent: 'flex-end',
     marginTop: 12,
   },
 
   editSaveBtn: {
-    padding: '8px 16px',
+    padding: '14px 20px',
     backgroundColor: THEME.success,
     border: 'none',
     color: THEME.bg,
-    borderRadius: 12,
+    borderRadius: 18,
     cursor: 'pointer',
     fontSize: 12,
     fontWeight: 600,
@@ -1367,11 +1367,11 @@ const styles = {
   },
 
   editCancelBtn: {
-    padding: '8px 16px',
+    padding: '14px 20px',
     backgroundColor: 'transparent',
     border: `1px solid ${THEME.textMuted}40`,
     color: THEME.textMuted,
-    borderRadius: 12,
+    borderRadius: 18,
     cursor: 'pointer',
     fontSize: 12,
     fontWeight: 600,
@@ -1381,7 +1381,7 @@ const styles = {
 
   mainTabsContainer: {
     display: 'flex',
-    gap: 16,
+    gap: 22,
     marginTop: 20,
     borderBottom: `1px solid ${THEME.glassBorder}`,
     paddingBottom: 14,
@@ -1401,7 +1401,7 @@ const styles = {
     fontFamily: THEME.fontBody,
     display: 'flex',
     alignItems: 'center',
-    gap: 8,
+    gap: 20,
     position: 'relative',
   },
 
@@ -1443,7 +1443,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 12,
+    gap: 18,
   },
 
   checkmarkIcon: {
@@ -1459,7 +1459,7 @@ const styles = {
   approvalsList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 16,
+    gap: 22,
   },
 
   approvalCard: {
@@ -1473,7 +1473,7 @@ const styles = {
   },
 
   approvalRiskBanner: {
-    padding: '12px 16px',
+    padding: '18px 22px',
     backgroundColor: `${THEME.danger}15`,
     borderBottom: `1px solid ${THEME.danger}30`,
     color: THEME.danger,
@@ -1481,7 +1481,7 @@ const styles = {
     fontWeight: 500,
     display: 'flex',
     alignItems: 'center',
-    gap: 8,
+    gap: 20,
   },
 
   approvalContent: {
@@ -1501,7 +1501,7 @@ const styles = {
 
   approvalTaskMeta: {
     display: 'flex',
-    gap: 8,
+    gap: 20,
     alignItems: 'center',
   },
 
@@ -1510,30 +1510,30 @@ const styles = {
     backgroundColor: `${THEME.primary}20`,
     color: THEME.primary,
     padding: '2px 8px',
-    borderRadius: 10,
+    borderRadius: 16,
     fontWeight: 500,
   },
 
   approvalPriorityBadge: {
     fontSize: 11,
     padding: '4px 10px',
-    borderRadius: 10,
+    borderRadius: 16,
     fontWeight: 600,
     
   },
 
   approvalActions: {
     display: 'flex',
-    gap: 10,
+    gap: 22,
   },
 
   approveButton: {
     flex: 1,
-    padding: '8px 16px',
+    padding: '14px 20px',
     backgroundColor: THEME.success,
     border: 'none',
     color: THEME.bg,
-    borderRadius: 10,
+    borderRadius: 16,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 600,
@@ -1543,11 +1543,11 @@ const styles = {
 
   rejectButton: {
     flex: 1,
-    padding: '8px 16px',
+    padding: '14px 20px',
     backgroundColor: THEME.danger,
     border: 'none',
     color: THEME.bg,
-    borderRadius: 10,
+    borderRadius: 16,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 600,
@@ -1558,7 +1558,7 @@ const styles = {
   historyTable: {
     backgroundColor: THEME.surface,
     border: `1px solid ${THEME.glassBorder}`,
-    borderRadius: 8,
+    borderRadius: 20,
     overflow: 'hidden',
   },
 
@@ -1566,7 +1566,7 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: '2fr 1.5fr 1fr 1fr',
     gap: 0,
-    padding: '12px 16px',
+    padding: '18px 22px',
     backgroundColor: THEME.surfaceHover,
     borderBottom: `1px solid ${THEME.glassBorder}`,
     fontWeight: 600,
@@ -1580,7 +1580,7 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: '2fr 1.5fr 1fr 1fr',
     gap: 0,
-    padding: '12px 16px',
+    padding: '18px 22px',
     borderBottom: `1px solid ${THEME.glassBorder}`,
     alignItems: 'center',
     fontSize: 13,
@@ -1612,7 +1612,7 @@ const styles = {
   statusBadge: {
     display: 'inline-block',
     padding: '4px 10px',
-    borderRadius: 14,
+    borderRadius: 20,
     fontSize: 11,
     fontWeight: 600,
     
@@ -1621,7 +1621,7 @@ const styles = {
   taskTitleRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
+    gap: 22,
     flexWrap: 'wrap',
   },
 
@@ -1631,7 +1631,7 @@ const styles = {
     backgroundColor: `${THEME.danger}20`,
     color: THEME.danger,
     padding: '2px 8px',
-    borderRadius: 10,
+    borderRadius: 16,
     fontWeight: 600,
     whiteSpace: 'nowrap',
   },

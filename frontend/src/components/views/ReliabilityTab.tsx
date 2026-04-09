@@ -61,7 +61,7 @@ const RelStyles = () => (
         .rel-link:hover{text-decoration:underline;opacity:0.9}
         .rel-tab-btn{transition:all 0.2s}
         .rel-tab-btn:hover{opacity:0.85}
-        .rel-card{background:${THEME.surface};border:1px solid ${THEME.glassBorder};border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all 0.3s ease}
+        .rel-card{background:${THEME.surface};border:1px solid ${THEME.glassBorder};border-radius: 20px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all 0.3s ease}
         .rel-card:hover{box-shadow:0 0 0 3px rgba(99,102,241,0.08), 0 8px 24px rgba(0,0,0,0.06)}
         .rel-card-metric{padding:14px 18px 10px;background:radial-gradient(ellipse at 30% 50%, rgba(99,102,241,0.03) 0%, transparent 70%)}
         .rel-card-footer{padding:8px 18px 10px;border-top:1px solid ${THEME.glassBorder};font-size:12px;color:${THEME.textMuted}}
@@ -83,7 +83,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
         background: THEME.surface,
         border: `1px solid ${accent ? `${accent}25` : refreshing ? `${THEME.primary}35` : THEME.glassBorder}`,
         borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        boxShadow: '0 6px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05)',
         transition: 'border-color 0.3s', ...style,
     }}>
         {title && (
@@ -92,7 +92,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 flexShrink: 0, minHeight: 46,
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     {TIcon && <TIcon size={13} color={accent || (refreshing ? THEME.primary : THEME.textDim)} style={{ transition: 'color 0.3s' }} />}
                     <span style={{ fontSize: 11, fontWeight: 800, color: THEME.textMuted,  letterSpacing: '0.02em' }}>{title}</span>
                     {refreshing && <span style={{ fontSize: 9, color: THEME.primary, fontWeight: 700, animation: 'relPulse 1s ease-in-out infinite' }}>LIVE</span>}
@@ -110,7 +110,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
 const StatusBadge = ({ label, color, pulse }) => (
     <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
-        fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 5,
+        fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 16,
         background: `${color}12`, color, border: `1px solid ${color}22`, lineHeight: 1.2, whiteSpace: 'nowrap',
     }}>
         <span style={{ width: 5, height: 5, borderRadius: '50%', background: color,  flexShrink: 0, animation: pulse ? 'relFlash 1.5s ease-in-out infinite' : 'none' }} />
@@ -128,7 +128,7 @@ const LiveDot = ({ color = THEME.success, size = 7 }) => (
 const ChartTooltip = ({ active, payload, label, unit = '' }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surfaceRaised, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '10px 14px', fontSize: 11 }}>
+        <div style={{ background: THEME.surfaceRaised, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, padding: '22px 28px', fontSize: 11 }}>
             <div style={{ fontWeight: 800, color: THEME.textMain, marginBottom: 6, fontFamily: THEME.fontMono }}>{label}</div>
             {payload.map((p, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
@@ -271,8 +271,8 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
     useEffect(() => { const id = setInterval(() => setTick(t => t + 1), 1000); return () => clearInterval(id); }, []);
     return (
         <div style={{
-            display: 'flex', alignItems: 'center', gap: 12,
-            padding: '9px 16px', borderRadius: 10,
+            display: 'flex', alignItems: 'center', gap: 18,
+            padding: '9px 16px', borderRadius: 16,
             border: `1px solid ${error ? `${THEME.danger}30` : THEME.glassBorder}`,
             fontSize: 11, flexWrap: 'wrap',
         }}>
@@ -292,7 +292,7 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
                         const active = intervalSec === opt.value;
                         return (
                             <button key={opt.value} onClick={() => onIntervalChange(opt.value)} style={{
-                                padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
+                                padding: '3px 8px', borderRadius: 16, border: 'none', cursor: 'pointer',
                                 fontSize: 10, fontWeight: 700, transition: 'all 0.15s',
                                 background: active ? `${THEME.primary}20` : 'transparent',
                                 color: active ? THEME.primary : THEME.textDim,
@@ -305,7 +305,7 @@ const RefreshBar = ({ lastRefreshed, isRefreshing, intervalSec, onIntervalChange
             <div style={{ flex: 1 }} />
             <button onClick={onRefresh} disabled={isRefreshing} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px',
-                borderRadius: 7, border: 'none', cursor: isRefreshing ? 'default' : 'pointer',
+                borderRadius: 18, border: 'none', cursor: isRefreshing ? 'default' : 'pointer',
                 fontWeight: 700, fontSize: 11,
                 background: isRefreshing ? `${THEME.primary}10` : `${THEME.primary}18`,
                 color: THEME.primary, opacity: isRefreshing ? 0.7 : 1, transition: 'all 0.15s',
@@ -326,23 +326,23 @@ const AlertCard = ({ alert, onAcknowledge, expanded, onToggle, isNew }) => {
     const isCritical = alert.severity === 'critical';
     return (
         <div className={isNew ? 'rel-metric-flash' : ''} style={{
-            borderRadius: 12, overflow: 'hidden',
+            borderRadius: 18, overflow: 'hidden',
             background: alert.acknowledged ? THEME.surface : sev.bg,
             border: `1px solid ${alert.acknowledged ? `${THEME.grid}55` : sev.border}`,
             transition: 'all 0.2s', opacity: alert.acknowledged ? 0.65 : 1,
         }}>
-            <div onClick={onToggle} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', cursor: 'pointer' }}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${sev.color}12`, border: `1px solid ${sev.color}20` }}>
+            <div onClick={onToggle} style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '13px 16px', cursor: 'pointer' }}>
+                <div style={{ width: 34, height: 34, borderRadius: 16, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${sev.color}12`, border: `1px solid ${sev.color}20` }}>
                     <sev.icon size={15} color={sev.color} style={{ animation: isCritical && !alert.acknowledged ? 'relFlash 1.5s ease-in-out infinite' : 'none' }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 4 }}>
                         <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{alert.title}</span>
-                        {isNew && <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 14, background: `${THEME.primary}18`, color: THEME.primary, border: `1px solid ${THEME.primary}20` }}>NEW</span>}
-                        {alert.autoResolved && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 14, background: `${THEME.success}12`, color: THEME.success }}>AUTO-RESOLVED</span>}
-                        {alert.runbook && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 14, background: `${THEME.info}10`, color: THEME.info, border: `1px solid ${THEME.info}18`, display: 'inline-flex', alignItems: 'center', gap: 3 }}><BookOpen size={8} />RUNBOOK</span>}
+                        {isNew && <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 20, background: `${THEME.primary}18`, color: THEME.primary, border: `1px solid ${THEME.primary}20` }}>NEW</span>}
+                        {alert.autoResolved && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 20, background: `${THEME.success}12`, color: THEME.success }}>AUTO-RESOLVED</span>}
+                        {alert.runbook && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 20, background: `${THEME.info}10`, color: THEME.info, border: `1px solid ${THEME.info}18`, display: 'inline-flex', alignItems: 'center', gap: 3 }}><BookOpen size={8} />RUNBOOK</span>}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
                         <StatusBadge label={sev.label} color={sev.color} pulse={isCritical && !alert.acknowledged} />
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, color: THEME.textDim }}><CatIcon size={10} />{alert.category}</span>
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, color: THEME.textDim }}><Clock size={10} />{fmtTime(alert.created_at)}</span>
@@ -360,18 +360,18 @@ const AlertCard = ({ alert, onAcknowledge, expanded, onToggle, isNew }) => {
             {expanded && (
                 <div style={{ padding: '0 16px 14px 64px', animation: 'relFadeIn 0.2s ease', borderTop: `1px solid ${THEME.grid}28` }}>
                     <p style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6, margin: '12px 0 10px' }}>{alert.message}</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
                         {alert.source && (
-                            <span className="mono" style={{ fontSize: 10, padding: '3px 9px', borderRadius: 5, background: `${THEME.primary}0a`, border: `1px solid ${THEME.primary}12`, color: THEME.primary }}>{alert.source}</span>
+                            <span className="mono" style={{ fontSize: 10, padding: '3px 9px', borderRadius: 16, background: `${THEME.primary}0a`, border: `1px solid ${THEME.primary}12`, color: THEME.primary }}>{alert.source}</span>
                         )}
                         {alert.rootCauseGroup && (
-                            <span style={{ fontSize: 10, padding: '3px 9px', borderRadius: 5, background: `${THEME.secondary}0a`, border: `1px solid ${THEME.secondary}15`, color: THEME.secondary, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            <span style={{ fontSize: 10, padding: '3px 9px', borderRadius: 16, background: `${THEME.secondary}0a`, border: `1px solid ${THEME.secondary}15`, color: THEME.secondary, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                 <Layers size={9} />group: {alert.rootCauseGroup}
                             </span>
                         )}
                         {alert.runbook && (
                             <a href={alert.runbook} target="_blank" rel="noreferrer" className="rel-link" onClick={e => e.stopPropagation()} style={{
-                                fontSize: 10, padding: '3px 9px', borderRadius: 5,
+                                fontSize: 10, padding: '3px 9px', borderRadius: 16,
                                 background: `${THEME.info}0a`, border: `1px solid ${THEME.info}15`, color: THEME.info,
                                 textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4,
                             }}>
@@ -380,7 +380,7 @@ const AlertCard = ({ alert, onAcknowledge, expanded, onToggle, isNew }) => {
                         )}
                         {!alert.acknowledged && (
                             <button onClick={(e) => { e.stopPropagation(); onAcknowledge(alert.id); }} style={{
-                                padding: '5px 14px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                                padding: '5px 14px', borderRadius: 18, border: 'none', cursor: 'pointer',
                                 fontSize: 11, fontWeight: 700, background: `${THEME.success}15`, color: THEME.success,
                                 display: 'inline-flex', alignItems: 'center', gap: 5, transition: 'all 0.15s',
                             }}
@@ -421,13 +421,13 @@ const UptimeHeatmap = ({ days }) => {
                 ))}
             </div>
             {hoveredDay && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}55`, fontSize: 11 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '20px 24px', borderRadius: 20, background: THEME.surface, border: `1px solid ${THEME.grid}55`, fontSize: 11 }}>
                     <span className="mono" style={{ color: THEME.textDim }}>{hoveredDay.date}</span>
                     <StatusBadge label={hoveredDay.status === 'up' ? 'Operational' : hoveredDay.status === 'degraded' ? 'Degraded' : 'Outage'} color={statusColor(hoveredDay.status)} />
                     <span style={{ fontWeight: 800, color: THEME.textMain, fontFamily: THEME.fontMono }}>{hoveredDay.uptime.toFixed(2)}%</span>
                 </div>
             )}
-            <div style={{ display: 'flex', gap: 14, fontSize: 10, color: THEME.textDim, marginTop: hoveredDay ? 8 : 0 }}>
+            <div style={{ display: 'flex', gap: 20, fontSize: 10, color: THEME.textDim, marginTop: hoveredDay ? 8 : 0 }}>
                 {[{ l: 'Operational', c: THEME.success }, { l: 'Degraded', c: THEME.warning }, { l: 'Outage', c: THEME.danger }].map(x => (
                     <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                         <span style={{ width: 8, height: 8, borderRadius: 2, background: x.c, opacity: 0.7 }} />{x.l}
@@ -450,7 +450,7 @@ const OnCallWidget = () => {
             <Panel title="On-Call Rotation" icon={Users} accent={THEME.primary}>
                 <div style={{
                     padding: '24px 16px', textAlign: 'center',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20
                 }}>
                     <Users size={28} color={THEME.textDim} />
                     <div>
@@ -466,15 +466,15 @@ const OnCallWidget = () => {
 
     return (
         <Panel title="On-Call Rotation" icon={Users} accent={THEME.primary}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {MOCK_ONCALL.map((p, i) => (
                     <div key={i} style={{
-                        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
-                        borderRadius: 10, background: i === 0 ? `${THEME.success}06` : THEME.surface,
+                        display: 'flex', alignItems: 'center', gap: 22, padding: '20px 24px',
+                        borderRadius: 16, background: i === 0 ? `${THEME.success}06` : THEME.surface,
                         border: `1px solid ${i === 0 ? `${THEME.success}18` : `${THEME.grid}40`}`,
                     }}>
                         <div style={{
-                            width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+                            width: 32, height: 32, borderRadius: 16, flexShrink: 0,
                             background: `linear-gradient(135deg, ${THEME.primary}30, ${THEME.secondary}20)`,
                             border: `1px solid ${THEME.primary}20`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -509,7 +509,7 @@ const NoiseReductionPanel = ({ alerts }) => {
     const scoreColor = score >= 60 ? THEME.success : score >= 35 ? THEME.warning : THEME.danger;
     return (
         <Panel title="Alert Noise Reduction" icon={Percent} accent={scoreColor}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                 <div style={{ position: 'relative', width: 72, height: 72, flexShrink: 0 }}>
                     <svg width="72" height="72" style={{ transform: 'rotate(-90deg)' }}>
                         <circle cx="36" cy="36" r="28" fill="none" stroke={`${scoreColor}15`} strokeWidth="6" />
@@ -541,7 +541,7 @@ const NoiseReductionPanel = ({ alerts }) => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const AlertFatiguePanel = ({ data }) => (
     <Panel title="Alert Fatigue Score (30d)" icon={Activity} rightNode={
-        <div style={{ display: 'flex', gap: 10, fontSize: 10, color: THEME.textDim }}>
+        <div style={{ display: 'flex', gap: 22, fontSize: 10, color: THEME.textDim }}>
             {[{ l: 'Actionable', c: THEME.success }, { l: 'Noise', c: THEME.danger }].map(x => (
                 <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ width: 8, height: 3, borderRadius: 1, background: x.c }} />{x.l}
@@ -600,7 +600,7 @@ const MttrTrendPanel = ({ data }) => (
                 </LineChart>
             </ResponsiveContainer>
         </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 8, fontSize: 10, color: THEME.textDim, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 20, marginTop: 8, fontSize: 10, color: THEME.textDim, alignItems: 'center' }}>
             <span style={{ width: 20, height: 1, background: `${THEME.warning}60`, borderTop: '1px dashed', display: 'inline-block' }} />
             <span>SLA target (16m)</span>
         </div>
@@ -627,17 +627,17 @@ const AlertGroupView = ({ alerts }) => {
     }, [alerts]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {groups.map((g, idx) => {
                 const sev = getSev(g.severity);
                 const isExpanded = expandedGroup === g.key;
                 return (
-                    <div key={g.key} style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${isExpanded ? sev.border : `${THEME.grid}45`}`, transition: 'all 0.2s' }}>
+                    <div key={g.key} style={{ borderRadius: 18, overflow: 'hidden', border: `1px solid ${isExpanded ? sev.border : `${THEME.grid}45`}`, transition: 'all 0.2s' }}>
                         <div onClick={() => setExpandedGroup(isExpanded ? null : g.key)} style={{
-                            display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: 18, padding: '18px 22px', cursor: 'pointer',
                             background: isExpanded ? sev.bg : THEME.surface,
                         }}>
-                            <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${sev.color}12` }}>
+                            <div style={{ width: 28, height: 28, borderRadius: 20, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${sev.color}12` }}>
                                 <Layers size={13} color={sev.color} />
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
@@ -651,11 +651,11 @@ const AlertGroupView = ({ alerts }) => {
                             </div>
                         </div>
                         {isExpanded && (
-                            <div style={{ padding: '8px 12px', background: THEME.surface, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <div style={{ padding: '20px 24px', background: THEME.surface, display: 'flex', flexDirection: 'column', gap: 4 }}>
                                 {g.items.map(item => {
                                     const is = getSev(item.severity);
                                     return (
-                                        <div key={item.id} className="rel-slide-in" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}35` }}>
+                                        <div key={item.id} className="rel-slide-in" style={{ display: 'flex', alignItems: 'center', gap: 22, padding: '8px 10px', borderRadius: 20, background: THEME.surface, border: `1px solid ${THEME.grid}35` }}>
                                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: is.color, flexShrink: 0 }} />
                                             <span style={{ fontSize: 11, color: THEME.textMuted, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
                                             <span style={{ fontSize: 10, color: THEME.textDim, fontFamily: THEME.fontMono }}>{fmtTime(item.created_at)}</span>
@@ -685,8 +685,8 @@ const SloBurnRatePanel = ({ burnData }) => {
         return (
             <div style={{
                 padding: '40px 24px', textAlign: 'center', background: THEME.surface,
-                border: `1px solid ${THEME.grid}`, borderRadius: 12,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12
+                border: `1px solid ${THEME.grid}`, borderRadius: 18,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18
             }}>
                 <Gauge size={32} color={THEME.textDim} />
                 <div>
@@ -700,14 +700,14 @@ const SloBurnRatePanel = ({ burnData }) => {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
             {/* SLO selector row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 22 }}>
                 {MOCK_SLOs.map((s, i) => {
                     const bc = s.burnRate6h > 3 ? THEME.danger : s.burnRate6h > 1.5 ? THEME.warning : THEME.success;
                     return (
                         <div key={i} onClick={() => setSelectedSlo(i)} style={{
-                            padding: '12px 14px', borderRadius: 12, cursor: 'pointer', transition: 'all 0.2s',
+                            padding: '22px 28px', borderRadius: 18, cursor: 'pointer', transition: 'all 0.2s',
                             background: selectedSlo === i ? `${bc}0a` : THEME.surface,
                             border: `1px solid ${selectedSlo === i ? `${bc}30` : `${THEME.grid}45`}`,
                         }}>
@@ -726,17 +726,17 @@ const SloBurnRatePanel = ({ burnData }) => {
             </div>
 
             {/* Burn-rate detail */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                 <Panel title={`Error Budget — ${slo.name}`} icon={Gauge} accent={burnColor}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        <div style={{ display: 'flex', align: 'center', gap: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        <div style={{ display: 'flex', align: 'center', gap: 22 }}>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                                     <span style={{ fontSize: 11, color: THEME.textDim }}>Budget Consumed</span>
                                     <span style={{ fontSize: 11, fontWeight: 800, color: burnColor, fontFamily: THEME.fontMono }}>{100 - slo.budgetRemaining}%</span>
                                 </div>
-                                <div style={{ height: 8, borderRadius: 14, background: `${THEME.grid}40`, overflow: 'hidden' }}>
-                                    <div className={slo.alert ? 'rel-burn-critical' : ''} style={{ width: `${100 - slo.budgetRemaining}%`, height: '100%', borderRadius: 14, background: `linear-gradient(90deg, ${burnColor}, ${burnColor}cc)`, transition: 'width 0.6s ease' }} />
+                                <div style={{ height: 8, borderRadius: 20, background: `${THEME.grid}40`, overflow: 'hidden' }}>
+                                    <div className={slo.alert ? 'rel-burn-critical' : ''} style={{ width: `${100 - slo.budgetRemaining}%`, height: '100%', borderRadius: 20, background: `linear-gradient(90deg, ${burnColor}, ${burnColor}cc)`, transition: 'width 0.6s ease' }} />
                                 </div>
                             </div>
                         </div>
@@ -746,16 +746,16 @@ const SloBurnRatePanel = ({ burnData }) => {
                         ].map((r, i) => {
                             const rc = r.value > r.warn * 2 ? THEME.danger : r.value > r.warn ? THEME.warning : THEME.success;
                             return (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 20, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
                                     <span style={{ fontSize: 11, color: THEME.textMuted }}>{r.label}</span>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                         <span style={{ fontSize: 14, fontWeight: 800, color: rc, fontFamily: THEME.fontMono }}>{r.value}×</span>
                                         <StatusBadge label={r.value > r.warn * 2 ? 'Critical' : r.value > r.warn ? 'Elevated' : 'Normal'} color={rc} pulse={r.value > r.warn * 2} />
                                     </div>
                                 </div>
                             );
                         })}
-                        <div style={{ padding: '10px 12px', borderRadius: 8, background: `${burnColor}06`, border: `1px solid ${burnColor}15`, fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>
+                        <div style={{ padding: '20px 24px', borderRadius: 20, background: `${burnColor}06`, border: `1px solid ${burnColor}15`, fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>
                             {slo.alert ? `⚠ At current burn rate, error budget will be exhausted in ${Math.round(slo.budgetRemaining / slo.burnRate6h * 10)}h.` : `✓ Error budget on track. ${slo.budgetRemaining}% remaining for the window.`}
                         </div>
                     </div>
@@ -780,7 +780,7 @@ const SloBurnRatePanel = ({ burnData }) => {
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
-                    <div style={{ display: 'flex', gap: 8, fontSize: 10, color: THEME.textDim, alignItems: 'center', marginTop: 4 }}>
+                    <div style={{ display: 'flex', gap: 20, fontSize: 10, color: THEME.textDim, alignItems: 'center', marginTop: 4 }}>
                         <span style={{ width: 20, borderTop: '1px dashed', borderColor: `${THEME.danger}45`, display: 'inline-block' }} />
                         <span>80% budget threshold</span>
                     </div>
@@ -800,14 +800,14 @@ const ChangeFreezePanel = () => {
         return (
             <Panel title="Change Freeze Windows" icon={Snowflake} accent={THEME.info} rightNode={
                 <button onClick={() => setShowAdd(!showAdd)} style={{
-                    padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                    padding: '4px 10px', borderRadius: 18, border: 'none', cursor: 'pointer',
                     fontSize: 10, fontWeight: 700, background: `${THEME.primary}15`, color: THEME.primary,
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                 }}>+ Add Window</button>
             }>
                 <div style={{
                     padding: '32px 24px', textAlign: 'center',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20
                 }}>
                     <Snowflake size={28} color={THEME.textDim} />
                     <div>
@@ -824,21 +824,21 @@ const ChangeFreezePanel = () => {
     return (
         <Panel title="Change Freeze Windows" icon={Snowflake} accent={THEME.info} rightNode={
             <button onClick={() => setShowAdd(!showAdd)} style={{
-                padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                padding: '4px 10px', borderRadius: 18, border: 'none', cursor: 'pointer',
                 fontSize: 10, fontWeight: 700, background: `${THEME.primary}15`, color: THEME.primary,
                 display: 'inline-flex', alignItems: 'center', gap: 4,
             }}>+ Add Window</button>
         }>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {MOCK_FREEZE_WINDOWS.map(fw => (
                     <div key={fw.id} style={{
-                        padding: '12px 14px', borderRadius: 10,
+                        padding: '22px 28px', borderRadius: 16,
                         background: fw.active ? `${fw.color}08` : THEME.surface,
                         border: `1px solid ${fw.active ? `${fw.color}28` : `${THEME.grid}40`}`,
                         transition: 'all 0.2s',
                     }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                 <Snowflake size={12} color={fw.color} style={{ flexShrink: 0 }} />
                                 <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{fw.label}</span>
                             </div>
@@ -854,7 +854,7 @@ const ChangeFreezePanel = () => {
                     </div>
                 ))}
                 {showAdd && (
-                    <div className="rel-frost" style={{ padding: '12px 14px', borderRadius: 10, background: `${THEME.primary}06`, border: `1px dashed ${THEME.primary}30` }}>
+                    <div className="rel-frost" style={{ padding: '22px 28px', borderRadius: 16, background: `${THEME.primary}06`, border: `1px dashed ${THEME.primary}30` }}>
                         <div style={{ fontSize: 11, color: THEME.textDim, textAlign: 'center', padding: '8px 0' }}>
                             Connect to your change management system to create freeze windows programmatically.
                         </div>
@@ -995,7 +995,7 @@ const ReliabilityTab = () => {
         const active = activeTab === id;
         return (
             <button className="rel-tab-btn" onClick={() => setActiveTab(id)} style={{
-                padding: '9px 18px', borderRadius: 8, cursor: 'pointer', border: 'none',
+                padding: '9px 18px', borderRadius: 20, cursor: 'pointer', border: 'none',
                 display: 'inline-flex', alignItems: 'center', gap: 7,
                 fontWeight: 700, fontSize: 12, lineHeight: 1, whiteSpace: 'nowrap',
                 background: active ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary})` : THEME.surface,
@@ -1006,7 +1006,7 @@ const ReliabilityTab = () => {
                 <Icon size={13} />
                 {label}
                 {count != null && count > 0 && (
-                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.danger}20`, color: active ? '#fff' : THEME.danger }}>{count}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 16, background: active ? 'rgba(255,255,255,0.2)' : `${THEME.danger}20`, color: active ? '#fff' : THEME.danger }}>{count}</span>
                 )}
             </button>
         );
@@ -1016,7 +1016,7 @@ const ReliabilityTab = () => {
         const active = filter === id;
         return (
             <button onClick={() => setFilter(id)} style={{
-                padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                padding: '5px 12px', borderRadius: 18, border: 'none', cursor: 'pointer',
                 fontSize: 11, fontWeight: 600, transition: 'all 0.15s',
                 background: active ? `${color}18` : 'transparent',
                 color: active ? color : THEME.textDim,
@@ -1032,7 +1032,7 @@ const ReliabilityTab = () => {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 40 }}>
                 <RelStyles />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 18 }}>
                     {[0, 1, 2, 3, 4].map(i => <div key={i} style={{ height: 96, borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.4, animation: 'relPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />)}
                 </div>
             </div>
@@ -1053,26 +1053,26 @@ const ReliabilityTab = () => {
 
             {/* Tab row */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 20 }}>
                     <TabBtn id="alerts"    label="Alert Feed"     icon={Bell}    count={counts.active} />
                     <TabBtn id="uptime"    label="Uptime & SLA"   icon={Shield} />
                     <TabBtn id="slo"       label="SLO Burn Rate"  icon={Gauge}   count={MOCK_SLOs.filter(s => s.alert).length} />
                     <TabBtn id="incidents" label="Incidents"      icon={History} count={incidents.length} />
                     <TabBtn id="ops"       label="Ops Center"     icon={Settings} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: THEME.textDim }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, fontSize: 11, color: THEME.textDim }}>
                     <LiveDot color={counts.critical > 0 ? THEME.danger : THEME.success} size={6} />
                     <span>{counts.critical > 0 ? `${counts.critical} critical` : 'All clear'}</span>
                 </div>
             </div>
 
             {/* Metric strip */}
-            <div className="rel-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+            <div className="rel-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 18 }}>
                 {metricCards.map((m, i) => (
                     <div key={i} className={`rel-card ${isRefreshing ? 'rel-metric-flash' : ''}`}>
                         <div className="rel-card-metric">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 0' }}>
-                                <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}12`, border: `1px solid ${m.color}20` }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '6px 0' }}>
+                                <div style={{ width: 42, height: 42, borderRadius: 18, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}12`, border: `1px solid ${m.color}20` }}>
                                     <m.icon size={18} color={m.color} />
                                 </div>
                                 <div>
@@ -1091,7 +1091,7 @@ const ReliabilityTab = () => {
             {/* ══════════════════ ALERTS ══════════════════ */}
             {activeTab === 'alerts' && (
                 <div className="rel-stagger" style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', gap: 18, alignItems: 'start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                         {/* Toolbar */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -1102,7 +1102,7 @@ const ReliabilityTab = () => {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 {/* View toggle */}
-                                <div style={{ display: 'flex', background: THEME.surface, borderRadius: 7, overflow: 'hidden', border: `1px solid ${THEME.grid}50` }}>
+                                <div style={{ display: 'flex', background: THEME.surface, borderRadius: 18, overflow: 'hidden', border: `1px solid ${THEME.grid}50` }}>
                                     {[{ id: 'feed', icon: Bell, label: 'Feed' }, { id: 'grouped', icon: LayoutGrid, label: 'Grouped' }].map(v => (
                                         <button key={v.id} onClick={() => setAlertView(v.id)} style={{
                                             padding: '4px 10px', border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700,
@@ -1114,14 +1114,14 @@ const ReliabilityTab = () => {
                                         </button>
                                     ))}
                                 </div>
-                                <button onClick={() => setShowAcked(!showAcked)} style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 600, background: showAcked ? `${THEME.textDim}15` : 'transparent', color: THEME.textDim, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <button onClick={() => setShowAcked(!showAcked)} style={{ padding: '4px 10px', borderRadius: 16, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 600, background: showAcked ? `${THEME.textDim}15` : 'transparent', color: THEME.textDim, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                     {showAcked ? <Eye size={10} /> : <EyeOff size={10} />}Ack'd
                                 </button>
-                                <button onClick={() => setSortBy(s => s === 'time' ? 'severity' : 'time')} style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 600, color: THEME.textDim, background: `${THEME.textDim}10`, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <button onClick={() => setSortBy(s => s === 'time' ? 'severity' : 'time')} style={{ padding: '4px 10px', borderRadius: 16, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 600, color: THEME.textDim, background: `${THEME.textDim}10`, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                     <ArrowDown size={10} />{sortBy === 'time' ? 'Time' : 'Severity'}
                                 </button>
                                 {counts.active > 0 && (
-                                    <button onClick={handleAcknowledgeAll} style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, color: THEME.success, background: `${THEME.success}10`, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                    <button onClick={handleAcknowledgeAll} style={{ padding: '4px 10px', borderRadius: 16, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, color: THEME.success, background: `${THEME.success}10`, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                         <CheckCheck size={10} />Ack All
                                     </button>
                                 )}
@@ -1132,7 +1132,7 @@ const ReliabilityTab = () => {
                         <div className="rel-scrollbar" style={{ maxHeight: 640, overflowY: 'auto', paddingRight: 2 }}>
                             {alertView === 'grouped'
                                 ? <AlertGroupView alerts={processedAlerts} />
-                                : <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                : <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                     {processedAlerts.length === 0
                                         ? <div style={{ padding: '60px 20px', textAlign: 'center', color: THEME.textDim, fontSize: 12 }}>No alerts match your filters.</div>
                                         : processedAlerts.map(alert => (
@@ -1149,10 +1149,10 @@ const ReliabilityTab = () => {
                     </div>
 
                     {/* Right sidebar */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                         {/* Alert trend */}
                         <Panel title="Alert Trend (24h)" icon={BarChart3} refreshing={refreshingPanels.has('trend')} rightNode={
-                            <div style={{ display: 'flex', gap: 10, fontSize: 10, color: THEME.textDim }}>
+                            <div style={{ display: 'flex', gap: 22, fontSize: 10, color: THEME.textDim }}>
                                 {[{ l: 'Critical', c: THEME.danger }, { l: 'Warning', c: THEME.warning }, { l: 'Info', c: THEME.info }].map(x => (
                                     <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                         <span style={{ width: 8, height: 3, borderRadius: 1, background: x.c }} />{x.l}
@@ -1182,7 +1182,7 @@ const ReliabilityTab = () => {
 
                         {/* Severity distribution */}
                         <Panel title="Severity Distribution" icon={BarChart3} refreshing={refreshingPanels.has('severity')}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                                 {[
                                     { label: 'Critical', count: alerts.filter(a => a.severity === 'critical').length, active: counts.critical, color: THEME.danger },
                                     { label: 'Warning',  count: alerts.filter(a => a.severity === 'warning').length,  active: counts.warning,  color: THEME.warning },
@@ -1193,14 +1193,14 @@ const ReliabilityTab = () => {
                                         <div key={i}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
                                                 <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted }}>{s.label}</span>
-                                                <div style={{ display: 'flex', gap: 8, fontSize: 10 }}>
+                                                <div style={{ display: 'flex', gap: 20, fontSize: 10 }}>
                                                     <span style={{ color: s.color, fontWeight: 800, fontFamily: THEME.fontMono }}>{s.active} active</span>
                                                     <span style={{ color: THEME.textDim }}>{s.count} total</span>
                                                 </div>
                                             </div>
-                                            <div style={{ display: 'flex', gap: 2, height: 5, borderRadius: 10, overflow: 'hidden', background: `${THEME.grid}40` }}>
-                                                <div className="rel-bar-animate" style={{ width: `${(s.active / maxC) * 100}%`, background: s.color, borderRadius: 10, animationDelay: `${i * 0.1}s` }} />
-                                                <div className="rel-bar-animate" style={{ width: `${((s.count - s.active) / maxC) * 100}%`, background: `${s.color}28`, borderRadius: 10, animationDelay: `${i * 0.1 + 0.1}s` }} />
+                                            <div style={{ display: 'flex', gap: 2, height: 5, borderRadius: 16, overflow: 'hidden', background: `${THEME.grid}40` }}>
+                                                <div className="rel-bar-animate" style={{ width: `${(s.active / maxC) * 100}%`, background: s.color, borderRadius: 16, animationDelay: `${i * 0.1}s` }} />
+                                                <div className="rel-bar-animate" style={{ width: `${((s.count - s.active) / maxC) * 100}%`, background: `${s.color}28`, borderRadius: 16, animationDelay: `${i * 0.1 + 0.1}s` }} />
                                             </div>
                                         </div>
                                     );
@@ -1210,18 +1210,18 @@ const ReliabilityTab = () => {
 
                         {/* Response targets */}
                         <Panel title="Response Targets" icon={Timer}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {[
                                     { sev: 'Critical', target: '5m', actual: '3m', met: true, color: THEME.danger },
                                     { sev: 'Warning',  target: '30m', actual: '22m', met: true, color: THEME.warning },
                                     { sev: 'Info',     target: '4h', actual: '1.5h', met: true, color: THEME.info },
                                 ].map((r, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 20, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                             <span style={{ width: 5, height: 5, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
                                             <span style={{ fontSize: 11, fontWeight: 700, color: THEME.textMain }}>{r.sev}</span>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 22, fontSize: 11 }}>
                                             <span style={{ color: THEME.textDim }}>target: <strong style={{ color: THEME.textMuted, fontFamily: THEME.fontMono }}>{r.target}</strong></span>
                                             <span style={{ color: THEME.textDim }}>actual: <strong style={{ color: r.met ? THEME.success : THEME.danger, fontFamily: THEME.fontMono }}>{r.actual}</strong></span>
                                             {r.met ? <CheckCircle size={11} color={THEME.success} /> : <XCircle size={11} color={THEME.danger} />}
@@ -1244,7 +1244,7 @@ const ReliabilityTab = () => {
                             { label: 'Error Budget',  value: '63%', target: 'remaining this month', icon: Gauge, color: THEME.warning },
                         ].map((s, i) => (
                             <Panel key={i} refreshing={refreshingPanels.has('sla')}>
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '10px 0' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, padding: '10px 0' }}>
                                     <div style={{ width: 44, height: 44, borderRadius: 13, background: `${s.color}10`, border: `1px solid ${s.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <s.icon size={20} color={s.color} />
                                     </div>
@@ -1274,7 +1274,7 @@ const ReliabilityTab = () => {
                                         {downtimeDays.map((d, i) => {
                                             const c = d.status === 'outage' ? THEME.danger : THEME.warning;
                                             return (
-                                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 18px', borderBottom: `1px solid ${THEME.grid}22` }}>
+                                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '11px 18px', borderBottom: `1px solid ${THEME.grid}22` }}>
                                                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: c, flexShrink: 0 }} />
                                                     <span className="mono" style={{ fontSize: 10, color: THEME.textDim, width: 70, flexShrink: 0 }}>{d.date}</span>
                                                     <StatusBadge label={d.status === 'outage' ? 'Outage' : 'Degraded'} color={c} />
@@ -1300,17 +1300,17 @@ const ReliabilityTab = () => {
 
             {/* ══════════════════ INCIDENTS ══════════════════ */}
             {activeTab === 'incidents' && (
-                <div className="rel-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div className="rel-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     {/* Summary strip */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, borderRadius: 12, background: THEME.surface, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, borderRadius: 18, background: THEME.surface, overflow: 'hidden', border: `1px solid ${THEME.glassBorder}` }}>
                         {[
                             { label: 'Total Incidents', value: String(incidents.length), color: THEME.primary, icon: AlertCircle },
                             { label: 'Critical', value: String(incidents.filter(i => i.severity === 'critical').length), color: THEME.danger, icon: Flame },
                             { label: 'Avg Duration', value: '16.8m', color: THEME.warning, icon: Timer },
                             { label: 'Resolved', value: String(incidents.length), color: THEME.success, icon: CheckCircle },
                         ].map((s, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 18px', borderRight: i < 3 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
-                                <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 22, padding: '13px 18px', borderRight: i < 3 ? `1px solid ${THEME.glassBorder}` : 'none' }}>
+                                <div style={{ width: 26, height: 26, borderRadius: 20, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}10` }}>
                                     <s.icon size={12} color={s.color} />
                                 </div>
                                 <div>
@@ -1327,19 +1327,19 @@ const ReliabilityTab = () => {
                             const sev = getSev(inc.severity);
                             const rcaTag = RCA_TAGS.find(t => t.tag === inc.rca_tag);
                             return (
-                                <div key={inc.id} style={{ display: 'flex', gap: 14, position: 'relative' }}>
+                                <div key={inc.id} style={{ display: 'flex', gap: 20, position: 'relative' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 18, flexShrink: 0 }}>
                                         <div style={{ width: 12, height: 12, borderRadius: '50%', background: sev.color, border: `2px solid ${THEME.bg}`,  flexShrink: 0, zIndex: 1 }} />
                                         {i < incidents.length - 1 && <div style={{ width: 2, flex: 1, background: `${THEME.grid}60`, minHeight: 20 }} />}
                                     </div>
-                                    <div style={{ flex: 1, marginBottom: 14, padding: '14px 18px', borderRadius: 12, background: THEME.surface, border: `1px solid ${THEME.glassBorder}` }}>
+                                    <div style={{ flex: 1, marginBottom: 14, padding: '20px 24px', borderRadius: 18, background: THEME.surface, border: `1px solid ${THEME.glassBorder}` }}>
                                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
                                             <div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-                                                    <span className="mono" style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, background: `${THEME.primary}08`, padding: '2px 8px', borderRadius: 14, border: `1px solid ${THEME.primary}12` }}>{inc.id}</span>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 6, flexWrap: 'wrap' }}>
+                                                    <span className="mono" style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim, background: `${THEME.primary}08`, padding: '2px 8px', borderRadius: 20, border: `1px solid ${THEME.primary}12` }}>{inc.id}</span>
                                                     <StatusBadge label={sev.label} color={sev.color} />
                                                     <StatusBadge label="Resolved" color={THEME.success} />
-                                                    {rcaTag && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 14, background: `${rcaTag.color}10`, color: rcaTag.color, border: `1px solid ${rcaTag.color}20`, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Hash size={8} />{inc.rca_tag}</span>}
+                                                    {rcaTag && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: `${rcaTag.color}10`, color: rcaTag.color, border: `1px solid ${rcaTag.color}20`, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Hash size={8} />{inc.rca_tag}</span>}
                                                 </div>
                                                 <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{inc.title}</div>
                                             </div>
@@ -1348,18 +1348,18 @@ const ReliabilityTab = () => {
                                                 <div style={{ fontSize: 9, color: THEME.textDim, marginTop: 2 }}>duration</div>
                                             </div>
                                         </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
-                                            <div style={{ padding: '9px 12px', borderRadius: 8, background: `${sev.color}06`, border: `1px solid ${sev.color}12` }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 10 }}>
+                                            <div style={{ padding: '9px 12px', borderRadius: 20, background: `${sev.color}06`, border: `1px solid ${sev.color}12` }}>
                                                 <div style={{ fontSize: 8, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 4 }}>Impact</div>
                                                 <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>{inc.impact}</div>
                                             </div>
-                                            <div style={{ padding: '9px 12px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
+                                            <div style={{ padding: '9px 12px', borderRadius: 20, background: THEME.surface, border: `1px solid ${THEME.grid}40` }}>
                                                 <div style={{ fontSize: 8, fontWeight: 700, color: THEME.textDim,  letterSpacing: '0.02em', marginBottom: 4 }}>Root Cause</div>
                                                 <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.5 }}>{inc.root_cause}</div>
                                             </div>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                                            <div style={{ display: 'flex', gap: 14, fontSize: 10, color: THEME.textDim }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
+                                            <div style={{ display: 'flex', gap: 20, fontSize: 10, color: THEME.textDim }}>
                                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><AlertTriangle size={9} color={sev.color} />Started: {new Date(inc.started).toLocaleString()}</span>
                                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><CheckCircle size={9} color={THEME.success} />Resolved: {new Date(inc.resolved).toLocaleString()}</span>
                                             </div>
@@ -1389,16 +1389,16 @@ const ReliabilityTab = () => {
                         <ChangeFreezePanel />
                         <NoiseReductionPanel alerts={alerts} />
                         <Panel title="Alert Runbook Coverage" icon={BookOpen} accent={THEME.success}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {alerts.map(a => {
                                     const sev = getSev(a.severity);
                                     return (
-                                        <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}35` }}>
+                                        <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 22, padding: '8px 10px', borderRadius: 20, background: THEME.surface, border: `1px solid ${THEME.grid}35` }}>
                                             <span style={{ width: 5, height: 5, borderRadius: '50%', background: sev.color, flexShrink: 0 }} />
                                             <span style={{ flex: 1, fontSize: 11, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title}</span>
                                             {a.runbook
-                                                ? <a href={a.runbook} target="_blank" rel="noreferrer" style={{ fontSize: 9, color: THEME.success, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3, background: `${THEME.success}10`, padding: '2px 7px', borderRadius: 4 }}><Link2 size={8} />Runbook</a>
-                                                : <span style={{ fontSize: 9, color: THEME.danger, background: `${THEME.danger}10`, padding: '2px 7px', borderRadius: 14, display: 'inline-flex', alignItems: 'center', gap: 3 }}><AlertOctagon size={8} />Missing</span>
+                                                ? <a href={a.runbook} target="_blank" rel="noreferrer" style={{ fontSize: 9, color: THEME.success, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3, background: `${THEME.success}10`, padding: '2px 7px', borderRadius: 16 }}><Link2 size={8} />Runbook</a>
+                                                : <span style={{ fontSize: 9, color: THEME.danger, background: `${THEME.danger}10`, padding: '2px 7px', borderRadius: 20, display: 'inline-flex', alignItems: 'center', gap: 3 }}><AlertOctagon size={8} />Missing</span>
                                             }
                                         </div>
                                     );

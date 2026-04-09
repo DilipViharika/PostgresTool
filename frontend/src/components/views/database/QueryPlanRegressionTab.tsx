@@ -18,33 +18,33 @@ const Styles = () => (
         @keyframes qrFade  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes qrPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
         @keyframes qrSlide { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
-        .qr-card        { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); backdrop-filter:blur(12px); transition:all 0.25s ease; animation:qrFade .3s ease; }
-        .qr-card:hover  { box-shadow:0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08); transform:translateY(-2px); }
+        .qr-card        { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius: 20px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); backdrop-filter:blur(12px); transition:all 0.25s ease; animation:qrFade .3s ease; }
+        .qr-card:hover  { box-shadow:0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08); transform:translateY(-4px); }
         .qr-card-header { height:28px; background:${THEME.textMain}06; display:flex; align-items:center; padding:14px 20px; gap:6px; border-bottom:1px solid ${THEME.glassBorder}; font-weight:700; }
         .qr-card-dot    { width:8px; height:8px; border-radius:50%; }
         .qr-card-title  { font-family:'JetBrains Mono','Fira Code',monospace; font-size:11px; color:${THEME.textMuted}; margin-left:8px; letter-spacing:0.03em; }
         .qr-card-body   { padding:20px 24px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.05); }
         .qr-card.legacy { padding:20px; }
-        .qr-metric      { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:14px; padding:18px 24px; display:flex; align-items:center; gap:16px; }
-        .qr-badge       { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:10px; font-size:11px; font-weight:700; }
-        .qr-textarea    { width:100%; background:${THEME.bg}90; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:14px; padding:14px 16px; font-family:${THEME.fontMono}; font-size:12px; outline:none; resize:vertical; line-height:1.6; box-sizing:border-box; }
+        .qr-metric      { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius: 20px; padding:18px 24px; display:flex; align-items:center; gap: 22px; }
+        .qr-badge       { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius: 20px; font-size:11px; font-weight:700; }
+        .qr-textarea    { width:100%; background:${THEME.bg}90; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius: 20px; padding:14px 16px; font-family:${THEME.fontMono}; font-size:12px; outline:none; resize:vertical; line-height:1.6; box-sizing:border-box; }
         .qr-textarea:focus { border-color:${THEME.primary}60; }
-        .qr-btn         { display:inline-flex; align-items:center; gap:6px; padding:10px 18px; border-radius:14px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; border:none; }
+        .qr-btn         { display:inline-flex; align-items:center; gap:6px; padding:10px 18px; border-radius: 20px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; border:none; }
         .qr-btn:hover   { filter:brightness(1.1); }
         .qr-btn:disabled{ opacity:.45; cursor:not-allowed; filter:none; }
-        .qr-baseline-row { padding:14px 16px; border-bottom:1px solid ${THEME.grid}20; display:flex; align-items:center; gap:12px; font-size:12px; transition:background .15s; }
+        .qr-baseline-row { padding:14px 16px; border-bottom:1px solid ${THEME.grid}20; display:flex; align-items:center; gap: 18px; font-size:12px; transition:background .15s; }
         .qr-baseline-row:last-child { border-bottom:none; }
         .qr-baseline-row:hover { background:${THEME.primary}05; }
-        .qr-plan-box    { background:${THEME.bg}; border:1px solid ${THEME.grid}; border-radius:14px; padding:16px 18px; font-family:${THEME.fontMono}; font-size:11px; color:${THEME.textMuted}; white-space:pre-wrap; overflow-x:auto; max-height:320px; overflow-y:auto; line-height:1.7; }
-        .qr-tab-btn     { display:flex; align-items:center; gap:7px; padding:10px 18px; border-radius:14px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; }
+        .qr-plan-box    { background:${THEME.bg}; border:1px solid ${THEME.grid}; border-radius: 20px; padding:16px 18px; font-family:${THEME.fontMono}; font-size:11px; color:${THEME.textMuted}; white-space:pre-wrap; overflow-x:auto; max-height:320px; overflow-y:auto; line-height:1.7; }
+        .qr-tab-btn     { display:flex; align-items:center; gap:7px; padding:10px 18px; border-radius: 20px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; }
         .qr-tab-btn.active { border-color:${THEME.primary}!important; background:${THEME.primary}12!important; color:${THEME.primary}!important; }
         .qr-watcher-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
         .qr-watcher-dot.active { background:${THEME.success}; animation:qrPulse 1.5s ease-in-out infinite; box-shadow:0 0 6px ${THEME.success}; }
         .qr-watcher-dot.inactive { background:${THEME.textDim}; }
         .qr-deploy-label { font-size:10px; font-weight:700; fill:${THEME.warning}; }
-        .qr-input { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:12px; padding:10px 14px; font-size:13px; outline:none; width:100%; box-sizing:border-box; }
+        .qr-input { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius: 22px; padding:10px 14px; font-size:13px; outline:none; width:100%; box-sizing:border-box; }
         .qr-input:focus { border-color:${THEME.primary}60; }
-        .qr-select { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:12px; padding:10px 14px; font-size:13px; outline:none; cursor:pointer; }
+        .qr-select { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius: 22px; padding:10px 14px; font-size:13px; outline:none; cursor:pointer; }
         .qr-section-label { font-size:11px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; display:block; }
     `}</style>
 );
@@ -77,7 +77,7 @@ const StatusBadge = ({ status, change }) => {
 
 const MetricCard = ({ icon: Icon, label, value, sub, color = THEME.primary }) => (
     <div className="qr-metric">
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 16, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Icon size={20} color={color} />
         </div>
         <div>
@@ -109,7 +109,7 @@ const PlanTree = ({ plan, title, accent }) => {
     return (
         <div style={{ flex: 1 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 8,  letterSpacing: .5 }}>{title}</div>
-            <div style={{ background: THEME.bg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: 12, maxHeight: 280, overflowY: 'auto' }}>
+            <div style={{ background: THEME.bg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20, padding: 12, maxHeight: 280, overflowY: 'auto' }}>
                 {renderNode(node)}
             </div>
         </div>
@@ -122,7 +122,7 @@ const DeployTooltip = ({ x, y, payload, deployEvents }) => {
     const ts = payload[0]?.payload?.ts;
     const deploy = deployEvents?.find(d => Math.abs(new Date(d.ts) - new Date(ts)) < 60000 * 30);
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '10px 14px', fontSize: 12 }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20, padding: '22px 28px', fontSize: 12 }}>
             <div style={{ color: THEME.textMain, fontWeight: 700 }}>{fmtShortDate(ts)}</div>
             {payload.map(p => (
                 <div key={p.dataKey} style={{ color: p.color, marginTop: 4 }}>
@@ -130,7 +130,7 @@ const DeployTooltip = ({ x, y, payload, deployEvents }) => {
                 </div>
             ))}
             {deploy && (
-                <div style={{ marginTop: 6, padding: '4px 8px', background: `${THEME.warning}15`, border: `1px solid ${THEME.warning}30`, borderRadius: 5, color: THEME.warning, fontSize: 11, fontWeight: 700 }}>
+                <div style={{ marginTop: 6, padding: '4px 8px', background: `${THEME.warning}15`, border: `1px solid ${THEME.warning}30`, borderRadius: 16, color: THEME.warning, fontSize: 11, fontWeight: 700 }}>
                     🚀 Deploy: {deploy.version || deploy.label}
                 </div>
             )}
@@ -231,7 +231,7 @@ const PlanRatioChart = ({ ratioHistory }) => {
                 <XAxis dataKey="label" tick={{ fontSize: 10, fill: THEME.textDim }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: THEME.textDim }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} domain={[0, 100]} />
                 <Tooltip
-                    contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 12 }}
+                    contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20, fontSize: 12 }}
                     formatter={(v, name) => [`${v.toFixed(1)}%`, name]}
                 />
                 <Legend iconType="square" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
@@ -249,7 +249,7 @@ const AutoWatcherPanel = ({ watcherConfig, setWatcherConfig, watcherActive, setW
     return (
         <div className="qr-card" style={{ borderColor: watcherActive ? `${THEME.success}40` : `${THEME.grid}` }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                     <Zap size={15} color={watcherActive ? THEME.success : THEME.textMuted} />
                     <span style={{ fontWeight: 700, fontSize: 13, color: THEME.textMain }}>Automated Regression Watcher</span>
                     <div className={`qr-watcher-dot ${watcherActive ? 'active' : 'inactive'}`} />
@@ -257,7 +257,7 @@ const AutoWatcherPanel = ({ watcherConfig, setWatcherConfig, watcherActive, setW
                         {watcherActive ? `Running — checks every ${watcherConfig.intervalMin}m` : 'Inactive'}
                     </span>
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 20 }}>
                     <button className="qr-btn" onClick={() => setExpanded(v => !v)}
                             style={{ background: `${THEME.primary}10`, color: THEME.primary, border: `1px solid ${THEME.primary}30`, padding: '6px 10px' }}>
                         <Settings size={13} /> {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -275,7 +275,7 @@ const AutoWatcherPanel = ({ watcherConfig, setWatcherConfig, watcherActive, setW
             </div>
 
             {expanded && (
-                <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, paddingTop: 16, borderTop: `1px solid ${THEME.grid}30` }}>
+                <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, paddingTop: 16, borderTop: `1px solid ${THEME.grid}30` }}>
                     <div>
                         <label className="qr-section-label">Check Interval</label>
                         <select className="qr-select" value={watcherConfig.intervalMin} onChange={e => setWatcherConfig(c => ({ ...c, intervalMin: +e.target.value }))}>
@@ -296,13 +296,13 @@ const AutoWatcherPanel = ({ watcherConfig, setWatcherConfig, watcherActive, setW
                     </div>
                     <div>
                         <label className="qr-section-label">Queries to Watch</label>
-                        <div style={{ fontSize: 12, color: THEME.textMuted, padding: '8px 12px', background: `${THEME.bg}`, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8 }}>
+                        <div style={{ fontSize: 12, color: THEME.textMuted, padding: '20px 24px', background: `${THEME.bg}`, border: `1px solid ${THEME.glassBorder}`, borderRadius: 20 }}>
                             {baselines.length === 0 ? 'No baselines yet' : `All ${baselines.length} stored baseline${baselines.length !== 1 ? 's' : ''}`}
                         </div>
                     </div>
                     <div>
                         <label className="qr-section-label">Capture New Baseline on Fix</label>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 4 }}>
                             <input type="checkbox" checked={watcherConfig.autoRebaseline} onChange={e => setWatcherConfig(c => ({ ...c, autoRebaseline: e.target.checked }))}
                                    style={{ accentColor: THEME.primary, width: 15, height: 15 }} />
                             <span style={{ fontSize: 12, color: THEME.textMuted }}>Auto-rebaseline after manual fix</span>
@@ -310,7 +310,7 @@ const AutoWatcherPanel = ({ watcherConfig, setWatcherConfig, watcherActive, setW
                     </div>
                     <div>
                         <label className="qr-section-label">Track Plan Type Changes</label>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 4 }}>
                             <input type="checkbox" checked={watcherConfig.trackPlanType} onChange={e => setWatcherConfig(c => ({ ...c, trackPlanType: e.target.checked }))}
                                    style={{ accentColor: THEME.primary, width: 15, height: 15 }} />
                             <span style={{ fontSize: 12, color: THEME.textMuted }}>Alert on custom→generic plan switch</span>
@@ -335,7 +335,7 @@ const DeployEventManager = ({ deployEvents, setDeployEvents }) => {
             <div style={{ fontSize: 11, fontWeight: 700, color: THEME.textMuted,  letterSpacing: .5, marginBottom: 10 }}>
                 Deployment Event Markers
             </div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+            <div style={{ display: 'flex', gap: 20, marginBottom: 10 }}>
                 <input className="qr-input" placeholder="Version tag (e.g. v2.4.1, release-42)" value={newVersion} onChange={e => setNewVersion(e.target.value)}
                        onKeyDown={e => e.key === 'Enter' && addDeploy()} style={{ flex: 1 }} />
                 <button className="qr-btn" onClick={addDeploy}
@@ -346,7 +346,7 @@ const DeployEventManager = ({ deployEvents, setDeployEvents }) => {
             {deployEvents.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {deployEvents.map((d, i) => (
-                        <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 6, background: `${THEME.warning}12`, border: `1px solid ${THEME.warning}30`, fontSize: 11 }}>
+                        <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 18, background: `${THEME.warning}12`, border: `1px solid ${THEME.warning}30`, fontSize: 11 }}>
                             <span style={{ color: THEME.warning }}>🚀</span>
                             <span style={{ color: THEME.textMain, fontWeight: 600 }}>{d.version}</span>
                             <span style={{ color: THEME.textDim }}>{fmtRel(d.ts)}</span>
@@ -526,8 +526,8 @@ export default function QueryPlanRegressionTab() {
             <Styles />
 
             {/* ── Header ── */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.glassBorder}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px 28px', background: THEME.surface, borderRadius: 18, border: `1px solid ${THEME.glassBorder}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                     <TrendingUp size={20} color={THEME.primary} />
                     <span style={{ fontWeight: 700, fontSize: 15, color: THEME.textMain }}>Query Plan Regression Detection</span>
                     {watcherActive && (
@@ -544,7 +544,7 @@ export default function QueryPlanRegressionTab() {
             </div>
 
             {/* ── Metric cards ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}>
                 <MetricCard icon={BookOpen}      label="Stored Baselines"  value={baselines.length}                              sub="Query plan snapshots"                        color={THEME.primary}   />
                 <MetricCard icon={Activity}      label="History Points"    value={history.length}                                sub="Comparison data points"                      color={THEME.secondary} />
                 <MetricCard icon={AlertTriangle} label="Regressions Found" value={regressionCount}                              sub="Across all comparisons"                      color={regressionCount ? THEME.danger : THEME.textDim} />
@@ -553,7 +553,7 @@ export default function QueryPlanRegressionTab() {
 
             {/* ── Watcher alert strip ── */}
             {watcherAlerts.length > 0 && (
-                <div style={{ padding: '12px 16px', background: `${THEME.danger}10`, border: `1px solid ${THEME.danger}30`, borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10, animation: 'qrSlide .3s ease' }}>
+                <div style={{ padding: '18px 22px', background: `${THEME.danger}10`, border: `1px solid ${THEME.danger}30`, borderRadius: 16, display: 'flex', alignItems: 'center', gap: 22, animation: 'qrSlide .3s ease' }}>
                     <Bell size={15} color={THEME.danger} />
                     <div style={{ flex: 1, fontSize: 12, color: THEME.danger, fontWeight: 600 }}>
                         Watcher alert: <strong>{watcherAlerts[0].label}</strong> regressed by <strong>+{watcherAlerts[0].change}%</strong>
@@ -577,9 +577,9 @@ export default function QueryPlanRegressionTab() {
             {/* ══════════════════════════════════════════════════════════════ */}
             {/* ── COMPARE TAB ── */}
             {activeTab === 'compare' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <div className="qr-card">
-                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 20 }}>
                             <GitCompare size={15} color={THEME.primary} /> Analyze a Query
                         </div>
 
@@ -595,7 +595,7 @@ export default function QueryPlanRegressionTab() {
                             <input className="qr-input" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Orders last 30 days — before index" />
                         </div>
 
-                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
                             <button className="qr-btn" onClick={handleCapture} disabled={!query.trim() || capturing}
                                     style={{ background: `${THEME.secondary}15`, color: THEME.secondary, border: `1px solid ${THEME.secondary}30` }}>
                                 {capturing ? <RefreshCw size={13} style={{ animation: 'qrSpin 1s linear infinite' }} /> : <PlusCircle size={13} />}
@@ -609,13 +609,13 @@ export default function QueryPlanRegressionTab() {
                         </div>
 
                         {captureMsg && (
-                            <div style={{ marginTop: 12, padding: 12, borderRadius: 8, background: captureMsg.ok ? `${THEME.success}10` : `${THEME.danger}10`, border: `1px solid ${captureMsg.ok ? THEME.success : THEME.danger}30`, color: captureMsg.ok ? THEME.success : THEME.danger, fontSize: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ marginTop: 12, padding: 12, borderRadius: 20, background: captureMsg.ok ? `${THEME.success}10` : `${THEME.danger}10`, border: `1px solid ${captureMsg.ok ? THEME.success : THEME.danger}30`, color: captureMsg.ok ? THEME.success : THEME.danger, fontSize: 12, display: 'flex', alignItems: 'center', gap: 20 }}>
                                 {captureMsg.ok ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
                                 {captureMsg.ok ? `✓ Baseline captured — cost ${captureMsg.cost?.toFixed(2)} (fingerprint: ${captureMsg.fp?.slice(0, 12)}…)` : captureMsg.msg}
                             </div>
                         )}
                         {error && (
-                            <div style={{ marginTop: 12, padding: 12, borderRadius: 8, background: `${THEME.danger}10`, border: `1px solid ${THEME.danger}30`, color: THEME.danger, fontSize: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ marginTop: 12, padding: 12, borderRadius: 20, background: `${THEME.danger}10`, border: `1px solid ${THEME.danger}30`, color: THEME.danger, fontSize: 12, display: 'flex', alignItems: 'center', gap: 20 }}>
                                 <AlertCircle size={14} /> {error}
                             </div>
                         )}
@@ -624,7 +624,7 @@ export default function QueryPlanRegressionTab() {
                     {compareResult && (
                         <div className="qr-card" style={{ borderColor: compareResult.regression ? `${THEME.danger}40` : compareResult.status === 'ok' ? `${THEME.success}30` : `${THEME.primary}30` }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 22 }}>
                                     <GitCompare size={15} color={THEME.primary} /> Comparison Result
                                     <StatusBadge status={compareResult.status} change={compareResult.costChange} />
                                 </div>
@@ -640,12 +640,12 @@ export default function QueryPlanRegressionTab() {
                                 </div>
                             ) : (
                                 <>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22, marginBottom: 20 }}>
                                         {[
                                             { label: 'Baseline Plan Cost', value: compareResult.baseline?.cost?.toFixed(2), color: THEME.success },
                                             { label: 'Current Plan Cost',  value: compareResult.current?.cost?.toFixed(2),  color: compareResult.regression ? THEME.danger : THEME.success },
                                         ].map(({ label: lbl, value, color }) => (
-                                            <div key={lbl} style={{ padding: 16, background: `${color}08`, border: `1px solid ${color}25`, borderRadius: 10, textAlign: 'center' }}>
+                                            <div key={lbl} style={{ padding: 16, background: `${color}08`, border: `1px solid ${color}25`, borderRadius: 16, textAlign: 'center' }}>
                                                 <div style={{ fontSize: 26, fontWeight: 800, color }}>{value}</div>
                                                 <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 4, fontWeight: 600 }}>{lbl}</div>
                                             </div>
@@ -653,13 +653,13 @@ export default function QueryPlanRegressionTab() {
                                     </div>
 
                                     {compareResult.regression && (
-                                        <div style={{ marginBottom: 16, padding: 12, background: `${THEME.danger}10`, border: `1px solid ${THEME.danger}30`, borderRadius: 8, fontSize: 12, color: THEME.danger }}>
+                                        <div style={{ marginBottom: 16, padding: 12, background: `${THEME.danger}10`, border: `1px solid ${THEME.danger}30`, borderRadius: 20, fontSize: 12, color: THEME.danger }}>
                                             ⚠ <strong>Plan regression detected!</strong> The planner chose a significantly more expensive plan (+{compareResult.costChange}%).
                                             Consider running ANALYZE, checking for missing indexes, or reviewing recent schema changes.
                                         </div>
                                     )}
 
-                                    <div style={{ display: 'flex', gap: 16 }}>
+                                    <div style={{ display: 'flex', gap: 22 }}>
                                         <PlanTree plan={compareResult.baseline?.plan} title="Baseline Plan" accent={THEME.success} />
                                         <PlanTree plan={compareResult.current?.plan}  title="Current Plan"  accent={compareResult.regression ? THEME.danger : THEME.primary} />
                                     </div>
@@ -673,13 +673,13 @@ export default function QueryPlanRegressionTab() {
             {/* ══════════════════════════════════════════════════════════════ */}
             {/* ── TIMELINE TAB ── */}
             {activeTab === 'timeline' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <div className="qr-card">
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 20 }}>
                                 <Activity size={15} color={THEME.primary} /> Plan Cost Regression Timeline
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11, color: THEME.textDim }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 18, fontSize: 11, color: THEME.textDim }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                     <div style={{ width: 12, height: 2, background: THEME.warning, borderRadius: 1 }} />
                                     Deploy marker
@@ -697,7 +697,7 @@ export default function QueryPlanRegressionTab() {
                     {/* History table */}
                     {history.length > 0 && (
                         <div className="qr-card" style={{ padding: 0 }}>
-                            <div style={{ padding: '14px 16px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ padding: '18px 22px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 20 }}>
                                 <Clock size={14} color={THEME.primary} /> Comparison History
                             </div>
                             {history.slice().reverse().map((h, i) => (
@@ -724,9 +724,9 @@ export default function QueryPlanRegressionTab() {
             {/* ══════════════════════════════════════════════════════════════ */}
             {/* ── PLAN TYPE RATIO TAB ── */}
             {activeTab === 'ratio' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <div className="qr-card">
-                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 20 }}>
                             <BarChart2 size={15} color={THEME.primary} /> Generic vs. Custom Plan Ratio
                         </div>
                         <div style={{ fontSize: 12, color: THEME.textDim, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -737,7 +737,7 @@ export default function QueryPlanRegressionTab() {
                         <PlanRatioChart ratioHistory={ratioHistory} />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                         <div className="qr-card" style={{ borderColor: `${THEME.success}30` }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: THEME.success, marginBottom: 8 }}>✓ Custom Plan</div>
                             <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.7 }}>
@@ -756,13 +756,13 @@ export default function QueryPlanRegressionTab() {
 
                     <div className="qr-card" style={{ borderColor: `${THEME.primary}20` }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 10 }}>Detection Tips</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 22 }}>
                             {[
                                 { title: 'Enable tracking', desc: 'Toggle "Track Plan Type Changes" in the Watcher settings. Each compare call will record whether the returned plan is custom or generic.' },
                                 { title: 'Alert condition', desc: 'A custom→generic switch is flagged as a soft regression. The cost may look similar but generic plans can be catastrophic for skewed data.' },
                                 { title: 'Fix strategies', desc: 'Run ANALYZE to refresh statistics, force custom plan via plan_cache_mode, or use pg_hint_plan to pin the preferred join order.' },
                             ].map(({ title, desc }) => (
-                                <div key={title} style={{ padding: '12px 14px', background: `${THEME.bg}60`, borderRadius: 8, border: `1px solid ${THEME.glassBorder}` }}>
+                                <div key={title} style={{ padding: '22px 28px', background: `${THEME.bg}60`, borderRadius: 20, border: `1px solid ${THEME.glassBorder}` }}>
                                     <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 6 }}>{title}</div>
                                     <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.6 }}>{desc}</div>
                                 </div>
@@ -775,7 +775,7 @@ export default function QueryPlanRegressionTab() {
             {/* ══════════════════════════════════════════════════════════════ */}
             {/* ── WATCHER TAB ── */}
             {activeTab === 'watcher' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                     <AutoWatcherPanel
                         watcherConfig={watcherConfig}
                         setWatcherConfig={setWatcherConfig}
@@ -786,8 +786,8 @@ export default function QueryPlanRegressionTab() {
 
                     {/* Alert log */}
                     <div className="qr-card" style={{ padding: 0 }}>
-                        <div style={{ padding: '14px 16px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ padding: '18px 22px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 20, justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                 <Bell size={14} color={THEME.primary} /> Watcher Alert Log
                             </div>
                             {watcherAlerts.length > 0 && (
@@ -816,17 +816,17 @@ export default function QueryPlanRegressionTab() {
 
                     {/* How watcher works */}
                     <div className="qr-card" style={{ borderColor: `${THEME.primary}20` }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 20 }}>
                             <Info size={13} /> How the Watcher Works
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 22 }}>
                             {[
                                 { step: '1. Schedule', desc: 'Runs a compare call for every stored baseline at the configured interval using the browser session.' },
                                 { step: '2. Detect',   desc: 'Flags any query whose current plan cost exceeds its baseline by the configured threshold (default 20%).' },
                                 { step: '3. Alert',    desc: 'Fires an in-app notification banner. Optional webhook/Slack/email when configured.' },
                                 { step: '4. Log',      desc: 'All watcher check results are appended to the timeline for trend analysis.' },
                             ].map(({ step, desc }) => (
-                                <div key={step} style={{ padding: '12px 14px', background: `${THEME.bg}60`, borderRadius: 8, border: `1px solid ${THEME.glassBorder}` }}>
+                                <div key={step} style={{ padding: '22px 28px', background: `${THEME.bg}60`, borderRadius: 20, border: `1px solid ${THEME.glassBorder}` }}>
                                     <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 6 }}>{step}</div>
                                     <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.6 }}>{desc}</div>
                                 </div>
@@ -840,7 +840,7 @@ export default function QueryPlanRegressionTab() {
             {/* ── BASELINES TAB ── */}
             {activeTab === 'baselines' && (
                 <div className="qr-card" style={{ padding: 0 }}>
-                    <div style={{ padding: '14px 16px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ padding: '18px 22px', borderBottom: `1px solid ${THEME.grid}`, fontSize: 13, fontWeight: 700, color: THEME.textMain, display: 'flex', alignItems: 'center', gap: 20 }}>
                         <BookOpen size={15} color={THEME.primary} /> Stored Plan Baselines
                         <span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 400, marginLeft: 'auto' }}>{baselines.length} baseline{baselines.length !== 1 ? 's' : ''} in memory — cleared on server restart</span>
                     </div>
@@ -861,7 +861,7 @@ export default function QueryPlanRegressionTab() {
                                 <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 2 }}>{fmtRel(b.ts)}</div>
                             </div>
                             <button onClick={() => handleDelete(b.fingerprint)}
-                                    style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${THEME.danger}30`, background: `${THEME.danger}10`, color: THEME.danger, cursor: 'pointer', marginLeft: 12, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700 }}>
+                                    style={{ padding: '6px 10px', borderRadius: 18, border: `1px solid ${THEME.danger}30`, background: `${THEME.danger}10`, color: THEME.danger, cursor: 'pointer', marginLeft: 12, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700 }}>
                                 <Trash2 size={12} /> Remove
                             </button>
                         </div>
@@ -871,16 +871,16 @@ export default function QueryPlanRegressionTab() {
 
             {/* ── How it works footer ── */}
             <div className="qr-card" style={{ borderColor: `${THEME.primary}25` }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 20 }}>
                     <CheckCircle size={14} /> How Plan Regression Detection Works
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18 }}>
                     {[
                         { step: '1. Capture Baseline',  desc: 'Run a query at a known-good state (after fresh ANALYZE, with correct indexes). The planner cost is stored as your reference point.' },
                         { step: '2. Compare Later',     desc: 'After schema changes, new indexes, or PostgreSQL upgrades, compare the current plan against the baseline. A >20% cost increase flags a regression.' },
                         { step: '3. Investigate',       desc: 'Side-by-side plan trees show exactly which nodes changed — e.g. a sequential scan replacing an index scan signals a missing or bloated index.' },
                     ].map(({ step, desc }) => (
-                        <div key={step} style={{ padding: '12px 14px', background: `${THEME.bg}60`, borderRadius: 8, border: `1px solid ${THEME.glassBorder}` }}>
+                        <div key={step} style={{ padding: '22px 28px', background: `${THEME.bg}60`, borderRadius: 20, border: `1px solid ${THEME.glassBorder}` }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 6 }}>{step}</div>
                             <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.6 }}>{desc}</div>
                         </div>

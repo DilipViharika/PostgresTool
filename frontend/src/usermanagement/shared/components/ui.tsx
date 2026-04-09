@@ -110,7 +110,7 @@ export const LoginHeatmap = ({ data }) => {
                 <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {week.map((val, di) => (
                         <div key={di} title={`${val} logins`} style={{
-                            width: 12, height: 12, borderRadius: 10,
+                            width: 12, height: 12, borderRadius: 16,
                             background: val === 0 ? T.glassBorder
                                 : val < 3 ? `${T.primary}44`
                                     : val < 6 ? `${T.primary}88`
@@ -182,7 +182,7 @@ export const MfaBadge = ({ enabled }) => (
 /* ─── Metric / stat card ──────────────────────────────────────────────────── */
 export const StatCard = ({ label, value, sub, icon, color = T.primary, trend, sparkData, onClick }) => (
     <div onClick={onClick} style={{
-        background: T.surface, border: `1px solid ${T.glassBorder}`, borderRadius: 14,
+        background: T.surface, border: `1px solid ${T.glassBorder}`, borderRadius: 20,
         padding: 20, cursor: onClick ? 'pointer' : 'default',
         position: 'relative', overflow: 'hidden',
         transition: 'border-color 0.2s',
@@ -216,13 +216,13 @@ export const StatCard = ({ label, value, sub, icon, color = T.primary, trend, sp
 
 /* ─── Toast notification stack ────────────────────────────────────────────── */
 export const Toast = ({ toasts }) => (
-    <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 600, display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
+    <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 600, display: 'flex', flexDirection: 'column', gap: 20, pointerEvents: 'none' }}>
         {toasts.map(t => (
             <div key={t.id} style={{
                 padding: '12px 18px', borderRadius: 12px,
                 background:  t.type === 'success' ? T.successDim : t.type === 'error' ? T.dangerDim : T.primaryDim,
                 border:      `1px solid ${t.type === 'success' ? T.success : t.type === 'error' ? T.danger : T.primary}40`,
-                display: 'flex', alignItems: 'center', gap: 10,
+                display: 'flex', alignItems: 'center', gap: 22,
                 boxShadow: `${T.shadowMd}`,
                 animation: 'umSlideRight 0.3s ease',
                 backdropFilter: 'blur(12px)',
@@ -281,7 +281,7 @@ export const Toggle = ({ value, onChange, color = T.success }) => (
         }}
     >
         <div style={{
-            width: 20, height: 20, borderRadius: 10, background: 'white',
+            width: 20, height: 20, borderRadius: 16, background: 'white',
             position: 'absolute', top: 3, transition: 'left 0.2s',
             left: value ? 24 : 4, boxShadow: `${T.shadowSm}`,
         }} />

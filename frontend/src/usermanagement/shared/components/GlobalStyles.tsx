@@ -51,7 +51,7 @@ export const GlobalStyles = () => (
     /* ── Buttons ──────────────────────────────────────────────────────── */
     .um-btn {
         display: inline-flex; align-items: center; gap: 7px;
-        padding: 8px 16px; border-radius: 12px; border: none;
+        padding: 8px 16px; border-radius: 22px; border: none;
         font-family: ${THEME.fontBody}; font-size: 13px; font-weight: 600;
         cursor: pointer; transition: all 0.15s; white-space: nowrap; outline: none;
     }
@@ -62,12 +62,12 @@ export const GlobalStyles = () => (
     .um-btn-ghost:hover { border-color: ${T.primary}; color: ${T.primary}; background: ${T.primaryDim}; }
     .um-btn-danger  { background: ${T.dangerDim}; color: ${T.danger}; border: 1px solid ${T.danger}44; }
     .um-btn-danger:hover { background: ${T.danger}; color: #fff; }
-    .um-btn-sm   { padding: 5px 10px; font-size: 11px; border-radius: 12px; }
-    .um-btn-icon { padding: 7px; border-radius: 12px; }
+    .um-btn-sm   { padding: 5px 10px; font-size: 11px; border-radius: 22px; }
+    .um-btn-icon { padding: 7px; border-radius: 22px; }
 
     /* ── Inputs ───────────────────────────────────────────────────────── */
     .um-input {
-        background: ${T.surface}; border: 1px solid ${T.glassBorder}; border-radius: 12px;
+        background: ${T.surface}; border: 1px solid ${T.glassBorder}; border-radius: 22px;
         color: ${T.textMain}; font-family: ${THEME.fontBody}; font-size: 13px;
         outline: none; padding: 9px 12px;
         transition: border 0.2s, box-shadow 0.2s; width: 100%;
@@ -78,7 +78,7 @@ export const GlobalStyles = () => (
 
     /* ── Tabs ─────────────────────────────────────────────────────────── */
     .um-tab {
-        display: flex; align-items: center; gap: 8px;
+        display: flex; align-items: center; gap: 20px;
         padding: 11px 18px; border: none; border-bottom: 2px solid transparent;
         background: transparent; font-family: ${THEME.fontBody};
         font-size: 13px; font-weight: 600;
@@ -90,7 +90,7 @@ export const GlobalStyles = () => (
 
     /* ── Cards ────────────────────────────────────────────────────────── */
     .um-card {
-        background: ${T.surface}; border: 1px solid ${T.glassBorder}; border-radius: 14px;
+        background: ${T.surface}; border: 1px solid ${T.glassBorder}; border-radius: 20px;
         padding: 20px; transition: border-color 0.2s;
     }
     .um-card:hover { border-color: ${T.glassBorder}; }
@@ -110,7 +110,7 @@ export const GlobalStyles = () => (
         display: flex; flex-direction: column; z-index: 2000;
     }
     .um-modal {
-        background: ${T.surface}; border: 1px solid ${T.glassBorder}; border-radius: 18px;
+        background: ${T.surface}; border: 1px solid ${T.glassBorder}; border-radius: 22px;
         box-shadow: ${T.shadowLg}; overflow: hidden;
         animation: umFadeUp 0.3s cubic-bezier(0.16,1,0.3,1);
     }
@@ -125,18 +125,18 @@ export const GlobalStyles = () => (
     /* ── Utilities ────────────────────────────────────────────────────── */
     .um-mono { font-family: ${THEME.fontMono}; }
     .um-perm-chip {
-        padding: 3px 7px; border-radius: 12px; font-size: 10px; font-weight: 700;
+        padding: 3px 7px; border-radius: 22px; font-size: 10px; font-weight: 700;
         letter-spacing: 0.06em; font-family: ${THEME.fontMono};
     }
     .shimmer-skeleton {
         background: linear-gradient(90deg, ${T.surface} 25%, ${T.surfaceRaised} 50%, ${T.surface} 75%);
         background-size: 200% 100%;
         animation: umShimmer 1.5s infinite;
-        border-radius: 12px;
+        border-radius: 22px;
     }
-    .um-grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
-    .um-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
-    .um-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .um-grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 22px; }
+    .um-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+    .um-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
 
     /* ── Accessibility ────────────────────────────────────────────────── */
     :focus-visible {

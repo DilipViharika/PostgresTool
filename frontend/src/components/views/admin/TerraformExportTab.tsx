@@ -7,21 +7,21 @@ import { FileCode, Download, Copy, Package, Settings, Code, RefreshCw, CheckCirc
 const Styles = () => (
     <style>{`
         @keyframes tfFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .tf-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:20px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); animation:tfFade .3s ease; transition:all 0.2s ease; backdrop-filter:blur(12px); }
-        .tf-card:hover { border-color:${THEME.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+        .tf-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius: 20px; padding:20px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); animation:tfFade .3s ease; transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .tf-card:hover { border-color:${THEME.primary}30; transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
         .tf-card-section { padding:14px 20px; border-bottom:1px solid ${THEME.glassBorder}; background:${THEME.bg}06; }
         .tf-card-section:last-child { border-bottom:none; }
-        .tf-export-card { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:20px; margin-bottom:16px; display:grid; grid-template-columns:1fr auto; gap:16px; align-items:start; }
-        .tf-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:12px; padding:12px 18px; font-weight:700; font-size:13px; cursor:pointer; }
+        .tf-export-card { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius: 22px; padding:20px; margin-bottom:16px; display:grid; grid-template-columns:1fr auto; gap: 22px; align-items:start; }
+        .tf-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius: 22px; padding:12px 18px; font-weight:700; font-size:13px; cursor:pointer; }
         .tf-button:hover { background:${THEME.primaryLight}; }
         .tf-button-secondary { background:${THEME.secondary}; }
         .tf-button-secondary:hover { background:${THEME.secondaryLight}; }
-        .tf-code-block { background:${THEME.bg}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:20px; margin:16px 0; max-height:300px; overflow-y:auto; position:relative; }
+        .tf-code-block { background:${THEME.bg}; border:1px solid ${THEME.glassBorder}; border-radius: 22px; padding:20px; margin:16px 0; max-height:300px; overflow-y:auto; position:relative; }
         .tf-code { font-family:monospace; font-size:12px; color:${THEME.textMain}; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
-        .tf-code-copy { position:absolute; top:8px; right:8px; cursor:pointer; padding:8px; background:${THEME.primary}20; border-radius:8px; border:1px solid ${THEME.primary}40; color:${THEME.primary}; }
+        .tf-code-copy { position:absolute; top:8px; right:8px; cursor:pointer; padding:8px; background:${THEME.primary}20; border-radius: 20px; border:1px solid ${THEME.primary}40; color:${THEME.primary}; }
         .tf-code-copy:hover { background:${THEME.primary}40; }
         .tf-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .tf-select { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:12px 14px; color:${THEME.textMain}; font-size:13px; width:100%; cursor:pointer; }
+        .tf-select { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius: 22px; padding:12px 14px; color:${THEME.textMain}; font-size:13px; width:100%; cursor:pointer; }
     `}</style>
 );
 
@@ -50,12 +50,12 @@ const ExportCard = ({ title, description, icon: Icon, format, onPreview, onDownl
     return (
         <div className="tf-export-card">
             <div>
-                <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+                <div style={{ display:'flex', alignItems:'center', gap: 22, marginBottom:8 }}>
                     <Icon size={18} color={THEME.primary} />
                     <div style={{ fontSize:14, fontWeight:700, color:THEME.textMain }}>{title}</div>
                 </div>
                 <div style={{ fontSize:12, color:THEME.textDim, marginBottom:12 }}>{description}</div>
-                <div style={{ display:'flex', gap:10 }}>
+                <div style={{ display:'flex', gap: 22 }}>
                     <button className="tf-button" onClick={onPreview} style={{ fontSize:12, padding:'8px 12px' }}>
                         <FileCode size={12} style={{ marginRight:4 }} />
                         Preview
@@ -152,7 +152,7 @@ export default function TerraformExportTab() {
                 <div style={{
                     background:`${THEME.danger}15`,
                     border:`1px solid ${THEME.danger}40`,
-                    borderRadius:10,
+                    borderRadius: 16,
                     padding:'12px 16px',
                     marginBottom:20,
                     color:THEME.danger,
@@ -169,7 +169,7 @@ export default function TerraformExportTab() {
                     <Code size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                     Export Format
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:12 }}>
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap: 18 }}>
                     <div>
                         <div className="tf-label">Format</div>
                         <select className="tf-select" value={exportFormat} onChange={(e) => setExportFormat(e.target.value)}>
@@ -258,7 +258,7 @@ export default function TerraformExportTab() {
             )}
 
             {/* Info Box */}
-            <div style={{ marginTop:20, padding:'16px', background:`${THEME.info}15`, border:`1px solid ${THEME.info}40`, borderRadius:10 }}>
+            <div style={{ marginTop:20, padding:'16px', background:`${THEME.info}15`, border:`1px solid ${THEME.info}40`, borderRadius: 16 }}>
                 <div style={{ fontSize:12, color:THEME.info, fontWeight:700, marginBottom:8 }}>
                     Tips for IaC Integration:
                 </div>

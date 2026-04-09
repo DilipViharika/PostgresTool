@@ -80,7 +80,7 @@ const GlobalStyles = () => (
 
         .tab-btn {
             display:flex; align-items:center; gap:6px;
-            padding:8px 14px; border:none; border-radius:8px;
+            padding:8px 14px; border:none; border-radius: 20px;
             font-size:10px; font-weight:700; letter-spacing:0.07em;
             text-transform:uppercase; cursor:pointer; transition:all 0.15s;
             font-family: ${THEME.fontMono};
@@ -99,7 +99,7 @@ const GlobalStyles = () => (
 
         .scroll-thin::-webkit-scrollbar { width:4px; height:4px; }
         .scroll-thin::-webkit-scrollbar-track { background:transparent; }
-        .scroll-thin::-webkit-scrollbar-thumb { background:${T.border}; border-radius:8px; }
+        .scroll-thin::-webkit-scrollbar-thumb { background:${T.border}; border-radius: 20px; }
 
         .json-key { color:${T.primary}; }
         .json-str { color:${T.success}; }
@@ -113,12 +113,12 @@ const GlobalStyles = () => (
             background: linear-gradient(90deg, ${T.border} 25%, ${T.raised} 50%, ${T.border} 75%);
             background-size:200% 100%;
             animation: shimmer 1.4s infinite;
-            border-radius:8px;
+            border-radius: 20px;
         }
 
         .log-entry {
             display:grid; grid-template-columns:100px 56px 1fr;
-            gap:12px; padding:6px 14px; font-size:10px; line-height:1.6;
+            gap: 18px; padding:6px 14px; font-size:10px; line-height:1.6;
             border-bottom:1px solid ${T.border}40;
             transition:background 0.1s;
         }
@@ -127,21 +127,21 @@ const GlobalStyles = () => (
         .metric-chip {
             display:inline-flex; align-items:center; gap:5px;
             font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
-            padding:3px 8px; border-radius:6px; white-space:nowrap; border:1px solid transparent;
+            padding:3px 8px; border-radius: 22px; white-space:nowrap; border:1px solid transparent;
         }
 
         .heatcell {
-            border-radius:6px;
+            border-radius: 22px;
             transition:transform 0.1s, filter 0.1s;
         }
         .heatcell:hover { transform:scale(1.4); filter:brightness(1.5); z-index:10; position:relative; }
 
         .infra-bar-track {
-            height:6px; border-radius:6px; background:${T.border};
+            height:6px; border-radius: 22px; background:${T.border};
             overflow:hidden; position:relative;
         }
         .infra-bar-fill {
-            height:100%; border-radius:6px; transition:width 0.6s cubic-bezier(0.22,1,0.36,1);
+            height:100%; border-radius: 22px; transition:width 0.6s cubic-bezier(0.22,1,0.36,1);
         }
 
         .waterfall-label {
@@ -214,11 +214,11 @@ const PercentileBars = ({ p50, p95, p99 }) => {
         { label: 'P99', val: p99, color: T.danger },
     ];
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {bars.map(({ label, val, color }) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
                     <span style={{ fontSize: 9, fontWeight: 700, color: T.text3, width: 24 }}>{label}</span>
-                    <div style={{ flex: 1, height: 5, background: T.border, borderRadius: 10, overflow: 'hidden', minWidth: 0 }}>
+                    <div style={{ flex: 1, height: 5, background: T.border, borderRadius: 16, overflow: 'hidden', minWidth: 0 }}>
                         <div className="span-bar" style={{ height: '100%', width: `${(val / max) * 100}%`, background: color, borderRadius: 3 }} />
                     </div>
                     <span style={{ fontSize: 10, fontWeight: 700, color, width: 40, textAlign: 'right' }}>{fmtMs(val)}</span>
@@ -271,9 +271,9 @@ const DependencyGraph = ({ spans }) => {
                 const color = spanColor(s.type);
                 const indent = { proxy: 0, app: 1, cache: 2, db: 2 }[s.type] || 0;
                 return (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: indent * 18, paddingTop: 4, paddingBottom: 4 }}>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 20, paddingLeft: indent * 18, paddingTop: 4, paddingBottom: 4 }}>
                         {indent > 0 && <div style={{ width: 12, height: 1, background: T.border, flexShrink: 0 }} />}
-                        <div style={{ width: 20, height: 20, borderRadius: 14, background: `${color}15`, border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: 20, height: 20, borderRadius: 20, background: `${color}15`, border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <Icon size={10} color={color} />
                         </div>
                         <span style={{ fontSize: 10, color: T.text2, flex: 1 }}>{s.name}</span>
@@ -290,7 +290,7 @@ const DependencyGraph = ({ spans }) => {
    INTERACTIVE TRACE WATERFALL (v2)
    ═══════════════════════════════════════════════════════════════════════════ */
 const ExplainPlan = ({ span }) => (
-    <div style={{ marginTop: 10, padding: 12, background: T.bg, borderRadius: 6, border: `1px solid ${T.danger}30` }}>
+    <div style={{ marginTop: 10, padding: 12, background: T.bg, borderRadius: 18, border: `1px solid ${T.danger}30` }}>
         <div style={{ fontSize: 9, fontWeight: 700, color: T.danger, marginBottom: 8, letterSpacing: '0.02em' }}>
             ⚠ Slow Query — Execution Plan
         </div>
@@ -299,7 +299,7 @@ const ExplainPlan = ({ span }) => (
             <div style={{ paddingLeft: 14, color: T.text3, marginBottom: 4 }}>Filter: (email = $1)</div>
             <div style={{ paddingLeft: 14, color: T.text3 }}>Rows Removed by Filter: 4195</div>
         </div>
-        <div style={{ marginTop: 10, padding: '6px 10px', background: `${T.warning}10`, border: `1px solid ${T.warning}20`, borderRadius: 14, display: 'flex', gap: 6, alignItems: 'center' }}>
+        <div style={{ marginTop: 10, padding: '6px 10px', background: `${T.warning}10`, border: `1px solid ${T.warning}20`, borderRadius: 20, display: 'flex', gap: 6, alignItems: 'center' }}>
             <FlaskConical size={10} color={T.warning} />
             <span style={{ fontSize: 10, color: T.warning }}>
                 Fix: <code style={{ color: T.text1 }}>CREATE INDEX CONCURRENTLY idx_users_email ON users(email);</code>
@@ -309,8 +309,8 @@ const ExplainPlan = ({ span }) => (
 );
 
 const SpanDetail = ({ span }) => (
-    <div style={{ padding: '12px 16px', background: T.raised, borderLeft: `2px solid ${span.error ? T.danger : spanColor(span.type)}`, borderRadius: '0 8px 8px 0', margin: '2px 0 10px 0', animation: 'fadeUp 0.2s ease-out' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 10 }}>
+    <div style={{ padding: '18px 22px', background: T.raised, borderLeft: `2px solid ${span.error ? T.danger : spanColor(span.type)}`, borderRadius: '0 8px 8px 0', margin: '2px 0 10px 0', animation: 'fadeUp 0.2s ease-out' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18, marginBottom: 10 }}>
             <div>
                 <div style={{ fontSize: 9, color: T.text3, marginBottom: 3,  letterSpacing: '0.02em' }}>Layer</div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{span.type}</div>
@@ -324,12 +324,12 @@ const SpanDetail = ({ span }) => (
                 <div style={{ fontSize: 11, fontWeight: 700, color: span.error ? T.danger : T.success }}>{span.error ? 'ERROR' : 'OK'}</div>
             </div>
         </div>
-        <div style={{ fontSize: 10, color: T.text2, fontFamily: THEME.fontMono, padding: '8px 10px', background: T.bg, borderRadius: 6, marginBottom: span.error || (span.type === 'db' && span.duration > 100) ? 0 : 0 }}>
+        <div style={{ fontSize: 10, color: T.text2, fontFamily: THEME.fontMono, padding: '8px 10px', background: T.bg, borderRadius: 18, marginBottom: span.error || (span.type === 'db' && span.duration > 100) ? 0 : 0 }}>
             {span.meta}
         </div>
         {span.type === 'db' && span.duration > 100 && <ExplainPlan span={span} />}
         {span.error && (
-            <div style={{ marginTop: 8, padding: '8px 10px', background: `${T.danger}10`, border: `1px solid ${T.danger}25`, borderRadius: 6, display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ marginTop: 8, padding: '8px 10px', background: `${T.danger}10`, border: `1px solid ${T.danger}25`, borderRadius: 18, display: 'flex', gap: 20, alignItems: 'center' }}>
                 <AlertOctagon size={11} color={T.danger} />
                 <span style={{ fontSize: 10, color: T.danger, fontWeight: 600 }}>{span.error}</span>
             </div>
@@ -360,18 +360,18 @@ const TraceWaterfall = ({ spans, totalMs }) => {
                 return (
                     <div key={i}>
                         <div onClick={() => setExpanded(isExp ? null : i)}
-                             style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 16, marginBottom: 4, cursor: 'pointer' }}>
+                             style={{ display: 'flex', alignItems: 'center', gap: 20, paddingRight: 16, marginBottom: 4, cursor: 'pointer' }}>
                             {/* Left label */}
                             <div className="waterfall-label" style={{ width: 192, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
                                 {isExp ? <ChevronDown size={9} color={T.text3} /> : <ChevronRight size={9} color={T.text3} />}
                                 <span style={{ animation: `tickIn 0.2s ease-out ${i * 0.04}s both` }}>{span.name}</span>
                             </div>
                             {/* Bar track */}
-                            <div style={{ flex: 1, height: 26, background: T.border, borderRadius: 14, position: 'relative', overflow: 'hidden', minWidth: 0 }}>
+                            <div style={{ flex: 1, height: 26, background: T.border, borderRadius: 20, position: 'relative', overflow: 'hidden', minWidth: 0 }}>
                                 <div className="span-bar" style={{
                                     position: 'absolute', left: `${l}%`, width: `${w}%`,
                                     height: '100%', background: `linear-gradient(90deg, ${color}80, ${color})`,
-                                    borderRadius: 14, animationDelay: `${i * 0.05}s`,
+                                    borderRadius: 20, animationDelay: `${i * 0.05}s`,
                                     display: 'flex', alignItems: 'center', padding: '0 8px',
                                 }}>
                                     <span style={{ fontSize: 9, color: THEME.textMain, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.5)', whiteSpace: 'nowrap' }}>{fmtMs(span.duration)}</span>
@@ -406,9 +406,9 @@ const LogStream = ({ logs, live = false }) => {
     const ref = useRef(null);
     useEffect(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight; }, [logs]);
     return (
-        <div style={{ background: T.bg, borderRadius: 8, border: `1px solid ${T.border}`, overflow: 'hidden' }}>
-            <div style={{ padding: '8px 14px', background: T.raised, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ background: T.bg, borderRadius: 20, border: `1px solid ${T.border}`, overflow: 'hidden' }}>
+            <div style={{ padding: '14px 20px', background: T.raised, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <div className="glow-dot" style={{ width: 6, height: 6, background: live ? T.success : T.text3 }} />
                     <span style={{ fontSize: 9, fontWeight: 700, color: T.text2,  letterSpacing: '0.02em' }}>
                         {live ? 'Live Stream' : 'Trace Log'}
@@ -446,7 +446,7 @@ const JsonViewer = ({ data, label }) => {
         });
     const copy = () => { navigator.clipboard.writeText(raw); setCopied(true); setTimeout(()=>setCopied(false),2000); };
     return (
-        <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 8, overflow: 'hidden' }}>
+        <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 20, overflow: 'hidden' }}>
             <div style={{ padding: '7px 12px', background: T.raised, borderBottom: `1px solid ${T.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em' }}>{label}</span>
                 <button onClick={copy} style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? T.success : T.text3, display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
@@ -472,7 +472,7 @@ const CurlBlock = ({ method, url, headers, body }) => {
     ].join('\n');
     const copy = () => { navigator.clipboard.writeText(curl); setCopied(true); setTimeout(()=>setCopied(false),2000); };
     return (
-        <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 8, overflow: 'hidden' }}>
+        <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 20, overflow: 'hidden' }}>
             <div style={{ padding: '7px 12px', background: T.raised, borderBottom: `1px solid ${T.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Terminal size={11} color={T.text3} />
@@ -493,9 +493,9 @@ const CurlBlock = ({ method, url, headers, body }) => {
    AI ANALYSIS PANEL
    ═══════════════════════════════════════════════════════════════════════════ */
 const AiPanel = ({ insight, anomaly }) => (
-    <div style={{ padding: 16, borderRadius: 10, background: `linear-gradient(135deg, ${T.ai}08, ${T.surface})`, border: `1px solid ${T.ai}20`, position: 'relative', overflow: 'hidden' }}>
+    <div style={{ padding: 16, borderRadius: 16, background: `linear-gradient(135deg, ${T.ai}08, ${T.surface})`, border: `1px solid ${T.ai}20`, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${T.ai}50, transparent)` }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 18 }}>
             <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 10 }}>
                     <BrainCircuit size={13} color={T.ai} />
@@ -505,7 +505,7 @@ const AiPanel = ({ insight, anomaly }) => (
                 <p style={{ margin: 0, fontSize: 12, color: T.text1, lineHeight: 1.65 }}>{insight}</p>
             </div>
             {anomaly && (
-                <div className="anomaly-ring" style={{ padding: '8px 12px', background: `${T.danger}10`, border: `1px solid ${T.danger}30`, borderRadius: 8, flexShrink: 0, textAlign: 'center' }}>
+                <div className="anomaly-ring" style={{ padding: '20px 24px', background: `${T.danger}10`, border: `1px solid ${T.danger}30`, borderRadius: 20, flexShrink: 0, textAlign: 'center' }}>
                     <AlertOctagon size={16} color={T.danger} style={{ display: 'block', margin: '0 auto 4px' }} />
                     <div style={{ fontSize: 8, color: T.danger, fontWeight: 700,  letterSpacing: '0.02em' }}>Anomaly</div>
                 </div>
@@ -520,7 +520,7 @@ const AiPanel = ({ insight, anomaly }) => (
 const WebVital = ({ label, value, unit, threshold, color }) => {
     const ok = parseFloat(value) < threshold;
     return (
-        <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${ok ? T.border : T.warning}30` }}>
+        <div style={{ padding: '22px 28px', background: T.bg, borderRadius: 20, border: `1px solid ${ok ? T.border : T.warning}30` }}>
             <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 6 }}>{label}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                 <span style={{ fontSize: 22, fontWeight: 800, color: ok ? T.success : T.warning, fontFamily: THEME.fontBody, lineHeight: 1 }}>{value}</span>
@@ -537,7 +537,7 @@ const WebVital = ({ label, value, unit, threshold, color }) => {
 const InfraGauge = ({ label, value, max, unit, color }) => {
     const pct = (value / max) * 100;
     return (
-        <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
+        <div style={{ padding: '22px 28px', background: T.bg, borderRadius: 20, border: `1px solid ${T.border}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em' }}>{label}</span>
                 <span style={{ fontSize: 11, fontWeight: 700, color }}>{value}{unit}</span>
@@ -560,16 +560,16 @@ const SecurityPanel = ({ security, endpoint }) => {
     const threatLevel = security.rules_triggered.length > 1 ? 'HIGH' : security.rules_triggered.length === 1 ? 'MEDIUM' : 'LOW';
     const tlColor = { HIGH: T.danger, MEDIUM: T.warning, LOW: T.success }[threatLevel];
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${tlColor}30` }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+                <div style={{ padding: '22px 28px', background: T.bg, borderRadius: 20, border: `1px solid ${tlColor}30` }}>
                     <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 6 }}>Threat Level</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                         <Radar size={20} color={tlColor} />
                         <span style={{ fontSize: 18, fontWeight: 800, color: tlColor, fontFamily: THEME.fontBody }}>{threatLevel}</span>
                     </div>
                 </div>
-                <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
+                <div style={{ padding: '22px 28px', background: T.bg, borderRadius: 20, border: `1px solid ${T.border}` }}>
                     <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 6 }}>WAF Status</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <ShieldAlert size={14} color={security.blocked ? T.danger : T.success} />
@@ -579,22 +579,22 @@ const SecurityPanel = ({ security, endpoint }) => {
                     </div>
                 </div>
             </div>
-            <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
+            <div style={{ padding: '22px 28px', background: T.bg, borderRadius: 20, border: `1px solid ${T.border}` }}>
                 <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 8 }}>Rules Triggered</div>
                 {security.rules_triggered.length === 0 ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: T.success }}>
                         <CheckCircle size={12} /> No rules triggered
                     </div>
                 ) : security.rules_triggered.map((r, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '6px 8px', background: `${T.danger}08`, borderRadius: 14, marginBottom: 4, border: `1px solid ${T.danger}20` }}>
+                    <div key={i} style={{ display: 'flex', gap: 20, alignItems: 'center', padding: '6px 8px', background: `${T.danger}08`, borderRadius: 20, marginBottom: 4, border: `1px solid ${T.danger}20` }}>
                         <AlertTriangle size={10} color={T.danger} />
                         <span style={{ fontSize: 10, color: T.danger }}>{r}</span>
                     </div>
                 ))}
             </div>
-            <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
+            <div style={{ padding: '22px 28px', background: T.bg, borderRadius: 20, border: `1px solid ${T.border}` }}>
                 <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 8 }}>TLS / Auth</div>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 20 }}>
                     <span className="metric-chip" style={{ background: `${T.success}10`, color: T.success, borderColor: `${T.success}20` }}><Lock size={9}/> TLS 1.3</span>
                     <span className="metric-chip" style={{ background: `${T.primary}10`, color: T.primary, borderColor: `${T.primary}20` }}><Fingerprint size={9}/> JWT HS256</span>
                     <span className="metric-chip" style={{ background: `${T.warning}10`, color: T.warning, borderColor: `${T.warning}20` }}><Eye size={9}/> Inspected</span>
@@ -608,7 +608,7 @@ const SecurityPanel = ({ security, endpoint }) => {
    GLOBAL STATS HEADER
    ═══════════════════════════════════════════════════════════════════════════ */
 const StatPill = ({ label, value, icon: Icon, color = T.primary, trend }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10, flexShrink: 0 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 22, padding: '14px 20px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 16, flexShrink: 0 }}>
         <Icon size={13} color={color} />
         <div>
             <div style={{ fontSize: 8, color: T.text3,  letterSpacing: '0.02em' }}>{label}</div>
@@ -635,11 +635,11 @@ const EndpointItem = ({ api, selected, onClick }) => {
         <div
             onClick={onClick}
             className={`row-item ${selected ? 'selected' : ''}`}
-            style={{ padding: '11px 12px', borderRadius: 6, marginBottom: 2, background: selected ? T.raised : 'transparent' }}
+            style={{ padding: '11px 12px', borderRadius: 18, marginBottom: 2, background: selected ? T.raised : 'transparent' }}
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <span style={{ fontSize: 8, fontWeight: 800, color: mColor, background: `${mColor}15`, padding: '2px 6px', borderRadius: 10, letterSpacing: '0.02em' }}>
+                    <span style={{ fontSize: 8, fontWeight: 800, color: mColor, background: `${mColor}15`, padding: '2px 6px', borderRadius: 16, letterSpacing: '0.02em' }}>
                         {api.method}
                     </span>
                     <span style={{ fontSize: 9, fontWeight: 700, color: T.text3 }}>v{api.version}</span>
@@ -671,9 +671,9 @@ const Skeleton = ({ h = 12, w = '100%', style = {} }) => (
     <div className="shimmer-line" style={{ height: h, width: w, ...style }} />
 );
 const LoadingState = () => (
-    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 22 }}>
         {[1,2,3,4,5].map(i => (
-            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <Skeleton h={10} w="40%" />
                 <Skeleton h={12} />
                 <Skeleton h={8} w="60%" />
@@ -822,8 +822,8 @@ const ApiQueriesTab = () => {
             <GlobalStyles />
 
             {/* ── Global Stats Bar ── */}
-            <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10, flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 22, marginBottom: 20, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '14px 20px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 16, flexShrink: 0 }}>
                     <div className="glow-dot" style={{ width: 7, height: 7, background: T.success }} />
                     <span style={{ fontSize: 10, fontWeight: 700, color: T.text1 }}>OPERATIONAL</span>
                 </div>
@@ -831,7 +831,7 @@ const ApiQueriesTab = () => {
                 <StatPill label="P99 Latency" value={`${animP99}ms`}     icon={Timer}       color={animP99 > 500 ? T.warning : T.success} trend={animP99 > 500 ? 1 : -1} />
                 <StatPill label="Error Rate"  value={`${errs}%`}         icon={AlertOctagon} color={errs > 5 ? T.danger : T.success} />
                 <StatPill label="Live Traffic" value=""                   icon={Zap}         color={T.primary} />
-                <div style={{ display: 'flex', alignItems: 'flex-end', height: 36, gap: 1.5, padding: '0 8px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-end', height: 36, gap: 1.5, padding: '0 8px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 16 }}>
                     {traffic.map((v, i) => (
                         <div key={i} style={{ width: 3, height: `${(v/80)*28}px`, background: T.primary, borderRadius: 1, opacity: 0.3 + (i/30)*0.7, transition: 'height 0.4s ease' }} />
                     ))}
@@ -842,10 +842,10 @@ const ApiQueriesTab = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 20, height: 'calc(100vh - 180px)' }}>
 
                 {/* ── LEFT: Endpoint List ── */}
-                <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 20, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     {/* Search + Filters */}
                     <div style={{ padding: 12, borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: T.bg, padding: '7px 10px', borderRadius: 7, border: `1px solid ${T.border}`, marginBottom: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, background: T.bg, padding: '7px 10px', borderRadius: 18, border: `1px solid ${T.border}`, marginBottom: 10 }}>
                             <Search size={11} color={T.text3} />
                             <input value={search} onChange={e => setSearch(e.target.value)}
                                    placeholder="Filter endpoints..."
@@ -855,7 +855,7 @@ const ApiQueriesTab = () => {
                         <div style={{ display: 'flex', gap: 4 }}>
                             {['ALL','GET','POST','PUT','DELETE'].map(m => (
                                 <button key={m} onClick={() => setFilterMethod(m)} style={{
-                                    padding: '3px 7px', borderRadius: 14, border: `1px solid ${filterMethod===m ? methodColor(m) : T.border}`,
+                                    padding: '3px 7px', borderRadius: 20, border: `1px solid ${filterMethod===m ? methodColor(m) : T.border}`,
                                     background: filterMethod===m ? `${methodColor(m)}15` : 'transparent',
                                     color: filterMethod===m ? methodColor(m) : T.text3,
                                     fontSize: 8, fontWeight: 700, cursor: 'pointer', fontFamily: THEME.fontMono,
@@ -867,7 +867,7 @@ const ApiQueriesTab = () => {
                     <div style={{ padding: '6px 8px', borderBottom: `1px solid ${T.border}`, display: 'flex', gap: 4, flexShrink: 0 }}>
                         {[['ALL','All'], ['OK','2xx / 3xx'], ['ERROR','5xx']].map(([v, l]) => (
                             <button key={v} onClick={() => setFilterStatus(v)} style={{
-                                padding: '3px 8px', borderRadius: 14, border: `1px solid ${filterStatus===v ? T.primary : T.border}`,
+                                padding: '3px 8px', borderRadius: 20, border: `1px solid ${filterStatus===v ? T.primary : T.border}`,
                                 background: filterStatus===v ? `${T.primary}10` : 'transparent',
                                 color: filterStatus===v ? T.primary : T.text3,
                                 fontSize: 8, fontWeight: 700, cursor: 'pointer', fontFamily: THEME.fontMono, transition: 'all 0.15s'
@@ -885,14 +885,14 @@ const ApiQueriesTab = () => {
 
                 {/* ── RIGHT: Detail ── */}
                 {selected && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, overflow: 'hidden', minHeight: 0 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, overflow: 'hidden', minHeight: 0 }}>
 
                         {/* Header Card */}
-                        <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: '16px 20px', flexShrink: 0 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 14 }}>
+                        <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 20, padding: '22px 28px', flexShrink: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 22, marginBottom: 14 }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                                        <span style={{ fontSize: 8, fontWeight: 800, color: methodColor(selected.method), background: `${methodColor(selected.method)}15`, padding: '3px 8px', borderRadius: 14, letterSpacing: '0.02em', flexShrink: 0 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 8 }}>
+                                        <span style={{ fontSize: 8, fontWeight: 800, color: methodColor(selected.method), background: `${methodColor(selected.method)}15`, padding: '3px 8px', borderRadius: 20, letterSpacing: '0.02em', flexShrink: 0 }}>
                                             {selected.method}
                                         </span>
                                         <span style={{ fontSize: 14, fontWeight: 700, color: T.text1, fontFamily: THEME.fontMono, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -922,13 +922,13 @@ const ApiQueriesTab = () => {
                                 </div>
 
                                 {/* Percentile mini-chart */}
-                                <div style={{ padding: '12px 16px', background: T.raised, borderRadius: 10, border: `1px solid ${T.border}`, minWidth: 200, flexShrink: 0 }}>
+                                <div style={{ padding: '18px 22px', background: T.raised, borderRadius: 16, border: `1px solid ${T.border}`, minWidth: 200, flexShrink: 0 }}>
                                     <div style={{ fontSize: 9, color: T.text3,  letterSpacing: '0.02em', marginBottom: 10 }}>Latency Percentiles</div>
                                     <PercentileBars p50={selected.p50} p95={selected.p95} p99={selected.p99} />
                                 </div>
 
                                 {/* Error heatmap */}
-                                <div style={{ padding: '12px 16px', background: T.raised, borderRadius: 10, border: `1px solid ${T.border}`, flexShrink: 0 }}>
+                                <div style={{ padding: '18px 22px', background: T.raised, borderRadius: 16, border: `1px solid ${T.border}`, flexShrink: 0 }}>
                                     <ErrorHeatmap errorRate={selected.error_rate} />
                                 </div>
                             </div>
@@ -944,7 +944,7 @@ const ApiQueriesTab = () => {
                         </div>
 
                         {/* Content area */}
-                        <div className="scroll-thin" style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, flex: 1, padding: 20, overflowY: 'auto', minHeight: 0 }}>
+                        <div className="scroll-thin" style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 20, flex: 1, padding: 20, overflowY: 'auto', minHeight: 0 }}>
 
                             {/* TRACE */}
                             {tab === 'trace' && (
@@ -962,7 +962,7 @@ const ApiQueriesTab = () => {
                                             <div style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em', marginBottom: 12 }}>
                                                 Service Graph
                                             </div>
-                                            <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12 }}>
+                                            <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 20, padding: 12 }}>
                                                 <DependencyGraph spans={selected.spans} />
                                             </div>
                                         </div>
@@ -972,7 +972,7 @@ const ApiQueriesTab = () => {
 
                             {/* LOGS */}
                             {tab === 'logs' && (
-                                <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <span style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em' }}>
                                             Correlated Logs · Trace ID: <span style={{ color: T.primary }}>8a92-b4c2-f711</span>
@@ -987,14 +987,14 @@ const ApiQueriesTab = () => {
 
                             {/* PAYLOAD */}
                             {tab === 'payload' && (
-                                <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                     <CurlBlock
                                         method={selected.method}
                                         url={`https://api.vigil.io${selected.endpoint}`}
                                         headers={selected.payload.headers}
                                         body={selected.payload.body || {}}
                                     />
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
                                         <JsonViewer data={selected.payload.headers} label="Request Headers" />
                                         <JsonViewer data={selected.payload.body || {}} label="Request Body" />
                                     </div>
@@ -1004,10 +1004,10 @@ const ApiQueriesTab = () => {
 
                             {/* RUM */}
                             {tab === 'rum' && (
-                                <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                     <div>
                                         <div style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em', marginBottom: 12 }}>Core Web Vitals</div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
                                             <WebVital label="LCP" value={selected.rum.lcp}  unit="s"  threshold={2.5} />
                                             <WebVital label="FID" value={selected.rum.fid}  unit="ms" threshold={100} />
                                             <WebVital label="CLS" value={selected.rum.cls}  unit=""   threshold={0.1} />
@@ -1015,16 +1015,16 @@ const ApiQueriesTab = () => {
                                     </div>
                                     <div>
                                         <div style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em', marginBottom: 12 }}>Container Resources</div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18 }}>
                                             <InfraGauge label="CPU"     value={selected.infra.cpu}     max={100} unit="%" color={T.primary} />
                                             <InfraGauge label="Memory"  value={selected.infra.memory}  max={4}   unit="GB" color={T.secondary} />
                                             <InfraGauge label="Network" value={selected.infra.network} max={200} unit="MB/s" color={T.cyan} />
                                             <InfraGauge label="Threads" value={selected.infra.threads} max={16}  unit="" color={T.warning} />
                                         </div>
                                     </div>
-                                    <div style={{ padding: '12px 14px', background: T.bg, borderRadius: 8, border: `1px solid ${T.border}` }}>
+                                    <div style={{ padding: '22px 28px', background: T.bg, borderRadius: 20, border: `1px solid ${T.border}` }}>
                                         <div style={{ fontSize: 9, fontWeight: 700, color: T.text3,  letterSpacing: '0.02em', marginBottom: 10 }}>Client Context</div>
-                                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                                             <span className="metric-chip" style={{ background: `${T.primary}10`, color: T.primary, borderColor: `${T.primary}20` }}>
                                                 <Monitor size={9}/> {selected.rum.browser}
                                             </span>

@@ -22,15 +22,15 @@ const CapStyles = () => (
         .analytics-card {
             background: ${THEME.surface};
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
             backdrop-filter: blur(12px);
             transition: all 0.25s ease;
         }
         .analytics-card:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-4px);
         }
         .analytics-card-ribbon {
             height: 50px;
@@ -38,7 +38,7 @@ const CapStyles = () => (
             display: flex;
             align-items: center;
             padding: 0 20px;
-            gap: 12px;
+            gap: 18px;
             color: white;
             font-weight: 600;
             font-size: 13px;
@@ -52,7 +52,7 @@ const CapStyles = () => (
             font-size: 11px;
             font-weight: 700;
             padding: 4px 8px;
-            border-radius: 10px;
+            border-radius: 20px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -63,7 +63,7 @@ const CapStyles = () => (
             border: 1px solid ${THEME.glassBorder};
             color: ${THEME.textMain};
             padding: 8px;
-            border-radius: 10px;
+            border-radius: 20px;
             width: 100%;
             font-size: 12px;
             box-sizing: border-box;
@@ -71,11 +71,11 @@ const CapStyles = () => (
 
         .rec-item {
             padding: 14px;
-            border-radius: 14px;
+            border-radius: 20px;
             background: ${THEME.surfaceHigh};
             border: 1px solid ${THEME.glassBorder};
             margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05);
         }
 
         .export-btn:hover { opacity: 0.85; }
@@ -83,7 +83,7 @@ const CapStyles = () => (
 
         .window-btn {
             padding: 6px 14px;
-            border-radius: 12px;
+            border-radius: 22px;
             font-size: 11px;
             font-weight: 600;
             cursor: pointer;
@@ -193,10 +193,10 @@ const GaugeBar = ({ used, total, color, unit = '' }) => {
                 <span>{used}{unit} used</span>
                 <span style={{ color: barColor, fontWeight: 700 }}>{pct}%</span>
             </div>
-            <div style={{ height: 4, background: THEME.glassBorder, borderRadius: 4 }}>
+            <div style={{ height: 4, background: THEME.glassBorder, borderRadius: 16 }}>
                 <div style={{
                     width: `${pct}%`, height: '100%',
-                    background: barColor, borderRadius: 14,
+                    background: barColor, borderRadius: 20,
                     transition: 'width 0.6s ease'
                 }} />
             </div>
@@ -253,7 +253,7 @@ const RecommendationCard = ({ rec }) => {
                         <div style={{
                             position: 'absolute', bottom: '120%', right: 0,
                             background: THEME.surfaceHigh, border: `1px solid ${THEME.glassBorder}`,
-                            borderRadius: 6, padding: '8px 10px', fontSize: 11,
+                            borderRadius: 18, padding: '8px 10px', fontSize: 11,
                             color: THEME.textDim, width: 220, zIndex: 10,
                             lineHeight: 1.5, boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
                         }}>
@@ -262,7 +262,7 @@ const RecommendationCard = ({ rec }) => {
                     )}
                     <button
                         className="action-btn"
-                        style={{ padding: '4px 10px', borderRadius: 14, background: THEME.bg, border: `1px solid ${THEME.glassBorder}`, color: THEME.textMain, fontSize: 10, cursor: 'pointer' }}
+                        style={{ padding: '4px 10px', borderRadius: 20, background: THEME.bg, border: `1px solid ${THEME.glassBorder}`, color: THEME.textMain, fontSize: 10, cursor: 'pointer' }}
                     >
                         {rec.action}
                     </button>
@@ -348,7 +348,7 @@ const CapacityPlanningTab = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, marginTop: 12 }}>
                 <div>
                     <h1 style={{ fontSize: 24, fontWeight: 800, color: THEME.textMain, margin: 0 }}>Capacity Planning</h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 6, fontSize: 12, color: THEME.textDim }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginTop: 6, fontSize: 12, color: THEME.textDim }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                             <Calendar size={13} color={THEME.primary} />
                             Forecast Window:
@@ -365,22 +365,22 @@ const CapacityPlanningTab = () => {
                         </span>
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 20 }}>
                     <button
                         className="export-btn"
                         onClick={exportForecast}
-                        style={{ background: THEME.surface, color: THEME.textMain, border: `1px solid ${THEME.glassBorder}`, padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', gap: 6, alignItems: 'center' }}
+                        style={{ background: THEME.surface, color: THEME.textMain, border: `1px solid ${THEME.glassBorder}`, padding: '14px 20px', borderRadius: 18, cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', gap: 6, alignItems: 'center' }}
                     >
                         <Database size={14} /> Export CSV
                     </button>
-                    <button style={{ background: THEME.primary, color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <button style={{ background: THEME.primary, color: '#fff', border: 'none', padding: '14px 20px', borderRadius: 18, cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', gap: 6, alignItems: 'center' }}>
                         <Calculator size={14} /> Run What-If Scenario
                     </button>
                 </div>
             </div>
 
             {/* ── KPI Tiles ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 22, marginBottom: 24 }}>
                 <StatTile
                     label="Storage Runway"
                     value={daysUntilFull}
@@ -525,7 +525,7 @@ const CapacityPlanningTab = () => {
                             <span>What-If Modeling</span>
                         </div>
                         <div className="analytics-card-body">
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                                 <div>
                                     <label style={{ fontSize: 11, color: THEME.textDim, display: 'block', marginBottom: 4 }}>Expected Data Growth (%)</label>
                                     <input
@@ -544,7 +544,7 @@ const CapacityPlanningTab = () => {
                                         onChange={e => setScenario({ ...scenario, users: e.target.value })}
                                     />
                                 </div>
-                                <div style={{ marginTop: 4, padding: 12, background: `${THEME.primary}10`, borderRadius: 8, border: `1px solid ${THEME.primary}30` }}>
+                                <div style={{ marginTop: 4, padding: 12, background: `${THEME.primary}10`, borderRadius: 20, border: `1px solid ${THEME.primary}30` }}>
                                     <div style={{ fontSize: 11, fontWeight: 700, color: THEME.primary, marginBottom: 6 }}>Impact Analysis</div>
                                     <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.8 }}>
                                         • Storage runway: <strong style={{ color: scenarioImpact.daysLeft < 30 ? THEME.danger : THEME.textMain }}>{scenarioImpact.daysLeft} days</strong><br />
@@ -564,7 +564,7 @@ const CapacityPlanningTab = () => {
                             <span>Alert Thresholds</span>
                         </div>
                         <div className="analytics-card-body">
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                                         <label style={{ fontSize: 11, color: THEME.textDim }}>Storage Warning</label>
