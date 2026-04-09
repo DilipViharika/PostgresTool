@@ -30,9 +30,9 @@ import { useTheme } from '../../context/ThemeContext';
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  STYLES
+//  STYLES — generated at render time so THEME tokens reflect current mode
 // ─────────────────────────────────────────────────────────────────────────────
-const STYLES = `
+const getStyles = () => `
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -306,7 +306,7 @@ const LoginPage = () => {
 
     return (
         <div style={{ height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative', fontFamily: fontDisplay }}>
-            <style>{STYLES}</style>
+            <style>{getStyles()}</style>
 
             {/* ═══ BACKGROUND ═══ */}
             <div style={{
