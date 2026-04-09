@@ -3,7 +3,9 @@ import { ChevronLeft, ChevronRight, Database, LogOut, MessageSquarePlus, User, U
 import { useConnection } from '../../context/ConnectionContext';
 import { DS } from '../../config/designTokens';
 import { THEME } from '../../utils/theme';
-import { SECTION_GROUPS } from '../../config/tabConfig';
+import { buildTabConfig, getSectionGroups } from '../../config/tabConfig';
+
+const SECTION_GROUPS = getSectionGroups(buildTabConfig());
 
 const getSectionForTab = (tabId) => {
     for (const g of SECTION_GROUPS) {
