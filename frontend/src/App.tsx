@@ -323,7 +323,7 @@ const AppStyles = () => (
         @keyframes waveFlow        { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes dotBlink        { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-        /* ═══ VIGIL VISUAL OVERHAUL — Auto-targeting CSS ═══ */
+        /* ═══ VIGIL VISUAL OVERHAUL — Aggressive inline-style targeting ═══ */
 
         /* ── Sidebar: clean background ── */
         aside {
@@ -377,13 +377,93 @@ const AppStyles = () => (
             animation: tabIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
+        /* ═══ AGGRESSIVE INLINE-STYLE TARGETING FOR .tab-mount ═══ */
+
+        /* ── Target ALL divs with inline background inside .tab-mount ── */
+        .tab-mount div[style*="background"] {
+            border-radius: 20px !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        /* ── Target card-like containers with both borderRadius AND boxShadow ── */
+        .tab-mount div[style*="borderRadius"][style*="boxShadow"],
+        .tab-mount div[style*="border-radius"][style*="box-shadow"] {
+            border-radius: 20px !important;
+            border-left: 4px solid rgba(99,102,241,0.8) !important;
+            box-shadow: ${DS._dark
+                ? '0 8px 32px rgba(0,0,0,0.4), 0 4px 16px rgba(99,102,241,0.12), inset 0 1px 0 rgba(255,255,255,0.06)'
+                : '0 8px 28px rgba(0,0,0,0.12), 0 4px 14px rgba(99,102,241,0.08), inset 0 1px 0 rgba(255,255,255,0.7)'
+            } !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .tab-mount div[style*="borderRadius"][style*="boxShadow"]:hover,
+        .tab-mount div[style*="border-radius"][style*="box-shadow"]:hover {
+            border-left-color: rgba(99,102,241,1) !important;
+            box-shadow: ${DS._dark
+                ? '0 12px 48px rgba(0,0,0,0.5), 0 8px 24px rgba(99,102,241,0.2), inset 0 1px 0 rgba(255,255,255,0.08)'
+                : '0 12px 40px rgba(0,0,0,0.15), 0 8px 20px rgba(99,102,241,0.12), inset 0 1px 0 rgba(255,255,255,0.8)'
+            } !important;
+            transform: translateY(-4px) !important;
+        }
+
+        /* ── Target stat/metric values inside .tab-mount (large font sizes) ── */
+        .tab-mount span[style*="fontSize: 2"],
+        .tab-mount span[style*="font-size: 2"],
+        .tab-mount div[style*="fontSize: 2"],
+        .tab-mount div[style*="font-size: 2"] {
+            background: linear-gradient(135deg, ${DS._dark ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.3)'}, rgba(99,102,241,0.8)) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.03em !important;
+        }
+
+        /* ── Target header-like elements with borderBottom AND padding ── */
+        .tab-mount div[style*="borderBottom"][style*="padding"],
+        .tab-mount div[style*="border-bottom"][style*="padding"] {
+            background: linear-gradient(135deg, ${DS._dark ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.04)'}, transparent) !important;
+            border-bottom-color: ${DS._dark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.15)'} !important;
+            transition: all 0.25s ease !important;
+        }
+
+        /* ── Add hover lift to all interactive cursor-pointer elements ── */
+        .tab-mount div[style*="cursor: pointer"],
+        .tab-mount div[style*="cursor:pointer"] {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            cursor: pointer !important;
+        }
+
+        .tab-mount div[style*="cursor: pointer"]:hover,
+        .tab-mount div[style*="cursor:pointer"]:hover {
+            transform: translateY(-3px) scale(1.01) !important;
+            box-shadow: 0 12px 32px rgba(99,102,241,0.18), 0 4px 12px ${DS._dark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.08)'} !important;
+        }
+
+        /* ── Target grid containers to increase gap ── */
+        .tab-mount div[style*="display: grid"],
+        .tab-mount div[style*="display:grid"] {
+            gap: 20px !important;
+        }
+
+        /* ── Target flex layouts with intelligent spacing ── */
+        .tab-mount div[style*="display: flex"],
+        .tab-mount div[style*="display:flex"] {
+            transition: all 0.25s ease !important;
+        }
+
         /* ═══ VIGIL GLOBAL VISUAL OVERHAUL ═══ */
 
-        /* ── Cards: glass depth & elevation ── */
+        /* ── Cards: glass depth & elevation with accent borders ── */
         [class*="-card"],
         [class*="_card"],
-        [class*="Card"] {
-            border-radius: 16px !important;
+        [class*="Card"],
+        .glass-card {
+            border-radius: 20px !important;
+            border-left: 4px solid rgba(99,102,241,0.8) !important;
             box-shadow: ${DS._dark
                 ? '0 4px 16px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.04)'
                 : '0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6)'
@@ -391,18 +471,21 @@ const AppStyles = () => (
             backdrop-filter: blur(12px) !important;
             -webkit-backdrop-filter: blur(12px) !important;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-            border: 1px solid ${DS._dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'} !important;
+            border-top: 1px solid ${DS._dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'} !important;
+            border-right: 1px solid ${DS._dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'} !important;
+            border-bottom: 1px solid ${DS._dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'} !important;
         }
 
         [class*="-card"]:hover,
         [class*="_card"]:hover,
-        [class*="Card"]:hover {
+        [class*="Card"]:hover,
+        .glass-card:hover {
             box-shadow: ${DS._dark
                 ? '0 8px 28px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)'
                 : '0 6px 20px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)'
             } !important;
             transform: translateY(-2px) !important;
-            border-color: ${DS._dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.09)'} !important;
+            border-left-color: rgba(99,102,241,1) !important;
         }
 
         /* ── Panels & sections: subtle depth ── */
@@ -418,15 +501,16 @@ const AppStyles = () => (
             } !important;
         }
 
-        /* ── Card headers: prominent & distinct ── */
+        /* ── Card headers: prominent & distinct with gradient ── */
         [class*="-card-header"],
         [class*="_card_header"],
         [class*="card-header"],
         [class*="CardHeader"] {
-            background: ${DS._dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)'} !important;
+            background: linear-gradient(135deg, ${DS._dark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.06)'}, transparent) !important;
             padding: 14px 20px !important;
-            border-bottom: 1px solid ${DS._dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'} !important;
+            border-bottom: 1px solid ${DS._dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'} !important;
             font-weight: 700 !important;
+            border-radius: 20px 20px 0 0 !important;
         }
 
         /* ── Row items: better hover ── */
@@ -439,16 +523,18 @@ const AppStyles = () => (
             background: ${DS._dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'} !important;
         }
 
-        /* ── Metric badges: modern rounded ── */
+        /* ── Metric badges: modern rounded with gradient ── */
         [class*="-badge"],
         [class*="_badge"],
         [class*="Badge"] {
             border-radius: 20px !important;
             font-weight: 600 !important;
             letter-spacing: 0.01em !important;
+            background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.08)) !important;
+            border: 1px solid rgba(99,102,241,0.3) !important;
         }
 
-        /* ── Stat values: weight & spacing ── */
+        /* ── Stat values: weight & spacing with gradient ── */
         [class*="-stat"],
         [class*="_stat"],
         [class*="-value"],
@@ -457,7 +543,7 @@ const AppStyles = () => (
             letter-spacing: -0.02em !important;
         }
 
-        /* ── Primary buttons: elevated with glow ── */
+        /* ── Primary buttons: elevated with enhanced glow ── */
         button[style*="background: linear-gradient"],
         button[style*="background:linear-gradient"],
         button[style*="background: #6366f1"],
@@ -465,10 +551,28 @@ const AppStyles = () => (
         button[style*="background: rgb(99"],
         [class*="-btn-primary"],
         [class*="_btn_primary"] {
-            box-shadow: 0 4px 14px rgba(99,102,241,0.30), 0 1px 3px rgba(99,102,241,0.15) !important;
-            border-radius: 12px !important;
+            box-shadow: 0 4px 20px rgba(99,102,241,0.35), 0 1px 3px rgba(99,102,241,0.15) !important;
+            border-radius: 14px !important;
             font-weight: 600 !important;
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button[style*="background: linear-gradient"]::before,
+        button[style*="background:linear-gradient"]::before,
+        button[style*="background: #6366f1"]::before,
+        button[style*="background:#6366f1"]::before,
+        [class*="-btn-primary"]::before,
+        [class*="_btn_primary"]::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -200%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
         }
 
         button[style*="background: linear-gradient"]:hover,
@@ -477,7 +581,7 @@ const AppStyles = () => (
         button[style*="background:#6366f1"]:hover,
         [class*="-btn-primary"]:hover,
         [class*="_btn_primary"]:hover {
-            box-shadow: 0 6px 22px rgba(99,102,241,0.40), 0 2px 6px rgba(99,102,241,0.20) !important;
+            box-shadow: 0 6px 28px rgba(99,102,241,0.45), 0 2px 8px rgba(99,102,241,0.25) !important;
             transform: translateY(-2px) scale(1.02) !important;
         }
 
@@ -520,7 +624,7 @@ const AppStyles = () => (
             -webkit-backdrop-filter: blur(16px) !important;
         }
 
-        /* Tables: clean modern styling */
+        /* Tables: clean modern styling with gradient headers */
         table {
             border-collapse: separate !important;
             border-spacing: 0 !important;
@@ -532,8 +636,8 @@ const AppStyles = () => (
             font-size: 11px !important;
             font-weight: 700 !important;
             padding: 14px 18px !important;
-            background: ${DS._dark ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.025)'} !important;
-            border-bottom: 1px solid ${DS._dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'} !important;
+            background: linear-gradient(135deg, ${DS._dark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.06)'}, transparent) !important;
+            border-bottom: 2px solid ${DS._dark ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.15)'} !important;
             color: ${DS.textMuted} !important;
         }
 
@@ -634,6 +738,12 @@ const AppStyles = () => (
             } !important;
         }
 
+        /* ═══ ANIMATED BACKGROUND ORBS/GLOW ═══ */
+        @keyframes orbGlow {
+            0%, 100% { opacity: 0.3; transform: translate(0, 0) scale(1); }
+            50% { opacity: 0.5; transform: translate(20px, -10px) scale(1.05); }
+        }
+
         @keyframes meshGradient {
             0%, 100% { background-position: 0% 0%; }
             25% { background-position: 100% 0%; }
@@ -644,6 +754,21 @@ const AppStyles = () => (
         @keyframes subtleFloat {
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-12px) rotate(1deg); }
+        }
+
+        /* Subtle ambient orb behind main content */
+        .tab-mount::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(99,102,241,0.08), transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: orbGlow 8s ease-in-out infinite;
+            z-index: 0;
         }
 
         body {
@@ -659,8 +784,6 @@ const AppStyles = () => (
         main, [role="main"] {
             position: relative;
         }
-
-        /* Ambient orbs removed for clean modern look */
 
         /* ── Scrollbar styling (sidebar + main content) ── */
         .sidebar-nav::-webkit-scrollbar { width: 3px; }

@@ -465,10 +465,13 @@ export const GlassCard = ({
             {...hoverProps}
             className="glass-card"
             style={{
-                background: _AT.surface,
-                borderRadius: '16px',
+                background: `linear-gradient(135deg, ${_AT.surface} 0%, ${_AT.surfaceHover} 60%)`,
+                backdropFilter: 'blur(16px)',
+                borderRadius: '20px',
                 border: `1px solid ${_AT.glassBorder}`,
-                boxShadow: hovered ? _AT.shadowMd : _AT.shadowSm,
+                boxShadow: hovered
+                    ? `0 0 24px ${accent}40, inset 1px 1px 0 rgba(255,255,255,0.05)`
+                    : `inset 1px 1px 0 rgba(255,255,255,0.05), ${_AT.shadowSm}`,
                 display: 'flex',
                 flexDirection: 'column',
                 position: maximized ? 'fixed' : 'relative',
@@ -477,12 +480,40 @@ export const GlassCard = ({
                 overflow: 'hidden',
                 animation: 'fadeInUp 0.3s ease-out backwards',
                 transition: 'box-shadow 0.2s ease, transform 0.2s ease',
-                transform: hovered ? 'translateY(-1px)' : 'translateY(0)',
+                transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
                 ...style,
             }}
         >
-            {/* Accent top strip */}
-            {title && <div style={{ height: 3, background: accent, opacity: 0.6, flexShrink: 0 }} />}
+            {/* Decorative gradient orb in top-right corner */}
+            {title && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: -20,
+                        right: -20,
+                        width: 60,
+                        height: 60,
+                        borderRadius: '50%',
+                        background: accent,
+                        opacity: 0.08,
+                        filter: 'blur(20px)',
+                        pointerEvents: 'none',
+                        zIndex: 0,
+                    }}
+                />
+            )}
+
+            {/* Accent top strip with gradient */}
+            {title && (
+                <div
+                    style={{
+                        height: 4,
+                        background: `linear-gradient(90deg, ${accent} 0%, ${accent}80 100%)`,
+                        flexShrink: 0,
+                        zIndex: 1,
+                    }}
+                />
+            )}
 
             {/* Header */}
             {(title || rightNode || onClose || maximizable) && (
@@ -491,8 +522,8 @@ export const GlassCard = ({
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        padding: '13px 18px',
-                        borderBottom: `1px solid ${_AT.glassBorder}`,
+                        padding: '16px 22px',
+                        background: `linear-gradient(180deg, ${accent}0f 0%, transparent 100%)`,
                         position: 'relative',
                         zIndex: 2,
                         cursor: draggable ? 'grab' : 'default',
@@ -520,8 +551,8 @@ export const GlassCard = ({
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <h3
                                     style={{
-                                        fontSize: 13,
-                                        fontWeight: 600,
+                                        fontSize: 14,
+                                        fontWeight: 700,
                                         color: _AT.textMain,
                                         letterSpacing: '0.01em',
                                         margin: 0,
@@ -571,7 +602,7 @@ export const GlassCard = ({
                         minHeight: 0,
                         position: 'relative',
                         zIndex: 1,
-                        padding: 20,
+                        padding: '20px 22px',
                         opacity: loading ? 0.35 : 1,
                         transition: 'opacity 0.3s',
                     }}
