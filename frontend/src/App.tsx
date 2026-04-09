@@ -153,7 +153,57 @@ const ConnectionSwitcherLazy = lazyRetry(() => import('./components/layout/Conne
 
 // Shared — Per-section error boundary for graceful tab-level recovery (eager — must be class component)
 import SectionErrorBoundary from './components/shared/SectionErrorBoundary';
-const ErrorBoundary = SectionErrorBoundary;
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+    static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+    }
+    componentDidCatch(error, errorInfo) {
+        console.error('ErrorBoundary caught:', error, errorInfo);
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div style={{
+                    padding: 40, color: '#f0f4ff', background: '#0f1923',
+                    minHeight: '100vh', fontFamily: 'sans-serif',
+                }}>
+                    <h2 style={{ color: '#fb7185' }}>Something went wrong</h2>
+                    <p style={{ color: '#fb7185', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                        {this.state.error?.message}
+                    </p>
+                    <pre style={{ color: '#8b9ab8', fontSize: 12, marginTop: 16, whiteSpace: 'pre-wrap', maxHeight: 300, overflow: 'auto' }}>
+                        {this.state.error?.stack}
+                    </pre>
+                    <button
+                        onClick={() => this.setState({ hasError: false, error: null })}
+                        style={{
+                            marginTop: 20, padding: '10px 24px', background: '#6366f1',
+                            color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer',
+                            fontWeight: 600, marginRight: 12,
+                        }}
+                    >
+                        Retry
+                    </button>
+                    <button
+                        onClick={() => window.location.href = '/'}
+                        style={{
+                            marginTop: 20, padding: '10px 24px', background: 'transparent',
+                            color: '#8b9ab8', border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: 8, cursor: 'pointer',
+                        }}
+                    >
+                        Overview
+                    </button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 import CommandPalette from './components/shared/CommandPalette';
 
 // Enterprise edition
