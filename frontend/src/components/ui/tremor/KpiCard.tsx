@@ -1,6 +1,6 @@
 /**
- * KPI / Metric Card — Modern visual redesign with gradient backgrounds,
- * glowing accents, decorative elements, and enhanced visual hierarchy.
+ * KPI / Metric Card — Clean, minimal, premium.
+ * Rich feel through typography, spacing, and subtle color accents.
  */
 import React from 'react';
 import { THEME } from '../../../utils/theme';
@@ -29,194 +29,100 @@ const KpiCard: React.FC<KpiCardProps> = ({
   color,
   healthy,
   sparkline,
-}) => {
-  // Helper to convert hex to RGB for gradient/glow effects
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
-      : '100, 100, 100';
-  };
-
-  const accentRgb = hexToRgb(color);
-  const accentLight = `rgba(${accentRgb}, 0.08)`;
-  const accentGlow = `rgba(${accentRgb}, 0.24)`;
-
-  return (
+}) => (
+  <div
+    className="vigil-card ov-metric-card"
+    style={{
+      display: 'flex',
+      flexDirection: 'row',
+      gap: 16,
+      padding: '20px',
+      borderRadius: 16,
+      background: THEME.surface,
+      border: `1px solid ${THEME.glassBorder}`,
+      borderTop: `2px solid ${color}`,
+      position: 'relative',
+      overflow: 'hidden',
+      boxShadow: THEME.shadowSm,
+      transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
+    }}
+  >
+    {/* Icon */}
     <div
-      className="ov-metric-card"
       style={{
-        position: 'relative',
-        overflow: 'hidden',
-        borderRadius: '20px',
-        // Gradient background from surface to faint accent tint
-        background: `linear-gradient(135deg, ${THEME.surface} 0%, ${accentLight} 100%)`,
-        border: `1px solid ${THEME.glassBorder}`,
-        // Gradient left border (4px)
-        borderLeft: `4px solid`,
-        borderImage: `linear-gradient(180deg, ${color} 0%, ${color}40 100%) 1`,
-        // Backdrop blur effect
-        backdropFilter: 'blur(12px)',
-        boxShadow: `0 8px 32px rgba(0, 0, 0, 0.1), 0 0 20px ${accentGlow}`,
-        padding: '24px',
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        flexShrink: 0,
         display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        minHeight: '160px',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: `${color}10`,
       }}
     >
-      {/* Top-right decorative gradient orb */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '-40px',
-          right: '-40px',
-          width: '180px',
-          height: '180px',
-          borderRadius: '50%',
-          background: `radial-gradient(circle, ${color}12 0%, transparent 70%)`,
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
-      />
+      <Icon size={20} color={color} strokeWidth={2} />
+    </div>
 
-      {/* Main content container */}
+    {/* Content */}
+    <div style={{ flex: 1, minWidth: 0 }}>
       <div
         style={{
-          position: 'relative',
-          zIndex: 1,
-          display: 'flex',
-          gap: '16px',
+          fontSize: 11,
+          color: THEME.textMuted,
+          fontWeight: 600,
+          lineHeight: 1,
+          marginBottom: 6,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
         }}
       >
-        {/* Icon box — gradient background with glow shadow */}
-        <div
+        {label}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+        <span
+          className="ov-mono"
           style={{
-            width: '48px',
-            height: '48px',
-            minWidth: '48px',
-            borderRadius: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            // Gradient from 40% to 15% opacity
-            background: `linear-gradient(135deg, ${color}66 0%, ${color}26 100%)`,
-            boxShadow: `0 0 24px ${accentGlow}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+            fontSize: 28,
+            fontWeight: 800,
+            color: THEME.textMain,
+            lineHeight: 1,
+            letterSpacing: '-0.03em',
           }}
         >
-          <Icon size={24} color={color} strokeWidth={2.2} />
-        </div>
-
-        {/* Text content */}
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-          }}
-        >
-          {/* Label with colored dot */}
-          <div
-            style={{
-              fontSize: '11px',
-              color: THEME.textMuted,
-              fontWeight: 600,
-              lineHeight: 1,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: color,
-                opacity: 0.8,
-              }}
-            />
-            {label}
-          </div>
-
-          {/* Value with text-shadow */}
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-            <span
-              className="ov-mono"
-              style={{
-                fontSize: '28px',
-                fontWeight: 800,
-                color: THEME.textMain,
-                lineHeight: 1,
-                letterSpacing: '-0.03em',
-                textShadow: `0 2px 8px rgba(0, 0, 0, 0.1)`,
-              }}
-            >
-              {value}
-            </span>
-            {sub && (
-              <span
-                style={{
-                  fontSize: '12px',
-                  color: THEME.textDim,
-                  fontWeight: 500,
-                  letterSpacing: '0.01em',
-                }}
-              >
-                {sub}
-              </span>
-            )}
-          </div>
-        </div>
+          {value}
+        </span>
+        {sub && (
+          <span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 500 }}>
+            {sub}
+          </span>
+        )}
       </div>
 
-      {/* Sparkline section */}
-      {sparkline && (
-        <div
-          style={{
-            marginTop: '4px',
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          {sparkline}
-        </div>
-      )}
+      {sparkline && <div style={{ marginTop: 8 }}>{sparkline}</div>}
 
-      {/* Detail row with pill-shaped background */}
       {detail && (
         <div
           style={{
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: '6px',
-            marginTop: '4px',
-            padding: '6px 10px',
-            borderRadius: '20px',
-            background: healthy
-              ? `rgba(${hexToRgb(THEME.success)}, 0.1)`
-              : `rgba(${hexToRgb(THEME.warning)}, 0.1)`,
-            width: 'fit-content',
-            position: 'relative',
-            zIndex: 1,
+            gap: 5,
+            marginTop: 8,
+            padding: '3px 8px',
+            borderRadius: 6,
+            background: healthy ? `${THEME.success}10` : `${THEME.warning}10`,
           }}
         >
           {healthy ? (
-            <CheckCircle size={14} color={THEME.success} strokeWidth={2.5} />
+            <CheckCircle size={12} color={THEME.success} />
           ) : (
-            <AlertTriangle size={14} color={THEME.warning} strokeWidth={2.5} />
+            <AlertTriangle size={12} color={THEME.warning} />
           )}
           <span
             className="ov-mono"
             style={{
-              fontSize: '11px',
+              fontSize: 11,
               fontWeight: 700,
               color: healthy ? THEME.success : THEME.warning,
-              letterSpacing: '0.01em',
             }}
           >
             {detail}
@@ -224,7 +130,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  </div>
+);
 
 export default KpiCard;

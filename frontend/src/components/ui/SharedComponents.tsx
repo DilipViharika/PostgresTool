@@ -463,15 +463,12 @@ export const GlassCard = ({
     return (
         <div
             {...hoverProps}
-            className="glass-card"
+            className="vigil-card glass-card"
             style={{
-                background: `linear-gradient(135deg, ${_AT.surface} 0%, ${_AT.surfaceHover} 60%)`,
-                backdropFilter: 'blur(16px)',
-                borderRadius: '20px',
+                background: _AT.surface,
+                borderRadius: 16,
                 border: `1px solid ${_AT.glassBorder}`,
-                boxShadow: hovered
-                    ? `0 0 24px ${accent}40, inset 1px 1px 0 rgba(255,255,255,0.05)`
-                    : `inset 1px 1px 0 rgba(255,255,255,0.05), ${_AT.shadowSm}`,
+                boxShadow: hovered ? _AT.shadowMd : _AT.shadowSm,
                 display: 'flex',
                 flexDirection: 'column',
                 position: maximized ? 'fixed' : 'relative',
@@ -479,38 +476,18 @@ export const GlassCard = ({
                 zIndex: maximized ? 1000 : undefined,
                 overflow: 'hidden',
                 animation: 'fadeInUp 0.3s ease-out backwards',
-                transition: 'box-shadow 0.2s ease, transform 0.2s ease',
-                transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+                transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
                 ...style,
             }}
         >
-            {/* Decorative gradient orb in top-right corner */}
+            {/* Thin accent top line */}
             {title && (
                 <div
                     style={{
-                        position: 'absolute',
-                        top: -20,
-                        right: -20,
-                        width: 60,
-                        height: 60,
-                        borderRadius: '50%',
+                        height: 2,
                         background: accent,
-                        opacity: 0.08,
-                        filter: 'blur(20px)',
-                        pointerEvents: 'none',
-                        zIndex: 0,
-                    }}
-                />
-            )}
-
-            {/* Accent top strip with gradient */}
-            {title && (
-                <div
-                    style={{
-                        height: 4,
-                        background: `linear-gradient(90deg, ${accent} 0%, ${accent}80 100%)`,
+                        opacity: 0.5,
                         flexShrink: 0,
-                        zIndex: 1,
                     }}
                 />
             )}
@@ -522,8 +499,8 @@ export const GlassCard = ({
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        padding: '16px 22px',
-                        background: `linear-gradient(180deg, ${accent}0f 0%, transparent 100%)`,
+                        padding: '13px 18px',
+                        borderBottom: `1px solid ${_AT.glassBorder}`,
                         position: 'relative',
                         zIndex: 2,
                         cursor: draggable ? 'grab' : 'default',
@@ -551,8 +528,8 @@ export const GlassCard = ({
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <h3
                                     style={{
-                                        fontSize: 14,
-                                        fontWeight: 700,
+                                        fontSize: 13,
+                                        fontWeight: 600,
                                         color: _AT.textMain,
                                         letterSpacing: '0.01em',
                                         margin: 0,
@@ -602,7 +579,7 @@ export const GlassCard = ({
                         minHeight: 0,
                         position: 'relative',
                         zIndex: 1,
-                        padding: '20px 22px',
+                        padding: '16px 18px',
                         opacity: loading ? 0.35 : 1,
                         transition: 'opacity 0.3s',
                     }}
