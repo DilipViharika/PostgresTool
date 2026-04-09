@@ -2,7 +2,7 @@
  * routes/schemaRoutes.js
  * ──────────────────────
  * Schema relationships, dependencies, and column details.
- * Provides data for the Schema Browser, Schema Visualizer, and Table Dependencies tabs.
+ * Provides data for the Table Dependencies tab.
  *
  * Mount with:
  *   app.use('/api', schemaRoutes(pool, authenticate, reqPool));

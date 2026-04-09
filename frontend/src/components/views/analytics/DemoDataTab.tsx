@@ -74,7 +74,6 @@ const DATABASE_STRUCTURE = {
         name: 'Data Governance',
         tabs: [
           { name: 'Schema & Migrations', metrics: [{ label: 'Tables', value: '234', unit: '' }, { label: 'Views', value: '89', unit: '' }, { label: 'Pending Migrations', value: '0', unit: '' }, { label: 'Last Migration', value: '3', unit: 'days' }] },
-          { name: 'Schema Visualizer', metrics: [{ label: 'Relations', value: '456', unit: '' }, { label: 'Foreign Keys', value: '178', unit: '' }, { label: 'Constraints', value: '234', unit: '' }, { label: 'Triggers', value: '42', unit: '' }] },
           { name: 'Security & Compliance', metrics: [{ label: 'Roles', value: '18', unit: '' }, { label: 'Policies', value: '23', unit: '' }, { label: 'Audit Events', value: '12,450', unit: '/day' }, { label: 'Failed Auth', value: '0', unit: '' }, { label: 'RLS Policies', value: '12', unit: '' }, { label: 'Column Encryption', value: '8', unit: 'tables' }, { label: 'SSL Connections', value: '100', unit: '%' }, { label: 'pg_audit Events', value: '5,600', unit: '/day' }] },
         ]
       },
@@ -267,7 +266,6 @@ const DATABASE_STRUCTURE = {
         id: 'schema',
         name: 'Schema Management',
         tabs: [
-          { name: 'Schema Browser', metrics: [{ label: 'Databases', value: '23', unit: '' }, { label: 'Tables', value: '456', unit: '' }, { label: 'Views', value: '78', unit: '' }, { label: 'Procedures', value: '45', unit: '' }, { label: 'Triggers', value: '12', unit: '' }, { label: 'Events', value: '8', unit: '' }, { label: 'Functions', value: '34', unit: '' }, { label: 'Partitioned Tables', value: '23', unit: '' }] },
           { name: 'User Privileges', metrics: [{ label: 'Users', value: '34', unit: '' }, { label: 'Roles', value: '8', unit: '' }, { label: 'Grants', value: '234', unit: '' }, { label: 'Host Restrictions', value: '18', unit: '' }] },
           { name: 'Audit Log', metrics: [{ label: 'Log Entries', value: '234K', unit: '/day' }, { label: 'Failed Logins', value: '0', unit: '' }, { label: 'Privilege Changes', value: '3', unit: '/day' }, { label: 'DDL Changes', value: '5', unit: '/day' }, { label: 'Foreign Keys', value: '156', unit: '' }, { label: 'Generated Columns', value: '45', unit: '' }] },
         ]
@@ -3556,51 +3554,6 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
   }
 
   /* ══════════════════════════════════════════════════════════════════════
-     SCHEMA VISUALIZER: Entity Relationships DonutWidget + Schema Complexity stats
-     ══════════════════════════════════════════════════════════════════════ */
-  if (subTabId === 'schema-viz') {
-    return (
-      <>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <Panel title="Entity Relationships" icon={GitBranch} accentColor={db.color}>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <DonutWidget
-                data={[
-                  { name: 'One-to-Many', value: 65, color: db.color, display: '65' },
-                  { name: 'Many-to-Many', value: 25, color: THEME.warning, display: '25' },
-                  { name: 'One-to-One', value: 10, color: THEME.success, display: '10' },
-                ]}
-                centerValue="456" centerLabel="RELS"
-                color={db.color} size={120} innerRadius={40} outerRadius={54}
-              />
-            </div>
-          </Panel>
-          <Panel title="Schema Complexity" icon={Layers} accentColor={db.color}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '12px 0' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>178</div>
-                <div style={{ fontSize: 9, color: THEME.textDim }}>Foreign Keys</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>234</div>
-                <div style={{ fontSize: 9, color: THEME.textDim }}>Constraints</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>42</div>
-                <div style={{ fontSize: 9, color: THEME.textDim }}>Triggers</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>89</div>
-                <div style={{ fontSize: 9, color: THEME.textDim }}>Functions</div>
-              </div>
-            </div>
-          </Panel>
-        </div>
-      </>
-    );
-  }
-
-  /* ══════════════════════════════════════════════════════════════════════
      TABLE DEPENDENCIES: Demo mind map visualization with sample data
      ══════════════════════════════════════════════════════════════════════ */
   if (subTabId === 'table-dependencies' || subTabId === 'table-deps') {
@@ -4520,7 +4473,7 @@ const SUB_TAB_DISPLAY_NAMES = {
   bloat: 'Bloat Analysis', table: 'Table Analysis',
   pool: 'Connection Pool', replication: 'Replication & WAL', checkpoint: 'Checkpoint Monitor',
   maintenance: 'Vacuum & Maintenance', capacity: 'Capacity Planning', backup: 'Backup & Recovery',
-  schema: 'Schema & Migrations', 'schema-viz': 'Schema Visualizer', security: 'Security & Compliance',
+  schema: 'Schema & Migrations', security: 'Security & Compliance',
   cloudwatch: 'CloudWatch', 'log-patterns': 'Log Pattern Analysis', 'alert-correlation': 'Alert Correlation',
   opentelemetry: 'OpenTelemetry', kubernetes: 'Kubernetes', 'status-page': 'Status Page', 'ai-monitoring': 'AI Monitoring',
   sql: 'SQL Console', api: 'API Tracing', repository: 'Repository', 'ai-advisor': 'AI Query Advisor',

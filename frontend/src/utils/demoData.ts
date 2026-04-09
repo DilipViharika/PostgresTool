@@ -961,7 +961,7 @@ const DEMO_ROUTES = [
         },
     ])],
 
-    // ── Schema Visualizer ─────────────────────────────────────────────────────
+    // ── Schema API mock data (used by Table Dependencies) ─────────────────────
     [/\/api\/schema\/relationships/, () => ({
         tables: [
             { id: 'public.users', name: 'users', schema: 'public', rowCount: 45231, size: '2.4 MB' },
