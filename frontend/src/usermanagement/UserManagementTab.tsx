@@ -206,30 +206,31 @@ const GlobalStylesInjector = () => (
     @keyframes umLivePulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
 
     .um-root *, .um-root *::before, .um-root *::after { box-sizing: border-box; }
-    .shimmer-skeleton { background: linear-gradient(90deg, ${T.surfaceRaised || '#1a1a2e'} 25%, ${T.grid || '#2a2a3e'} 50%, ${T.surfaceRaised || '#1a1a2e'} 75%); background-size: 200% 100%; animation: umShimmer 1.5s infinite ease-in-out; border-radius: 12px; }
-    .um-revalidating-bar { position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, ${T.primary || '#6366f1'}, transparent); background-size:200% 100%; animation:umShimmer 1s infinite linear; border-radius:2px; z-index:10; }
-    .um-live-dot { width:8px; height:8px; border-radius:50%; background:#2EE89C; animation:umLivePulse 2s ease-in-out infinite; display:inline-block; flex-shrink:0; }
+    .shimmer-skeleton { background: linear-gradient(90deg, ${T.surfaceRaised} 25%, ${T.grid} 50%, ${T.surfaceRaised} 75%); background-size: 200% 100%; animation: umShimmer 1.5s infinite ease-in-out; border-radius: 12px; }
+    .um-revalidating-bar { position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, ${T.primary}, transparent); background-size:200% 100%; animation:umShimmer 1s infinite linear; border-radius:2px; z-index:10; }
+    .um-live-dot { width:8px; height:8px; border-radius:50%; background:${T.success}; animation:umLivePulse 2s ease-in-out infinite; display:inline-block; flex-shrink:0; }
     
     .um-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; border:none; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s ease; font-family:inherit; line-height:1; }
     .um-btn:disabled { opacity:.5; cursor:not-allowed; }
-    .um-btn-primary  { background:${T.primary || '#6366f1'}; color:${T.textInverse || '#07030D'}; }
+    .um-btn-primary  { background:${T.primary}; color:${T.textInverse}; }
     .um-btn-primary:hover:not(:disabled) { filter:brightness(1.1); transform:translateY(-1px); }
-    .um-btn-ghost    { background:transparent; color:${T.textDim || '#4A3A5E'}; border:1px solid ${T.grid || '#1A0E2B'}; }
-    .um-btn-ghost:hover:not(:disabled) { background:${T.surfaceRaised || '#221535'}; color:${T.textMain || '#F0ECF8'}; }
-    .um-btn-danger   { background:${T.danger || '#FF4560'}; color:#fff; }
+    .um-btn-ghost    { background:transparent; color:${T.textDim}; border:1px solid ${T.glassBorder}; }
+    .um-btn-ghost:hover:not(:disabled) { background:${T.surfaceHover}; color:${T.textMain}; }
+    .um-btn-danger   { background:${T.danger}; color:#fff; }
     .um-btn-danger:hover:not(:disabled) { filter:brightness(1.1); }
     .um-btn-sm   { padding:5px 10px; font-size:12px; }
     .um-btn-icon { padding:6px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; }
 
-    .um-tab { display:inline-flex; align-items:center; gap:6px; padding:12px 16px; border:none; background:transparent; color:${T.textMuted || '#9888B4'}; font-size:12px; font-weight:500; cursor:pointer; transition:color .15s; font-family:inherit; position:relative; }
-    .um-tab:hover  { color:${T.textMain || '#F0ECF8'}; }
-    .um-tab.active { color:${T.primary || '#6366f1'}; font-weight:700; }
+    .um-tab { display:inline-flex; align-items:center; gap:6px; padding:12px 16px; border:none; background:transparent; color:${T.textMuted}; font-size:12px; font-weight:500; cursor:pointer; transition:color .15s; font-family:inherit; position:relative; }
+    .um-tab:hover  { color:${T.textMain}; }
+    .um-tab.active { color:${T.primary}; font-weight:700; }
+    .um-tab.active::after { content:''; position:absolute; bottom:0; left:12px; right:12px; height:2px; background:${T.primary}; border-radius:2px; }
 
     .um-grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
     .um-grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
     @media(max-width:900px){ .um-grid-4{ grid-template-columns:repeat(2,1fr); } }
     @media(max-width:600px){ .um-grid-4,.um-grid-2{ grid-template-columns:1fr; } }
-    .um-scroll { overflow-y:auto; scrollbar-width:thin; scrollbar-color:${T.grid || '#1A0E2B'} transparent; }
+    .um-scroll { overflow-y:auto; scrollbar-width:thin; scrollbar-color:${T.glassBorder} transparent; }
   `}</style>
 );
 GlobalStylesInjector.displayName = 'GlobalStylesInjector';
@@ -244,8 +245,8 @@ const ToastContainer = memo(({ toasts }) => {
             {toasts.map(t => (
                 <div key={t.id} style={{
                     padding:'10px 16px', borderRadius:10, fontSize:13, fontWeight:500, color:'#fff', maxWidth:360,
-                    background: t.type === 'error' ? (T.danger || '#ef4444') : (T.primary || '#6366f1'),
-                    boxShadow:'0 8px 24px rgba(0,0,0,.3)', animation:'umSlideUp .2s ease-out',
+                    background: t.type === 'error' ? (T.danger) : (T.primary),
+                    boxShadow:T.shadowLg, animation:'umSlideUp .2s ease-out',
                     display:'flex', alignItems:'center', gap:8,
                 }}>
                     <Ico name={t.type === 'error' ? 'alert' : 'check'} size={14} color="#fff" />
@@ -272,14 +273,14 @@ const ConfirmDialog = memo(({ title, message, confirmLabel, variant = 'danger', 
             onClick={e => e.target === e.currentTarget && onCancel()}
             style={{ position:'fixed', inset:0, zIndex:500, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,.55)', backdropFilter:'blur(4px)' }}
         >
-            <div style={{ background:T.surface || '#12121f', border:`1px solid ${T.border || '#2a2a3e'}`, borderRadius:12, padding:'24px 28px', maxWidth:420, width:'90vw', boxShadow:'0 1px 3px rgba(0,0,0,0.04)', animation:'umSlideUp .2s ease' }}>
+            <div style={{ background:T.surface, border:`1px solid ${T.glassBorder}`, borderRadius:16, padding:'24px 28px', maxWidth:420, width:'90vw', boxShadow:T.shadowMd, animation:'umSlideUp .2s ease' }}>
                 <div style={{ display:'flex', alignItems:'flex-start', gap:12, marginBottom:18 }}>
-                    <div style={{ width:38, height:38, borderRadius:8, flexShrink:0, background:variant === 'danger' ? `${T.danger || '#ef4444'}18` : `${T.primary || '#6366f1'}18`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                        <Ico name={variant === 'danger' ? 'alert' : 'check'} size={18} color={variant === 'danger' ? (T.danger || '#ef4444') : (T.primary || '#6366f1')} />
+                    <div style={{ width:38, height:38, borderRadius:8, flexShrink:0, background:variant === 'danger' ? `${T.danger}18` : `${T.primary}18`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <Ico name={variant === 'danger' ? 'alert' : 'check'} size={18} color={variant === 'danger' ? (T.danger) : (T.primary)} />
                     </div>
                     <div>
-                        <div style={{ fontSize:15, fontWeight:700, color:T.text || '#e2e4eb' }}>{title}</div>
-                        <div style={{ fontSize:12, color:T.textDim || '#8b8fa3', marginTop:6, lineHeight:1.6 }}>{message}</div>
+                        <div style={{ fontSize:15, fontWeight:700, color:T.textMain }}>{title}</div>
+                        <div style={{ fontSize:12, color:T.textDim, marginTop:6, lineHeight:1.6 }}>{message}</div>
                     </div>
                 </div>
                 <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
@@ -396,25 +397,25 @@ const UserManagementTab = ({ initialUsers = [] }) => {
                 {/* Header */}
                 <header style={{ marginBottom:24, display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:16 }}>
                     <div>
-                        <h1 style={{ fontSize:24, fontWeight:900, color:T.text || '#e2e4eb', margin:0, display:'flex', alignItems:'center', gap:10 }}>
+                        <h1 style={{ fontSize:24, fontWeight:900, color:T.textMain, margin:0, display:'flex', alignItems:'center', gap:10 }}>
                             User Management
                             {isLive && <span className="um-live-dot" title="Live sync enabled" />}
                         </h1>
-                        <div style={{ fontSize:12, color:T.textDim || '#8b8fa3', marginTop:4 }}>
+                        <div style={{ fontSize:12, color:T.textDim, marginTop:4 }}>
                             Manage access, permissions, and security across your organization
                             {lastSynced && <span style={{ marginLeft: '8px' }}>• Last synced {formatTimeAgo(lastSynced)} ago</span>}
                         </div>
                     </div>
                     <div style={{ display:'flex', gap:10, alignItems:'center' }}>
-                        <div style={{ fontSize:11, color:T.textDim || '#8b8fa3', padding:'6px 12px', background:T.surfaceHigh || '#1a1a2e', borderRadius:8, border:`1px solid ${T.border || '#2a2a3e'}`, display:'flex', alignItems:'center', gap:8, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
+                        <div style={{ fontSize:11, color:T.textDim, padding:'6px 12px', background:T.surfaceRaised, borderRadius:8, border:`1px solid ${T.glassBorder}`, display:'flex', alignItems:'center', gap:8, boxShadow:T.shadowMd }}>
                             <span style={{ width:6, height:6, borderRadius:'50%', background: activeCount > 0 ? '#22c55e' : (T.textMuted || '#6b6f82'), display:'inline-block' }} />
                             {users.length} users · {activeCount} active
                         </div>
-                        <button className="um-btn um-btn-ghost" onClick={revalidate} disabled={loading || isRevalidating} style={{ boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
+                        <button className="um-btn um-btn-ghost" onClick={revalidate} disabled={loading || isRevalidating} style={{ boxShadow:T.shadowMd }}>
                             <Ico name="refresh" size={13} style={loading ? { animation:'umSpin 1s linear infinite' } : {}} />
                             {loading || isRevalidating ? 'Loading' : 'Refresh'}
                         </button>
-                        <button className="um-btn um-btn-primary" onClick={() => dispatch({ type:'OPEN_MODAL', modal:MODAL.EDIT(null) })} style={{ boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
+                        <button className="um-btn um-btn-primary" onClick={() => dispatch({ type:'OPEN_MODAL', modal:MODAL.EDIT(null) })} style={{ boxShadow:T.shadowMd }}>
                             <Ico name="plus" size={14} color="#fff" /> New User
                         </button>
                     </div>
@@ -422,15 +423,15 @@ const UserManagementTab = ({ initialUsers = [] }) => {
 
                 {/* Error Block */}
                 {error && (
-                    <div role="alert" style={{ marginBottom:18, padding:'12px 16px', borderRadius:12, background:`${T.danger || '#ef4444'}08`, border:`1px solid ${T.danger || '#ef4444'}30`, display:'flex', alignItems:'center', gap:12, color:T.danger || '#ef4444', boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
-                        <Ico name="alert" size={16} color={T.danger || '#ef4444'} />
+                    <div role="alert" style={{ marginBottom:18, padding:'12px 16px', borderRadius:16, background:`${T.danger}08`, border:`1px solid ${T.danger}30`, display:'flex', alignItems:'center', gap:12, color:T.danger, boxShadow:T.shadowMd }}>
+                        <Ico name="alert" size={16} color={T.danger} />
                         <div style={{ flex:1 }}>{error}</div>
                     </div>
                 )}
 
                 {/* Main Card */}
-                <div style={{ background:T.surface || '#12121f', border:`1px solid ${T.border || '#2a2a3e'}`, borderRadius:12, overflow:'visible', position:'relative', boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
-                    <div style={{ display:'flex', borderBottom:`1px solid ${T.border || '#2a2a3e'}`, paddingLeft:8, background:T.surfaceHigh || '#1a1a2e', borderRadius:'12px 12px 0 0' }}>
+                <div style={{ background:T.surface, border:`1px solid ${T.glassBorder}`, borderRadius:16, overflow:'visible', position:'relative', boxShadow:T.shadowMd }}>
+                    <div style={{ display:'flex', borderBottom:`1px solid ${T.glassBorder}`, paddingLeft:8, background:T.surfaceRaised, borderRadius:'12px 12px 0 0' }}>
                         {TABS.map(t => (
                             <button key={t.id} className={`um-tab${activeTab === t.id ? ' active' : ''}`} onClick={() => dispatch({ type:'SET_TAB', tab:t.id })}>
                                 <Ico name={t.id === 'users' ? 'users' : t.id === 'matrix' ? 'shield' : t.id === 'audit' ? 'activity' : 'lock'} size={14} />

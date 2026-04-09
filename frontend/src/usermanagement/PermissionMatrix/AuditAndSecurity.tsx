@@ -35,21 +35,21 @@ function ensureStyles() {
         document.head.appendChild(el);
     }
     el.textContent = [
-        '.as2 { font-family: ' + THEME.fontBody + '; color:' + T.text + '; }',
+        '.as2 { font-family: ' + THEME.fontBody + '; color:' + T.textMain + '; }',
         '.as2 *, .as2 *::before, .as2 *::after { box-sizing: border-box; }',
 
         '.as2-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px; border:none; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; white-space:nowrap; }',
-        '.as2-btn-ghost { background:transparent; color:' + T.textDim + '; border:1px solid ' + T.border + '; }',
-        '.as2-btn-ghost:hover { background:' + T.surfaceHigh + '; color:' + T.text + '; }',
+        '.as2-btn-ghost { background:transparent; color:' + T.textDim + '; border:1px solid ' + T.glassBorder + '; }',
+        '.as2-btn-ghost:hover { background:' + T.surfaceRaised + '; color:' + T.textMain + '; }',
         '.as2-btn-danger { background:' + T.danger + '; color:#fff; }',
         '.as2-btn-danger:hover { filter:brightness(1.1); }',
         '.as2-btn-sm { padding:5px 10px; font-size:11px; }',
 
-        '.as2-pill { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:20px; border:1px solid ' + T.border + '; background:transparent; color:' + T.textDim + '; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit; transition:all .15s; }',
-        '.as2-pill:hover { border-color:#2e2e48; color:' + T.text + '; }',
+        '.as2-pill { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:20px; border:1px solid ' + T.glassBorder + '; background:transparent; color:' + T.textDim + '; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit; transition:all .15s; }',
+        '.as2-pill:hover { border-color:#2e2e48; color:' + T.textMain + '; }',
         '.as2-pill.on { font-weight:700; }',
 
-        '.as2-card { background:' + T.surface + '; border:1px solid ' + T.border + '; border-radius:12px; }',
+        '.as2-card { background:' + T.surface + '; border:1px solid ' + T.glassBorder + '; border-radius:12px; }',
 
         '@keyframes as2-in { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }',
         '.as2-in { animation: as2-in .2s ease-out both; }',
@@ -249,7 +249,7 @@ export var AuditLog = function AuditLog() {
                                 /* action + time */
                                 React.createElement('div', null,
                                     React.createElement('div', {
-                                        style:{ fontSize:12, fontWeight:700, color:T.text,
+                                        style:{ fontSize:12, fontWeight:700, color:T.textMain,
                                             fontFamily: THEME.fontMono }
                                     }, entry.action),
                                     React.createElement('div', {
@@ -268,7 +268,7 @@ export var AuditLog = function AuditLog() {
                                 React.createElement('div', {
                                     style:{ fontSize:11, color:T.textDim,
                                         fontFamily: THEME.fontMono,
-                                        background:T.surfaceHigh, padding:'4px 8px',
+                                        background:T.surfaceRaised, padding:'4px 8px',
                                         borderRadius:5, overflow:'hidden',
                                         textOverflow:'ellipsis', whiteSpace:'nowrap' }
                                 }, entry.detail),
@@ -313,7 +313,7 @@ export var SecurityPanel = function SecurityPanel(props) {
 
         /* High-risk alert */
         highRisk.length > 0 && React.createElement('div', {
-                style:{ padding:16, borderRadius:12,
+                style:{ padding:16, borderRadius:16,
                     background:T.danger+'0d', border:'1px solid '+T.danger+'30' }
             },
             React.createElement('div', {
@@ -332,7 +332,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                                 borderRadius:8, background:T.danger+'15', border:'1px solid '+T.danger+'30' }
                         },
                         React.createElement('span', {
-                            style:{ fontSize:13, fontWeight:600, color:T.text }
+                            style:{ fontSize:13, fontWeight:600, color:T.textMain }
                         }, u.name),
                         React.createElement('span', {
                             style:{ fontSize:11, fontWeight:700, color:T.danger,
@@ -350,7 +350,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                 },
                 React.createElement('div', {
                         style:{ display:'flex', alignItems:'center', gap:8,
-                            fontSize:14, fontWeight:700, color:T.text }
+                            fontSize:14, fontWeight:700, color:T.textMain }
                     },
                     React.createElement(Ico, { name:'globe', size:15, color:T.primary }),
                     'Active Sessions',
@@ -370,7 +370,7 @@ export var SecurityPanel = function SecurityPanel(props) {
             ),
 
             React.createElement('div', {
-                    style:{ border:'1px solid '+T.border, borderRadius:12, overflow:'hidden',
+                    style:{ border:'1px solid '+T.glassBorder, borderRadius:16, overflow:'hidden',
                         background:T.surface }
                 },
                 sessions.length === 0
@@ -382,7 +382,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                         return React.createElement('div', {
                                 key: s.id,
                                 style:{ padding:'14px 18px',
-                                    borderBottom: i < sessions.length-1 ? '1px solid '+T.border : 'none',
+                                    borderBottom: i < sessions.length-1 ? '1px solid '+T.glassBorder : 'none',
                                     display:'flex', alignItems:'center', justifyContent:'space-between',
                                     background: s.risk === 'critical' ? T.danger+'08' : T.surface }
                             },
@@ -399,7 +399,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                                 React.createElement('div', null,
                                     React.createElement('div', {
                                             style:{ display:'flex', alignItems:'center', gap:8,
-                                                fontSize:13, fontWeight:600, color:T.text }
+                                                fontSize:13, fontWeight:600, color:T.textMain }
                                         },
                                         s.user,
                                         s.active && React.createElement('span', {
@@ -438,7 +438,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                 },
                 React.createElement('div', {
                         style:{ display:'flex', alignItems:'center', gap:8,
-                            fontSize:14, fontWeight:700, color:T.text }
+                            fontSize:14, fontWeight:700, color:T.textMain }
                     },
                     React.createElement(Ico, { name:'key', size:15, color:T.warning }),
                     'API Keys'
@@ -468,7 +468,7 @@ export var SecurityPanel = function SecurityPanel(props) {
 
                             React.createElement('div', null,
                                 React.createElement('div', {
-                                    style:{ fontSize:13, fontWeight:600, color:T.text }
+                                    style:{ fontSize:13, fontWeight:600, color:T.textMain }
                                 }, key.name),
                                 React.createElement('div', {
                                         style:{ display:'flex', alignItems:'center', gap:8, marginTop:3 }
@@ -476,7 +476,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                                     React.createElement('code', {
                                         style:{ fontSize:11, color:T.textDim,
                                             fontFamily: THEME.fontMono,
-                                            background:T.surfaceHigh, padding:'2px 6px', borderRadius:4 }
+                                            background:T.surfaceRaised, padding:'2px 6px', borderRadius:4 }
                                     }, key.prefix + '............'),
                                     React.createElement('span', {
                                         style:{ fontSize:10, color:T.textDim }
@@ -490,7 +490,7 @@ export var SecurityPanel = function SecurityPanel(props) {
                             },
                             React.createElement('div', { style:{ textAlign:'right' } },
                                 React.createElement('div', {
-                                    style:{ fontSize:12, fontWeight:700, color:T.text,
+                                    style:{ fontSize:12, fontWeight:700, color:T.textMain,
                                         fontFamily: THEME.fontMono }
                                 }, key.calls.toLocaleString()),
                                 React.createElement('div', {
@@ -511,14 +511,14 @@ export var SecurityPanel = function SecurityPanel(props) {
 
         /* Security overview footer */
         React.createElement('div', {
-                style:{ padding:'16px 20px', borderRadius:12,
-                    background:T.surfaceMid, border:'1px solid '+T.border,
+                style:{ padding:'16px 20px', borderRadius:16,
+                    background:T.surfaceMid, border:'1px solid '+T.glassBorder,
                     display:'flex', alignItems:'center', gap:12 }
             },
             React.createElement(Ico, { name:'shield', size:16, color:T.primary }),
             React.createElement('div', null,
                 React.createElement('div', {
-                    style:{ fontSize:13, fontWeight:600, color:T.text }
+                    style:{ fontSize:13, fontWeight:600, color:T.textMain }
                 }, 'Security Status'),
                 React.createElement('div', {
                     style:{ fontSize:11, color:T.textDim, marginTop:2 }

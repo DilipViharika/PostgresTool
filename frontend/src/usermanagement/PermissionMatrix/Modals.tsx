@@ -235,9 +235,9 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
   const strictInputStyle = {
     padding: '10px 12px',
     borderRadius: '8px',
-    border: `1px solid ${T.border}`,
-    background: T.surfaceHigh,
-    color: T.text,
+    border: `1px solid ${T.glassBorder}`,
+    background: T.surfaceRaised,
+    color: T.textMain,
     fontSize: '13px',
     fontFamily: 'inherit',
     transition: 'border-color 0.15s',
@@ -248,7 +248,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
       <div
         style={{
           background: T.surface,
-          border: `1px solid ${T.border}`,
+          border: `1px solid ${T.glassBorder}`,
           borderRadius: '16px',
           maxWidth: '640px',
           width: '90vw',
@@ -262,13 +262,13 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
         {/* Header */}
         <div style={{
           padding: '20px 24px',
-          borderBottom: `1px solid ${T.border}`,
+          borderBottom: `1px solid ${T.glassBorder}`,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: T.text }}>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: T.textMain }}>
               {user?.id ? `Edit ${form.name || 'User'}` : 'New User'}
             </h2>
           </div>
@@ -289,8 +289,8 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
         {/* Tab Navigation */}
         <div style={{
           display: 'flex',
-          borderBottom: `1px solid ${T.border}`,
-          background: T.surfaceHigh,
+          borderBottom: `1px solid ${T.glassBorder}`,
+          background: T.surfaceRaised,
           gap: '2px',
           padding: '8px',
         }}>
@@ -336,7 +336,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                     style={{
                       ...strictInputStyle,
                       width: '100%',
-                      borderColor: errors.name ? T.danger : T.border,
+                      borderColor: errors.name ? T.danger : T.glassBorder,
                     }}
                   />
                   {errors.name && <div style={{ fontSize: '12px', color: T.danger, marginTop: '4px' }}>{errors.name}</div>}
@@ -355,7 +355,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                     style={{
                       ...strictInputStyle,
                       width: '100%',
-                      borderColor: errors.email ? T.danger : T.border,
+                      borderColor: errors.email ? T.danger : T.glassBorder,
                     }}
                   />
                   {errors.email && <div style={{ fontSize: '12px', color: T.danger, marginTop: '4px' }}>{errors.email}</div>}
@@ -374,7 +374,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                     style={{
                       ...strictInputStyle,
                       width: '100%',
-                      borderColor: errors.username ? T.danger : T.border,
+                      borderColor: errors.username ? T.danger : T.glassBorder,
                     }}
                   />
                   {errors.username && <div style={{ fontSize: '12px', color: T.danger, marginTop: '4px' }}>{errors.username}</div>}
@@ -394,7 +394,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                       style={{
                         ...strictInputStyle,
                         width: '100%',
-                        borderColor: errors.password ? T.danger : T.border,
+                        borderColor: errors.password ? T.danger : T.glassBorder,
                       }}
                     />
                     {errors.password && <div style={{ fontSize: '12px', color: T.danger, marginTop: '4px' }}>{errors.password}</div>}
@@ -457,9 +457,9 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                         style={{
                           padding: '12px 16px',
                           borderRadius: '8px',
-                          border: `2px solid ${form.role === role.id ? role.color || T.primary : T.border}`,
-                          background: form.role === role.id ? `${role.color || T.primary}20` : T.surfaceHigh,
-                          color: form.role === role.id ? role.color || T.primary : T.text,
+                          border: `2px solid ${form.role === role.id ? role.color || T.primary : T.glassBorder}`,
+                          background: form.role === role.id ? `${role.color || T.primary}20` : T.surfaceRaised,
+                          color: form.role === role.id ? role.color || T.primary : T.textMain,
                           fontWeight: form.role === role.id ? '600' : '500',
                           cursor: 'pointer',
                           fontSize: '13px',
@@ -508,7 +508,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   paddingBottom: '12px',
-                  borderBottom: `1px solid ${T.border}`,
+                  borderBottom: `1px solid ${T.glassBorder}`,
                 }}>
                   <button
                     type="button"
@@ -550,7 +550,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                     gap: '10px',
                     alignItems: 'center',
                   }}>
-                    <span style={{ fontSize: '13px', color: T.text, flex: 1 }}>
+                    <span style={{ fontSize: '13px', color: T.textMain, flex: 1 }}>
                       Apply role defaults for {form.role}?
                     </span>
                     <button
@@ -575,7 +575,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                       style={{
                         padding: '6px 12px',
                         borderRadius: '6px',
-                        border: `1px solid ${T.border}`,
+                        border: `1px solid ${T.glassBorder}`,
                         background: 'transparent',
                         color: T.textDim,
                         fontSize: '12px',
@@ -612,7 +612,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                             flexShrink: 0,
                           }}
                         />
-                        <div style={{ fontSize: '13px', fontWeight: '600', color: T.text, flex: 1 }}>
+                        <div style={{ fontSize: '13px', fontWeight: '600', color: T.textMain, flex: 1 }}>
                           {category.label}
                         </div>
                         <div style={{
@@ -661,8 +661,8 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                               style={{
                                 padding: '12px 10px',
                                 borderRadius: '8px',
-                                border: `1px solid ${isSelected ? category.color + '50' : T.border}`,
-                                background: isSelected ? category.color + '12' : T.surfaceHigh,
+                                border: `1px solid ${isSelected ? category.color + '50' : T.glassBorder}`,
+                                background: isSelected ? category.color + '12' : T.surfaceRaised,
                                 color: isSelected ? category.color : T.textDim,
                                 cursor: 'pointer',
                                 transition: 'all 0.15s',
@@ -710,14 +710,14 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                 <div style={{
                   padding: '14px 16px',
                   borderRadius: '8px',
-                  border: `1px solid ${T.border}`,
-                  background: T.surfaceHigh,
+                  border: `1px solid ${T.glassBorder}`,
+                  background: T.surfaceRaised,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                 }}>
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: '600', color: T.text }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: T.textMain }}>
                       Multi-Factor Authentication
                     </div>
                     <div style={{ fontSize: '12px', color: T.textDim, marginTop: '4px' }}>
@@ -736,14 +736,14 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
                 <div style={{
                   padding: '14px 16px',
                   borderRadius: '8px',
-                  border: `1px solid ${T.border}`,
-                  background: T.surfaceHigh,
+                  border: `1px solid ${T.glassBorder}`,
+                  background: T.surfaceRaised,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                 }}>
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: '600', color: T.text }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: T.textMain }}>
                       API Access
                     </div>
                     <div style={{ fontSize: '12px', color: T.textDim, marginTop: '4px' }}>
@@ -766,7 +766,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
           {/* Footer */}
           <div style={{
             padding: '16px 24px',
-            borderTop: `1px solid ${T.border}`,
+            borderTop: `1px solid ${T.glassBorder}`,
             display: 'flex',
             justifyContent: 'flex-end',
             gap: '10px',
@@ -777,7 +777,7 @@ const UserFormModal = memo(({ user, onSave, onCancel }) => {
               style={{
                 padding: '10px 18px',
                 borderRadius: '8px',
-                border: `1px solid ${T.border}`,
+                border: `1px solid ${T.glassBorder}`,
                 background: 'transparent',
                 color: T.textDim,
                 fontSize: '13px',
@@ -834,7 +834,7 @@ const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
           width: '400px',
           height: '100vh',
           background: T.surface,
-          borderLeft: `1px solid ${T.border}`,
+          borderLeft: `1px solid ${T.glassBorder}`,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'auto',
@@ -844,12 +844,12 @@ const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
         {/* Header */}
         <div style={{
           padding: '20px 24px',
-          borderBottom: `1px solid ${T.border}`,
+          borderBottom: `1px solid ${T.glassBorder}`,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}>
-          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: T.text }}>
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: T.textMain }}>
             {user.name}
           </h2>
           <button
@@ -873,7 +873,7 @@ const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
             <div style={{ fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
               Email
             </div>
-            <div style={{ fontSize: '13px', color: T.text }}>
+            <div style={{ fontSize: '13px', color: T.textMain }}>
               {user.email}
             </div>
           </div>
@@ -882,7 +882,7 @@ const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
             <div style={{ fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
               Username
             </div>
-            <div style={{ fontSize: '13px', color: T.text }}>
+            <div style={{ fontSize: '13px', color: T.textMain }}>
               {user.username}
             </div>
           </div>
@@ -908,7 +908,7 @@ const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
             <div style={{ fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
               Department
             </div>
-            <div style={{ fontSize: '13px', color: T.text }}>
+            <div style={{ fontSize: '13px', color: T.textMain }}>
               {user.department || 'N/A'}
             </div>
           </div>
@@ -917,7 +917,7 @@ const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
             <div style={{ fontSize: '12px', fontWeight: '600', color: T.textDim, marginBottom: '8px' }}>
               Location
             </div>
-            <div style={{ fontSize: '13px', color: T.text }}>
+            <div style={{ fontSize: '13px', color: T.textMain }}>
               {user.location || 'N/A'}
             </div>
           </div>
@@ -951,7 +951,7 @@ const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
         {/* Footer */}
         <div style={{
           padding: '16px 24px',
-          borderTop: `1px solid ${T.border}`,
+          borderTop: `1px solid ${T.glassBorder}`,
           display: 'flex',
           gap: '10px',
         }}>
@@ -961,7 +961,7 @@ const UserDrawer = memo(({ user, onClose, onEdit, onResetPassword }) => {
               flex: 1,
               padding: '10px 16px',
               borderRadius: '8px',
-              border: `1px solid ${T.border}`,
+              border: `1px solid ${T.glassBorder}`,
               background: 'transparent',
               color: T.textDim,
               fontSize: '13px',
@@ -1019,7 +1019,7 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
       <div
         style={{
           background: T.surface,
-          border: `1px solid ${T.border}`,
+          border: `1px solid ${T.glassBorder}`,
           borderRadius: '16px',
           maxWidth: '400px',
           width: '90vw',
@@ -1030,12 +1030,12 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
         {/* Header */}
         <div style={{
           padding: '20px 24px',
-          borderBottom: `1px solid ${T.border}`,
+          borderBottom: `1px solid ${T.glassBorder}`,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: T.text }}>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: T.textMain }}>
             Reset Password for {user?.name}
           </h2>
           <button
@@ -1068,9 +1068,9 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
                   flex: 1,
                   padding: '10px 12px',
                   borderRadius: '8px',
-                  border: `1px solid ${T.border}`,
-                  background: T.surfaceHigh,
-                  color: T.text,
+                  border: `1px solid ${T.glassBorder}`,
+                  background: T.surfaceRaised,
+                  color: T.textMain,
                   fontSize: '13px',
                   fontFamily: THEME.fontMono,
                 }}
@@ -1081,8 +1081,8 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
                 style={{
                   padding: '10px 12px',
                   borderRadius: '8px',
-                  border: `1px solid ${T.border}`,
-                  background: T.surfaceHigh,
+                  border: `1px solid ${T.glassBorder}`,
+                  background: T.surfaceRaised,
                   color: T.textDim,
                   cursor: 'pointer',
                 }}
@@ -1098,8 +1098,8 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
             style={{
               padding: '10px 16px',
               borderRadius: '8px',
-              border: `1px solid ${T.border}`,
-              background: T.surfaceHigh,
+              border: `1px solid ${T.glassBorder}`,
+              background: T.surfaceRaised,
               color: T.textDim,
               fontSize: '13px',
               fontWeight: '600',
@@ -1121,7 +1121,7 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
               style={{
                 padding: '10px 18px',
                 borderRadius: '8px',
-                border: `1px solid ${T.border}`,
+                border: `1px solid ${T.glassBorder}`,
                 background: 'transparent',
                 color: T.textDim,
                 fontSize: '13px',
@@ -1138,7 +1138,7 @@ const PasswordModal = memo(({ user, onConfirm, onClose }) => {
                 padding: '10px 18px',
                 borderRadius: '8px',
                 border: 'none',
-                background: password.trim() ? T.primary : T.border,
+                background: password.trim() ? T.primary : T.glassBorder,
                 color: password.trim() ? '#000' : T.textDim,
                 fontSize: '13px',
                 fontWeight: '600',

@@ -80,50 +80,50 @@ function ensureStyles() {
         document.head.appendChild(el);
     }
     el.textContent = [
-        '.ut2{font-family:' + THEME.fontBody + ';color:' + T.text + '}',
+        '.ut2{font-family:' + THEME.fontBody + ';color:' + T.textMain + '}',
         '.ut2 *,.ut2 *::before,.ut2 *::after{box-sizing:border-box}',
 
         '.ut2-search{position:relative;display:inline-flex;align-items:center}',
-        '.ut2-search input{width:270px;padding:8px 12px 8px 36px;background:' + T.surfaceHigh + ';border:1px solid ' + T.border + ';border-radius:9px;color:' + T.text + ';font-size:13px;font-family:inherit;outline:none;transition:border-color .18s,box-shadow .18s}',
+        '.ut2-search input{width:270px;padding:8px 12px 8px 36px;background:' + T.surfaceRaised + ';border:1px solid ' + T.glassBorder + ';border-radius:9px;color:' + T.textMain + ';font-size:13px;font-family:inherit;outline:none;transition:border-color .18s,box-shadow .18s}',
         '.ut2-search input::placeholder{color:' + T.textMuted + '}',
         '.ut2-search input:focus{border-color:' + T.primary + ';box-shadow:0 0 0 3px ' + T.primaryGlow + '}',
         '.ut2-sico{position:absolute;left:10px;pointer-events:none}',
 
-        '.ut2-pill{padding:5px 13px;border-radius:20px;border:1px solid ' + T.border + ';background:transparent;color:' + T.textDim + ';font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}',
-        '.ut2-pill:hover{border-color:#2e2e48;color:' + T.text + '}',
+        '.ut2-pill{padding:5px 13px;border-radius:20px;border:1px solid ' + T.glassBorder + ';background:transparent;color:' + T.textDim + ';font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}',
+        '.ut2-pill:hover{border-color:#2e2e48;color:' + T.textMain + '}',
         '.ut2-pill.on{font-weight:700}',
 
         '.ut2-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}',
-        '.ut2-btn-g{background:transparent;color:' + T.textDim + ';border:1px solid ' + T.border + '}',
-        '.ut2-btn-g:hover{background:' + T.surfaceHigh + ';color:' + T.text + '}',
+        '.ut2-btn-g{background:transparent;color:' + T.textDim + ';border:1px solid ' + T.glassBorder + '}',
+        '.ut2-btn-g:hover{background:' + T.surfaceRaised + ';color:' + T.textMain + '}',
         '.ut2-btn-p{background:' + T.primary + ';color:#fff}',
         '.ut2-btn-p:hover{filter:brightness(1.12);transform:translateY(-1px)}',
 
         '.ut2-tbl{width:100%;border-collapse:collapse;table-layout:fixed}',
-        '.ut2-tbl thead tr{background:' + T.surfaceMid + ';border-bottom:1px solid ' + T.border + '}',
+        '.ut2-tbl thead tr{background:' + T.surfaceMid + ';border-bottom:1px solid ' + T.glassBorder + '}',
         '.ut2-tbl th{padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:' + T.textMuted + ';letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;user-select:none}',
         '.ut2-tbl th.s{cursor:pointer}',
         '.ut2-tbl th.s:hover{color:' + T.textDim + '}',
-        '.ut2-tbl tbody tr{border-bottom:1px solid ' + T.border + '33;transition:background .1s;cursor:pointer}',
+        '.ut2-tbl tbody tr{border-bottom:1px solid ' + T.glassBorder + '33;transition:background .1s;cursor:pointer}',
         '.ut2-tbl tbody tr:last-child{border-bottom:none}',
-        '.ut2-tbl tbody tr:hover{background:' + T.surfaceHigh + '66}',
+        '.ut2-tbl tbody tr:hover{background:' + T.surfaceRaised + '66}',
         '.ut2-tbl tbody tr.sel{background:' + T.primaryGlow + '}',
         '.ut2-tbl td{padding:13px 14px;vertical-align:middle}',
 
-        '.ut2-cb{width:15px;height:15px;border-radius:4px;border:1.5px solid ' + T.border + ';background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;position:relative;transition:all .15s;display:block}',
+        '.ut2-cb{width:15px;height:15px;border-radius:4px;border:1.5px solid ' + T.glassBorder + ';background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;position:relative;transition:all .15s;display:block}',
         '.ut2-cb:checked{background:' + T.primary + ';border-color:' + T.primary + '}',
         '.ut2-cb:checked::after{content:"";position:absolute;left:2px;top:0px;width:8px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg)}',
 
         '.ut2-av{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.04em}',
 
-        '.ut2-ib{width:28px;height:28px;border-radius:7px;border:1px solid ' + T.border + ';background:transparent;color:' + T.textDim + ';cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}',
+        '.ut2-ib{width:28px;height:28px;border-radius:7px;border:1px solid ' + T.glassBorder + ';background:transparent;color:' + T.textDim + ';cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}',
         '.ut2-ib:hover{border-color:' + T.primary + ';color:' + T.primary + ';background:' + T.primaryGlow + '}',
         '.ut2-ib.d:hover{border-color:' + T.red + ';color:' + T.red + ';background:' + T.red + '15}',
 
-        '.ut2-rbar{height:3px;border-radius:2px;background:' + T.border + ';width:56px;margin-top:3px}',
+        '.ut2-rbar{height:3px;border-radius:2px;background:' + T.glassBorder + ';width:56px;margin-top:3px}',
         '.ut2-rfil{height:100%;border-radius:2px}',
 
-        '.ut2-pg{width:28px;height:28px;border-radius:7px;border:1px solid ' + T.border + ';background:transparent;color:' + T.textDim + ';font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:all .15s}',
+        '.ut2-pg{width:28px;height:28px;border-radius:7px;border:1px solid ' + T.glassBorder + ';background:transparent;color:' + T.textDim + ';font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:all .15s}',
         '.ut2-pg:hover:not(:disabled){border-color:' + T.primary + ';color:' + T.primary + '}',
         '.ut2-pg.on{background:' + T.primary + ';border-color:' + T.primary + ';color:#fff}',
         '.ut2-pg:disabled{opacity:.3;cursor:not-allowed}',
@@ -364,7 +364,7 @@ export var UsersTable = memo(function UsersTable(props) {
 
         /* Table */
         React.createElement('div', {
-                style:{ border:'1px solid '+T.border, borderRadius:12, overflow:'hidden', background:T.surface }
+                style:{ border:'1px solid '+T.glassBorder, borderRadius:16, overflow:'hidden', background:T.surface }
             },
             React.createElement('table', { className:'ut2-tbl' },
                 React.createElement('colgroup', null,
@@ -431,7 +431,7 @@ export var UsersTable = memo(function UsersTable(props) {
                                         ),
                                         React.createElement('div', { style:{ overflow:'hidden', minWidth:0 } },
                                             React.createElement('div', {
-                                                style:{ fontSize:13, fontWeight:600, color:T.text,
+                                                style:{ fontSize:13, fontWeight:600, color:T.textMain,
                                                     whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }
                                             }, u.name || '--'),
                                             React.createElement('div', {
@@ -522,15 +522,15 @@ export var PermissionMatrix = memo(function PermissionMatrix() {
 
     return React.createElement('div', { style:{ fontFamily:'inherit' } },
         React.createElement('div', { style:{ marginBottom:20 } },
-            React.createElement('div', { style:{ fontSize:15, fontWeight:700, color:T.text } }, 'Permission Matrix'),
+            React.createElement('div', { style:{ fontSize:15, fontWeight:700, color:T.textMain } }, 'Permission Matrix'),
             React.createElement('div', { style:{ fontSize:12, color:T.textDim, marginTop:3 } }, 'Role-based access control')
         ),
         React.createElement('div', {
-                style:{ overflowX:'auto', border:'1px solid '+T.border, borderRadius:12, background:T.surface }
+                style:{ overflowX:'auto', border:'1px solid '+T.glassBorder, borderRadius:16, background:T.surface }
             },
             React.createElement('table', { style:{ width:'100%', borderCollapse:'collapse', minWidth:500 } },
                 React.createElement('thead', null,
-                    React.createElement('tr', { style:{ background:T.surfaceMid, borderBottom:'1px solid '+T.border } },
+                    React.createElement('tr', { style:{ background:T.surfaceMid, borderBottom:'1px solid '+T.glassBorder } },
                         React.createElement('th', { style:{ padding:'11px 16px', textAlign:'left', fontSize:11, fontWeight:700, color:T.textMuted,  letterSpacing:'0.02em' } }, 'Role'),
                         actions.map(function(a) {
                             return React.createElement('th', { key:a, style:{ padding:'11px 14px', textAlign:'center', fontSize:11, fontWeight:700, color:T.textMuted,  letterSpacing:'0.02em' } }, a);
@@ -541,14 +541,14 @@ export var PermissionMatrix = memo(function PermissionMatrix() {
                     roles.map(function(role, ri) {
                         return React.createElement('tr', {
                                 key:role,
-                                style:{ borderBottom: ri < roles.length-1 ? '1px solid '+T.border+'33' : 'none' }
+                                style:{ borderBottom: ri < roles.length-1 ? '1px solid '+T.glassBorder+'33' : 'none' }
                             },
                             React.createElement('td', { style:{ padding:'13px 16px' } }, React.createElement(RoleBadge, { role:role })),
                             perms[role].map(function(on, ai) {
                                 return React.createElement('td', { key:ai, style:{ padding:'13px 14px', textAlign:'center' } },
                                     on
                                         ? React.createElement('span', { style:{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:22, height:22, borderRadius:6, background:T.green+'1a', color:T.green, fontSize:12, fontWeight:700 } }, 'Y')
-                                        : React.createElement('span', { style:{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:22, height:22, borderRadius:6, background:T.border+'55', color:T.textMuted, fontSize:11 } }, '-')
+                                        : React.createElement('span', { style:{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:22, height:22, borderRadius:6, background:T.glassBorder+'55', color:T.textMuted, fontSize:11 } }, '-')
                                 );
                             })
                         );
