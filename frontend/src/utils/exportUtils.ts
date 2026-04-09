@@ -28,7 +28,7 @@ function escapeCSVField(value: string): string {
 /**
  * Convert array of objects to CSV string
  */
-export function arrayToCSV(data: Record<string, unknown>[]): string {
+export function arrayToCSV(data: Record<string, any>[]): string {
   if (!data || data.length === 0) {
     return '';
   }
@@ -67,7 +67,7 @@ export function arrayToCSV(data: Record<string, unknown>[]): string {
 /**
  * Export data as CSV file download
  */
-export function exportToCSV(data: Record<string, unknown>[], filename?: string): void {
+export function exportToCSV(data: Record<string, any>[], filename?: string): void {
   const csv = arrayToCSV(data);
   const finalFilename = filename || `vigil-export-${formatDateForFilename()}.csv`;
 
@@ -78,7 +78,7 @@ export function exportToCSV(data: Record<string, unknown>[], filename?: string):
 /**
  * Export data as JSON file download
  */
-export function exportToJSON(data: unknown, filename?: string): void {
+export function exportToJSON(data: any, filename?: string): void {
   const json = JSON.stringify(data, null, 2);
   const finalFilename = filename || `vigil-export-${formatDateForFilename()}.json`;
 

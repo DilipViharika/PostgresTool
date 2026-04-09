@@ -938,7 +938,7 @@ const ReliabilityTab = () => {
             setIsRefreshing(false);
             if (isInitial) setLoading(false);
         }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- intentional: run once on mount to fetch initial data
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => { fetchAll(true); }, [fetchAll]);
 

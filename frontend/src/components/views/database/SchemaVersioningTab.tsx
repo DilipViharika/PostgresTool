@@ -746,7 +746,7 @@ const DependencyGraph = ({ data }) => {
                         });
                     })()}
                 </g>
-                {Object.values(positions).map((node: { id?: string; x?: number; y?: number; type?: string; connections?: number } | undefined) => {
+                {Object.values(positions).map((node: any) => {
                     if (!node || !node.id) return null;
                     const isSelected = node.id === selectedNode;
                     const isHov = node.id === hoveredNode;

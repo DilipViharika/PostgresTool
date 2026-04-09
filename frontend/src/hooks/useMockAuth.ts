@@ -155,10 +155,6 @@ const ROLE_PERMISSIONS = {
 };
 
 export const useMockAuth = () => {
-    // SECURITY: Mock auth only available in development builds
-    // This prevents production credentials from being exposed
-    const isDev = import.meta.env.DEV;
-
     const [currentUser, setCurrentUser] = useState(null);
     const [isInitializing, setIsInitializing] = useState(true);
     const [loading, setLoading] = useState(false);
@@ -167,12 +163,6 @@ export const useMockAuth = () => {
     // Load current user from localStorage on mount — always refresh allowedScreens
     // from the latest ROLE_PERMISSIONS so newly-added tabs appear without re-login.
     useEffect(() => {
-        // Only initialize mock auth in development mode
-        if (!isDev) {
-            setIsInitializing(false);
-            return;
-        }
-
         try {
             const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
             if (storedUser) {
@@ -189,15 +179,10 @@ export const useMockAuth = () => {
         } finally {
             setIsInitializing(false);
         }
-    }, [isDev]);
+    }, []);
 
     // Get all users from localStorage
     const getAllUsers = useCallback(() => {
-        // SECURITY: Mock auth disabled in production
-        if (!isDev) {
-            return [];
-        }
-
         try {
             const stored = localStorage.getItem(STORAGE_KEYS.ALL_USERS);
             if (stored) {
@@ -220,17 +205,10 @@ export const useMockAuth = () => {
                 allowedScreens: ROLE_PERMISSIONS.super_admin,
             },
         ];
-    }, [isDev]);
+    }, []);
 
     const login = useCallback(
         async (loginId, password) => {
-            // SECURITY: Mock auth disabled in production
-            if (!isDev) {
-                setLoading(false);
-                setError('Mock authentication is not available in production');
-                return false;
-            }
-
             setLoading(true);
             setError(null);
 
@@ -285,17 +263,10 @@ export const useMockAuth = () => {
                 }, 1000); // Simulate network delay
             });
         },
-        [getAllUsers, isDev],
+        [getAllUsers],
     );
 
     const googleLogin = useCallback(async (email, name) => {
-        // SECURITY: Mock auth disabled in production
-        if (!isDev) {
-            setLoading(false);
-            setError('Mock authentication is not available in production');
-            return false;
-        }
-
         setLoading(true);
         return new Promise((resolve) => {
             setTimeout(() => {
@@ -315,21 +286,16 @@ export const useMockAuth = () => {
                 resolve(true);
             }, 1500);
         });
-    }, [isDev]);
+    }, []);
 
     const logout = useCallback(() => {
-        // SECURITY: Mock auth disabled in production
-        if (!isDev) {
-            return;
-        }
         setCurrentUser(null);
         localStorage.removeItem(STORAGE_KEYS.USER);
-    }, [isDev]);
+    }, []);
 
     const updateUser = useCallback(
         (updatedData) => {
-            // SECURITY: Mock auth disabled in production
-            if (!isDev || !currentUser) return;
+            if (!currentUser) return;
 
             const updatedUser = { ...currentUser, ...updatedData };
             setCurrentUser(updatedUser);
@@ -344,7 +310,7 @@ export const useMockAuth = () => {
                 console.error('Error updating user in all users list:', error);
             }
         },
-        [currentUser, getAllUsers, isDev],
+        [currentUser, getAllUsers],
     );
 
     return {

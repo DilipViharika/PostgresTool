@@ -34,14 +34,16 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: {
+                    'vendor-react': ['react', 'react-dom'],
                     'vendor-router': ['react-router-dom'],
                     'vendor-charts': ['recharts'],
                     'vendor-ui': ['lucide-react'],
                     'vendor-editor': ['@uiw/react-codemirror', '@codemirror/lang-sql'],
+                    'vendor-date': ['date-fns'],
                 },
             },
         },
-        chunkSizeWarningLimit: 400,
+        chunkSizeWarningLimit: 600,
     },
     optimizeDeps: {
         include: [

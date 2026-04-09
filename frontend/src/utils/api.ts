@@ -4,11 +4,6 @@ const API_BASE = import.meta.env.VITE_API_URL || (() => { console.warn('VITE_API
 // Prevents duplicate GET requests to the same URL while one is in-flight.
 const inflightRequests = new Map();
 
-// ── Response caching for GET requests ──────────────────────────────────────
-// Reduces redundant requests with configurable TTL.
-const cache = new Map<string, { data: unknown; timestamp: number }>();
-const CACHE_TTL = 30_000; // 30 seconds
-
 // ── Default request timeout (30 seconds) ───────────────────────────────────
 const DEFAULT_TIMEOUT_MS = 30_000;
 
@@ -20,9 +15,7 @@ export const fetchMetrics = async () => {
 };
 
 function getAuthHeaders() {
-    // SECURITY: Retrieve token from sessionStorage instead of localStorage
-    // to prevent token persistence on shared devices
-    const token = sessionStorage.getItem('vigil_token');
+    const token = localStorage.getItem('vigil_token');
     return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -68,14 +61,6 @@ async function request(path, options = {}) {
     const resolvedPath = appendConnectionId(path);
     const url = resolvedPath.startsWith('http') ? resolvedPath : `${API_BASE}${resolvedPath}`;
 
-    // ── Check cache for GET requests ──────────────────────────────────────
-    if (isGet && !options.skipCache) {
-        const cached = cache.get(url);
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-            return Promise.resolve(cached.data);
-        }
-    }
-
     // ── Deduplicate identical in-flight GET requests ─────────────────────
     if (isGet && inflightRequests.has(url)) {
         return inflightRequests.get(url).catch(err => { inflightRequests.delete(url); throw err; });
@@ -109,14 +94,7 @@ async function request(path, options = {}) {
                 throw new Error(data.error || `Request failed (${res.status})`);
             }
 
-            const data = await res.json();
-
-            // ── Cache successful GET responses ─────────────────────────
-            if (isGet) {
-                cache.set(url, { data, timestamp: Date.now() });
-            }
-
-            return data;
+            return res.json();
         } catch (err) {
             if (err.name === 'AbortError') {
                 throw new Error(`Request to ${path} timed out after ${timeoutMs}ms`);
@@ -137,8 +115,7 @@ async function request(path, options = {}) {
 // --- POLLING REPLACEMENT FOR WEBSOCKET ---
 // WebSockets are not supported on Vercel (serverless). This polls /api/alerts/recent instead.
 export function connectWS(onMessage, intervalMs = 10000) {
-    // SECURITY: Retrieve token from sessionStorage instead of localStorage
-    const token = sessionStorage.getItem('vigil_token');
+    const token = localStorage.getItem('vigil_token');
     if (!token) return () => {};
 
     let lastAlertId = null;
@@ -234,15 +211,7 @@ export async function fetchData(path) {
 }
 
 export async function postData(path, body = {}) {
-    try {
-        return await request(path, { method: 'POST', body: JSON.stringify(body) });
-    } catch (err) {
-        // Retry once on network errors for idempotent POST operations
-        if (err instanceof TypeError && (err.message.includes('fetch') || err.message.includes('network'))) {
-            return request(path, { method: 'POST', body: JSON.stringify(body) });
-        }
-        throw err;
-    }
+    return request(path, { method: 'POST', body: JSON.stringify(body) });
 }
 
 export async function putData(path, body = {}) {

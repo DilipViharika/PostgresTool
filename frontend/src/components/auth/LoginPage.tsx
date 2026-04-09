@@ -191,18 +191,15 @@ const FloatingOrbs = () => (
             { w: 400, bottom: '-10%', right: '-8%', bg: 'rgba(59,130,246,0.10)', dur: '20s', delay: '-5s' },
             { w: 300, top: '35%', right: '15%', bg: 'rgba(139,92,246,0.08)', dur: '18s', delay: '-10s' },
             { w: 200, bottom: '20%', left: '30%', bg: 'rgba(99,102,241,0.06)', dur: '14s', delay: '-3s' },
-        ].map((s, i) => {
-            const { w, bg, dur, delay, ...extraStyle } = s;
-            return (
+        ].map((s, i) => (
             <div key={i} style={{
                 position: 'absolute', width: s.w, height: s.w, borderRadius: '50%',
                 filter: 'blur(80px)', background: s.bg, pointerEvents: 'none',
                 animation: `orbFloat ${s.dur} ease-in-out infinite`,
                 animationDelay: s.delay,
-                ...extraStyle,
+                ...(s as any),
             }} />
-            );
-        })}
+        ))}
     </>
 );
 

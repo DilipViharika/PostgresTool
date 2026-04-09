@@ -994,7 +994,7 @@ const HistoryPanel = ({data}) => {
 /* ─────────────────────────────────────────────────────────────────────────
    MAIN
 ───────────────────────────────────────────────────────────────────────── */
-function IndexIntelligence() {
+export default function IndexIntelligence() {
     useAdaptiveTheme();
     const [view,setView]=useState('missing');
     const [detail,setDetail]=useState(null);
@@ -1160,5 +1160,3 @@ function IndexIntelligence() {
         </div>
     );
 }
-
-export default React.memo(IndexIntelligence);

@@ -37,11 +37,7 @@ const _DARK = {
     primaryLight: '#a5b4fc',
     primaryFaint: 'rgba(99, 102, 241, 0.10)',
 
-    // ── Indigo — secondary (unified accent, same as primary) ──────────────
-    // NOTE: secondary is intentionally identical to primary in dark theme.
-    // This implements a unified accent strategy where primary and secondary
-    // both refer to the same indigo color for visual consistency. Gradients
-    // using both colors will blend smoothly without jarring color shifts.
+    // ── Indigo — secondary (unified accent) ──────────────────────────────────
     secondary:      '#818cf8',
     secondaryDark:  '#6366f1',
     secondaryLight: '#a5b4fc',
@@ -82,12 +78,8 @@ const _DARK = {
     pearl:     '#e0e4f0',
     deepTeal:  '#081218',
     inkBlack:  '#081218',
-    // Animation color aliases — both use primary indigo for shimmer/glow effects
-    // phosphor: shimmer animation alias (indigo #818cf8)
-    // biolume: glow animation alias (indigo #818cf8)
-    // These unified aliases ensure consistent animation color across the theme
-    phosphor:  '#818cf8',
-    biolume:   '#818cf8',
+    phosphor:  '#818cf8',    // primary alias for shimmer animations (indigo)
+    biolume:   '#818cf8',    // secondary alias for glow animations (indigo)
     mariana:   '#091620',
 
     // ── Shadows — subtle elevation (modern clean) ──────────────────────────────
@@ -252,22 +244,7 @@ export const THEME = { ..._DARK };
 //      also see the correct tokens when they render.
 export const useAdaptiveTheme = () => {
     const { isDark } = useTheme();
-
-    React.useLayoutEffect(() => {
-        const newTheme = isDark ? _DARK : _LIGHT;
-        // Only assign if values changed to prevent unnecessary mutations
-        let changed = false;
-        for (const key in newTheme) {
-            if (THEME[key] !== newTheme[key]) {
-                changed = true;
-                break;
-            }
-        }
-        if (changed) {
-            Object.assign(THEME, newTheme);
-        }
-    }, [isDark]);
-
+    Object.assign(THEME, isDark ? _DARK : _LIGHT);
     return THEME;
 };
 

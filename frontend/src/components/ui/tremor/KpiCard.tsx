@@ -16,6 +16,8 @@ interface KpiCardProps {
   color: string;
   healthy?: boolean;
   sparkline?: React.ReactNode;
+  delta?: string;
+  deltaType?: 'increase' | 'decrease' | 'unchanged';
 }
 
 const KpiCard: React.FC<KpiCardProps> = ({

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { THEME, useAdaptiveTheme } from '../../../utils/theme';
+import { useTheme } from '../../../context/ThemeContext';
 import {
     Cloud,
     RefreshCw,
@@ -21,6 +21,30 @@ import {
     Shield,
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+/* ─────────────────────────────────────────────────────────────────
+   THEME
+   ───────────────────────────────────────────────────────────────── */
+const buildTheme = (isDark) => ({
+    primary: isDark ? '#6366f1' : '#6366f1',
+    secondary: isDark ? '#6366f1' : '#10b981',
+    success: isDark ? '#2EE89C' : '#22c55e',
+    danger: isDark ? '#FF4560' : '#ef4444',
+    warning: isDark ? '#FFB520' : '#f59e0b',
+    info: isDark ? '#5BB8F5' : '#3b82f6',
+    ai: isDark ? '#B88BFF' : '#6366f1',
+    bg: isDark ? '#07030D' : '#f0f4f8',
+    surface: isDark ? '#120A1F' : '#ffffff',
+    surfaceHover: isDark ? '#1A1029' : '#f1f5f9',
+    glass: isDark ? 'rgba(18,10,31,0.65)' : 'rgba(255,255,255,0.85)',
+    glassHeavy: isDark ? 'rgba(7,3,13,0.95)' : 'rgba(255,255,255,0.97)',
+    glassBorder: isDark ? 'rgba(139,92,246,0.12)' : 'rgba(0,0,0,0.08)',
+    textMain: isDark ? '#F0ECF8' : '#0f172a',
+    textMuted: isDark ? '#9888B4' : '#64748b',
+    textDim: isDark ? '#4A3A5E' : '#94a3b8',
+    fontMono: `'JetBrains Mono', 'Fira Code', monospace`,
+    fontBody: `'Outfit', system-ui, sans-serif`,
+});
 
 /* ── Helpers ── */
 const fmt = {
@@ -170,8 +194,7 @@ const AWS_REGIONS = [
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const STORAGE_KEY = 'vigil_cw_instances';
-// SECURITY: Retrieve token from sessionStorage instead of localStorage
-const authHeader = () => ({ Authorization: `Bearer ${sessionStorage.getItem('vigil_token')}` });
+const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('vigil_token')}` });
 
 const CW_STYLES = `
     @keyframes cwShimmer { 0% { background-position: -300% 0; } 100% { background-position: 300% 0; } }
@@ -1068,29 +1091,8 @@ const InstanceDashboard = ({ instance, timeRange, refreshInterval, T }) => {
    MAIN COMPONENT
    ══════════════════════════════════════════════════════════════════ */
 export default function CloudWatchTab() {
-    useAdaptiveTheme();
-
-    // Theme object that adapts to THEME values
-    const T = {
-        primary: THEME.primary,
-        secondary: THEME.secondary,
-        success: THEME.success,
-        danger: THEME.danger,
-        warning: THEME.warning,
-        info: THEME.info,
-        ai: THEME.ai,
-        bg: THEME.bg,
-        surface: THEME.surface,
-        surfaceHover: THEME.surfaceHover,
-        glass: THEME.glass,
-        glassHeavy: THEME.glassHeavy,
-        glassBorder: THEME.glassBorder,
-        textMain: THEME.textMain,
-        textMuted: THEME.textMuted,
-        textDim: THEME.textDim,
-        fontMono: THEME.fontMono,
-        fontBody: THEME.fontBody,
-    };
+    const { isDark } = useTheme();
+    const T = buildTheme(isDark);
 
     const [instances, setInstances] = useState(() => loadInstances());
     const [activeTab, setActiveTab] = useState(0);

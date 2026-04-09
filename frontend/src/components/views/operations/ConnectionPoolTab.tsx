@@ -537,8 +537,7 @@ const LeakDetector = () => {
     const scan = async () => {
         setLoading(true);
         try {
-            // SECURITY: Retrieve token from sessionStorage instead of localStorage
-            const token   = sessionStorage.getItem('vigil_token') || sessionStorage.getItem('authToken');
+            const token   = localStorage.getItem('vigil_token') || localStorage.getItem('authToken');
             const res     = await fetch(`${API_BASE}/api/reliability/active-connections`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -681,8 +680,7 @@ const ConnectionsTab = () => {
     // Connection context — keeps the header dropdown in sync
     const { refreshConnections: refreshCtxConnections, activeConnectionId, switchConnection } = useConnection();
 
-    // SECURITY: Retrieve token from sessionStorage instead of localStorage
-    const getAuthToken = () => sessionStorage.getItem('vigil_token') || sessionStorage.getItem('authToken');
+    const getAuthToken = () => localStorage.getItem('vigil_token') || localStorage.getItem('authToken');
 
     const fetchConnections = useCallback(async () => {
         // If we already have cached connections, show a subtle refresh indicator instead of full loading
@@ -1220,9 +1218,9 @@ const ConnectionsTab = () => {
                                             {switchingId === conn.id ? <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> : isActive ? <CheckCircle size={12} /> : <LinkIcon size={12} />}
                                         </button>
                                         <button onClick={() => openEdit(conn)} title="Edit connection"
-                                            style={S.btn(`${THEME.warning}15`, `${THEME.warning}4d`, THEME.warning)}
-                                            onMouseEnter={e => e.currentTarget.style.background = `${THEME.warning}38`}
-                                            onMouseLeave={e => e.currentTarget.style.background = `${THEME.warning}15`}><Edit size={12} /></button>
+                                            style={S.btn('rgba(251,191,36,0.1)', 'rgba(251,191,36,0.3)', '#fbbf24')}
+                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(251,191,36,0.22)'}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(251,191,36,0.1)'}><Edit size={12} /></button>
                                         <button onClick={() => deleteConnection(conn.id)} title="Delete connection"
                                             style={{ ...S.btn('rgba(239,68,68,0.1)', 'rgba(239,68,68,0.25)', THEME.danger), cursor: 'pointer' }}
                                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.22)'}

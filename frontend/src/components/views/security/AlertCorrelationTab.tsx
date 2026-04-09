@@ -118,8 +118,7 @@ export default function AlertCorrelationTab() {
     const fetchCorrelationData = useCallback(async () => {
         try {
             setLoading(true);
-            // SECURITY: Retrieve token from sessionStorage instead of localStorage
-            const token = sessionStorage.getItem('vigil_token');
+            const token = localStorage.getItem('vigil_token');
             const result = await fetchData('/api/alerts/correlation', {
                 method: 'GET',
                 headers: token ? { Authorization: `Bearer ${token}` } : {},

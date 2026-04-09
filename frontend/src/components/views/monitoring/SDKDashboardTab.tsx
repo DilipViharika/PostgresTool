@@ -11,8 +11,7 @@ import {
 
 /* ── Safe fetch helpers (avoid global auth:logout on 401) ─────────────── */
 function getToken() {
-    // SECURITY: Retrieve token from sessionStorage instead of localStorage
-    try { return sessionStorage.getItem('vigil_token'); } catch { return null; }
+    try { return localStorage.getItem('vigil_token'); } catch { return null; }
 }
 
 async function sdkFetch(path) {

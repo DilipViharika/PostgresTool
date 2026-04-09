@@ -61,7 +61,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, color = THEME.primary }) =>
 /* ═══════════════════════════════════════════════════════════════════════════
    BACKUP & RECOVERY TAB
    ═══════════════════════════════════════════════════════════════════════════ */
-function BackupRecoveryTab() {
+export default function BackupRecoveryTab() {
     useAdaptiveTheme(); // keeps THEME in sync with dark/light toggle
     const [data,      setData]      = useState(null);
     const [loading,   setLoading]   = useState(true);
@@ -290,5 +290,3 @@ function BackupRecoveryTab() {
         </div>
     );
 }
-
-export default React.memo(BackupRecoveryTab);

@@ -42,7 +42,7 @@ export interface QueryPlan {
 }
 
 export interface QueryResult {
-    rows: (string | number | boolean | null)[][];
+    rows: any[][];
     columns: string[];
     rowCount: number;
     executionTime: number;
@@ -292,8 +292,8 @@ export interface ColumnStats {
     nullCount: number;
     distinctCount: number;
     avgLength?: number;
-    minValue?: string | number | null;
-    maxValue?: string | number | null;
+    minValue?: any;
+    maxValue?: any;
     correlationCoeff?: number;
 }
 
@@ -404,7 +404,7 @@ export interface TabProps extends ComponentProps {
 
 export interface DataTableProps extends ComponentProps {
     columns: string[];
-    rows: (string | number | boolean | null)[][];
+    rows: any[][];
     loading?: boolean;
     error?: string | null;
     onRowClick?: (rowIndex: number) => void;

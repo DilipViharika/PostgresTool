@@ -58,6 +58,7 @@ const CommandPalette: React.FC = () => {
       icon: <Download size={16} />,
       onSelect: () => {
         // Placeholder for export functionality
+        console.log('Export dashboard');
         setIsOpen(false);
         setQuery('');
       },
@@ -69,6 +70,7 @@ const CommandPalette: React.FC = () => {
       icon: <RefreshCw size={16} />,
       onSelect: () => {
         // Placeholder for refresh functionality
+        console.log('Refresh data');
         setIsOpen(false);
         setQuery('');
       },

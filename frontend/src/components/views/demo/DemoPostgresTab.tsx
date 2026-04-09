@@ -717,7 +717,7 @@ function DemoPostgresTab({ tabId }) {
                                     { name: 'public.events', ops: '45.0K', reads: 78, writes: 22 },
                                     { name: 'public.users', ops: '23.4K', reads: 92, writes: 8 },
                                 ].map((t, i) => (
-                                    <div key={t.name}>
+                                    <div key={i}>
                                         <div
                                             style={{
                                                 display: 'flex',
@@ -831,7 +831,7 @@ function DemoPostgresTab({ tabId }) {
                                         { label: 'IDLE', value: '31', icon: Server, color: THEME.textMuted },
                                         { label: 'BLOCKED', value: '2', icon: Lock, color: THEME.danger },
                                     ].map((s, i) => (
-                                        <div key={s.label} style={{ textAlign: 'center', padding: '16px 8px' }}>
+                                        <div key={i} style={{ textAlign: 'center', padding: '16px 8px' }}>
                                             <div
                                                 style={{
                                                     width: 36,
@@ -1846,7 +1846,7 @@ function DemoPostgresTab({ tabId }) {
                                     { label: 'P99 AVG', value: '31ms', sub: '↑ 4.1ms vs 1h', color: THEME.warning },
                                     { label: 'SLA BREACH', value: '0.2%', sub: 'Target: 0.1%', color: THEME.danger },
                                 ].map((p, i) => (
-                                    <Panel key={p.label} noPad title={p.label} accentColor={p.color}>
+                                    <Panel key={i} noPad title={p.label} accentColor={p.color}>
                                         <div
                                             style={{
                                                 padding: '18px 22px',
@@ -2536,7 +2536,7 @@ function DemoPostgresTab({ tabId }) {
                                     { type: 'Incr', time: '30m ago', size: '128 MB', status: 'Verified' },
                                 ].map((b, i) => (
                                     <div
-                                        key={`backup-${i}-${b.time}`}
+                                        key={i}
                                         style={{
                                             display: 'flex',
                                             justifyContent: 'space-between',
@@ -3088,7 +3088,7 @@ function DemoPostgresTab({ tabId }) {
                                     },
                                 ].map((a, i) => (
                                     <div
-                                        key={a.title}
+                                        key={i}
                                         style={{
                                             padding: '18px 22px',
                                             borderBottom: `1px solid ${THEME.glassBorder}`,

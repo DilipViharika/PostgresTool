@@ -16,20 +16,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 const API_BASE = import.meta.env.VITE_API_URL || (() => { console.warn('VITE_API_URL not set, using relative URLs'); return ''; })();
 const STORAGE_KEYS = { TOKEN: 'vigil_token', USER: 'vigil_user' };
 
-// ─── Storage utility functions ─────────────────────────────────────────────
-// SECURITY: Use sessionStorage for tokens instead of localStorage.
-// sessionStorage is cleared when the browser tab is closed, preventing tokens
-// from persisting on shared or compromised devices. This is more secure than
-// localStorage which persists indefinitely.
-const secureStorage = {
-    getToken: () => sessionStorage.getItem(STORAGE_KEYS.TOKEN),
-    setToken: (token) => sessionStorage.setItem(STORAGE_KEYS.TOKEN, token),
-    removeToken: () => sessionStorage.removeItem(STORAGE_KEYS.TOKEN),
-    getUser: () => sessionStorage.getItem(STORAGE_KEYS.USER),
-    setUser: (user) => sessionStorage.setItem(STORAGE_KEYS.USER, user),
-    removeUser: () => sessionStorage.removeItem(STORAGE_KEYS.USER),
-};
-
 // ═══════════════════════════════════════════════════════════════════════════
 //  JWT HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
@@ -68,65 +54,45 @@ export const AuthProvider = ({ children }) => {
         () => localStorage.getItem('vigil_must_change_password') === 'true'
     );
 
-    // ── Restore session from sessionStorage on mount (sync — no fetch) ───────
-    // SECURITY: Using sessionStorage instead of localStorage for tokens to prevent
-    // token persistence on shared devices. Session is cleared on tab close.
+    // ── Restore session from localStorage on mount (sync — no fetch) ───────
     useEffect(() => {
         try {
-            const token = secureStorage.getToken();
-            const stored = secureStorage.getUser();
+            const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+            const stored = localStorage.getItem(STORAGE_KEYS.USER);
 
             if (token && stored && !isTokenExpired(token)) {
                 setCurrentUser(JSON.parse(stored));
             } else {
-                secureStorage.removeToken();
-                secureStorage.removeUser();
+                localStorage.removeItem(STORAGE_KEYS.TOKEN);
+                localStorage.removeItem(STORAGE_KEYS.USER);
             }
         } catch {
-            secureStorage.removeToken();
-            secureStorage.removeUser();
+            localStorage.removeItem(STORAGE_KEYS.TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.USER);
         }
         setLoading(false);
     }, []);
 
-    // ── Listen for forced logout (401 from api.js) and broadcast to other tabs ─────────────────
+    // ── Listen for forced logout (401 from api.js) ─────────────────────────
     useEffect(() => {
-        const logoutChannel = new BroadcastChannel('vigil-auth');
-
         const onLogout = () => {
-            secureStorage.removeToken();
-            secureStorage.removeUser();
+            localStorage.removeItem(STORAGE_KEYS.TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.USER);
             setCurrentUser(null);
             setError('Session expired. Please sign in again.');
-            // Broadcast logout to all other tabs
-            logoutChannel.postMessage({ type: 'logout' });
         };
-
-        // Listen for logout from other tabs
-        logoutChannel.onmessage = (event) => {
-            if (event.data?.type === 'logout') {
-                secureStorage.removeToken();
-                secureStorage.removeUser();
-                setCurrentUser(null);
-                setError('Session expired in another tab. Please sign in again.');
-            }
-        };
-
         window.addEventListener('auth:logout', onLogout);
-        return () => {
-            window.removeEventListener('auth:logout', onLogout);
-            logoutChannel.close();
-        };
+        return () => window.removeEventListener('auth:logout', onLogout);
     }, []);
 
     // ── Periodic token expiry check ────────────────────────────────────────
     useEffect(() => {
         if (!currentUser) return;
         const interval = setInterval(() => {
-            const token = secureStorage.getToken();
+            const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
             if (!token || isTokenExpired(token)) {
-                secureStorage.removeToken();
-                secureStorage.removeUser();
+                localStorage.removeItem(STORAGE_KEYS.TOKEN);
+                localStorage.removeItem(STORAGE_KEYS.USER);
                 setCurrentUser(null);
                 setError('Session expired. Please sign in again.');
             }
@@ -156,7 +122,7 @@ export const AuthProvider = ({ children }) => {
 
             // Clear previous user's cached data before setting new session
             // This prevents stale data from a different user leaking into the new session
-            const prevUser = secureStorage.getUser();
+            const prevUser = localStorage.getItem(STORAGE_KEYS.USER);
             const prevParsed = prevUser ? JSON.parse(prevUser) : null;
             if (!prevParsed || prevParsed.username !== data.user.username) {
                 localStorage.removeItem('pg_monitor_active_tab');
@@ -168,8 +134,8 @@ export const AuthProvider = ({ children }) => {
                 localStorage.removeItem('vigil_last_feedback');
             }
 
-            secureStorage.setToken(data.token);
-            secureStorage.setUser(JSON.stringify(data.user));
+            localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+            localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
             if (data.mustChangePassword) {
                 localStorage.setItem('vigil_must_change_password', 'true');
                 setMustChangePassword(true);
@@ -197,7 +163,7 @@ export const AuthProvider = ({ children }) => {
     // ── SSO Callback Handler ───────────────────────────────────────────────
     const handleSSOCallback = useCallback((token, user) => {
         // Clear previous user's cached data before setting new SSO session
-        const prevUser = secureStorage.getUser();
+        const prevUser = localStorage.getItem(STORAGE_KEYS.USER);
         const prevParsed = prevUser
             ? (() => {
                   try {
@@ -216,15 +182,15 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('vigil_recent_tabs');
             localStorage.removeItem('vigil_last_feedback');
         }
-        secureStorage.setToken(token);
-        secureStorage.setUser(JSON.stringify(user));
+        localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
         setCurrentUser(user);
     }, []);
 
     // ── Logout ─────────────────────────────────────────────────────────────
     const logout = useCallback(() => {
-        secureStorage.removeToken();
-        secureStorage.removeUser();
+        localStorage.removeItem(STORAGE_KEYS.TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER);
         // Clear persisted active tab so the next login always opens Overview
         localStorage.removeItem('pg_monitor_active_tab');
         // Clear active connection so next login starts fresh
@@ -246,7 +212,7 @@ export const AuthProvider = ({ children }) => {
     const isAdmin = useMemo(() => currentUser?.role === 'super_admin', [currentUser]);
 
     // ── Token accessors ────────────────────────────────────────────────────
-    const getToken = useCallback(() => secureStorage.getToken(), []);
+    const getToken = useCallback(() => localStorage.getItem(STORAGE_KEYS.TOKEN), []);
 
     // Returns the base WS URL (no token in URL — client sends auth as first message)
     const getWSUrl = useCallback(() => {
@@ -257,14 +223,14 @@ export const AuthProvider = ({ children }) => {
 
     // ── Session info ───────────────────────────────────────────────────────
     const sessionInfo = useMemo(() => {
-        const token = secureStorage.getToken();
+        const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
         if (!token) return null;
         const remaining = tokenExpiresIn(token);
         return {
             remainingMinutes: Math.floor(remaining / 60000),
             expiresAt: new Date(Date.now() + remaining),
         };
-    }, [currentUser]); // eslint-disable-line react-hooks/exhaustive-deps -- intentional: recalculate when user changes, even though we don't directly use it
+    }, [currentUser]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── Context value ──────────────────────────────────────────────────────
     // Allow external code (e.g. ForcePasswordChangeModal) to clear the flag

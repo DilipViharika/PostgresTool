@@ -31,33 +31,33 @@ const DEMO_TABS = [
     { id: 'demo-mongodb', label: 'MongoDB', short: 'MO' },
 ];
 
-/* ── Create light theme color palette from THEME tokens ── */
-const createLightTheme = () => ({
+/* ── Light theme color palette ── */
+const LT = {
     bg: '#f0f4f8',
     surface: '#ffffff',
-    surfaceHover: THEME.textMain,
+    surfaceHover: T.textMain,
     sidebarBg: '#ffffff',
     headerBg: 'rgba(255,255,255,0.92)',
     footerBg: 'rgba(248,250,252,0.95)',
-    border: THEME.textMain,
+    border: T.textMain,
     borderLight: '#f1f5f9',
     borderAccent: 'rgba(139,92,246,0.15)',
-    text: THEME.bg,
+    text: T.bg,
     textMuted: '#475569',
-    textDim: THEME.textMuted,
-    primary: THEME.primary,
-    secondary: THEME.success,
-    success: THEME.success,
-    danger: THEME.danger,
-    warning: THEME.warning,
-    info: THEME.info,
-    ai: THEME.primaryDark,
+    textDim: T.textMuted,
+    primary: T.primary,
+    secondary: T.success,
+    success: '#16a34a',
+    danger: '#dc2626',
+    warning: '#d97706',
+    info: '#0284c7',
+    ai: T.primaryDark,
     cardBg: '#ffffff',
-    cardBorder: THEME.textMain,
+    cardBorder: T.textMain,
     cardShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
     cardShadowHover: '0 12px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08)',
     activeItemBg: 'rgba(139,92,246,0.08)',
-    activeItemBorder: THEME.primary,
+    activeItemBorder: T.primary,
     hoverBg: 'rgba(139,92,246,0.04)',
     badgeBg: 'rgba(139,92,246,0.1)',
     badgeColor: '#0284c7',
@@ -65,9 +65,9 @@ const createLightTheme = () => ({
     liveBorder: 'rgba(22,163,74,0.2)',
     liveColor: '#16a34a',
     buttonBg: '#f1f5f9',
-    buttonHoverBg: THEME.textMain,
-    accentGradient: `linear-gradient(135deg, ${THEME.primary}, ${THEME.success})`,
-});
+    buttonHoverBg: T.textMain,
+    accentGradient: 'linear-gradient(135deg, #6366f1, #10b981)',
+};
 
 const DemoLayout = ({
     sections = [],
@@ -83,10 +83,6 @@ const DemoLayout = ({
     activeDemo = 'demo-postgres',
 }) => {
     useAdaptiveTheme();
-
-    // Initialize LT from THEME tokens
-    const LT = createLightTheme();
-
     let goToTab = null;
     try {
         const nav = useNavigation();

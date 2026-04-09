@@ -2117,4 +2117,4 @@ const SqlConsoleTab = () => {
     );
 };
 
-export default React.memo(SqlConsoleTab);
+export default SqlConsoleTab;
