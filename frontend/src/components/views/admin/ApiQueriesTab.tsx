@@ -80,7 +80,7 @@ const GlobalStyles = () => (
 
         .tab-btn {
             display:flex; align-items:center; gap:6px;
-            padding:8px 14px; border:none; border-radius:6px;
+            padding:8px 14px; border:none; border-radius:8px;
             font-size:10px; font-weight:700; letter-spacing:0.07em;
             text-transform:uppercase; cursor:pointer; transition:all 0.15s;
             font-family: ${THEME.fontMono};
@@ -99,7 +99,7 @@ const GlobalStyles = () => (
 
         .scroll-thin::-webkit-scrollbar { width:4px; height:4px; }
         .scroll-thin::-webkit-scrollbar-track { background:transparent; }
-        .scroll-thin::-webkit-scrollbar-thumb { background:${T.border}; border-radius:4px; }
+        .scroll-thin::-webkit-scrollbar-thumb { background:${T.border}; border-radius:8px; }
 
         .json-key { color:${T.primary}; }
         .json-str { color:${T.success}; }
@@ -113,7 +113,7 @@ const GlobalStyles = () => (
             background: linear-gradient(90deg, ${T.border} 25%, ${T.raised} 50%, ${T.border} 75%);
             background-size:200% 100%;
             animation: shimmer 1.4s infinite;
-            border-radius:4px;
+            border-radius:8px;
         }
 
         .log-entry {
@@ -127,21 +127,21 @@ const GlobalStyles = () => (
         .metric-chip {
             display:inline-flex; align-items:center; gap:5px;
             font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
-            padding:3px 8px; border-radius:4px; white-space:nowrap; border:1px solid transparent;
+            padding:3px 8px; border-radius:6px; white-space:nowrap; border:1px solid transparent;
         }
 
         .heatcell {
-            border-radius:3px;
+            border-radius:6px;
             transition:transform 0.1s, filter 0.1s;
         }
         .heatcell:hover { transform:scale(1.4); filter:brightness(1.5); z-index:10; position:relative; }
 
         .infra-bar-track {
-            height:6px; border-radius:3px; background:${T.border};
+            height:6px; border-radius:6px; background:${T.border};
             overflow:hidden; position:relative;
         }
         .infra-bar-fill {
-            height:100%; border-radius:3px; transition:width 0.6s cubic-bezier(0.22,1,0.36,1);
+            height:100%; border-radius:6px; transition:width 0.6s cubic-bezier(0.22,1,0.36,1);
         }
 
         .waterfall-label {

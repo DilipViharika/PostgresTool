@@ -11,17 +11,17 @@ const Styles = () => (
         @keyframes spFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         .sp-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 14px;
             padding: 20px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: ${THEME.shadowSm};
             transition: all 0.25s ease;
             animation: spFade 0.3s ease;
         }
         .sp-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            box-shadow: ${THEME.shadowMd};
             transform: translateY(-2px);
         }
         .sp-card::after {
@@ -35,9 +35,9 @@ const Styles = () => (
             opacity: 0.7;
         }
         .sp-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .sp-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .sp-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
         .sp-input:focus { outline:none; border-color:${THEME.primary}; }
-        .sp-textarea { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; min-height:100px; resize:vertical; }
+        .sp-textarea { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; min-height:100px; resize:vertical; }
         .sp-textarea:focus { outline:none; border-color:${THEME.primary}; }
         .sp-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:8px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
         .sp-button:hover { background:${THEME.primaryLight}; }
@@ -48,9 +48,9 @@ const Styles = () => (
         .sp-status-operational { color:${THEME.success}; }
         .sp-status-degraded { color:${THEME.warning}; }
         .sp-status-outage { color:${THEME.danger}; }
-        .sp-component-row { display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid ${THEME.grid}40; }
+        .sp-component-row { display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid ${THEME.glassBorder}40; }
         .sp-component-row:last-child { border-bottom:none; }
-        .sp-incident { background:${THEME.grid}; border-left:4px solid ${THEME.warning}; border-radius:8px; padding:12px; margin-bottom:12px; }
+        .sp-incident { background:${THEME.grid}; border-left:4px solid ${THEME.warning}; border-radius:10px; padding:12px; margin-bottom:12px; }
         .sp-spinner { animation:spSpin 1s linear infinite; }
     `}</style>
 );
@@ -67,7 +67,7 @@ const StatusIndicator = ({ status }) => {
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:8, padding:'8px 12px', fontSize:12 }}>
+        <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, padding:'8px 12px', fontSize:12, boxShadow: THEME.shadowSm }}>
             <div style={{ color:THEME.textMuted, marginBottom:4 }}>{label}</div>
             {payload.map(p => (
                 <div key={p.name} style={{ color:p.color, fontWeight:600 }}>{p.name}: {p.value}%</div>

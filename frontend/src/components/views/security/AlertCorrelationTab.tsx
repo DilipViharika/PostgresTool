@@ -52,17 +52,17 @@ const Styles = () => (
 
     .sec-card {
       background: var(--theme-surface);
-      border: 1px solid var(--theme-grid);
+      border: 1px solid var(--theme-glassBorder);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
       transition: all 0.25s ease;
       display: flex;
       position: relative;
     }
     .sec-card:hover {
-      border-color: rgba(239, 68, 68, 0.25);
-      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.06);
+      border-color: var(--theme-danger);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
 
     .sec-card-stripe {
@@ -871,7 +871,7 @@ export default function AlertCorrelationTab() {
                             <span style={{ color: THEME.textMain, fontSize: 13, fontWeight: 600 }}>
                                 {cfg.label}
                             </span>
-                            <span style={{ color: '#6366f1', fontWeight: 700, fontSize: 14 }}>
+                            <span style={{ color: 'var(--theme-primary)', fontWeight: 700, fontSize: 14 }}>
                                 {sensitivity[cfg.key]}
                                 {cfg.unit}
                             </span>
@@ -890,7 +890,7 @@ export default function AlertCorrelationTab() {
                             }
                             style={{
                                 width: '100%',
-                                accentColor: '#6366f1',
+                                accentColor: 'var(--theme-primary)',
                                 cursor: 'pointer',
                             }}
                         />
@@ -924,7 +924,7 @@ export default function AlertCorrelationTab() {
                             width: 44,
                             height: 24,
                             borderRadius: 12,
-                            background: sensitivity.autoCorrelate ? '#6366f1' : THEME.glassBorder,
+                            background: sensitivity.autoCorrelate ? 'var(--theme-primary)' : THEME.glassBorder,
                             cursor: 'pointer',
                             position: 'relative',
                             transition: 'background .2s',
@@ -975,7 +975,7 @@ export default function AlertCorrelationTab() {
                             padding: '10px 0',
                             borderRadius: 8,
                             border: 'none',
-                            background: '#6366f1',
+                            background: 'var(--theme-primary)',
                             color: '#fff',
                             cursor: 'pointer',
                             fontSize: 13,
@@ -1051,10 +1051,10 @@ export default function AlertCorrelationTab() {
                                                     flexShrink: 0,
                                                     background:
                                                         ai === 0
-                                                            ? '#ef4444'
+                                                            ? 'var(--theme-danger)'
                                                             : ai === 1
                                                             ? '#f97316'
-                                                            : '#6366f1',
+                                                            : 'var(--theme-primary)',
                                                 }}
                                             />
                                             {ai > 0 && (

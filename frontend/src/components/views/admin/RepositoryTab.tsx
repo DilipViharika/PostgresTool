@@ -165,7 +165,7 @@ const RepoStyles = () => (
         .r8-stagger > *:nth-child(3) { animation-delay:120ms; }
         .r8-stagger > *:nth-child(4) { animation-delay:180ms; }
 
-        .r8-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
+        .r8-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
         .r8-card:hover { border-color:${THEME.primary}30; }
         .r8-card-remote:hover { border-color:${THEME.primary}30 !important; }
         .r8-card-local:hover  { border-color:${THEME.info}30 !important; }
@@ -181,7 +181,7 @@ const RepoStyles = () => (
 
         .r8-scroll::-webkit-scrollbar { width:4px; height:4px; }
         .r8-scroll::-webkit-scrollbar-track { background:transparent; }
-        .r8-scroll::-webkit-scrollbar-thumb { background:${THEME.primary}28; border-radius:4px; }
+        .r8-scroll::-webkit-scrollbar-thumb { background:${THEME.primary}28; border-radius:8px; }
         .r8-scroll::-webkit-scrollbar-thumb:hover { background:${THEME.primary}55; }
 
         .r8-bar-fill { animation:rBarGrow .9s ease both; }
@@ -192,9 +192,9 @@ const RepoStyles = () => (
         }
         .r8-input:focus { border-color:${THEME.primary} !important; box-shadow:0 0 0 3px ${THEME.primary}18 !important; }
         .r8-input-local:focus { border-color:${THEME.info} !important; box-shadow:0 0 0 3px ${THEME.info}18 !important; }
-        .r8-shimmer { background:linear-gradient(90deg, ${THEME.surface} 25%, ${THEME.glassBorder} 50%, ${THEME.surface} 75%); background-size:200% 100%; animation:rShimmer 1.5s infinite; border-radius:8px; }
+        .r8-shimmer { background:linear-gradient(90deg, ${THEME.surface} 25%, ${THEME.glassBorder} 50%, ${THEME.surface} 75%); background-size:200% 100%; animation:rShimmer 1.5s infinite; border-radius:10px; }
 
-        .r8-btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:9px; border:none; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .16s; white-space:nowrap; }
+        .r8-btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:10px; border:none; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .16s; white-space:nowrap; }
         .r8-btn-p  { background:linear-gradient(135deg, ${THEME.primary}, ${THEME.secondary}); color:${THEME.textMain}; box-shadow:0 4px 14px ${THEME.primary}28; }
         .r8-btn-p:hover:not(:disabled)  { filter:brightness(1.1); transform:translateY(-1px); }
         .r8-btn-p:disabled { opacity: 0.5; cursor: not-allowed; }

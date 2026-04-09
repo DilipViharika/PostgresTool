@@ -14,17 +14,17 @@ const Styles = () => (
         @keyframes cmFade  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         .cm-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 14px;
             padding: 20px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: ${THEME.shadowSm};
             transition: all 0.25s ease;
             animation: cmFade 0.3s ease;
         }
         .cm-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            box-shadow: ${THEME.shadowMd};
             transform: translateY(-2px);
         }
         .cm-card::after {
@@ -37,8 +37,8 @@ const Styles = () => (
             background: var(--tile-accent, ${THEME.primary});
             opacity: 0.7;
         }
-        .cm-metric { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
-        .cm-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid ${THEME.grid}40; font-size:13px; }
+        .cm-metric { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
+        .cm-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid ${THEME.glassBorder}40; font-size:13px; }
         .cm-row:last-child { border-bottom:none; }
     `}</style>
 );
@@ -73,7 +73,7 @@ const MetricCard = ({ icon: Icon, label, value, sub, color = THEME.primary, warn
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:8, padding:'8px 12px', fontSize:12 }}>
+        <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, padding:'8px 12px', fontSize:12, boxShadow: THEME.shadowSm }}>
             <div style={{ color:THEME.textMuted, marginBottom:4 }}>{label}</div>
             {payload.map(p => (
                 <div key={p.name} style={{ color:p.color, fontWeight:600 }}>{p.name}: {fmt(p.value)}</div>
@@ -171,7 +171,7 @@ export default function CheckpointMonitorTab() {
             <Styles/>
 
             {/* ── Toolbar ───────────────────────────────────────────────── */}
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 20px', background:THEME.surface, borderRadius:12, border:`1px solid ${THEME.grid}` }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 20px', background:THEME.surface, borderRadius:12, border:`1px solid ${THEME.glassBorder}` }}>
                 <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                     <CheckCircle size={20} color={THEME.primary}/>
                     <span style={{ fontWeight:700, fontSize:15, color:THEME.textMain }}>Checkpoint Monitor</span>
@@ -184,7 +184,7 @@ export default function CheckpointMonitorTab() {
                 <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                     <span style={{ fontSize:11, color:THEME.textDim }}>{lastAt ? `Updated ${fmtRelative(lastAt)}` : ''}</span>
                     <select value={autoRfsh} onChange={e => setAutoRfsh(+e.target.value)}
-                        style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, color:THEME.textMain, borderRadius:6, padding:'4px 8px', fontSize:12 }}>
+                        style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, color:THEME.textMain, borderRadius:8, padding:'4px 8px', fontSize:12 }}>
                         <option value={10}>10s</option>
                         <option value={30}>30s</option>
                         <option value={60}>1m</option>
@@ -194,7 +194,7 @@ export default function CheckpointMonitorTab() {
             </div>
 
             {error && (
-                <div style={{ padding:14, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius:10, color:THEME.danger, fontSize:13, display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ padding:14, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius:12, color:THEME.danger, fontSize:13, display:'flex', alignItems:'center', gap:8 }}>
                     <AlertCircle size={16}/> {error}
                 </div>
             )}
@@ -283,7 +283,7 @@ export default function CheckpointMonitorTab() {
                         ].map(({ label, value, color }) => (
                             <div key={label} className="cm-row">
                                 <span style={{ color:THEME.textMuted, display:'flex', alignItems:'center', gap:6 }}>
-                                    <div style={{ width:8, height:8, borderRadius:2, background:color, flexShrink:0 }}/>
+                                    <div style={{ width:8, height:8, borderRadius:4, background:color, flexShrink:0 }}/>
                                     {label}
                                 </span>
                                 <span style={{ fontWeight:700, color:THEME.textMain, fontFamily:THEME.fontMono, fontSize:12 }}>{fmt(value)}</span>
@@ -304,7 +304,7 @@ export default function CheckpointMonitorTab() {
                         { label:'Sync Time (total)',  value: fmtMs(bg.checkpoint_sync_ms),  desc:'Time spent syncing files to durable storage (fsync)', color:THEME.secondary },
                         { label:'Timed Checkpoints',  value: fmt(bg.checkpoints_timed),      desc:'Scheduled by checkpoint_timeout (healthy)', color:THEME.success },
                     ].map(({ label, value, desc, color }) => (
-                        <div key={label} style={{ padding:'14px 16px', background:`${THEME.bg}60`, borderRadius:10, border:`1px solid ${THEME.grid}` }}>
+                        <div key={label} style={{ padding:'14px 16px', background:`${THEME.bg}60`, borderRadius:12, border:`1px solid ${THEME.glassBorder}` }}>
                             <div style={{ fontSize:20, fontWeight:800, color, lineHeight:1, marginBottom:6 }}>{value}</div>
                             <div style={{ fontSize:12, fontWeight:700, color:THEME.textMain, marginBottom:4 }}>{label}</div>
                             <div style={{ fontSize:11, color:THEME.textDim, lineHeight:1.5 }}>{desc}</div>
@@ -312,7 +312,7 @@ export default function CheckpointMonitorTab() {
                     ))}
                 </div>
                 {Number(bg.checkpoint_sync_ms) > Number(bg.checkpoint_write_ms) && (
-                    <div style={{ marginTop:14, padding:12, background:`${THEME.warning}10`, border:`1px solid ${THEME.warning}30`, borderRadius:8, fontSize:12, color:THEME.warning }}>
+                    <div style={{ marginTop:14, padding:12, background:`${THEME.warning}10`, border:`1px solid ${THEME.warning}30`, borderRadius:10, fontSize:12, color:THEME.warning }}>
                         ⚠ Sync time exceeds write time — this may indicate slow storage I/O. Consider faster disks or adjusting <code>checkpoint_completion_target</code>.
                     </div>
                 )}
@@ -354,7 +354,7 @@ export default function CheckpointMonitorTab() {
                         { label:'Max WAL Size',             value: wal.max_wal_mb      ? `${wal.max_wal_mb} MB` : '—' },
                         { label:'Checkpoint Timeout',       value: wal.checkpoint_timeout_sec ? `${wal.checkpoint_timeout_sec}s` : '—' },
                     ].map(({ label, value }) => (
-                        <div key={label} style={{ padding:'12px 14px', background:`${THEME.bg}60`, borderRadius:8, border:`1px solid ${THEME.grid}` }}>
+                        <div key={label} style={{ padding:'12px 14px', background:`${THEME.bg}60`, borderRadius:10, border:`1px solid ${THEME.glassBorder}` }}>
                             <div style={{ fontSize:11, color:THEME.textMuted,  letterSpacing:'0.02em', marginBottom:6 }}>{label}</div>
                             <div style={{ fontFamily:THEME.fontMono, fontSize:13, fontWeight:700, color:THEME.textMain }}>{value}</div>
                         </div>

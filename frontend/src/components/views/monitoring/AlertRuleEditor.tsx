@@ -13,17 +13,17 @@ const Styles = () => (
         @keyframes areSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .are-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 14px;
             padding: 20px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: ${THEME.shadowSm};
             transition: all 0.25s ease;
             animation: areFade 0.3s ease;
         }
         .are-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            box-shadow: ${THEME.shadowMd};
             transform: translateY(-2px);
         }
         .are-card::after {
@@ -120,7 +120,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
             onSubmit={handleSubmit}
             style={{
                 background: `linear-gradient(135deg, ${THEME.surface}80, ${THEME.elevated}80)`,
-                border: `1px solid ${THEME.grid}`,
+                border: `1px solid ${THEME.glassBorder}`,
                 borderRadius: '12px',
                 padding: '20px',
                 marginBottom: '20px',
@@ -141,8 +141,8 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             width: '100%',
                             padding: '10px 12px',
                             background: THEME.surface,
-                            border: `1px solid ${THEME.border}`,
-                            borderRadius: '8px',
+                            border: `1px solid ${THEME.glassBorder}`,
+                            borderRadius: '10px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -166,8 +166,8 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             width: '100%',
                             padding: '10px 12px',
                             background: THEME.surface,
-                            border: `1px solid ${THEME.border}`,
-                            borderRadius: '8px',
+                            border: `1px solid ${THEME.glassBorder}`,
+                            borderRadius: '10px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -193,8 +193,8 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             width: '100%',
                             padding: '10px 12px',
                             background: THEME.surface,
-                            border: `1px solid ${THEME.border}`,
-                            borderRadius: '8px',
+                            border: `1px solid ${THEME.glassBorder}`,
+                            borderRadius: '10px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -222,8 +222,8 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             width: '100%',
                             padding: '10px 12px',
                             background: THEME.surface,
-                            border: `1px solid ${THEME.border}`,
-                            borderRadius: '8px',
+                            border: `1px solid ${THEME.glassBorder}`,
+                            borderRadius: '10px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -247,8 +247,8 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             width: '100%',
                             padding: '10px 12px',
                             background: THEME.surface,
-                            border: `1px solid ${THEME.border}`,
-                            borderRadius: '8px',
+                            border: `1px solid ${THEME.glassBorder}`,
+                            borderRadius: '10px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -274,8 +274,8 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             width: '100%',
                             padding: '10px 12px',
                             background: THEME.surface,
-                            border: `1px solid ${THEME.border}`,
-                            borderRadius: '8px',
+                            border: `1px solid ${THEME.glassBorder}`,
+                            borderRadius: '10px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -307,8 +307,8 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                                 style={{
                                     padding: '8px 12px',
                                     background: isActive ? `${THEME.primary}20` : THEME.surface,
-                                    border: `1px solid ${isActive ? THEME.borderHot : THEME.border}`,
-                                    borderRadius: '8px',
+                                    border: `1px solid ${isActive ? THEME.borderHot : THEME.glassBorder}`,
+                                    borderRadius: '10px',
                                     color: isActive ? THEME.primary : THEME.textMuted,
                                     fontSize: '12px',
                                     fontWeight: 600,
@@ -368,8 +368,8 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                         padding: '10px 16px',
                         background: THEME.surfaceLight,
                         color: THEME.textMain,
-                        border: `1px solid ${THEME.border}`,
-                        borderRadius: '8px',
+                        border: `1px solid ${THEME.glassBorder}`,
+                        borderRadius: '10px',
                         fontSize: '13px',
                         fontWeight: 600,
                         cursor: 'pointer',
@@ -514,8 +514,8 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                         padding: '8px 12px',
                         background: THEME.surfaceLight,
                         color: THEME.textMain,
-                        border: `1px solid ${THEME.border}`,
-                        borderRadius: '8px',
+                        border: `1px solid ${THEME.glassBorder}`,
+                        borderRadius: '10px',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -737,6 +737,7 @@ export default function AlertRuleEditor() {
                                 display: 'flex',
                                 alignItems: 'flex-start',
                                 gap: '12px',
+                                boxShadow: THEME.shadowSm,
                             }}
                         >
                             <AlertTriangle size={16} color={THEME.danger} style={{ marginTop: '2px', flexShrink: 0 }} />
@@ -774,7 +775,7 @@ export default function AlertRuleEditor() {
                                 textAlign: 'center',
                                 padding: '40px 20px',
                                 background: `linear-gradient(135deg, ${THEME.surface}80, ${THEME.elevated}80)`,
-                                border: `1px solid ${THEME.grid}`,
+                                border: `1px solid ${THEME.glassBorder}`,
                                 borderRadius: '12px',
                             }}
                         >

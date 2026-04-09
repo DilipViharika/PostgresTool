@@ -33,7 +33,7 @@ const Styles = () => (
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
             border-left: 3px solid #00684A;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,104,74,0.06);
             transition: all 0.25s ease;
@@ -89,7 +89,7 @@ const Styles = () => (
             width: 100%;
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 10px 12px;
             color: ${DARK_THEME.text};
             font-size: 13px;
@@ -107,7 +107,7 @@ const Styles = () => (
             width: 100%;
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 12px;
             color: ${DARK_THEME.text};
             font-size: 12px;
@@ -127,7 +127,7 @@ const Styles = () => (
             background: ${DARK_THEME.accent};
             color: ${DARK_THEME.bg};
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 8px 16px;
             font-weight: 600;
             cursor: pointer;
@@ -178,7 +178,7 @@ const Styles = () => (
             width: 100%;
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 10px 12px;
             color: ${DARK_THEME.text};
             font-size: 13px;
@@ -202,7 +202,7 @@ const Styles = () => (
         .mongo-stage-card {
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 12px;
             margin-bottom: 12px;
         }
@@ -210,7 +210,7 @@ const Styles = () => (
         .mongo-result-box {
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 12px;
             max-height: 400px;
             overflow-y: auto;
@@ -238,7 +238,7 @@ const Styles = () => (
         .mongo-error {
             background: ${DARK_THEME.danger}15;
             border: 1px solid ${DARK_THEME.danger};
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 12px;
             color: ${DARK_THEME.danger};
             margin-bottom: 12px;
@@ -251,7 +251,7 @@ const Styles = () => (
         .mongo-success {
             background: ${DARK_THEME.success}15;
             border: 1px solid ${DARK_THEME.success};
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 12px;
             color: ${DARK_THEME.success};
             margin-bottom: 12px;

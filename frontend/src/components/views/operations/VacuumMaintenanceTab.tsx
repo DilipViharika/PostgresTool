@@ -81,7 +81,7 @@ function ensureVmStyles() {
         /* ── Metric card ── */
         `.vm-metric-card {
             background: linear-gradient(145deg, ${THEME.surfaceHover} 0%, ${THEME.surface} 100%);
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 16px;
             padding: 20px 24px;
             display: flex; flex-direction: column; gap: 10px;
@@ -90,7 +90,7 @@ function ensureVmStyles() {
             cursor: default;
             animation: vmFadeUp .4s ease both;
         }`,
-        `.vm-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.grid}; }`,
+        `.vm-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.glassBorder}; }`,
         `.vm-metric-card::after {
             content: '';
             position: absolute;
@@ -124,14 +124,14 @@ function ensureVmStyles() {
             color: ${THEME.textDim};
             text-transform: uppercase;
             letter-spacing: 1px;
-            border-bottom: 1px solid ${THEME.grid};
+            border-bottom: 1px solid ${THEME.glassBorder};
             background: ${THEME.surfaceHover};
         }`,
 
         /* ── Input ── */
         `.vm-input {
             background: ${THEME.surface};
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             color: ${THEME.textMain};
             border-radius: 10px;
             padding: 9px 12px;
@@ -147,7 +147,7 @@ function ensureVmStyles() {
         `.vm-tab {
             padding: 8px 18px;
             border-radius: 9px;
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             background: transparent;
             color: ${THEME.textMuted};
             cursor: pointer;
@@ -164,7 +164,7 @@ function ensureVmStyles() {
             color: ${THEME.primary};
             box-shadow: 0 0 16px ${THEME.primary}33;
         }`,
-        `.vm-tab:hover:not(.active) { border-color: ${THEME.grid}; color: ${THEME.textMain}; }`,
+        `.vm-tab:hover:not(.active) { border-color: ${THEME.glassBorder}; color: ${THEME.textMain}; }`,
 
         /* ── Badge ── */
         `.vm-badge {
@@ -179,7 +179,7 @@ function ensureVmStyles() {
         `.vm-progress-track {
             height: 6px;
             border-radius: 3px;
-            background: ${THEME.grid};
+            background: ${THEME.glassBorder};
             overflow: visible;
             position: relative;
         }`,
@@ -250,8 +250,8 @@ function ensureVmStyles() {
 
         `::-webkit-scrollbar { width: 4px; height: 4px; }`,
         `::-webkit-scrollbar-track { background: transparent; }`,
-        `::-webkit-scrollbar-thumb { background: ${THEME.grid}; border-radius: 2px; }`,
-        `::-webkit-scrollbar-thumb:hover { background: ${THEME.grid}; }`,
+        `::-webkit-scrollbar-thumb { background: ${THEME.glassBorder}; border-radius: 2px; }`,
+        `::-webkit-scrollbar-thumb:hover { background: ${THEME.glassBorder}; }`,
     ].join('\n');
 }
 const Styles = () => {
@@ -308,7 +308,7 @@ const DeadBar = ({ pct }) => {
 
 /* ── MetricCard ──────────────────────────────────────────────────────────── */
 const MetricCard = ({ icon: Icon, label, value, sub, accent = THEME.primary, warn, critical, delay = 0 }) => {
-    const borderColor = critical ? `${THEME.danger}59` : warn ? `${THEME.warning}4D` : THEME.grid;
+    const borderColor = critical ? `${THEME.danger}59` : warn ? `${THEME.warning}4D` : THEME.glassBorder;
     return (
         <div
             className={`vm-metric-card${critical ? ' crit' : warn ? ' warn' : ''}`}
@@ -551,7 +551,7 @@ export default function VacuumMaintenanceTab() {
                     padding: '14px 20px',
                     background: `linear-gradient(135deg, ${THEME.surfaceHover}, ${THEME.surface})`,
                     borderRadius: 14,
-                    border: `1px solid ${THEME.grid}`,
+                    border: `1px solid ${THEME.glassBorder}`,
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -622,7 +622,7 @@ export default function VacuumMaintenanceTab() {
                         onChange={(e) => setAutoRfsh(+e.target.value)}
                         style={{
                             background: THEME.surface,
-                            border: `1px solid ${THEME.grid}`,
+                            border: `1px solid ${THEME.glassBorder}`,
                             color: THEME.textMain,
                             borderRadius: 8,
                             padding: '5px 10px',
@@ -815,7 +815,7 @@ export default function VacuumMaintenanceTab() {
                             display: 'flex',
                             gap: 10,
                             alignItems: 'center',
-                            borderBottom: `1px solid ${THEME.grid}`,
+                            borderBottom: `1px solid ${THEME.glassBorder}`,
                         }}
                     >
                         <div style={{ position: 'relative', flex: 1, maxWidth: 300 }}>
@@ -845,7 +845,7 @@ export default function VacuumMaintenanceTab() {
                                 gap: 6,
                                 padding: '8px 14px',
                                 borderRadius: 9,
-                                border: `1px solid ${filterHigh ? `${THEME.warning}80` : THEME.grid}`,
+                                border: `1px solid ${filterHigh ? `${THEME.warning}80` : THEME.glassBorder}`,
                                 background: filterHigh ? `${THEME.warning}1A` : 'transparent',
                                 color: filterHigh ? THEME.warning : THEME.textDim,
                                 cursor: 'pointer',
@@ -988,7 +988,7 @@ export default function VacuumMaintenanceTab() {
                     <div
                         style={{
                             padding: '10px 16px',
-                            borderTop: `1px solid ${THEME.grid}`,
+                            borderTop: `1px solid ${THEME.glassBorder}`,
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
@@ -1148,7 +1148,7 @@ export default function VacuumMaintenanceTab() {
                                 style={{
                                     padding: '6px 14px',
                                     borderRadius: 8,
-                                    border: `1px solid ${THEME.border}`,
+                                    border: `1px solid ${THEME.glassBorder}`,
                                     background: 'transparent',
                                     color: THEME.textDim,
                                     cursor: 'pointer',
@@ -1168,7 +1168,7 @@ export default function VacuumMaintenanceTab() {
                                     fontSize: 13,
                                     background: THEME.surface,
                                     borderRadius: 12,
-                                    border: `1px dashed ${THEME.border}`,
+                                    border: `1px dashed ${THEME.glassBorder}`,
                                 }}
                             >
                                 No dead tuple data available. Ensure pg_stat_user_tables is accessible.
@@ -1192,7 +1192,7 @@ export default function VacuumMaintenanceTab() {
                                                 background: THEME.surface,
                                                 borderRadius: 10,
                                                 padding: '14px 16px',
-                                                border: `1px solid ${urgent ? 'rgba(239,68,68,.3)' : THEME.border}`,
+                                                border: `1px solid ${urgent ? 'rgba(239,68,68,.3)' : THEME.glassBorder}`,
                                                 display: 'grid',
                                                 gridTemplateColumns: '1fr auto auto',
                                                 alignItems: 'center',

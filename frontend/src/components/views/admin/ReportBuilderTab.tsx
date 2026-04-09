@@ -15,7 +15,7 @@ const Styles = () => (
         .rb-layout { display:grid; grid-template-columns:350px 1fr; gap:20px; }
         .rb-panel {
             background:${THEME.surface};
-            border:1px solid ${THEME.grid};
+            border:1px solid ${THEME.glassBorder};
             border-radius:12px;
             padding:20px;
             animation:rbFade .3s ease;
@@ -34,8 +34,8 @@ const Styles = () => (
         .rb-input {
             width:100%;
             background:${THEME.bg};
-            border:1px solid ${THEME.grid};
-            border-radius:8px;
+            border:1px solid ${THEME.glassBorder};
+            border-radius:10px;
             padding:10px 12px;
             color:${THEME.textMain};
             font-size:13px;
@@ -54,7 +54,7 @@ const Styles = () => (
             gap:8px;
             padding:8px;
             background:${THEME.bg};
-            border-radius:6px;
+            border-radius:10px;
             cursor:pointer;
             transition:background .2s;
         }
@@ -70,8 +70,8 @@ const Styles = () => (
         .rb-select {
             width:100%;
             background:${THEME.bg};
-            border:1px solid ${THEME.grid};
-            border-radius:8px;
+            border:1px solid ${THEME.glassBorder};
+            border-radius:10px;
             padding:10px 12px;
             color:${THEME.textMain};
             font-size:13px;
@@ -83,7 +83,7 @@ const Styles = () => (
             background:${THEME.primary};
             color:${THEME.textInverse};
             border:none;
-            border-radius:8px;
+            border-radius:10px;
             padding:12px;
             font-weight:700;
             font-size:13px;
@@ -102,7 +102,7 @@ const Styles = () => (
         .rb-report-card {
             background:${THEME.surface};
             border:1px solid ${THEME.glassBorder};
-            border-radius:10px;
+            border-radius:12px;
             padding:0;
             margin-bottom:16px;
             overflow:hidden;
@@ -136,7 +136,7 @@ const Styles = () => (
         }
         .rb-metric-item {
             background:${THEME.bg};
-            border-radius:8px;
+            border-radius:10px;
             padding:12px;
         }
         .rb-metric-label {
@@ -159,7 +159,7 @@ const Styles = () => (
         .rb-status-badge {
             display:inline-block;
             padding:4px 8px;
-            border-radius:4px;
+            border-radius:8px;
             font-size:11px;
             font-weight:700;
             text-transform:uppercase;
@@ -179,15 +179,15 @@ const Styles = () => (
             padding:8px;
             text-align:left;
             font-weight:700;
-            border-bottom:1px solid ${THEME.grid};
+            border-bottom:1px solid ${THEME.glassBorder};
         }
         .rb-table td {
             padding:8px;
-            border-bottom:1px solid ${THEME.grid};
+            border-bottom:1px solid ${THEME.glassBorder};
             color:${THEME.textMain};
         }
         .rb-table tr:hover { background:${THEME.bg}; }
-        .rb-divider { height:1px; background:${THEME.grid}; margin:16px 0; }
+        .rb-divider { height:1px; background:${THEME.glassBorder}; margin:16px 0; }
         .rb-spinner {
             display:inline-block;
             width:12px;
@@ -218,8 +218,8 @@ const Styles = () => (
         }
         .rb-template-card {
             background:${THEME.bg};
-            border:1px solid ${THEME.grid};
-            border-radius:8px;
+            border:1px solid ${THEME.glassBorder};
+            border-radius:10px;
             padding:12px;
             margin-bottom:8px;
             cursor:pointer;

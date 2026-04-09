@@ -77,7 +77,7 @@ const SqlStyles = () => (
         .sql-row-selected td { color:${THEME.textMain} !important; }
         .sql-scrollbar::-webkit-scrollbar { width:4px; height:4px; }
         .sql-scrollbar::-webkit-scrollbar-track { background:transparent; }
-        .sql-scrollbar::-webkit-scrollbar-thumb { background:${THEME.grid}60; border-radius:4px; }
+        .sql-scrollbar::-webkit-scrollbar-thumb { background:${THEME.grid}60; border-radius:12px; }
         .sql-scrollbar::-webkit-scrollbar-thumb:hover { background:${THEME.textDim}; }
         .sql-editor-area {
             width:100%; background:transparent; border:none; color:${THEME.textMain};
@@ -96,7 +96,7 @@ const SqlStyles = () => (
         .sql-history-item { transition:all 0.12s; cursor:pointer; border:1px solid ${THEME.grid}30; }
         .sql-history-item:hover { background:${THEME.primary}06 !important; border-color:${THEME.glassBorderHover} !important; }
         .sql-snippet-card { transition:all 0.15s; }
-        .sql-snippet-card:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,0.25); }
+        .sql-snippet-card:hover { transform:translateY(-1px); box-shadow:${THEME.shadowMd}; }
         .sql-diff-add { background:${THEME.success}10; border-left:2px solid ${THEME.success}; }
         .sql-diff-remove { background:${THEME.danger}10; border-left:2px solid ${THEME.danger}; }
         .sql-diff-modified { background:${THEME.warning}08; border-left:2px solid ${THEME.warning}; }
@@ -124,7 +124,7 @@ const SqlStyles = () => (
         .sql-trend-up { color:${THEME.success}; }
         .sql-trend-down { color:${THEME.danger}; }
         .sql-virtual-scroll-item { animation:sqlFadeIn 0.1s ease; }
-        .sql-kbd { padding:2px 6px; border-radius:4px; font-size:9px; font-weight:700; background:${THEME.grid}80; border:1px solid ${THEME.grid}; color:${THEME.textMuted}; font-family:monospace; }
+        .sql-kbd { padding:2px 6px; border-radius:12px; font-size:9px; font-weight:700; background:${THEME.grid}80; border:1px solid ${THEME.grid}; color:${THEME.textMuted}; font-family:monospace; }
         .sql-badge-pulse { animation:sqlDotPulse 1.5s ease-in-out infinite; }
         .sql-loading-bar { height:2px; background:linear-gradient(90deg,transparent 0%,${THEME.primary} 50%,transparent 100%); background-size:400% 100%; animation:sqlShimmer 1s linear infinite; }
         .sql-resizable-col { cursor:col-resize; user-select:none; }
@@ -318,7 +318,7 @@ const Pill = ({ label, color=THEME.textDim, onRemove }) => (
 
 const IconBtn = ({ icon:Icon, onClick, active, disabled, title, color, size=12 }) => (
     <button onClick={onClick} disabled={disabled} title={title} className="sql-icon-btn sql-tooltip" data-tip={title}
-            style={{ display:'inline-flex', alignItems:'center', padding:'4px', borderRadius:6, border:'none', cursor:disabled?'not-allowed':'pointer', background:active?`${THEME.primary}12`:`${THEME.textDim}04`, color:active?THEME.primary:(color||THEME.textDim), transition:'all 0.15s', outline:active?`1px solid ${THEME.primary}20`:'none', opacity:disabled?0.4:1 }}>
+            style={{ display:'inline-flex', alignItems:'center', padding:'4px', borderRadius:10, border:'none', cursor:disabled?'not-allowed':'pointer', background:active?`${THEME.primary}12`:`${THEME.textDim}04`, color:active?THEME.primary:(color||THEME.textDim), transition:'all 0.15s', outline:active?`1px solid ${THEME.primary}20`:'none', opacity:disabled?0.4:1 }}>
         <Icon size={size}/>
     </button>
 );
@@ -326,7 +326,7 @@ const IconBtn = ({ icon:Icon, onClick, active, disabled, title, color, size=12 }
 const Notification = ({ notifications, onDismiss }) => (
     <div style={{ position:'fixed', bottom:24, right:24, zIndex:600, display:'flex', flexDirection:'column', gap:6, maxWidth:340 }}>
         {notifications.map(n => (
-            <div key={n.id} className="sql-notification" style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', borderRadius:8, background:n.type==='error'?`${THEME.danger}12`:`${THEME.success}08`, border:`1px solid ${n.type==='error'?THEME.danger:THEME.success}20`, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
+            <div key={n.id} className="sql-notification" style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', borderRadius:12, background:n.type==='error'?`${THEME.danger}12`:`${THEME.success}08`, border:`1px solid ${n.type==='error'?THEME.danger:THEME.success}20`, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                 {n.type==='error' ? <XCircle size={13} color={THEME.danger}/> : <CheckCircle size={13} color={THEME.success}/>}
                 <span style={{ fontSize:11, fontWeight:600, color:n.type==='error'?THEME.danger:THEME.success, flex:1, minWidth:0 }}>{n.msg}</span>
                 <X size={11} color={THEME.textDim} style={{ cursor:'pointer', flexShrink:0 }} onClick={() => onDismiss(n.id)}/>
@@ -344,8 +344,8 @@ const CostMeter = ({ sql }) => {
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
                 <FlameKindling size={10} color={color}/>
                 <span style={{ fontSize:9, fontWeight:700, color:color, letterSpacing:'0.02em' }}>Query Cost Estimate</span>
-                <div style={{ flex:1, minWidth:0, height:3, borderRadius:4, background:`${THEME.grid}25`, overflow:'hidden' }}>
-                    <div style={{ height:'100%', width:`${score}%`, background:`linear-gradient(90deg, ${THEME.success}, ${score>60?THEME.danger:THEME.warning})`, borderRadius:4, transition:'width 0.6s ease', transformOrigin:'left', animation:'sqlBarGrow 0.6s ease' }}/>
+                <div style={{ flex:1, minWidth:0, height:3, borderRadius:12, background:`${THEME.grid}25`, overflow:'hidden' }}>
+                    <div style={{ height:'100%', width:`${score}%`, background:`linear-gradient(90deg, ${THEME.success}, ${score>60?THEME.danger:THEME.warning})`, borderRadius:12, transition:'width 0.6s ease', transformOrigin:'left', animation:'sqlBarGrow 0.6s ease' }}/>
                 </div>
                 <span style={{ fontSize:9, color:color, fontWeight:700, fontVariantNumeric:'tabular-nums', width:30, textAlign:'right' }}>{score}/100</span>
             </div>
@@ -365,12 +365,12 @@ const CostMeter = ({ sql }) => {
    PANEL
    ═══════════════════════════════════════════════════════════════════════════ */
 const Panel = ({ title, icon:TIcon, rightNode, noPad, children, style={} }) => (
-    <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:12, display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:'0 2px 8px rgba(0,0,0,0.05)', transition:'all 0.25s ease', ...style }}>
+    <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:12, display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:`${THEME.shadowSm}`, transition:'all 0.25s ease', ...style }}>
         {title && (
             <div style={{ height:28, background:`${THEME.textMain}0a`, padding:'0 12px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, gap:6 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                     <div style={{ width:8, height:8, borderRadius:'50%', background:THEME.danger, flexShrink:0 }} />
-                    <div style={{ width:8, height:8, borderRadius:'50%', background:'#f59e0b', flexShrink:0 }} />
+                    <div style={{ width:8, height:8, borderRadius:'50%', background:THEME.warning, flexShrink:0 }} />
                     <div style={{ width:8, height:8, borderRadius:'50%', background:THEME.success, flexShrink:0 }} />
                     <span style={{ fontSize:11, fontWeight:700, color:THEME.textMuted, letterSpacing:'0.03em', fontFamily:"'JetBrains Mono','Fira Code',monospace", marginLeft:8 }}>{title}</span>
                 </div>
@@ -494,7 +494,7 @@ const ChartView = ({ result }) => {
                     })()}
                     {chartType === 'pie' && (() => {
                         const total = chartData.reduce((s,d)=>s+Math.abs(d.y),0) || 1;
-                        const colors = ['#63d7ff','#4ade80','#f5c518','#f472b6','#818cf8','#fb923c','#34d399','#60a5fa'];
+                        const colors = [THEME.info, THEME.success, THEME.warning, THEME.danger, THEME.secondary, '#fb923c', THEME.success, '#60a5fa'];
                         let angle = -Math.PI / 2;
                         const cx = 50, cy = 48, r = 38;
                         const slices = chartData.slice(0,8).map((d,i) => {
@@ -642,7 +642,7 @@ const AutoComplete = ({ suggestions, onSelect, anchorRect }) => {
             </div>
             {suggestions.slice(0,8).map((s,i) => (
                 <div key={s} onMouseDown={e=>{ e.preventDefault(); onSelect(s); }}
-                     style={{ padding:'6px 11px', fontSize:12, cursor:'pointer', color:i===idx?THEME.primary:THEME.textMuted, background:i===idx?`${THEME.primary}08`:'transparent', fontFamily:'monospace', fontWeight:i===idx?700:500, display:'flex', alignItems:'center', gap:6, borderRadius:4 }}>
+                     style={{ padding:'6px 11px', fontSize:12, cursor:'pointer', color:i===idx?THEME.primary:THEME.textMuted, background:i===idx?`${THEME.primary}08`:'transparent', fontFamily:'monospace', fontWeight:i===idx?700:500, display:'flex', alignItems:'center', gap:6, borderRadius:12}}>
                     <Code size={9} style={{ opacity:0.4 }}/> {s}
                     <span style={{ fontSize:9, color:THEME.textDim, marginLeft:'auto' }}>keyword</span>
                 </div>
@@ -677,7 +677,7 @@ const ParamEditor = ({ sql, params, onChange }) => {
                 </div>
             ))}
             {Object.keys(params).length > 0 && (
-                <button onClick={()=>onChange({})} style={{ padding:'2px 7px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.danger}08`, color:THEME.danger, fontSize:9, fontWeight:700, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>Clear</button>
+                <button onClick={()=>onChange({})} style={{ padding:'2px 7px', borderRadius:12, border:'none', cursor:'pointer', background:`${THEME.danger}08`, color:THEME.danger, fontSize:9, fontWeight:700, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>Clear</button>
             )}
         </div>
     );
@@ -708,7 +708,7 @@ const SchemaBrowser = ({ onInsert, schema = {} }) => {
     return (
         <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
             <div style={{ padding:'7px 10px', borderBottom:`1px solid ${THEME.glassBorder}` }}>
-                <div style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 9px', borderRadius:6, background:THEME.surface, border:`1px solid ${THEME.grid}35`, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 9px', borderRadius:10, background:THEME.surface, border:`1px solid ${THEME.grid}35`, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     <Search size={11} color={THEME.textDim}/>
                     <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search tables, columns…" style={{ border:'none', background:'transparent', color:THEME.textMain, outline:'none', flex:1, minWidth:0, fontSize:11, fontFamily:'inherit' }}/>
                     {search && <X size={10} style={{ cursor:'pointer', color:THEME.textDim }} onClick={()=>setSearch('')}/>}
@@ -718,7 +718,7 @@ const SchemaBrowser = ({ onInsert, schema = {} }) => {
                 {filtered.map(schema => (
                     <div key={schema.name}>
                         <div onClick={() => setExpanded(p=>({...p,[schema.name]:!p[schema.name]}))}
-                             style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', cursor:'pointer', borderRadius:6, marginBottom:2, boxShadow:'0 1px 3px rgba(0,0,0,0.02)' }}>
+                             style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', cursor:'pointer', borderRadius:10, marginBottom:2, boxShadow:'0 1px 3px rgba(0,0,0,0.02)' }}>
                             <ChevronRight size={10} color={THEME.textDim} style={{ transform:expanded[schema.name]?'rotate(90deg)':'none', transition:'transform 0.15s' }}/>
                             <Database size={11} color={THEME.secondary}/>
                             <span style={{ fontSize:11, fontWeight:700, color:THEME.textMuted }}>{schema.name}</span>
@@ -727,7 +727,7 @@ const SchemaBrowser = ({ onInsert, schema = {} }) => {
                         {expanded[schema.name] && schema.tables.map(table => (
                             <div key={table.name} style={{ marginLeft:16 }}>
                                 <div onClick={() => setExpandedTables(p=>({...p,[`${schema.name}.${table.name}`]:!p[`${schema.name}.${table.name}`]}))}
-                                     style={{ display:'flex', alignItems:'center', gap:6, padding:'4px 8px', cursor:'pointer', borderRadius:6 }}
+                                     style={{ display:'flex', alignItems:'center', gap:6, padding:'4px 8px', cursor:'pointer', borderRadius:10 }}
                                      onMouseEnter={e=>e.currentTarget.style.background=`${THEME.primary}08`}
                                      onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                                     <ChevronRight size={9} color={THEME.textDim} style={{ transform:expandedTables[`${schema.name}.${table.name}`]?'rotate(90deg)':'none', transition:'transform 0.15s', flexShrink:0 }}/>
@@ -742,7 +742,7 @@ const SchemaBrowser = ({ onInsert, schema = {} }) => {
                                 </div>
                                 {expandedTables[`${schema.name}.${table.name}`] && table.cols.map(col => (
                                     <div key={col.n} onClick={() => onInsert(col.n)}
-                                         style={{ display:'flex', alignItems:'center', gap:6, padding:'3px 8px 3px 28px', cursor:'pointer', borderRadius:6 }}
+                                         style={{ display:'flex', alignItems:'center', gap:6, padding:'3px 8px 3px 28px', cursor:'pointer', borderRadius:10 }}
                                          onMouseEnter={e=>e.currentTarget.style.background=`${THEME.primary}06`}
                                          onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                                         <Columns size={9} color={THEME.textDim}/>
@@ -791,7 +791,7 @@ const AIAssistPanel = ({ sql, result, onSuggest }) => {
                 <div style={{ flexShrink:0 }}>
                     <div style={{ fontSize:9, fontWeight:700, color:THEME.textDim, letterSpacing:'0.02em', marginBottom:5 }}>Quick Tips</div>
                     {autoSuggestions.map((s,i) => (
-                        <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:7, padding:'7px 9px', borderRadius:8, background:`${THEME.secondary}07`, border:`1px solid ${THEME.secondary}12`, marginBottom:4, cursor:'pointer' }}
+                        <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:7, padding:'7px 9px', borderRadius:12, background:`${THEME.secondary}07`, border:`1px solid ${THEME.secondary}12`, marginBottom:4, cursor:'pointer' }}
                              onClick={() => onSuggest(s)}>
                             <Lightbulb size={10} color={THEME.secondary} style={{ marginTop:1, flexShrink:0 }}/>
                             <span style={{ fontSize:10.5, color:THEME.textMuted, lineHeight:1.5 }}>{s}</span>
@@ -809,7 +809,7 @@ const AIAssistPanel = ({ sql, result, onSuggest }) => {
                     </div>
                 )}
                 {conversation.map((m, i) => (
-                    <div key={i} style={{ padding:'8px 10px', borderRadius:8, background:m.role==='user'?`${THEME.primary}10`:`${THEME.secondary}08`, border:`1px solid ${m.role==='user'?`${THEME.primary}15`:`${THEME.secondary}12`}`, animation:'sqlFadeIn 0.2s ease' }}>
+                    <div key={i} style={{ padding:'8px 10px', borderRadius:12, background:m.role==='user'?`${THEME.primary}10`:`${THEME.secondary}08`, border:`1px solid ${m.role==='user'?`${THEME.primary}15`:`${THEME.secondary}12`}`, animation:'sqlFadeIn 0.2s ease' }}>
                         <div style={{ fontSize:9, fontWeight:700, color:m.role==='user'?THEME.primary:THEME.secondary, letterSpacing:'0.02em', marginBottom:4 }}>{m.role==='user'?'You':'AI Assistant'}</div>
                         <span style={{ fontSize:11, color:THEME.textMuted, lineHeight:1.6 }}>{m.text}</span>
                     </div>
@@ -825,7 +825,7 @@ const AIAssistPanel = ({ sql, result, onSuggest }) => {
             <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                 <input value={prompt} onChange={e=>setPrompt(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAsk()} placeholder="Ask about your query…"
                        style={{ flex:1, minWidth:0, padding:'6px 10px', borderRadius:7, border:`1px solid ${THEME.secondary}25`, background:`${THEME.secondary}06`, color:THEME.textMain, fontSize:11, outline:'none', fontFamily:'inherit' }}/>
-                <button onClick={handleAsk} disabled={!prompt.trim()||loading} style={{ padding:'6px 12px', borderRadius:6, border:'none', cursor:'pointer', background:`${THEME.secondary}10`, color:THEME.secondary, fontSize:10, fontWeight:700, display:'flex', alignItems:'center', gap:4, opacity:(!prompt.trim()||loading)?0.4:1, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
+                <button onClick={handleAsk} disabled={!prompt.trim()||loading} style={{ padding:'6px 12px', borderRadius:10, border:'none', cursor:'pointer', background:`${THEME.secondary}10`, color:THEME.secondary, fontSize:10, fontWeight:700, display:'flex', alignItems:'center', gap:4, opacity:(!prompt.trim()||loading)?0.4:1, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     {loading?<Spinner size={10} color={THEME.secondary}/>:<Sparkles size={10}/>} Ask
                 </button>
             </div>
@@ -1285,7 +1285,7 @@ const SqlConsoleTab = () => {
         const active = activeResultTab===id;
         return (
             <button onClick={()=>setActiveResultTab(id)} className={`sql-tab-btn ${active?'sql-tab-active':''}`}
-                    style={{ position:'relative', padding:'5px 12px', borderRadius:6, border:'none', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:5, fontWeight:600, fontSize:11, lineHeight:1, whiteSpace:'nowrap', background:'transparent', color:active?THEME.primary:THEME.textDim, outline:'none' }}>
+                    style={{ position:'relative', padding:'5px 12px', borderRadius:10, border:'none', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:5, fontWeight:600, fontSize:11, lineHeight:1, whiteSpace:'nowrap', background:'transparent', color:active?THEME.primary:THEME.textDim, outline:'none' }}>
                 <Icon size={11}/>{label}
                 {count!=null&&<span style={{ fontSize:9, fontWeight:800, fontVariantNumeric:'tabular-nums', opacity:0.7 }}>({fmtRows(count)})</span>}
                 {dot && <span style={{ width:5, height:5, borderRadius:'50%', background:THEME.danger, position:'absolute', top:3, right:3, animation:'sqlPulse 1.5s infinite' }}/>}
@@ -1358,7 +1358,7 @@ const SqlConsoleTab = () => {
                 <div className="sql-readonly-banner" style={{ padding:'5px 14px', background:`${THEME.danger}06`, borderBottom:`1px solid ${THEME.danger}12`, display:'flex', alignItems:'center', gap:8, flexShrink:0, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     <Lock size={11} color={THEME.danger}/>
                     <span style={{ fontSize:11, fontWeight:600, color:THEME.danger }}>Read-only mode — write operations are blocked</span>
-                    <button onClick={()=>setReadOnly(false)} style={{ marginLeft:'auto', padding:'2px 8px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.danger}10`, color:THEME.danger, fontSize:9, fontWeight:700, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>Disable</button>
+                    <button onClick={()=>setReadOnly(false)} style={{ marginLeft:'auto', padding:'2px 8px', borderRadius:12, border:'none', cursor:'pointer', background:`${THEME.danger}10`, color:THEME.danger, fontSize:9, fontWeight:700, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>Disable</button>
                 </div>
             )}
 
@@ -1367,7 +1367,7 @@ const SqlConsoleTab = () => {
                 <div style={{ padding:'5px 14px', background:`${THEME.success}06`, borderBottom:`1px solid ${THEME.success}12`, display:'flex', alignItems:'center', gap:8, flexShrink:0, boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }}>
                     <RefreshCcw size={11} color={THEME.success} style={{ animation:'sqlSpin 2s linear infinite' }}/>
                     <span style={{ fontSize:11, fontWeight:600, color:THEME.success }}>Live refresh every {liveRefreshSecs}s</span>
-                    <button onClick={stopLiveRefresh} style={{ marginLeft:'auto', padding:'2px 8px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.danger}12`, color:THEME.danger, fontSize:9, fontWeight:700 }}>Stop</button>
+                    <button onClick={stopLiveRefresh} style={{ marginLeft:'auto', padding:'2px 8px', borderRadius:12, border:'none', cursor:'pointer', background:`${THEME.danger}12`, color:THEME.danger, fontSize:9, fontWeight:700 }}>Stop</button>
                 </div>
             )}
 
@@ -1433,7 +1433,7 @@ const SqlConsoleTab = () => {
                                             <div style={{ display:'flex', flexWrap:'wrap', gap:4, padding:'0 12px 6px' }}>
                                                 {items.map((t,i)=>(
                                                     <button key={i} onClick={()=>{ setSql(t.sql); setShowTemplates(false); editorRef.current?.focus(); }}
-                                                            style={{ padding:'5px 10px', borderRadius:6, border:'none', cursor:'pointer', background:`${THEME.secondary}05`, color:THEME.textMuted, outline:`1px solid ${THEME.secondary}10`, fontSize:10.5, fontWeight:600, display:'flex', alignItems:'center', gap:5, transition:'all 0.12s', boxShadow:'0 1px 3px rgba(0,0,0,0.02)' }}
+                                                            style={{ padding:'5px 10px', borderRadius:10, border:'none', cursor:'pointer', background:`${THEME.secondary}05`, color:THEME.textMuted, outline:`1px solid ${THEME.secondary}10`, fontSize:10.5, fontWeight:600, display:'flex', alignItems:'center', gap:5, transition:'all 0.12s', boxShadow:'0 1px 3px rgba(0,0,0,0.02)' }}
                                                             onMouseEnter={e=>{e.currentTarget.style.background=`${THEME.secondary}16`;e.currentTarget.style.color=THEME.secondary;}}
                                                             onMouseLeave={e=>{e.currentTarget.style.background=`${THEME.secondary}07`;e.currentTarget.style.color=THEME.textMuted;}}>
                                                         <t.icon size={10}/>{t.label}
@@ -1525,8 +1525,8 @@ const SqlConsoleTab = () => {
                             <div style={{ padding:'8px 16px', borderBottom:`1px solid ${THEME.glassBorder}`, background:THEME.surface, display:'flex', alignItems:'center', gap:8, animation:'sqlSlideDown 0.15s ease' }}>
                                 <Bookmark size={11} color={THEME.secondary}/>
                                 <input value={saveLabel} onChange={e=>setSaveLabel(e.target.value)} onKeyDown={e=>e.key==='Enter'&&saveQuery()} placeholder="Query name…"
-                                       style={{ flex:1, minWidth:0, padding:'4px 10px', borderRadius:6, border:`1px solid ${THEME.secondary}30`, background:THEME.surface, color:THEME.textMain, fontSize:11, outline:'none' }} autoFocus/>
-                                <button onClick={saveQuery} style={{ padding:'4px 12px', borderRadius:6, border:'none', cursor:'pointer', background:`${THEME.secondary}18`, color:THEME.secondary, fontSize:10, fontWeight:700 }}>Save</button>
+                                       style={{ flex:1, minWidth:0, padding:'4px 10px', borderRadius:10, border:`1px solid ${THEME.secondary}30`, background:THEME.surface, color:THEME.textMain, fontSize:11, outline:'none' }} autoFocus/>
+                                <button onClick={saveQuery} style={{ padding:'4px 12px', borderRadius:10, border:'none', cursor:'pointer', background:`${THEME.secondary}18`, color:THEME.secondary, fontSize:10, fontWeight:700 }}>Save</button>
                                 <button onClick={()=>setShowSaveDialog(false)} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, display:'flex' }}><X size={12}/></button>
                             </div>
                         )}
@@ -1568,13 +1568,13 @@ const SqlConsoleTab = () => {
                             <div style={{ display:'flex', alignItems:'center', gap:5, flexWrap:'wrap' }}>
                                 {/* Execute */}
                                 <button onClick={()=>handleExecute()} disabled={loading||!currentTab.sql.trim()}
-                                        style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'7px 18px', borderRadius:8, border:'none', cursor:(loading||!currentTab.sql.trim())?'not-allowed':'pointer', background:loading?`${THEME.primary}50`:`linear-gradient(135deg,${THEME.primary},${THEME.primaryDark})`, color:'#fff', fontSize:11.5, fontWeight:700, boxShadow:loading?'none':`0 2px 12px ${THEME.primary}30`, transition:'all 0.2s', opacity:!currentTab.sql.trim()?0.4:1 }}>
+                                        style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'7px 18px', borderRadius:12, border:'none', cursor:(loading||!currentTab.sql.trim())?'not-allowed':'pointer', background:loading?`${THEME.primary}50`:`linear-gradient(135deg,${THEME.primary},${THEME.primaryDark})`, color:'#fff', fontSize:11.5, fontWeight:700, boxShadow:loading?'none':`0 2px 12px ${THEME.primary}30`, transition:'all 0.2s', opacity:!currentTab.sql.trim()?0.4:1 }}>
                                     {loading?<Spinner size={11} color="#fff"/>:<Play size={11} fill="white"/>}
                                     {loading?'Running…':'Execute'}
                                 </button>
                                 {/* Explain */}
                                 <button onClick={()=>handleExplain()} disabled={loading||!currentTab.sql.trim()}
-                                        style={{ display:'inline-flex', alignItems:'center', gap:5, padding:'7px 13px', borderRadius:8, border:'none', cursor:(loading||!currentTab.sql.trim())?'not-allowed':'pointer', background:`${THEME.secondary}12`, color:THEME.secondary, outline:`1px solid ${THEME.secondary}18`, fontSize:11, fontWeight:700, transition:'all 0.2s', opacity:!currentTab.sql.trim()?0.4:1 }}>
+                                        style={{ display:'inline-flex', alignItems:'center', gap:5, padding:'7px 13px', borderRadius:12, border:'none', cursor:(loading||!currentTab.sql.trim())?'not-allowed':'pointer', background:`${THEME.secondary}12`, color:THEME.secondary, outline:`1px solid ${THEME.secondary}18`, fontSize:11, fontWeight:700, transition:'all 0.2s', opacity:!currentTab.sql.trim()?0.4:1 }}>
                                     <BarChart3 size={11}/> Explain
                                 </button>
                                 <Divider vertical/>
@@ -1585,7 +1585,7 @@ const SqlConsoleTab = () => {
                                     { icon:copiedId==='sql'?Check:Copy, label:copiedId==='sql'?'Copied':'Copy', onClick:()=>copyText(currentTab.sql,'sql') },
                                 ].map(({icon:Icon,label,onClick,disabled})=>(
                                     <button key={label} onClick={onClick} disabled={disabled}
-                                            style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'5px 9px', borderRadius:6, border:'none', cursor:disabled?'not-allowed':'pointer', background:`${THEME.textDim}07`, color:THEME.textDim, fontSize:10, fontWeight:600, transition:'all 0.15s', opacity:disabled?0.3:1 }}
+                                            style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'5px 9px', borderRadius:10, border:'none', cursor:disabled?'not-allowed':'pointer', background:`${THEME.textDim}07`, color:THEME.textDim, fontSize:10, fontWeight:600, transition:'all 0.15s', opacity:disabled?0.3:1 }}
                                             onMouseEnter={e=>{if(!disabled){e.currentTarget.style.background=`${THEME.textDim}12`;e.currentTarget.style.color=THEME.textMuted;}}}
                                             onMouseLeave={e=>{e.currentTarget.style.background=`${THEME.textDim}07`;e.currentTarget.style.color=THEME.textDim;}}>
                                         <Icon size={11}/> {label}
@@ -1594,7 +1594,7 @@ const SqlConsoleTab = () => {
                             </div>
                             <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                                 {loading && (
-                                    <div style={{ display:'flex', alignItems:'center', gap:5, padding:'3px 9px', borderRadius:6, background:`${THEME.primary}10`, fontSize:10, fontWeight:700, color:THEME.primary, fontVariantNumeric:'tabular-nums', animation:'sqlTimerPulse 1s ease-in-out infinite' }}>
+                                    <div style={{ display:'flex', alignItems:'center', gap:5, padding:'3px 9px', borderRadius:10, background:`${THEME.primary}10`, fontSize:10, fontWeight:700, color:THEME.primary, fontVariantNumeric:'tabular-nums', animation:'sqlTimerPulse 1s ease-in-out infinite' }}>
                                         <Spinner size={9}/> {fmtMs(elapsedMs)}
                                     </div>
                                 )}
@@ -1633,7 +1633,7 @@ const SqlConsoleTab = () => {
                                 {result?.rows?.length > 0 && (
                                     <>
                                         <input value={filterText} onChange={e=>{ setFilterText(e.target.value); updateTab(activeTab,{page:1}); }} placeholder="Search rows…"
-                                               style={{ padding:'3px 10px', borderRadius:6, border:`1px solid ${THEME.grid}50`, background:THEME.surface, color:THEME.textMain, fontSize:10, outline:'none', width:120 }}/>
+                                               style={{ padding:'3px 10px', borderRadius:10, border:`1px solid ${THEME.grid}50`, background:THEME.surface, color:THEME.textMain, fontSize:10, outline:'none', width:120 }}/>
                                         {filterText && <button onClick={()=>setFilterText('')} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, display:'flex' }}><X size={11}/></button>}
                                         <Divider vertical/>
                                         <button onClick={copyTable} style={{ display:'inline-flex', alignItems:'center', gap:3, padding:'3px 8px', borderRadius:5, border:'none', cursor:'pointer', background:`${THEME.textDim}08`, color:THEME.textDim, fontSize:10, fontWeight:600 }}><CopyCheck size={10}/> Copy</button>
@@ -1671,11 +1671,11 @@ const SqlConsoleTab = () => {
                                                 <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
                                                     <span style={{ fontSize:12, fontWeight:700, color:THEME.danger }}>Query Error</span>
                                                     {result.duration > 0 && <span style={{ fontSize:10, color:THEME.textDim }}>after {fmtMs(result.duration)}</span>}
-                                                    <button onClick={()=>copyText(result.error,'err')} style={{ marginLeft:'auto', padding:'2px 7px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.textDim}08`, color:THEME.textDim, fontSize:9, fontWeight:700 }}>
+                                                    <button onClick={()=>copyText(result.error,'err')} style={{ marginLeft:'auto', padding:'2px 7px', borderRadius:12, border:'none', cursor:'pointer', background:`${THEME.textDim}08`, color:THEME.textDim, fontSize:9, fontWeight:700 }}>
                                                         {copiedId==='err'?'Copied':'Copy'}
                                                     </button>
                                                 </div>
-                                                <pre style={{ fontSize:12, color:THEME.textMuted, fontFamily:THEME.fontMono, whiteSpace:'pre-wrap', wordBreak:'break-word', margin:0, lineHeight:1.65, padding:'12px 14px', borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.grid}25` }}>{result.error}</pre>
+                                                <pre style={{ fontSize:12, color:THEME.textMuted, fontFamily:THEME.fontMono, whiteSpace:'pre-wrap', wordBreak:'break-word', margin:0, lineHeight:1.65, padding:'12px 14px', borderRadius:12, background:THEME.surface, border:`1px solid ${THEME.grid}25` }}>{result.error}</pre>
                                             </div>
                                         </div>
                                     </div>
@@ -1688,8 +1688,8 @@ const SqlConsoleTab = () => {
                                             <span style={{ display:'inline-flex', alignItems:'center', gap:4, color:THEME.primary, fontWeight:700 }}><Timer size={10}/> {fmtMs(result.duration)}</span>
                                             {processedRows.length !== result.rowCount && <span style={{ color:THEME.warning, fontWeight:600 }}><Filter size={9}/> {processedRows.length} filtered</span>}
                                             {selectedRows.size > 0 && <span style={{ color:THEME.secondary, fontWeight:700 }}>{selectedRows.size} selected</span>}
-                                            {sortCol && <button onClick={()=>updateTab(activeTab,{sortCol:null})} style={{ display:'inline-flex', alignItems:'center', gap:3, padding:'2px 7px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.primary}10`, color:THEME.primary, fontSize:9, fontWeight:700 }}><X size={8}/> Clear sort</button>}
-                                            {(filterText||Object.values(colFilter).some(Boolean)) && <button onClick={()=>{setFilterText('');setColFilter({});}} style={{ display:'inline-flex', alignItems:'center', gap:3, padding:'2px 7px', borderRadius:4, border:'none', cursor:'pointer', background:`${THEME.warning}10`, color:THEME.warning, fontSize:9, fontWeight:700 }}><X size={8}/> Clear filters</button>}
+                                            {sortCol && <button onClick={()=>updateTab(activeTab,{sortCol:null})} style={{ display:'inline-flex', alignItems:'center', gap:3, padding:'2px 7px', borderRadius:12, border:'none', cursor:'pointer', background:`${THEME.primary}10`, color:THEME.primary, fontSize:9, fontWeight:700 }}><X size={8}/> Clear sort</button>}
+                                            {(filterText||Object.values(colFilter).some(Boolean)) && <button onClick={()=>{setFilterText('');setColFilter({});}} style={{ display:'inline-flex', alignItems:'center', gap:3, padding:'2px 7px', borderRadius:12, border:'none', cursor:'pointer', background:`${THEME.warning}10`, color:THEME.warning, fontSize:9, fontWeight:700 }}><X size={8}/> Clear filters</button>}
                                         </div>
 
                                         {/* Table */}
@@ -1711,7 +1711,7 @@ const SqlConsoleTab = () => {
                                                         <td key={f.name} style={{ padding:'2px 6px', background:THEME.surface, position:'sticky', top:56, zIndex:2 }}>
                                                             <input value={colFilter[f.name]||''} onChange={e=>{setColFilter(p=>({...p,[f.name]:e.target.value}));updateTab(activeTab,{page:1});}}
                                                                    placeholder="filter…"
-                                                                   style={{ width:'100%', padding:'2px 6px', borderRadius:4, border:`1px solid ${colFilter[f.name]?THEME.primary:THEME.grid}40`, background:`${colFilter[f.name]?THEME.primary:THEME.textDim}05`, color:THEME.textDim, fontSize:9, outline:'none', fontFamily:'monospace', transition:'all 0.15s' }}/>
+                                                                   style={{ width:'100%', padding:'2px 6px', borderRadius:12, border:`1px solid ${colFilter[f.name]?THEME.primary:THEME.grid}40`, background:`${colFilter[f.name]?THEME.primary:THEME.textDim}05`, color:THEME.textDim, fontSize:9, outline:'none', fontFamily:'monospace', transition:'all 0.15s' }}/>
                                                         </td>
                                                     ))}
                                                 </tr>
@@ -1862,7 +1862,7 @@ const SqlConsoleTab = () => {
                                             const planTime = root?.['Planning Time'];
                                             const execTime = root?.['Execution Time'];
                                             return (planTime||execTime) ? (
-                                                <div style={{ display:'flex', gap:20, padding:'9px 14px', borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.grid}30`, marginBottom:12, fontSize:11 }}>
+                                                <div style={{ display:'flex', gap:20, padding:'9px 14px', borderRadius:12, background:THEME.surface, border:`1px solid ${THEME.grid}30`, marginBottom:12, fontSize:11 }}>
                                                     {planTime&&<span style={{ color:THEME.textDim }}>Plan time: <strong style={{ color:THEME.secondary, fontVariantNumeric:'tabular-nums' }}>{planTime}ms</strong></span>}
                                                     {execTime&&<span style={{ color:THEME.textDim }}>Exec time: <strong style={{ color:THEME.primary, fontVariantNumeric:'tabular-nums' }}>{execTime}ms</strong></span>}
                                                     {explainMaxTime>0&&<span style={{ color:THEME.textDim }}>Slowest node: <strong style={{ color:THEME.danger, fontVariantNumeric:'tabular-nums' }}>{explainMaxTime.toFixed(2)}ms</strong></span>}
@@ -1875,7 +1875,7 @@ const SqlConsoleTab = () => {
                                         <ExplainNode node={explainPlan} depth={0} maxTime={explainMaxTime}/>
                                         <details style={{ marginTop:14 }}>
                                             <summary style={{ fontSize:10, color:THEME.textDim, cursor:'pointer', userSelect:'none', padding:'4px 0' }}>Raw JSON output</summary>
-                                            <pre style={{ fontSize:10.5, color:THEME.textDim, fontFamily:THEME.fontMono, lineHeight:1.6, margin:'8px 0 0', whiteSpace:'pre-wrap', padding:12, borderRadius:8, background:THEME.surface, border:`1px solid ${THEME.grid}22`, maxHeight:300, overflow:'auto' }}>
+                                            <pre style={{ fontSize:10.5, color:THEME.textDim, fontFamily:THEME.fontMono, lineHeight:1.6, margin:'8px 0 0', whiteSpace:'pre-wrap', padding:12, borderRadius:12, background:THEME.surface, border:`1px solid ${THEME.grid}22`, maxHeight:300, overflow:'auto' }}>
                                                 {JSON.stringify(currentTab.explainResult?.rows, null, 2)}
                                             </pre>
                                         </details>
@@ -1896,13 +1896,13 @@ const SqlConsoleTab = () => {
                                     ) : (
                                         <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
                                             {history.slice(0,60).map(h=>(
-                                                <div key={h.id} style={{ display:'flex', alignItems:'center', gap:9, padding:'5px 10px', borderRadius:6, background:THEME.surface, border:`1px solid ${THEME.grid}18`, animation:'sqlSlideIn 0.12s ease' }}>
+                                                <div key={h.id} style={{ display:'flex', alignItems:'center', gap:9, padding:'5px 10px', borderRadius:10, background:THEME.surface, border:`1px solid ${THEME.grid}18`, animation:'sqlSlideIn 0.12s ease' }}>
                                                     {h.success?<CheckCircle size={10} color={THEME.success} style={{flexShrink:0}}/>:<XCircle size={10} color={THEME.danger} style={{flexShrink:0}}/>}
                                                     <span style={{ fontSize:9, color:THEME.textDim, fontVariantNumeric:'tabular-nums', flexShrink:0, width:60, fontFamily:'monospace' }}>{fmtTime(h.ts)}</span>
                                                     <span style={{ fontSize:11, color:h.success?THEME.textMuted:THEME.danger, flex:1, minWidth:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontFamily:'monospace' }}>
                                                         {h.success?`OK — ${fmtRows(h.rowCount)} rows · ${fmtMs(h.durationMs)}`:`ERR — ${h.error}`}
                                                     </span>
-                                                    <button onClick={()=>{ setSql(h.sql); setActiveTab(h.tabId||activeTab); }} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, padding:'2px 5px', borderRadius:4, fontSize:9, fontWeight:600, flexShrink:0 }}>
+                                                    <button onClick={()=>{ setSql(h.sql); setActiveTab(h.tabId||activeTab); }} style={{ background:'none', border:'none', cursor:'pointer', color:THEME.textDim, padding:'2px 5px', borderRadius:12, fontSize:9, fontWeight:600, flexShrink:0 }}>
                                                         Reload
                                                     </button>
                                                 </div>
@@ -1958,11 +1958,11 @@ const SqlConsoleTab = () => {
                 <div style={{ display:'flex', flexDirection:'column', height:'100%', minWidth:0, overflow:'hidden' }}>
                     {sidebarCollapsed ? (
                         <div style={{ display:'flex', flexDirection:'column', gap:4, padding:8 }}>
-                            <button onClick={()=>setSidebarCollapsed(false)} style={{ padding:6, borderRadius:8, border:'none', cursor:'pointer', background:`${THEME.primary}12`, color:THEME.primary, display:'flex' }}><PanelRightOpen size={14}/></button>
+                            <button onClick={()=>setSidebarCollapsed(false)} style={{ padding:6, borderRadius:12, border:'none', cursor:'pointer', background:`${THEME.primary}12`, color:THEME.primary, display:'flex' }}><PanelRightOpen size={14}/></button>
                             <Divider/>
                             {[{icon:History,id:'history'},{icon:Database,id:'schema'},{icon:Scissors,id:'snippets'},{icon:BrainCircuit,id:'ai'}].map(({icon:Icon,id})=>(
                                 <button key={id} onClick={()=>{setSidebarCollapsed(false);setActivePanel(id);}} title={id}
-                                        style={{ padding:7, borderRadius:8, border:'none', cursor:'pointer', background:activePanel===id?`${THEME.primary}14`:'transparent', color:activePanel===id?THEME.primary:THEME.textDim, display:'flex' }}>
+                                        style={{ padding:7, borderRadius:12, border:'none', cursor:'pointer', background:activePanel===id?`${THEME.primary}14`:'transparent', color:activePanel===id?THEME.primary:THEME.textDim, display:'flex' }}>
                                     <Icon size={14}/>
                                 </button>
                             ))}
@@ -1973,13 +1973,13 @@ const SqlConsoleTab = () => {
                                    <div style={{ display:'flex', gap:2, alignItems:'center' }}>
                                        {[{icon:History,id:'history',label:'History'},{icon:Database,id:'schema',label:'Schema'},{icon:Scissors,id:'snippets',label:'Snippets'},{icon:BrainCircuit,id:'ai',label:'AI'}].map(({icon:Icon,id,label})=>(
                                            <button key={id} onClick={()=>setActivePanel(id)} title={label}
-                                                   style={{ padding:'4px 8px', borderRadius:6, border:'none', cursor:'pointer', background:activePanel===id?`${THEME.primary}14`:'transparent', color:activePanel===id?THEME.primary:THEME.textDim, display:'flex', alignItems:'center', gap:4, fontSize:10, fontWeight:600, transition:'all 0.15s' }}>
+                                                   style={{ padding:'4px 8px', borderRadius:10, border:'none', cursor:'pointer', background:activePanel===id?`${THEME.primary}14`:'transparent', color:activePanel===id?THEME.primary:THEME.textDim, display:'flex', alignItems:'center', gap:4, fontSize:10, fontWeight:600, transition:'all 0.15s' }}>
                                                <Icon size={11}/> {label}
                                                {id==='ai' && <span style={{ fontSize:8, padding:'1px 4px', borderRadius:3, background:`${THEME.secondary}20`, color:THEME.secondary, fontWeight:800 }}>β</span>}
                                            </button>
                                        ))}
                                        <Divider vertical/>
-                                       <button onClick={()=>setSidebarCollapsed(true)} style={{ padding:4, borderRadius:6, border:'none', cursor:'pointer', background:'transparent', color:THEME.textDim, display:'flex' }}><PanelRightClose size={12}/></button>
+                                       <button onClick={()=>setSidebarCollapsed(true)} style={{ padding:4, borderRadius:10, border:'none', cursor:'pointer', background:'transparent', color:THEME.textDim, display:'flex' }}><PanelRightClose size={12}/></button>
                                    </div>
                                }
                                style={{ flex:1, minHeight:0, overflow:'hidden' }}
@@ -2053,7 +2053,7 @@ const SqlConsoleTab = () => {
                                                     </div>
                                                 ))}
                                             </div>
-                                            <button onClick={()=>{setHistory([]);setFavorites(new Set());setSelectedHistoryId(null);}} style={{ marginTop:6, width:'100%', padding:'5px', borderRadius:6, border:`1px solid ${THEME.danger}15`, cursor:'pointer', background:`${THEME.danger}05`, color:THEME.danger, fontSize:9.5, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', gap:4, flexShrink:0 }}>
+                                            <button onClick={()=>{setHistory([]);setFavorites(new Set());setSelectedHistoryId(null);}} style={{ marginTop:6, width:'100%', padding:'5px', borderRadius:10, border:`1px solid ${THEME.danger}15`, cursor:'pointer', background:`${THEME.danger}05`, color:THEME.danger, fontSize:9.5, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', gap:4, flexShrink:0 }}>
                                                 <Trash2 size={10}/> Clear history
                                             </button>
                                         </>

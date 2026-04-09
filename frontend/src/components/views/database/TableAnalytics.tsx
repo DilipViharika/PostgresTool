@@ -35,7 +35,7 @@ const CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:${THEME.textMuted}1a;border-radius:4px}
+::-webkit-scrollbar-thumb{background:${THEME.textMuted}1a;border-radius:12px}
 @keyframes ud-spin  {to{transform:rotate(360deg)}}
 @keyframes ud-rise  {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ud-pulse {0%,100%{opacity:1}50%{opacity:.45}}
@@ -51,7 +51,7 @@ const CSS = `
     box-shadow:0 1px 4px rgba(0,0,0,0.04);
     transition:all 0.2s ease;
 }
-.ud-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.07)}
+.ud-card:hover{box-shadow:${THEME.shadowSm}}
 .ud-card-header {
     height:30px;
     background:${THEME.textMain}08;
@@ -69,7 +69,7 @@ const CSS = `
     margin-left:8px;
     letter-spacing:0.03em;
 }
-.ud-card-body {padding:16px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.02)}
+.ud-card-body {padding:16px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.05)}
 .ud-navitem{transition:all .15s}
 .ud-navitem:hover{background:${THEME.primary}08!important}
 .ud-row{transition:background .14s}
@@ -80,7 +80,7 @@ const CSS = `
 .ai-token{animation:ud-typewriter .15s ease both}
 .ud-group-tab{
     padding:6px 14px;
-    border-radius:8px;
+    border-radius:12px;
     border:1px solid transparent;
     cursor:pointer;
     background:transparent;
@@ -102,7 +102,7 @@ const CSS = `
 }
 .ud-sub-tab{
     padding:5px 12px;
-    border-radius:6px;
+    border-radius:10px;
     border:none;
     cursor:pointer;
     background:transparent;

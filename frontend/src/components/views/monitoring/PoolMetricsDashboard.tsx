@@ -17,17 +17,17 @@ const Styles = () => (
         @keyframes pmdSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .pmd-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 14px;
             padding: 16px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: ${THEME.shadowSm};
             transition: all 0.25s ease;
             animation: pmdFade 0.3s ease;
         }
         .pmd-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            box-shadow: ${THEME.shadowMd};
             transform: translateY(-2px);
         }
         .pmd-card::after {
@@ -40,7 +40,7 @@ const Styles = () => (
             background: var(--tile-accent, ${THEME.primary});
             opacity: 0.7;
         }
-        .pmd-metric { display: flex; align-items: center; gap: 12px; padding: 12px; background: ${THEME.surface}; border: 1px solid ${THEME.grid}; border-radius: 12px; }
+        .pmd-metric { display: flex; align-items: center; gap: 12px; padding: 12px; background: ${THEME.surface}; border: 1px solid ${THEME.glassBorder}; border-radius: 12px; }
         .pmd-spin { animation: pmdSpin 1s linear infinite; }
         .pmd-slider { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: ${THEME.grid}; outline: none; cursor: pointer; }
         .pmd-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${THEME.primary}; cursor: pointer; }
@@ -108,10 +108,11 @@ const ChartTip = ({ active, payload, label }) => {
         <div
             style={{
                 background: THEME.surface,
-                border: `1px solid ${THEME.grid}`,
-                borderRadius: 8,
+                border: `1px solid ${THEME.glassBorder}`,
+                borderRadius: 10,
                 padding: '8px 12px',
                 fontSize: 12,
+                boxShadow: THEME.shadowSm,
             }}
         >
             <div style={{ color: THEME.textMuted, marginBottom: 4 }}>{label}</div>
@@ -386,6 +387,7 @@ export default function PoolMetricsDashboard() {
                         display: 'flex',
                         alignItems: 'flex-start',
                         gap: '12px',
+                        boxShadow: THEME.shadowSm,
                     }}
                 >
                     <AlertTriangle size={16} color={THEME.danger} style={{ marginTop: '2px', flexShrink: 0 }} />
@@ -446,7 +448,7 @@ export default function PoolMetricsDashboard() {
                                 </div>
                             </div>
                         </div>
-                        <div style={{ width: '100%', height: '8px', background: THEME.grid, borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '100%', height: '8px', background: THEME.grid, borderRadius: '6px', overflow: 'hidden' }}>
                             <div
                                 style={{
                                     width: `${Math.min(metrics.utilization_percent || 0, 100)}%`,

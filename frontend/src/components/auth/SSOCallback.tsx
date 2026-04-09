@@ -82,18 +82,18 @@ const SSOCallback = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                         <div style={{
                             width: '48px', height: '48px', borderRadius: '50%',
-                            background: 'rgba(239,68,68,.1)', display: 'flex',
+                            background: `${THEME.danger}10`, display: 'flex',
                             alignItems: 'center', justifyContent: 'center'
                         }}>
-                            <AlertCircle size={24} color="#ef4444" />
+                            <AlertCircle size={24} color={THEME.danger} />
                         </div>
                         <h2 style={{ margin: 0, color: THEME.textMain, fontSize: '18px' }}>Authentication Failed</h2>
                         <p style={{ color: THEME.textMuted, fontSize: '13px', margin: 0, lineHeight: 1.5 }}>{error}</p>
                         <button
                             onClick={() => navigate('/login')}
                             style={{
-                                marginTop: '12px', padding: '10px 20px', borderRadius: '8px',
-                                background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`,
+                                marginTop: '12px', padding: '10px 20px', borderRadius: THEME.radiusMd,
+                                background: THEME.surfaceHover, border: `1px solid ${THEME.glassBorder}`,
                                 color: THEME.textMain, cursor: 'pointer', fontWeight: 500
                             }}
                         >
@@ -103,19 +103,19 @@ const SSOCallback = () => {
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                         <div style={{
-                            width: '56px', height: '56px', borderRadius: '16px',
-                            background: 'linear-gradient(135deg, rgba(100,112,255,.1), rgba(167,139,250,.1))',
-                            border: `1px solid rgba(100,112,255,.2)`, display: 'flex',
+                            width: '56px', height: '56px', borderRadius: THEME.radiusMd,
+                            background: `${THEME.primary}10`,
+                            border: `1px solid ${THEME.primary}20`, display: 'flex',
                             alignItems: 'center', justifyContent: 'center',
-                            boxShadow: '0 0 20px rgba(100,112,255,.1)'
+                            boxShadow: `0 0 20px ${THEME.primary}10`
                         }}>
-                            <ShieldCheck size={28} color="#6470FF" />
+                            <ShieldCheck size={28} color={THEME.primary} />
                         </div>
                         <div>
                             <h2 style={{ margin: '0 0 6px', color: THEME.textMain, fontSize: '18px' }}>Verifying Secure Session</h2>
                             <p style={{ color: THEME.textMuted, fontSize: '13px', margin: 0 }}>Finalizing enterprise authentication...</p>
                         </div>
-                        <Loader size={20} color="#6470FF" style={{ animation: 'spin 1s linear infinite', marginTop: '8px' }} />
+                        <Loader size={20} color={THEME.primary} style={{ animation: 'spin 1s linear infinite', marginTop: '8px' }} />
                     </div>
                 )}
             </div>

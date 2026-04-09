@@ -35,7 +35,7 @@ const SecStyles = () => (
 
         .sec-card {
             background: ${THEME.surface};
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 2px 6px rgba(0,0,0,0.04);
@@ -44,8 +44,8 @@ const SecStyles = () => (
             position: relative;
         }
         .sec-card:hover {
-            border-color: rgba(239, 68, 68, 0.25);
-            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.06);
+            border-color: ${THEME.danger}40;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
 
         .sec-card-stripe {
@@ -73,7 +73,7 @@ const SecStyles = () => (
         /* Legacy .card fallback for compatibility */
         .card {
             background: ${THEME.surface};
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 14px;
             overflow: hidden;
             transition: border-color 0.2s, box-shadow 0.2s;
@@ -99,7 +99,7 @@ const SecStyles = () => (
         /* Tabs */
         .nav-tab {
             padding: 8px 18px;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 12px;
             font-weight: 700;
             letter-spacing: 0.04em;
@@ -122,7 +122,7 @@ const SecStyles = () => (
             display: grid;
             grid-template-columns: 32px 1.8fr 1fr 90px 110px 36px;
             padding: 13px 20px;
-            border-bottom: 1px solid ${THEME.grid};
+            border-bottom: 1px solid ${THEME.glassBorder};
             align-items: center;
             font-size: 12px;
             transition: background 0.15s;
@@ -143,7 +143,7 @@ const SecStyles = () => (
             letter-spacing: 0.1em;
             text-transform: uppercase;
             color: ${THEME.textDim};
-            border-bottom: 1px solid ${THEME.grid};
+            border-bottom: 1px solid ${THEME.glassBorder};
             gap: 12px;
         }
 
@@ -154,7 +154,7 @@ const SecStyles = () => (
             align-items: center;
             gap: 12px;
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 12px;
             border: 1px solid transparent;
             transition: all 0.2s;
             cursor: pointer;
@@ -215,7 +215,7 @@ const SecStyles = () => (
         /* Badge */
         .badge {
             display: inline-flex; align-items: center;
-            padding: 2px 8px; border-radius: 4px;
+            padding: 2px 8px; border-radius: 12px;
             font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
             text-transform: uppercase;
         }
@@ -223,7 +223,7 @@ const SecStyles = () => (
         /* GEO heatmap cells */
         .geo-cell {
             padding: 8px 12px;
-            border-radius: 6px;
+            border-radius: 10px;
             font-size: 11px;
             display: flex;
             align-items: center;
@@ -241,7 +241,7 @@ const SecStyles = () => (
         .timeline-event::before {
             content: '';
             position: absolute; left: 15px; top: 28px; bottom: 0;
-            width: 1px; background: ${THEME.grid};
+            width: 1px; background: ${THEME.glassBorder};
         }
         .timeline-event:last-child::before { display: none; }
 
@@ -249,7 +249,7 @@ const SecStyles = () => (
         .key-item {
             padding: 12px 16px;
             border-radius: 10px;
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             background: ${THEME.surface};
             margin-bottom: 8px;
             transition: all 0.2s;
@@ -259,7 +259,7 @@ const SecStyles = () => (
         /* Expiry progress */
         .key-progress {
             height: 3px; border-radius: 2px;
-            background: ${THEME.grid};
+            background: ${THEME.glassBorder};
             margin-top: 8px; overflow: hidden;
         }
         .key-progress-fill {
@@ -270,8 +270,8 @@ const SecStyles = () => (
         /* Search bar */
         .search-input {
             background: ${THEME.surface};
-            border: 1px solid ${THEME.grid};
-            border-radius: 8px; padding: 8px 14px 8px 36px;
+            border: 1px solid ${THEME.glassBorder};
+            border-radius: 12px; padding: 8px 14px 8px 36px;
             color: ${THEME.textMain}; font-size: 12px; width: 200px;
             outline: none; transition: all 0.2s;
             font-family: ${THEME.fontMono};
@@ -344,7 +344,7 @@ const ThreatBadge = ({ severity }) => (
 );
 
 const SectionHeader = ({ icon: Icon, title, iconColor, right }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: `1px solid ${THEME.grid}` }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: `1px solid ${THEME.glassBorder}` }}>
         <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8, color: THEME.textMain, letterSpacing: '0.02em' }}>
             <Icon size={15} color={iconColor || THEME.primary} />
             {title}
@@ -354,7 +354,7 @@ const SectionHeader = ({ icon: Icon, title, iconColor, right }) => (
 );
 
 const MiniStat = ({ label, value, sub, color, icon: Icon }) => (
-    <div style={{ padding: '14px 18px', background: THEME.surface, borderRadius: 10, border: `1px solid ${THEME.grid}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <div style={{ padding: '14px 18px', background: THEME.surface, borderRadius: 10, border: `1px solid ${THEME.glassBorder}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.02em',  color: THEME.textMuted }}>
             {Icon && <Icon size={12} color={color} />} {label}
         </div>
@@ -371,7 +371,7 @@ const ScoreRing = ({ score }) => {
     return (
         <div style={{ position: 'relative', width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="160" height="160" viewBox="0 0 160 160">
-                <circle cx="80" cy="80" r={r} stroke={THEME.grid} strokeWidth="8" fill="none" />
+                <circle cx="80" cy="80" r={r} stroke={THEME.glassBorder} strokeWidth="8" fill="none" />
                 <circle
                     cx="80" cy="80" r={r}
                     stroke={color} strokeWidth="8" fill="none"
@@ -512,7 +512,7 @@ const ThreatTimeline = () => (
                             <stop offset="95%" stopColor={THEME.success} stopOpacity={0} />
                         </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} />
                     <XAxis dataKey="h" tick={{ fill: THEME.textDim, fontSize: 9 }} axisLine={false} tickLine={false} interval={3} />
                     <YAxis tick={{ fill: THEME.textDim, fontSize: 9 }} axisLine={false} tickLine={false} />
                     <Tooltip content={<ChartTooltip />} />
@@ -539,7 +539,7 @@ const GeoThreatPanel = () => {
                         <span style={{ fontSize: 12, color: THEME.textMain }}>{g.country}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 80, height: 4, background: THEME.grid, borderRadius: 2 }}>
+                        <div style={{ width: 80, height: 4, background: THEME.glassBorder, borderRadius: 2 }}>
                             <div style={{ width: `${g.pct}%`, height: '100%', background: g.color, borderRadius: 2 }} />
                         </div>
                         <span className="mono" style={{ fontSize: 11, color: g.color, width: 28, textAlign: 'right' }}>{g.count}</span>
@@ -568,7 +568,7 @@ const CompliancePanel = ({ complianceChecks = [] }) => {
                                </div>
                            }
             />
-            <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.grid}`, display: 'flex', gap: 4, overflowX: 'auto' }}>
+            <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 4, overflowX: 'auto' }}>
                 {standards.map(s => (
                     <button key={s} className={`nav-tab ${filter === s ? 'active' : ''}`}
                             style={{ padding: '4px 10px', fontSize: 10 }}
@@ -652,7 +652,7 @@ const SecurityRadar = ({ complianceChecks = [] }) => {
             <SectionHeader icon={BarChart2} title="Security Posture Radar" iconColor={THEME.primaryLight} />
             <ResponsiveContainer width="100%" height={220}>
                 <RadarChart data={radarData} cx="50%" cy="50%" outerRadius={75}>
-                    <PolarGrid stroke={THEME.grid} />
+                    <PolarGrid stroke={THEME.glassBorder} />
                     <PolarAngleAxis dataKey="axis" tick={{ fill: THEME.textMuted, fontSize: 11 }} />
                     <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
                     <Radar name="Score" dataKey="val" stroke={THEME.primaryLight} fill={THEME.primaryLight} fillOpacity={0.15} strokeWidth={2} dot={{ fill: THEME.primaryLight, r: 3 }} />
@@ -670,14 +670,14 @@ const PIIAccessLog = () => {
         <SectionHeader icon={Fingerprint} title="PII / Sensitive Access" iconColor={THEME.danger}
                        right={<span style={{ fontSize: 11, color: THEME.textDim, fontFamily: THEME.fontMono }}>last 24h</span>} />
         <div style={{ padding: '12px 20px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', fontSize: 10, fontWeight: 700, letterSpacing: '0.02em',  color: THEME.textDim, borderBottom: `1px solid ${THEME.grid}`, paddingBottom: 8, marginBottom: 4 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', fontSize: 10, fontWeight: 700, letterSpacing: '0.02em',  color: THEME.textDim, borderBottom: `1px solid ${THEME.glassBorder}`, paddingBottom: 8, marginBottom: 4 }}>
                 <div>Resource · Accessor</div>
                 <div>Hits</div>
                 <div>Trend</div>
                 <div>Risk</div>
             </div>
             {safePIIAccess.map((a, i) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', padding: '11px 0', borderBottom: `1px solid ${THEME.grid}`, alignItems: 'center', fontSize: 12 }}>
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 80px 60px', padding: '11px 0', borderBottom: `1px solid ${THEME.glassBorder}`, alignItems: 'center', fontSize: 12 }}>
                     <div>
                         <div>
                             <span style={{ color: THEME.textMuted }}>{a.table}</span>
@@ -753,7 +753,7 @@ const AuditTimeline = ({ auditEvents = [] }) => {
     return (
     <div className="card" style={{ padding: 0 }}>
         <SectionHeader icon={Clock} title="Audit Events" iconColor={THEME.info}
-                       right={<button style={{ fontSize: 11, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Export</button>} />
+                       right={<button style={{ fontSize: 11, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Export</button>} />
         <div style={{ padding: '16px 20px' }}>
             {safeAuditEvents.map((ev, i) => {
                 const color = SEV_COLORS[ev.severity] || '#888';
@@ -840,7 +840,7 @@ const SuperuserMonitor = () => {
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                         <thead>
-                            <tr style={{ borderBottom: `1px solid ${THEME.border}` }}>
+                            <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
                                 {['PID','User','Database','Last Query','Duration','State','App','Risk','When'].map(h => (
                                     <th key={h} style={{ padding: '8px 10px', textAlign: 'left', color: THEME.textDim, fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
                                 ))}
@@ -853,7 +853,7 @@ const SuperuserMonitor = () => {
                             {visible.map((r, i) => (
                                 <React.Fragment key={r.pid}>
                                     <tr onClick={() => setExpanded(expandedPid === r.pid ? null : r.pid)}
-                                        style={{ borderBottom: `1px solid ${THEME.border}`, cursor: 'pointer', background: expandedPid === r.pid ? 'rgba(255,255,255,0.03)' : 'transparent' }}
+                                        style={{ borderBottom: `1px solid ${THEME.glassBorder}`, cursor: 'pointer', background: expandedPid === r.pid ? 'rgba(255,255,255,0.03)' : 'transparent' }}
                                         onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.04)'}
                                         onMouseLeave={e => e.currentTarget.style.background= expandedPid === r.pid ? 'rgba(255,255,255,0.03)' : 'transparent'}>
                                         <td className="mono" style={{ padding: '10px 10px', color: THEME.textDim }}>{r.pid}</td>
@@ -956,7 +956,7 @@ const ComplianceReportGenerator = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, margin: '16px 0' }}>
                 {safeFrameworks.map(f => (
                     <div key={f.id} onClick={() => setSelected(f.id)}
-                        style={{ padding: '14px 16px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${selected === f.id ? f.color : THEME.border}`, background: selected === f.id ? `${f.color}15` : 'transparent', transition: 'all 0.15s' }}>
+                        style={{ padding: '14px 16px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${selected === f.id ? f.color : THEME.glassBorder}`, background: selected === f.id ? `${f.color}15` : 'transparent', transition: 'all 0.15s' }}>
                         <div style={{ fontSize: 20, marginBottom: 6 }}>{f.icon}</div>
                         <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain }}>{f.label}</div>
                         <div style={{ marginTop: 8 }}>
@@ -993,7 +993,7 @@ const ComplianceReportGenerator = () => {
                         <div style={{ fontSize: 11, color: THEME.textDim, marginBottom: 8 }}>Export Format</div>
                         <div style={{ display: 'flex', gap: 8 }}>
                             {['PDF', 'CSV', 'JSON'].map(fmt => (
-                                <div key={fmt} style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${THEME.border}`, fontSize: 11, color: THEME.textMuted, cursor: 'pointer' }}>{fmt}</div>
+                                <div key={fmt} style={{ padding: '5px 14px', borderRadius: 6, border: `1px solid ${THEME.glassBorder}`, fontSize: 11, color: THEME.textMuted, cursor: 'pointer' }}>{fmt}</div>
                             ))}
                         </div>
                     </div>
@@ -1253,7 +1253,7 @@ const SecurityComplianceTab = () => {
                         <SectionHeader icon={Shield} title="Superuser Role Summary" iconColor={THEME.info} />
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 14 }}>
                             {(Array.isArray(SUPERUSER_SAMPLE) && SUPERUSER_SAMPLE.length > 0 ? SUPERUSER_SAMPLE.map(s => ({ role: s.user || 'unknown', sessions: 1, queries_24h: 0, last_seen: s.ts || 'N/A', critical: s.risk === 'critical' ? 1 : 0 })) : []).map(r => (
-                                <div key={r.role} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '14px 16px', border: r.critical > 0 ? `1px solid ${THEME.danger}4d` : `1px solid ${THEME.border}` }}>
+                                <div key={r.role} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '14px 16px', border: r.critical > 0 ? `1px solid ${THEME.danger}4d` : `1px solid ${THEME.glassBorder}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                         <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>{r.role}</span>
                                         {r.critical > 0 && <Badge label="⚠ Critical" color={THEME.danger} />}

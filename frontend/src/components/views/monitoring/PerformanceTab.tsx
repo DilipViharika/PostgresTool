@@ -1221,7 +1221,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                                     onMouseEnter={e => { e.currentTarget.style.background = `${THEME.danger}15`; }}
                                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                             ><XCircle size={11} /> Kill</button>
-                            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${THEME.grid}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                     onMouseEnter={e => { e.currentTarget.style.background = `${THEME.danger}20`; e.currentTarget.style.color = THEME.danger; }}
                                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = THEME.textMuted; }}
                             ><X size={16} /></button>

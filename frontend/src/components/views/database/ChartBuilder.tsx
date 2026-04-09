@@ -49,13 +49,13 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
 
     // VIGIL color palette
     const chartColors = [
-        '#6366f1', // Purple
-        '#6366f1', // Teal
-        '#2EE89C', // Emerald
-        '#FFB520', // Amber
-        '#FF4560', // Rose
-        '#B88BFF', // Violet
-        '#5BB8F5', // Stellar Blue
+        THEME.primary, // Purple
+        THEME.primaryDark, // Teal
+        THEME.success, // Emerald
+        THEME.warning, // Amber
+        THEME.danger, // Rose
+        THEME.secondary, // Violet
+        THEME.info, // Stellar Blue
     ];
 
     // Transform rows to objects for easier chart handling
@@ -148,11 +148,11 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
             flexDirection: 'column',
             height: '100%',
             background: THEME.surface,
-            border: `1px solid ${THEME.grid}`,
+            border: `1px solid ${THEME.glassBorder}`,
             borderRadius: THEME.radiusMd,
             overflow: 'hidden',
             fontFamily: THEME.fontBody,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+            boxShadow: THEME.shadowSm,
             transition: 'all 0.25s ease',
         },
         header: {

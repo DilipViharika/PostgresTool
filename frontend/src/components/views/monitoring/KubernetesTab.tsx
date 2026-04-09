@@ -11,17 +11,17 @@ const Styles = () => (
         @keyframes kFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         .k-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 14px;
             padding: 20px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: ${THEME.shadowSm};
             transition: all 0.25s ease;
             animation: kFade 0.3s ease;
         }
         .k-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            box-shadow: ${THEME.shadowMd};
             transform: translateY(-2px);
         }
         .k-card::after {
@@ -35,16 +35,16 @@ const Styles = () => (
             opacity: 0.7;
         }
         .k-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .k-metric { background:${THEME.grid}; border-radius:10px; padding:16px; margin-bottom:12px; }
-        .k-progress-bar { width:100%; height:8px; background:${THEME.grid}; border-radius:4px; overflow:hidden; margin-top:8px; }
-        .k-progress-fill { height:100%; border-radius:4px; }
+        .k-metric { background:${THEME.grid}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:16px; margin-bottom:12px; }
+        .k-progress-bar { width:100%; height:8px; background:${THEME.grid}; border-radius:8px; overflow:hidden; margin-top:8px; }
+        .k-progress-fill { height:100%; border-radius:8px; }
         .k-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:16px; }
         .k-status-ok { color:${THEME.success}; }
         .k-status-fail { color:${THEME.danger}; }
         .k-spinner { animation:kSpin 1s linear infinite; }
         .k-table { width:100%; border-collapse:collapse; font-size:13px; }
-        .k-table th { text-align:left; padding:12px; border-bottom:1px solid ${THEME.grid}; color:${THEME.textMuted}; font-weight:700; }
-        .k-table td { padding:12px; border-bottom:1px solid ${THEME.grid}40; }
+        .k-table th { text-align:left; padding:12px; border-bottom:1px solid ${THEME.glassBorder}; color:${THEME.textMuted}; font-weight:700; }
+        .k-table td { padding:12px; border-bottom:1px solid ${THEME.glassBorder}40; }
         .k-table tr:hover { background:${THEME.grid}30; }
     `}</style>
 );
@@ -63,7 +63,7 @@ const fmtBytes = (b) => {
 const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, borderRadius:8, padding:'8px 12px', fontSize:12 }}>
+        <div style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:10, padding:'8px 12px', fontSize:12, boxShadow: THEME.shadowSm }}>
             <div style={{ color:THEME.textMuted, marginBottom:4 }}>{label}</div>
             {payload.map(p => (
                 <div key={p.name} style={{ color:p.color, fontWeight:600 }}>{p.name}: {p.value}%</div>
@@ -152,7 +152,7 @@ export default function KubernetesTab() {
                 <div style={{
                     background:`${THEME.danger}15`,
                     border:`1px solid ${THEME.danger}40`,
-                    borderRadius:10,
+                    borderRadius:12,
                     padding:'12px 16px',
                     marginBottom:20,
                     color:THEME.danger,
@@ -252,7 +252,7 @@ export default function KubernetesTab() {
                         Health Check Status
                     </div>
                     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-                        <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
+                        <div style={{ background:THEME.grid, borderRadius:10, padding:12 }}>
                             <div style={{ fontSize:13, fontWeight:700, marginBottom:8, color:THEME.textMain }}>Readiness Probe</div>
                             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                                 {metrics.readinessProbe ? (
@@ -268,7 +268,7 @@ export default function KubernetesTab() {
                                 )}
                             </div>
                         </div>
-                        <div style={{ background:THEME.grid, borderRadius:8, padding:12 }}>
+                        <div style={{ background:THEME.grid, borderRadius:10, padding:12 }}>
                             <div style={{ fontSize:13, fontWeight:700, marginBottom:8, color:THEME.textMain }}>Liveness Probe</div>
                             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                                 {metrics.livenessProbe ? (
@@ -327,7 +327,7 @@ export default function KubernetesTab() {
                         <Server size={18} style={{ display:'inline-block', marginRight:10, verticalAlign:'middle' }} />
                         Replica Topology
                     </div>
-                    <div style={{ background:THEME.grid, borderRadius:8, padding:16, textAlign:'center' }}>
+                    <div style={{ background:THEME.grid, borderRadius:10, padding:16, textAlign:'center' }}>
                         <div style={{ fontSize:13, fontWeight:700, color:THEME.primary, marginBottom:16 }}>
                             {topology.primary}
                         </div>
@@ -339,7 +339,7 @@ export default function KubernetesTab() {
                                     {topology.replicas.map((rep, i) => (
                                         <div key={i} style={{
                                             background:THEME.surfaceHover,
-                                            borderRadius:6,
+                                            borderRadius:8,
                                             padding:8,
                                             fontSize:12,
                                             color:THEME.secondary

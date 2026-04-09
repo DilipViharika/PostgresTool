@@ -472,7 +472,7 @@ function DemoMySQLTab({ tabId }) {
                                     <div
                                         style={{
                                             background: THEME.gridDark,
-                                            borderRadius: 4,
+                                            borderRadius: 12,
                                             height: 4,
                                             overflow: 'hidden',
                                         }}
@@ -700,7 +700,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Area
@@ -915,7 +915,7 @@ function DemoMySQLTab({ tabId }) {
                                             background: THEME.primary,
                                             color: THEME.bg,
                                             padding: '8px 12px',
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -943,7 +943,7 @@ function DemoMySQLTab({ tabId }) {
                                             background: THEME.success,
                                             color: THEME.bg,
                                             padding: '8px 12px',
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -971,7 +971,7 @@ function DemoMySQLTab({ tabId }) {
                                             background: THEME.success,
                                             color: THEME.bg,
                                             padding: '8px 12px',
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -1150,7 +1150,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                             }}
                                         />
                                         <Area
@@ -1180,7 +1180,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                             }}
                                         />
                                         <Area
@@ -1207,7 +1207,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                             }}
                                         />
                                         <Legend />
@@ -1324,7 +1324,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                             }}
                                         />
                                         <Legend />
@@ -1359,7 +1359,7 @@ function DemoMySQLTab({ tabId }) {
                                 {demoData.databases.map((db, i) => (
                                     <div
                                         key={i}
-                                        style={{ padding: '12px', borderRadius: 8, background: `${THEME.primary}08` }}
+                                        style={{ padding: '12px', borderRadius: 12, background: `${THEME.primary}08` }}
                                     >
                                         <div
                                             style={{
@@ -1621,7 +1621,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                             }}
                                         />
                                         <Area
@@ -1653,7 +1653,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                             }}
                                         />
                                         <Area
@@ -1686,7 +1686,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                             }}
                                         />
                                         <Legend />
@@ -1724,7 +1724,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                             }}
                                         />
                                         <Legend />
@@ -1956,7 +1956,7 @@ function DemoMySQLTab({ tabId }) {
                                             contentStyle={{
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                             }}
                                         />
                                         <Line
@@ -2180,7 +2180,7 @@ function DemoMySQLTab({ tabId }) {
                                         key={i}
                                         style={{
                                             padding: '10px',
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                             background:
                                                 s.status === 'success' ? `${THEME.success}08` : `${THEME.warning}08`,
                                         }}
@@ -2371,7 +2371,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Bar dataKey="count" fill={THEME.ai} radius={[4, 4, 0, 0]} />
@@ -2411,7 +2411,7 @@ function DemoMySQLTab({ tabId }) {
                                 style={{
                                     background: THEME.gridDark,
                                     padding: 12,
-                                    borderRadius: 6,
+                                    borderRadius: 10,
                                     fontFamily: THEME.fontMono,
                                     fontSize: 11,
                                     color: THEME.textMuted,
@@ -2508,7 +2508,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Line
@@ -2586,7 +2586,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Bar dataKey="indexSize" fill={THEME.success} radius={[4, 4, 0, 0]} />
@@ -2645,7 +2645,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Bar dataKey="bloat" fill={THEME.warning} radius={[4, 4, 0, 0]} />
@@ -2865,7 +2865,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Area
@@ -2968,7 +2968,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Line
@@ -3036,7 +3036,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Area
@@ -3066,7 +3066,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Bar dataKey="count" fill={THEME.ai} radius={[4, 4, 0, 0]} />
@@ -3128,7 +3128,7 @@ function DemoMySQLTab({ tabId }) {
                                             background: THEME.primary,
                                             color: THEME.bg,
                                             padding: '8px 12px',
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -3144,7 +3144,7 @@ function DemoMySQLTab({ tabId }) {
                                             background: THEME.success,
                                             color: THEME.bg,
                                             padding: '8px 12px',
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -3160,7 +3160,7 @@ function DemoMySQLTab({ tabId }) {
                                             background: THEME.success,
                                             color: THEME.bg,
                                             padding: '8px 12px',
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             fontWeight: 700,
                                             marginBottom: 8,
                                         }}
@@ -3181,7 +3181,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Line type="monotone" dataKey="lag" stroke={THEME.ai} strokeWidth={2} dot={false} />
@@ -3249,7 +3249,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Area
@@ -3334,7 +3334,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Bar dataKey="space" fill={THEME.success} radius={[4, 4, 0, 0]} />
@@ -3402,7 +3402,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Area
@@ -3627,7 +3627,7 @@ function DemoMySQLTab({ tabId }) {
                                         style={{
                                             background: THEME.gridDark,
                                             padding: 12,
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
@@ -3663,7 +3663,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Area
@@ -3713,7 +3713,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Line
@@ -3894,7 +3894,7 @@ function DemoMySQLTab({ tabId }) {
                                         key={i}
                                         style={{
                                             background: i < 23 ? THEME.success : THEME.warning,
-                                            borderRadius: 4,
+                                            borderRadius: 12,
                                             height: 24,
                                             display: 'flex',
                                             alignItems: 'center',
@@ -3925,7 +3925,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Bar dataKey="used" fill={THEME.primary} radius={[4, 4, 0, 0]} />
@@ -4038,7 +4038,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Line
@@ -4099,7 +4099,7 @@ function DemoMySQLTab({ tabId }) {
                                 style={{
                                     background: THEME.gridDark,
                                     padding: 12,
-                                    borderRadius: 6,
+                                    borderRadius: 10,
                                     fontFamily: THEME.fontMono,
                                     fontSize: 11,
                                     color: THEME.textMuted,
@@ -4198,7 +4198,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Bar dataKey="latency" fill={THEME.primary} radius={[4, 4, 0, 0]} />
@@ -4324,7 +4324,7 @@ function DemoMySQLTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Area

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Eye, EyeOff, Lock, Loader, ShieldCheck, AlertCircle, KeyRound } from 'lucide-react';
+import { THEME } from '../../utils/theme';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FORCE PASSWORD CHANGE MODAL
@@ -78,10 +79,10 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
     const inputStyle: React.CSSProperties = {
         width: '100%',
         padding: '11px 40px 11px 14px',
-        borderRadius: 12,
-        border: '1px solid rgba(255,255,255,.08)',
-        background: 'rgba(255,255,255,.04)',
-        color: 'rgba(255,255,255,.9)',
+        borderRadius: THEME.radiusMd,
+        border: `1px solid ${THEME.glassBorder}`,
+        background: THEME.glass,
+        color: THEME.textMain,
         fontSize: 13,
         fontFamily: 'inherit',
         outline: 'none',
@@ -97,14 +98,14 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
         background: 'none',
         border: 'none',
         cursor: 'pointer',
-        color: 'rgba(255,255,255,.3)',
+        color: THEME.textDim,
         padding: 0,
         display: 'flex',
     };
 
     const checkStyle = (pass: boolean): React.CSSProperties => ({
         fontSize: 11,
-        color: pass ? '#34d399' : 'rgba(255,255,255,.25)',
+        color: pass ? THEME.success : THEME.textDim,
         display: 'flex',
         alignItems: 'center',
         gap: 6,
@@ -120,25 +121,25 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
                 zIndex: 2000,
             }}>
                 <div style={{
-                    background: 'rgba(255,255,255,.06)',
-                    borderRadius: 20, padding: 32,
+                    background: THEME.surface,
+                    borderRadius: THEME.radiusLg, padding: 32,
                     maxWidth: 400, width: '90%',
-                    border: '1px solid rgba(255,255,255,.08)',
-                    boxShadow: '0 24px 80px rgba(0,0,0,.4)',
+                    border: `1px solid ${THEME.glassBorder}`,
+                    boxShadow: THEME.shadowLg,
                     textAlign: 'center',
                 }}>
                     <div style={{
                         width: 56, height: 56, borderRadius: '50%',
-                        background: 'rgba(34,197,94,.12)',
+                        background: `${THEME.success}12`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         margin: '0 auto 16px',
                     }}>
-                        <ShieldCheck size={28} color="#34d399" />
+                        <ShieldCheck size={28} color={THEME.success} />
                     </div>
-                    <h3 style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>
                         Password Updated
                     </h3>
-                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,.4)' }}>
+                    <p style={{ fontSize: 13, color: THEME.textMuted }}>
                         Redirecting to dashboard...
                     </p>
                 </div>
@@ -154,28 +155,28 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
             zIndex: 2000,
         }}>
             <div style={{
-                background: 'rgba(255,255,255,.06)',
-                borderRadius: 20, padding: 32,
+                background: THEME.surface,
+                borderRadius: THEME.radiusLg, padding: 32,
                 maxWidth: 420, width: '90%',
-                border: '1px solid rgba(255,255,255,.08)',
-                boxShadow: '0 24px 80px rgba(0,0,0,.4)',
+                border: `1px solid ${THEME.glassBorder}`,
+                boxShadow: THEME.shadowLg,
                 animation: 'fadeIn .3s ease',
             }}>
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                     <div style={{
                         width: 40, height: 40, borderRadius: '50%',
-                        background: 'linear-gradient(135deg, rgba(139,92,246,.2), rgba(99,102,241,.2))',
+                        background: `${THEME.primary}20`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0,
                     }}>
-                        <KeyRound size={20} color="#6366f1" />
+                        <KeyRound size={20} color={THEME.primary} />
                     </div>
                     <div>
-                        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0 }}>
+                        <h3 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, margin: 0 }}>
                             Change Your Password
                         </h3>
-                        <p style={{ fontSize: 12, color: 'rgba(255,255,255,.35)', margin: '4px 0 0' }}>
+                        <p style={{ fontSize: 12, color: THEME.textMuted, margin: '4px 0 0' }}>
                             A password change is required to continue
                         </p>
                     </div>
@@ -185,13 +186,13 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
                 <div style={{
                     margin: '16px 0',
                     padding: '10px 14px',
-                    borderRadius: 10,
-                    background: 'rgba(139,92,246,.06)',
-                    border: '1px solid rgba(139,92,246,.1)',
+                    borderRadius: THEME.radiusMd,
+                    background: `${THEME.primary}0a`,
+                    border: `1px solid ${THEME.primary}20`,
                     display: 'flex', alignItems: 'center', gap: 10,
                 }}>
-                    <Lock size={14} color="#6366f1" style={{ flexShrink: 0 }} />
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', lineHeight: 1.4 }}>
+                    <Lock size={14} color={THEME.primary} style={{ flexShrink: 0 }} />
+                    <span style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.4 }}>
                         Your account requires a password update for security. Please set a new password below.
                     </span>
                 </div>
@@ -199,10 +200,10 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
                 {/* Error */}
                 {error && (
                     <div style={{
-                        padding: '10px 14px', borderRadius: 10,
-                        background: 'rgba(244,63,94,.1)',
-                        border: '1px solid rgba(244,63,94,.15)',
-                        color: '#fb7185', fontSize: 12,
+                        padding: '10px 14px', borderRadius: THEME.radiusMd,
+                        background: `${THEME.danger}0f`,
+                        border: `1px solid ${THEME.danger}20`,
+                        color: THEME.danger, fontSize: 12,
                         display: 'flex', alignItems: 'center', gap: 8,
                         marginBottom: 12,
                     }}>
@@ -213,7 +214,7 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {/* Current Password */}
                     <div>
-                        <label style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginBottom: 6, display: 'block', fontWeight: 500 }}>
+                        <label style={{ fontSize: 11, color: THEME.textMuted, marginBottom: 6, display: 'block', fontWeight: 500 }}>
                             Current Password
                         </label>
                         <div style={{ position: 'relative' }}>
@@ -234,7 +235,7 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
 
                     {/* New Password */}
                     <div>
-                        <label style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginBottom: 6, display: 'block', fontWeight: 500 }}>
+                        <label style={{ fontSize: 11, color: THEME.textMuted, marginBottom: 6, display: 'block', fontWeight: 500 }}>
                             New Password
                         </label>
                         <div style={{ position: 'relative' }}>
@@ -254,7 +255,7 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
 
                     {/* Confirm Password */}
                     <div>
-                        <label style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginBottom: 6, display: 'block', fontWeight: 500 }}>
+                        <label style={{ fontSize: 11, color: THEME.textMuted, marginBottom: 6, display: 'block', fontWeight: 500 }}>
                             Confirm New Password
                         </label>
                         <div style={{ position: 'relative' }}>
@@ -300,16 +301,16 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
                             type="submit"
                             disabled={!isValid || loading}
                             style={{
-                                flex: 2, padding: '12px 16px', borderRadius: 10, border: 'none',
+                                flex: 2, padding: '12px 16px', borderRadius: THEME.radiusMd, border: 'none',
                                 background: isValid && !loading
-                                    ? 'linear-gradient(135deg, #6366f1, #6366f1)'
-                                    : 'rgba(255,255,255,.04)',
-                                color: isValid && !loading ? '#fff' : 'rgba(255,255,255,.2)',
+                                    ? `linear-gradient(135deg, ${THEME.primary}, ${THEME.primary})`
+                                    : THEME.glass,
+                                color: isValid && !loading ? THEME.textMain : THEME.textDim,
                                 fontSize: 13, fontWeight: 600,
                                 cursor: isValid && !loading ? 'pointer' : 'not-allowed',
                                 fontFamily: 'inherit', transition: 'all .25s',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                boxShadow: isValid && !loading ? '0 8px 24px rgba(139,92,246,.2)' : 'none',
+                                boxShadow: isValid && !loading ? `0 8px 24px ${THEME.primary}33` : 'none',
                             }}
                         >
                             {loading ? (
@@ -322,10 +323,10 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
                             type="button"
                             onClick={onLogout}
                             style={{
-                                flex: 1, padding: '12px 16px', borderRadius: 10,
-                                border: '1px solid rgba(255,255,255,.08)',
+                                flex: 1, padding: '12px 16px', borderRadius: THEME.radiusMd,
+                                border: `1px solid ${THEME.glassBorder}`,
                                 background: 'transparent',
-                                color: 'rgba(255,255,255,.35)',
+                                color: THEME.textMuted,
                                 fontSize: 12, fontWeight: 600,
                                 cursor: 'pointer', fontFamily: 'inherit',
                                 transition: 'all .25s',

@@ -164,7 +164,7 @@ const LockWaitsTable = ({ lockWaits }) => {
                     }}
                 >
                     <thead>
-                    <tr style={{ borderBottom: `1px solid ${THEME.grid}` }}>
+                    <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
                         <th style={{ padding: '12px 16px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                             Blocked PID
                         </th>
@@ -194,7 +194,7 @@ const LockWaitsTable = ({ lockWaits }) => {
                             <tr
                                 key={idx}
                                 style={{
-                                    borderBottom: `1px solid ${THEME.grid}`,
+                                    borderBottom: `1px solid ${THEME.glassBorder}`,
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.background = THEME.surfaceHover;
@@ -282,7 +282,7 @@ const WaitEventBreakdown = ({ waitEvents }) => {
                             <div
                                 style={{
                                     height: '8px',
-                                    background: THEME.grid,
+                                    background: THEME.glassBorder,
                                     borderRadius: '4px',
                                     overflow: 'hidden',
                                 }}
@@ -379,7 +379,7 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
                             }}
                         >
                             <thead>
-                            <tr style={{ borderBottom: `1px solid ${THEME.grid}` }}>
+                            <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
                                 <th style={{ padding: '12px 16px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                                     Query
                                 </th>
@@ -413,7 +413,7 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
                                     <tr
                                         key={idx}
                                         style={{
-                                            borderBottom: `1px solid ${THEME.grid}`,
+                                            borderBottom: `1px solid ${THEME.glassBorder}`,
                                         }}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.background = THEME.surfaceHover;
@@ -443,7 +443,7 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
                                                     style={{
                                                         flex: 1,
                                                         height: '6px',
-                                                        background: THEME.grid,
+                                                        background: THEME.glassBorder,
                                                         borderRadius: '3px',
                                                         overflow: 'hidden',
                                                     }}
@@ -889,7 +889,7 @@ export default function LogPatternAnalysisTab() {
                     display: 'flex',
                     gap: '8px',
                     marginBottom: '24px',
-                    borderBottom: `1px solid ${THEME.grid}`,
+                    borderBottom: `1px solid ${THEME.glassBorder}`,
                 }}
             >
                 {['wait-events', 'slow-queries', 'db-activity'].map((tab) => {

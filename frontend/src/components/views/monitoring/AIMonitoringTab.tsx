@@ -22,7 +22,7 @@ const Styles = () => (
 
         .aim-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 14px;
             padding: 20px;
             position: relative;
@@ -107,8 +107,8 @@ const Styles = () => (
         .aim-input {
             flex: 1;
             background: ${THEME.surfaceHover};
-            border: 1px solid ${THEME.grid};
-            border-radius: 8px;
+            border: 1px solid ${THEME.glassBorder};
+            border-radius: 10px;
             padding: 12px 16px;
             color: ${THEME.textMain};
             font-size: 14px;
@@ -146,9 +146,9 @@ const Styles = () => (
 
         .aim-suggestion-card {
             background: ${THEME.surfaceHover};
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-left: 3px solid ${THEME.primary};
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 16px;
             margin-bottom: 12px;
             animation: aimFade 0.3s ease;
@@ -189,8 +189,8 @@ const Styles = () => (
             display: inline-block;
             padding: 8px 14px;
             background: ${THEME.grid};
-            border: 1px solid ${THEME.gridDark};
-            border-radius: 6px;
+            border: 1px solid ${THEME.glassBorder};
+            border-radius: 8px;
             font-size: 12px;
             color: ${THEME.textMain};
             cursor: pointer;
@@ -236,12 +236,12 @@ const Styles = () => (
 
         .aim-modal {
             background: ${THEME.surface};
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 12px;
             padding: 24px;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: ${THEME.shadowLg};
         }
 
         .aim-modal-title {
@@ -306,11 +306,11 @@ const Styles = () => (
         }
 
         .aim-error {
-            background: #ff3344 15%;
-            border: 1px solid #ff3344;
-            border-radius: 8px;
+            background: ${THEME.danger}15;
+            border: 1px solid ${THEME.danger};
+            border-radius: 10px;
             padding: 16px;
-            color: #ff3344;
+            color: ${THEME.danger};
             margin-bottom: 16px;
             display: flex;
             align-items: center;
@@ -327,7 +327,7 @@ const fmt = (n) => n === null ? '—' : Number(n).toLocaleString('en-US', { maxi
 const ChartTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: THEME.shadowSm }}>
             {payload.map(p => (
                 <div key={p.name} style={{ color: p.color, fontWeight: 600, marginBottom: 4 }}>
                     {p.name}: {fmt(p.value)}

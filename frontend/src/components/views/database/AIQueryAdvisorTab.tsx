@@ -8,29 +8,29 @@ const Styles = () => (
     <style>{`
         @keyframes aqSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes aqFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .aq-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); transition:all 0.25s ease; animation:aqFade .3s ease; }
-        .aq-card:hover { box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+        .aq-card { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; overflow:hidden; box-shadow:${THEME.shadowSm}; transition:all 0.25s ease; animation:aqFade .3s ease; }
+        .aq-card:hover { box-shadow:${THEME.shadowMd}; }
         .aq-card-header { height:28px; background:${THEME.textMain}0a; display:flex; align-items:center; padding:0 12px; gap:6px; border-bottom:1px solid ${THEME.glassBorder}; }
         .aq-card-dot { width:8px; height:8px; border-radius:50%; }
         .aq-card-title { font-family:'JetBrains Mono','Fira Code',monospace; font-size:11px; color:${THEME.textMuted}; margin-left:8px; letter-spacing:0.03em; }
-        .aq-card-body { padding:16px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02); }
+        .aq-card-body { padding:16px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.05); }
         .aq-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .aq-textarea { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:12px; color:${THEME.textMain}; font-size:13px; font-family:monospace; width:100%; resize:vertical; min-height:120px; }
+        .aq-textarea { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:12px; color:${THEME.textMain}; font-size:13px; font-family:monospace; width:100%; resize:vertical; min-height:120px; }
         .aq-textarea:focus { outline:none; border-color:${THEME.primary}; }
-        .aq-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:8px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
+        .aq-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:12px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
         .aq-button:hover { background:${THEME.primaryLight}; }
         .aq-button-secondary { background:${THEME.secondary}; }
         .aq-button-secondary:hover { background:${THEME.secondaryLight}; }
-        .aq-suggestion-card { background:${THEME.grid}; border-left:4px solid; border-radius:8px; padding:12px; margin-bottom:12px; }
+        .aq-suggestion-card { background:${THEME.grid}; border-left:4px solid; border-radius:12px; padding:12px; margin-bottom:12px; }
         .aq-severity-high { border-color:${THEME.danger}; }
         .aq-severity-medium { border-color:${THEME.warning}; }
         .aq-severity-low { border-color:${THEME.success}; }
-        .aq-badge { display:inline-block; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; margin-right:8px; }
+        .aq-badge { display:inline-block; padding:4px 10px; border-radius:10px; font-size:11px; font-weight:700; margin-right:8px; }
         .aq-badge-high { background:${THEME.danger}20; color:${THEME.danger}; }
         .aq-badge-medium { background:${THEME.warning}20; color:${THEME.warning}; }
         .aq-badge-low { background:${THEME.success}20; color:${THEME.success}; }
-        .aq-gauge { width:100%; height:8px; background:${THEME.grid}; border-radius:4px; overflow:hidden; }
-        .aq-gauge-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+        .aq-gauge { width:100%; height:8px; background:${THEME.grid}; border-radius:8px; overflow:hidden; }
+        .aq-gauge-fill { height:100%; border-radius:8px; transition:width 0.3s; }
         .aq-spinner { animation:aqSpin 1s linear infinite; }
     `}</style>
 );
@@ -150,7 +150,7 @@ export default function AIQueryAdvisorTab() {
                 <div style={{
                     background:`${THEME.danger}15`,
                     border:`1px solid ${THEME.danger}40`,
-                    borderRadius:10,
+                    borderRadius:12,
                     padding:'12px 16px',
                     marginBottom:20,
                     color:THEME.danger,
@@ -216,7 +216,7 @@ export default function AIQueryAdvisorTab() {
                                     </div>
                                     <div style={{ color:THEME.textDim, fontSize:12 }}>{sug?.description || ''}</div>
                                     {sug?.recommendation && (
-                                        <div style={{ marginTop:8, padding:8, background:`${THEME.bg}40`, borderRadius:4, fontSize:12, color:THEME.textMuted }}>
+                                        <div style={{ marginTop:8, padding:8, background:`${THEME.surface}40`, borderRadius:8, fontSize:12, color:THEME.textMuted }}>
                                             <strong>Recommendation:</strong> {sug.recommendation}
                                         </div>
                                     )}
@@ -236,7 +236,7 @@ export default function AIQueryAdvisorTab() {
                                 <div key={i} style={{
                                     background:`${THEME.warning}15`,
                                     border:`1px solid ${THEME.warning}40`,
-                                    borderRadius:8,
+                                    borderRadius:12,
                                     padding:12,
                                     marginBottom:12,
                                     fontSize:12,
@@ -294,8 +294,8 @@ export default function AIQueryAdvisorTab() {
                     type="text"
                     style={{
                         background:THEME.surfaceHover,
-                        border:`1px solid ${THEME.grid}`,
-                        borderRadius:8,
+                        border:`1px solid ${THEME.glassBorder}`,
+                        borderRadius:12,
                         padding:'10px 12px',
                         color:THEME.textMain,
                         fontSize:13,
@@ -316,7 +316,7 @@ export default function AIQueryAdvisorTab() {
                         {indexRecs.map((rec, i) => (
                             <div key={i} style={{
                                 background:THEME.grid,
-                                borderRadius:8,
+                                borderRadius:12,
                                 padding:12,
                                 marginBottom:12,
                                 borderLeft:`4px solid ${THEME.success}`

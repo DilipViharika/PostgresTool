@@ -53,11 +53,11 @@ const FleetStyles = () => (
             padding: 20px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: ${THEME.shadowSm};
             transition: all 0.25s ease;
         }
         .fleet-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            box-shadow: ${THEME.shadowMd};
             transform: translateY(-2px);
         }
         .fleet-card::after {
@@ -115,8 +115,8 @@ const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
         <div style={{
-            border: `1px solid ${THEME.glassBorder}`, borderRadius: 8,
-            padding: '8px 12px', fontSize: 11, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            border: `1px solid ${THEME.glassBorder}`, borderRadius: 10,
+            padding: '8px 12px', fontSize: 11, boxShadow: THEME.shadowSm,
         }}>
             <div style={{ fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>{label}</div>
             {payload.map((p, i) => (
@@ -143,7 +143,7 @@ const MiniSparkline = ({ data = [], color = THEME.primary, width = 56, height = 
 const MetricCard = ({ icon: Icon, label, value, sub, color, spark, trend, trendUp = true }) => (
     <div style={{
         padding: '12px 14px', borderRadius: 12,
-        border: `1px solid ${THEME.glassBorder}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        border: `1px solid ${THEME.glassBorder}`, boxShadow: THEME.shadowSm,
         display: 'flex', flexDirection: 'column', gap: 6,
     }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -195,7 +195,7 @@ const DatabaseCard = ({ connection, health, isActive, onSwitch }) => {
     return (
         <div className="fleet-card-hover" onClick={() => onSwitch(connection.id)} style={{
             padding: 16, borderRadius: 12, cursor: 'pointer', position: 'relative',
-            border: `1px solid ${isActive ? THEME.primary : THEME.glassBorder}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            border: `1px solid ${isActive ? THEME.primary : THEME.glassBorder}`, boxShadow: THEME.shadowSm,
         }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, paddingBottom: 12, borderBottom: `1px solid ${THEME.glassBorder}` }}>
@@ -488,7 +488,7 @@ const FleetOverviewTab = () => {
 
             {/* ── Error Banner ── */}
             {error && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12, background: `${THEME.danger}08`, border: `1px solid ${THEME.danger}25`, color: THEME.danger, fontSize: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12, background: `${THEME.danger}08`, border: `1px solid ${THEME.danger}25`, color: THEME.danger, fontSize: 12, boxShadow: THEME.shadowSm }}>
                     <AlertCircle size={15} /> {error}
                 </div>
             )}
@@ -502,7 +502,7 @@ const FleetOverviewTab = () => {
                             const host = conn.host || '';
                             const region = host.includes('us-') ? 'US' : host.includes('eu-') ? 'EU' : host.includes('ap-') ? 'APAC' : host.includes('localhost') ? 'Local' : 'Cloud';
                             return (
-                                <div key={conn.id} style={{ padding: 12, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                                <div key={conn.id} style={{ padding: 12, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, boxShadow: THEME.shadowSm }}>
                                     <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMuted,  letterSpacing: '0.04em' }}>{region}</div>
                                     <div style={{ fontSize: 13, fontWeight: 700, color: THEME.primary, margin: '6px 0' }}>{conn.name}</div>
                                     <div style={{ fontSize: 9, color: THEME.textDim }}>

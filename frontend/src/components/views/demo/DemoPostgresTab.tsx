@@ -646,7 +646,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             display: 'flex',
                                             height: 16,
-                                            borderRadius: 4,
+                                            borderRadius: 12,
                                             overflow: 'hidden',
                                         }}
                                     >
@@ -2484,7 +2484,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '6px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             color: THEME.primary,
                                             fontWeight: 600,
                                         }}
@@ -2497,7 +2497,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '6px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             color: THEME.success,
                                         }}
                                     >
@@ -2509,7 +2509,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '6px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             color: THEME.success,
                                         }}
                                     >
@@ -2602,7 +2602,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '10px 12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                     }}
                                 >
                                     <div
@@ -2754,7 +2754,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: '14px 16px',
                                     background: THEME.surface,
                                     border: `1px solid ${THEME.glassBorder}`,
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     position: 'relative',
                                     overflow: 'hidden',
                                 }}
@@ -2866,7 +2866,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: '10px 14px',
                                     background: THEME.surface,
                                     border: `1px solid ${THEME.glassBorder}`,
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     display: 'flex',
                                     gap: 10,
                                     flexWrap: 'wrap',
@@ -2941,7 +2941,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: '10px 14px',
                                     background: `${THEME.warning}08`,
                                     border: `1px solid ${THEME.warning}30`,
-                                    borderRadius: 6,
+                                    borderRadius: 10,
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 12,
@@ -3257,7 +3257,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: 16,
                                     background: THEME.surface,
                                     border: `1px solid ${THEME.ai}20`,
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                 }}
                             >
                                 <div
@@ -3328,7 +3328,7 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         style={{
                                             padding: '8px 16px',
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             background: `${THEME.success}15`,
                                             border: `1px solid ${THEME.success}30`,
                                             color: THEME.success,
@@ -3532,7 +3532,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '10px 12px',
                                                 background: THEME.surface,
                                                 border: `1px solid ${THEME.glassBorder}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                             }}
                                         >
                                             <div
@@ -3623,7 +3623,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                         fontSize: 12,
                                         color: THEME.textMain,
                                     }}
@@ -3775,7 +3775,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: 6,
                                                 textAlign: 'center',
                                                 fontSize: 10,
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 background:
                                                     val === 100
                                                         ? `${THEME.primary}30`
@@ -3907,7 +3907,7 @@ function DemoPostgresTab({ tabId }) {
                                         gap: 8,
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         padding: '6px 10px',
                                     }}
                                 >
@@ -3923,7 +3923,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '5px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             fontSize: 10,
                                             color: THEME.textMuted,
                                             cursor: 'pointer',
@@ -3986,7 +3986,7 @@ function DemoPostgresTab({ tabId }) {
                                                         padding: '3px 8px',
                                                         background: `${THEME.ai}20`,
                                                         border: `1px solid ${THEME.ai}40`,
-                                                        borderRadius: 4,
+                                                        borderRadius: 12,
                                                         fontSize: 9,
                                                         color: THEME.ai,
                                                         cursor: 'pointer',
@@ -4033,7 +4033,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: '12px 16px',
                                     background: `${THEME.ai}12`,
                                     border: `1px solid ${THEME.ai}30`,
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 10,
@@ -4058,7 +4058,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '14px 16px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                             display: 'flex',
                                             flexDirection: 'column',
                                             gap: 8,
@@ -4099,7 +4099,7 @@ function DemoPostgresTab({ tabId }) {
                                                     padding: '3px 10px',
                                                     background: `${THEME.success}20`,
                                                     border: `1px solid ${THEME.success}40`,
-                                                    borderRadius: 4,
+                                                    borderRadius: 12,
                                                     fontSize: 9,
                                                     color: THEME.success,
                                                     cursor: 'pointer',
@@ -4113,7 +4113,7 @@ function DemoPostgresTab({ tabId }) {
                                                     padding: '3px 10px',
                                                     background: `${THEME.warning}15`,
                                                     border: `1px solid ${THEME.warning}30`,
-                                                    borderRadius: 4,
+                                                    borderRadius: 12,
                                                     fontSize: 9,
                                                     color: THEME.warning,
                                                     cursor: 'pointer',
@@ -4126,7 +4126,7 @@ function DemoPostgresTab({ tabId }) {
                                                     padding: '3px 10px',
                                                     background: THEME.surface,
                                                     border: `1px solid ${THEME.glassBorder}`,
-                                                    borderRadius: 4,
+                                                    borderRadius: 12,
                                                     fontSize: 9,
                                                     color: THEME.textMuted,
                                                     cursor: 'pointer',
@@ -4238,7 +4238,7 @@ function DemoPostgresTab({ tabId }) {
                                 color: '#24292f',
                                 background: '#ffffff',
                                 padding: 12,
-                                borderRadius: 6,
+                                borderRadius: 10,
                                 lineHeight: 1.6,
                             }}
                         >
@@ -4306,7 +4306,7 @@ function DemoPostgresTab({ tabId }) {
                                             style={{
                                                 fontSize: 9,
                                                 padding: '1px 6px',
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 background: `${node.color}20`,
                                                 color: node.color,
                                                 fontWeight: 600,
@@ -4498,7 +4498,7 @@ function DemoPostgresTab({ tabId }) {
                                 gap: 8,
                                 background: THEME.surface,
                                 border: `1px solid ${THEME.glassBorder}`,
-                                borderRadius: 6,
+                                borderRadius: 10,
                                 padding: '6px 10px',
                             }}
                         >
@@ -4510,7 +4510,7 @@ function DemoPostgresTab({ tabId }) {
                                 padding: '5px 10px',
                                 background: `${THEME.warning}15`,
                                 border: `1px solid ${THEME.warning}30`,
-                                borderRadius: 6,
+                                borderRadius: 10,
                                 fontSize: 10,
                                 color: THEME.warning,
                                 cursor: 'pointer',
@@ -4524,7 +4524,7 @@ function DemoPostgresTab({ tabId }) {
                                 padding: '5px 10px',
                                 background: THEME.surface,
                                 border: `1px solid ${THEME.glassBorder}`,
-                                borderRadius: 6,
+                                borderRadius: 10,
                                 fontSize: 10,
                                 color: THEME.textMuted,
                                 cursor: 'pointer',
@@ -4579,7 +4579,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.danger}15`,
                                                 border: `1px solid ${THEME.danger}30`,
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 fontSize: 9,
                                                 color: THEME.danger,
                                                 cursor: 'pointer',
@@ -4689,7 +4689,7 @@ function DemoPostgresTab({ tabId }) {
                                         gap: 8,
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         padding: '6px 10px',
                                     }}
                                 >
@@ -4701,7 +4701,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '5px 10px',
                                         background: `${THEME.danger}15`,
                                         border: `1px solid ${THEME.danger}30`,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         fontSize: 10,
                                         color: THEME.danger,
                                         cursor: 'pointer',
@@ -4715,7 +4715,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '5px 10px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         fontSize: 10,
                                         color: THEME.textMuted,
                                         cursor: 'pointer',
@@ -4965,7 +4965,7 @@ function DemoPostgresTab({ tabId }) {
                                         gap: 8,
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         padding: '6px 10px',
                                     }}
                                 >
@@ -4981,7 +4981,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '5px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             fontSize: 10,
                                             color: THEME.textMuted,
                                             cursor: 'pointer',
@@ -5148,7 +5148,7 @@ function DemoPostgresTab({ tabId }) {
                                                 alignItems: 'center',
                                                 gap: 8,
                                                 padding: '4px 8px',
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 background: i % 2 === 0 ? `${THEME.surface}` : 'transparent',
                                             }}
                                         >
@@ -5197,7 +5197,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: '12px 16px',
                                     background: `${THEME.ai}12`,
                                     border: `1px solid ${THEME.ai}30`,
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 10,
@@ -5225,7 +5225,7 @@ function DemoPostgresTab({ tabId }) {
                                         gap: 8,
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.ai}30`,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                         padding: '8px 12px',
                                     }}
                                 >
@@ -5236,7 +5236,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '8px 14px',
                                         background: `${THEME.ai}20`,
                                         border: `1px solid ${THEME.ai}40`,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                         fontSize: 11,
                                         color: THEME.ai,
                                         fontWeight: 600,
@@ -5271,7 +5271,7 @@ function DemoPostgresTab({ tabId }) {
                                             style={{
                                                 padding: '12px',
                                                 background: THEME.surface,
-                                                borderRadius: 6,
+                                                borderRadius: 10,
                                                 borderLeft: `3px solid ${item.color}`,
                                             }}
                                         >
@@ -5357,7 +5357,7 @@ function DemoPostgresTab({ tabId }) {
                         <div
                             style={{
                                 padding: '5px 12px',
-                                borderRadius: 6,
+                                borderRadius: 10,
                                 fontSize: 10,
                                 fontWeight: 600,
                                 background: THEME.warning,
@@ -5570,7 +5570,7 @@ function DemoPostgresTab({ tabId }) {
                                     alignItems: 'center',
                                     padding: '8px',
                                     background: THEME.surface,
-                                    borderRadius: 4,
+                                    borderRadius: 12,
                                 }}
                             >
                                 <span style={{ fontSize: 11, color: THEME.textMain }}>Most Referenced Table</span>
@@ -5585,7 +5585,7 @@ function DemoPostgresTab({ tabId }) {
                                     alignItems: 'center',
                                     padding: '8px',
                                     background: THEME.surface,
-                                    borderRadius: 4,
+                                    borderRadius: 12,
                                 }}
                             >
                                 <span style={{ fontSize: 11, color: THEME.textMain }}>Deepest Dependency Chain</span>
@@ -5600,7 +5600,7 @@ function DemoPostgresTab({ tabId }) {
                                     alignItems: 'center',
                                     padding: '8px',
                                     background: THEME.surface,
-                                    borderRadius: 4,
+                                    borderRadius: 12,
                                 }}
                             >
                                 <span style={{ fontSize: 11, color: THEME.textMain }}>Orphan Tables</span>
@@ -5650,7 +5650,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '6px 8px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 4,
+                                        borderRadius: 12,
                                         color: THEME.textMain,
                                         fontSize: 11,
                                     }}
@@ -5671,7 +5671,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '6px 8px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 4,
+                                        borderRadius: 12,
                                         color: THEME.textMain,
                                         fontSize: 11,
                                     }}
@@ -5692,7 +5692,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '6px 8px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 4,
+                                        borderRadius: 12,
                                         color: THEME.textMain,
                                         fontSize: 11,
                                     }}
@@ -5713,7 +5713,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '6px 8px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 4,
+                                        borderRadius: 12,
                                         color: THEME.textMain,
                                         fontSize: 11,
                                     }}
@@ -5805,7 +5805,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 4,
+                                        borderRadius: 12,
                                         fontSize: 11,
                                         fontWeight: 600,
                                         color: THEME.textMain,
@@ -6121,7 +6121,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: '12px',
                                     background: `${THEME.success}15`,
                                     border: `1px solid ${THEME.success}30`,
-                                    borderRadius: 6,
+                                    borderRadius: 10,
                                     fontSize: 11,
                                     color: THEME.textMain,
                                 }}
@@ -6147,7 +6147,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         fontSize: 11,
                                         color: THEME.textMain,
                                     }}
@@ -6160,7 +6160,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         fontSize: 11,
                                         color: THEME.textMain,
                                     }}
@@ -6317,7 +6317,7 @@ function DemoPostgresTab({ tabId }) {
                             padding: '10px 14px',
                             background: `${THEME.danger}12`,
                             border: `1px solid ${THEME.danger}30`,
-                            borderRadius: 8,
+                            borderRadius: 12,
                             display: 'flex',
                             alignItems: 'center',
                             gap: 10,
@@ -6338,7 +6338,7 @@ function DemoPostgresTab({ tabId }) {
                                 padding: '4px 12px',
                                 background: `${THEME.danger}20`,
                                 border: `1px solid ${THEME.danger}40`,
-                                borderRadius: 6,
+                                borderRadius: 10,
                                 fontSize: 10,
                                 color: THEME.danger,
                                 fontWeight: 600,
@@ -6374,7 +6374,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.danger}15`,
                                                 border: `1px solid ${THEME.danger}30`,
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 fontSize: 9,
                                                 color: THEME.danger,
                                                 cursor: 'pointer',
@@ -6397,7 +6397,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.danger}15`,
                                                 border: `1px solid ${THEME.danger}30`,
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 fontSize: 9,
                                                 color: THEME.danger,
                                                 cursor: 'pointer',
@@ -6420,7 +6420,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.warning}15`,
                                                 border: `1px solid ${THEME.warning}30`,
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 fontSize: 9,
                                                 color: THEME.warning,
                                                 cursor: 'pointer',
@@ -6443,7 +6443,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.warning}15`,
                                                 border: `1px solid ${THEME.warning}30`,
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 fontSize: 9,
                                                 color: THEME.warning,
                                                 cursor: 'pointer',
@@ -6590,7 +6590,7 @@ function DemoPostgresTab({ tabId }) {
                                         style={{
                                             height: '8px',
                                             background: THEME.surface,
-                                            borderRadius: 4,
+                                            borderRadius: 12,
                                             overflow: 'hidden',
                                         }}
                                     >
@@ -6599,7 +6599,7 @@ function DemoPostgresTab({ tabId }) {
                                                 width: `${(r.current / r.max) * 100}%`,
                                                 height: '100%',
                                                 background: r.color,
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 transition: 'width 0.3s',
                                             }}
                                         />
@@ -6700,7 +6700,7 @@ function DemoPostgresTab({ tabId }) {
                             padding: '10px 14px',
                             background: `${THEME.success}12`,
                             border: `1px solid ${THEME.success}30`,
-                            borderRadius: 8,
+                            borderRadius: 12,
                             display: 'flex',
                             alignItems: 'center',
                             gap: 10,
@@ -6898,7 +6898,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.warning}20`,
                                                 border: `1px solid ${THEME.warning}30`,
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 fontSize: 9,
                                                 color: THEME.warning,
                                                 cursor: 'pointer',
@@ -6919,7 +6919,7 @@ function DemoPostgresTab({ tabId }) {
                                                 padding: '2px 8px',
                                                 background: `${THEME.warning}20`,
                                                 border: `1px solid ${THEME.warning}30`,
-                                                borderRadius: 4,
+                                                borderRadius: 12,
                                                 fontSize: 9,
                                                 color: THEME.warning,
                                                 cursor: 'pointer',
@@ -6963,7 +6963,7 @@ function DemoPostgresTab({ tabId }) {
                                         gap: 10,
                                         padding: '8px 12px',
                                         background: THEME.surface,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         borderLeft: `3px solid ${e.color}`,
                                     }}
                                 >
@@ -7052,7 +7052,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                         fontSize: 11,
                                         color: THEME.textMain,
                                     }}
@@ -7279,7 +7279,7 @@ function DemoPostgresTab({ tabId }) {
                                         gap: 8,
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         padding: '6px 10px',
                                     }}
                                 >
@@ -7295,7 +7295,7 @@ function DemoPostgresTab({ tabId }) {
                                             padding: '5px 10px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             fontSize: 10,
                                             color: THEME.textMuted,
                                             cursor: 'pointer',
@@ -7701,7 +7701,7 @@ function DemoPostgresTab({ tabId }) {
                                     style={{
                                         padding: '12px',
                                         background: THEME.surface,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                         textAlign: 'center',
                                     }}
                                 >
@@ -7819,7 +7819,7 @@ function DemoPostgresTab({ tabId }) {
                                         alignItems: 'center',
                                         padding: '10px',
                                         background: THEME.surface,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                     }}
                                 >
                                     <span style={{ fontSize: 11, color: THEME.textMain }}>{c.component}</span>
@@ -8019,7 +8019,7 @@ function DemoPostgresTab({ tabId }) {
                                     key={i}
                                     style={{
                                         padding: '6px 14px',
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         fontSize: 10,
                                         fontWeight: 600,
                                         cursor: 'pointer',
@@ -8036,7 +8036,7 @@ function DemoPostgresTab({ tabId }) {
                             style={{
                                 background: '#ffffff',
                                 border: `1px solid ${THEME.glassBorder}`,
-                                borderRadius: 6,
+                                borderRadius: 10,
                                 padding: '14px',
                                 fontFamily: THEME.fontMono,
                                 fontSize: 11.5,
@@ -8165,7 +8165,7 @@ function DemoPostgresTab({ tabId }) {
                                 gap: 8,
                                 background: THEME.surface,
                                 border: `1px solid ${THEME.glassBorder}`,
-                                borderRadius: 8,
+                                borderRadius: 12,
                                 padding: '8px 12px',
                             }}
                         >
@@ -8181,7 +8181,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: '8px 12px',
                                     background: THEME.surface,
                                     border: `1px solid ${THEME.glassBorder}`,
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     fontSize: 10,
                                     color: THEME.textMuted,
                                     whiteSpace: 'nowrap',
@@ -8576,7 +8576,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: '10px 14px',
                                     background: THEME.surface,
                                     border: `1px solid ${THEME.glassBorder}`,
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     fontSize: 11,
                                     color: THEME.textDim,
                                 }}
@@ -8588,7 +8588,7 @@ function DemoPostgresTab({ tabId }) {
                                     padding: '10px 16px',
                                     background: THEME.ai,
                                     color: '#fff',
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     fontSize: 11,
                                     fontWeight: 600,
                                     cursor: 'pointer',
@@ -8602,7 +8602,7 @@ function DemoPostgresTab({ tabId }) {
                                 padding: 12,
                                 background: `${THEME.ai}10`,
                                 border: `1px solid ${THEME.ai}30`,
-                                borderRadius: 8,
+                                borderRadius: 12,
                                 fontSize: 11,
                                 color: THEME.textMain,
                                 lineHeight: 1.6,
@@ -8661,7 +8661,7 @@ function DemoPostgresTab({ tabId }) {
                                         padding: '12px',
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                         display: 'flex',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
@@ -8710,7 +8710,7 @@ function DemoPostgresTab({ tabId }) {
                                         <div
                                             style={{
                                                 padding: '5px 10px',
-                                                borderRadius: 6,
+                                                borderRadius: 10,
                                                 fontSize: 9,
                                                 fontWeight: 600,
                                                 background: `${THEME.success}15`,
@@ -8724,7 +8724,7 @@ function DemoPostgresTab({ tabId }) {
                                         <div
                                             style={{
                                                 padding: '5px 10px',
-                                                borderRadius: 6,
+                                                borderRadius: 10,
                                                 fontSize: 9,
                                                 fontWeight: 600,
                                                 background: THEME.surface,
@@ -8835,7 +8835,7 @@ function DemoPostgresTab({ tabId }) {
                                         contentStyle={{
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                         }}
                                     />
                                     <Bar dataKey="success" fill={THEME.success} radius={[4, 4, 0, 0]} />
@@ -8993,7 +8993,7 @@ function DemoPostgresTab({ tabId }) {
                                     key={i}
                                     style={{
                                         padding: 12,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                         background: `${r.color}08`,
                                         border: `1px solid ${r.color}18`,
                                     }}
@@ -9257,7 +9257,7 @@ function DemoPostgresTab({ tabId }) {
                                     contentStyle={{
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                     }}
                                 />
                                 <Area
@@ -9307,7 +9307,7 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         style={{
                                             padding: '8px 12px',
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
                                             fontSize: 12,
@@ -9332,7 +9332,7 @@ function DemoPostgresTab({ tabId }) {
                                     <div
                                         style={{
                                             padding: '8px 12px',
-                                            borderRadius: 6,
+                                            borderRadius: 10,
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
                                             fontSize: 12,
@@ -9369,7 +9369,7 @@ function DemoPostgresTab({ tabId }) {
                                                 key={i}
                                                 style={{
                                                     padding: '10px 12px',
-                                                    borderRadius: 6,
+                                                    borderRadius: 10,
                                                     background: t.active ? `${THEME.primary}15` : THEME.surface,
                                                     border: `1px solid ${t.active ? THEME.primary : THEME.glassBorder}`,
                                                     cursor: 'pointer',
@@ -9464,7 +9464,7 @@ function DemoPostgresTab({ tabId }) {
                             style={{
                                 background: THEME.surface,
                                 border: `1px solid ${THEME.glassBorder}`,
-                                borderRadius: 6,
+                                borderRadius: 10,
                                 padding: 12,
                                 fontFamily: THEME.fontMono,
                                 fontSize: 10,
@@ -9600,7 +9600,7 @@ function DemoPostgresTab({ tabId }) {
                                     contentStyle={{
                                         background: THEME.surface,
                                         border: `1px solid ${THEME.glassBorder}`,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                     }}
                                 />
                                 <Bar dataKey="count" fill={THEME.ai} radius={[0, 4, 4, 0]} />

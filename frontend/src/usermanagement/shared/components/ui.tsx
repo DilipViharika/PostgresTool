@@ -68,9 +68,9 @@ export const Sparkline = ({ data, color = T.primary, height = 28 }) => {
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height }}>
             {data.map((v, i) => (
                 <div key={i} style={{
-                    flex: 1, minWidth: 3, borderRadius: 2,
+                    flex: 1, minWidth: 3, borderRadius: 12px,
                     height: `${(v / max) * 100}%`,
-                    background: v === 0 ? T.border : `${color}${v > max * 0.7 ? 'dd' : '66'}`,
+                    background: v === 0 ? T.glassBorder : `${color}${v > max * 0.7 ? 'dd' : '66'}`,
                     transition: 'height 0.3s',
                 }} />
             ))}
@@ -87,7 +87,7 @@ export const RiskRing = ({ score, size = 44 }) => {
     return (
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size, height: size }}>
             <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={T.border} strokeWidth="3" />
+                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={T.glassBorder} strokeWidth="3" />
                 <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="3"
                         strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
                         style={{ transition: 'stroke-dasharray 0.6s ease' }}
@@ -111,7 +111,7 @@ export const LoginHeatmap = ({ data }) => {
                     {week.map((val, di) => (
                         <div key={di} title={`${val} logins`} style={{
                             width: 12, height: 12, borderRadius: 10,
-                            background: val === 0 ? T.border
+                            background: val === 0 ? T.glassBorder
                                 : val < 3 ? `${T.primary}44`
                                     : val < 6 ? `${T.primary}88`
                                         : T.primary,
@@ -131,11 +131,11 @@ export const StatusBadge = ({ status }) => {
         inactive:  { color: T.textDim, bg: `${T.textDim}18`, dot: '○', label: 'Inactive' },
         suspended: { color: T.danger,  bg: T.dangerDim,  dot: '✕', label: 'Suspended' },
     };
-    const cfg = cfgMap[status] || { color: T.textDim, bg: T.border, dot: '?', label: status };
+    const cfg = cfgMap[status] || { color: T.textDim, bg: T.glassBorder, dot: '?', label: status };
     return (
         <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 5,
-            padding: '3px 9px', borderRadius: 6, fontSize: 11, fontWeight: 700, letterSpacing: '0.02em',
+            padding: '3px 9px', borderRadius: 12px, fontSize: 11, fontWeight: 700, letterSpacing: '0.02em',
             background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.color}30`,
         }}>
             <span style={{ fontSize: 8, animation: status === 'active' ? 'umPulse 2s infinite' : 'none' }}>
@@ -157,7 +157,7 @@ export const RoleBadge = ({ roleId, size = 'md' }) => {
             color: role.color,
             background: `${role.color}18`,
             border: `1px solid ${role.color}35`,
-            borderRadius: 5,
+            borderRadius: 12px,
             padding: sm ? '2px 6px' : '3px 8px',
         }}>
             {role.badge} {role.label}
@@ -169,7 +169,7 @@ export const RoleBadge = ({ roleId, size = 'md' }) => {
 export const MfaBadge = ({ enabled }) => (
     <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
-        padding: '3px 9px', borderRadius: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.02em',
+        padding: '3px 9px', borderRadius: 12px, fontSize: 10, fontWeight: 700, letterSpacing: '0.02em',
         background: enabled ? T.successDim : T.dangerDim,
         color:      enabled ? T.success    : T.danger,
         border:     `1px solid ${enabled ? T.success : T.danger}30`,
@@ -182,7 +182,7 @@ export const MfaBadge = ({ enabled }) => (
 /* ─── Metric / stat card ──────────────────────────────────────────────────── */
 export const StatCard = ({ label, value, sub, icon, color = T.primary, trend, sparkData, onClick }) => (
     <div onClick={onClick} style={{
-        background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14,
+        background: T.surface, border: `1px solid ${T.glassBorder}`, borderRadius: 14,
         padding: 20, cursor: onClick ? 'pointer' : 'default',
         position: 'relative', overflow: 'hidden',
         transition: 'border-color 0.2s',
@@ -194,7 +194,7 @@ export const StatCard = ({ label, value, sub, icon, color = T.primary, trend, sp
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
             <div style={{
-                width: 36, height: 36, borderRadius: 9,
+                width: 36, height: 36, borderRadius: 12px,
                 background: `${color}18`, border: `1px solid ${color}30`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
@@ -207,7 +207,7 @@ export const StatCard = ({ label, value, sub, icon, color = T.primary, trend, sp
                 </span>
             )}
         </div>
-        <div style={{ fontSize: 28, fontWeight: 800, color: T.text, letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
+        <div style={{ fontSize: 28, fontWeight: 800, color: T.textMain, letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
         <div style={{ fontSize: 12, color: T.textSub, marginTop: 4, fontWeight: 500 }}>{label}</div>
         {sub       && <div style={{ fontSize: 11, color: T.textDim, marginTop: 3 }}>{sub}</div>}
         {sparkData && <div style={{ marginTop: 12 }}><Sparkline data={sparkData} color={color} height={24} /></div>}
@@ -219,11 +219,11 @@ export const Toast = ({ toasts }) => (
     <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 600, display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
         {toasts.map(t => (
             <div key={t.id} style={{
-                padding: '12px 18px', borderRadius: 10,
+                padding: '12px 18px', borderRadius: 12px,
                 background:  t.type === 'success' ? T.successDim : t.type === 'error' ? T.dangerDim : T.primaryDim,
                 border:      `1px solid ${t.type === 'success' ? T.success : t.type === 'error' ? T.danger : T.primary}40`,
                 display: 'flex', alignItems: 'center', gap: 10,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                boxShadow: `${T.shadowMd}`,
                 animation: 'umSlideRight 0.3s ease',
                 backdropFilter: 'blur(12px)',
                 pointerEvents: 'auto',
@@ -233,7 +233,7 @@ export const Toast = ({ toasts }) => (
                     size={15}
                     color={t.type === 'success' ? T.success : t.type === 'error' ? T.danger : T.primary}
                 />
-                <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{t.message}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: T.textMain }}>{t.message}</span>
             </div>
         ))}
     </div>
@@ -246,7 +246,7 @@ export const TagFilter = ({ label, active, onClick, activeColor }) => (
         padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
         cursor: 'pointer', transition: 'all 0.15s',
         background: active ? (activeColor ? `${activeColor}15` : T.primaryDim) : 'transparent',
-        border:     `1px solid ${active ? (activeColor || T.primary) : T.border}`,
+        border:     `1px solid ${active ? (activeColor || T.primary) : T.glassBorder}`,
         color:      active ? (activeColor || T.primary) : T.textDim,
     }}>
         {label}
@@ -258,7 +258,7 @@ export const FormField = ({ label, error, required, children }) => (
     <div>
         <label style={{
             display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6,
-            color: error ? T.danger : T.textDim,
+            color: error ? T.danger : T.textMuted,
             letterSpacing: '0.02em',
         }}>
             {label}{required && <span style={{ color: T.danger, marginLeft: 3 }}>*</span>}
@@ -276,14 +276,14 @@ export const Toggle = ({ value, onChange, color = T.success }) => (
         onClick={() => onChange(!value)}
         style={{
             width: 48, height: 26, borderRadius: 13, cursor: 'pointer',
-            background: value ? color : T.border, border: 'none',
+            background: value ? color : T.glassBorder, border: 'none',
             position: 'relative', transition: 'background 0.2s',
         }}
     >
         <div style={{
             width: 20, height: 20, borderRadius: 10, background: 'white',
             position: 'absolute', top: 3, transition: 'left 0.2s',
-            left: value ? 24 : 4, boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            left: value ? 24 : 4, boxShadow: `${T.shadowSm}`,
         }} />
     </button>
 );

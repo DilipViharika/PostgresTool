@@ -45,11 +45,11 @@ const OptimizerStyles = () => (
             border: 1px solid ${THEME.grid};
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: ${THEME.shadowSm};
             transition: all 0.25s ease;
         }
         .opt-card:hover {
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            box-shadow: ${THEME.shadowMd};
         }
         .opt-card-header {
             height: 28px;
@@ -74,7 +74,7 @@ const OptimizerStyles = () => (
         }
         .opt-card-body {
             padding: 16px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
         }
         .opt-card.legacy {
             padding: 20px;
@@ -583,7 +583,7 @@ const FlameGraph = ({ plan }) => {
     flatten(plan?.Plan);
     const maxDepth = nodes.length > 0 ? Math.max(...nodes.map(n => n.depth), 0) : 0;
     const maxTime = nodes.length > 0 ? Math.max(...nodes.map(n => n.time), 1) : 1;
-    const FLAME_COLORS = [THEME.primary, THEME.warning, THEME.danger, '#818cf8', '#34d399', '#f472b6'];
+    const FLAME_COLORS = [THEME.primary, THEME.warning, THEME.danger, THEME.secondary, THEME.success, THEME.danger];
 
     return (
         <div>
@@ -712,7 +712,7 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
             {/* Header */}
             <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.grid}`, flexShrink: 0, background: `linear-gradient(135deg, ${THEME.primary}06, ${THEME.secondary || THEME.primary}04)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${THEME.primary}30, ${THEME.secondary || '#818cf8'}30)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${THEME.primary}30, ${THEME.secondary || THEME.secondary}30)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Wand2 size={15} color={THEME.primary} />
                     </div>
                     <div>
@@ -843,7 +843,7 @@ Respond ONLY with a JSON object (no markdown, no backticks) with this exact stru
                             <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: `1px solid ${THEME.success}30` }}>
                                 <pre style={{ margin: 0, padding: '12px 14px', fontSize: 11, fontFamily: 'monospace', color: THEME.success, background: `${THEME.bg}95`, whiteSpace: 'pre-wrap' }}>{rewrite.optimized_query}</pre>
                                 <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 }}>
-                                    <button onClick={() => copy(rewrite.optimized_query, 'optimized')} style={{ padding: '3px 8px', borderRadius: 14, background: `${THEME.grid}80`, border: `1px solid ${THEME.grid}`, cursor: 'pointer', color: THEME.textDim, fontSize: 9, display: 'flex', alignItems: 'center', gap: 3 }}>
+                                    <button onClick={() => copy(rewrite.optimized_query, 'optimized')} style={{ padding: '3px 8px', borderRadius: 14, background: `${THEME.grid}80`, border: `1px solid ${THEME.glassBorder}`, cursor: 'pointer', color: THEME.textDim, fontSize: 9, display: 'flex', alignItems: 'center', gap: 3 }}>
                                         {copiedSection === 'optimized' ? <Check size={9} color={THEME.success} /> : <Copy size={9} />}
                                         Copy
                                     </button>
@@ -876,7 +876,7 @@ const ServiceAttributionPanel = ({ serviceAttribution = [] }) => {
     const totalTime = safeAttribution.reduce((s, r) => s + (r?.total_time_ms || 0), 0);
     const maxCostShare = sorted.length > 0 ? Math.max(...sorted.map(s => s.cost_share || 0)) : 0;
 
-    const teamColors = { Platform: THEME.primary, Commerce: THEME.warning, Data: '#818cf8', Growth: '#34d399', Search: '#f472b6' };
+    const teamColors = { Platform: THEME.primary, Commerce: THEME.warning, Data: THEME.secondary, Growth: THEME.success, Search: THEME.danger };
 
     return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -921,7 +921,7 @@ const ServiceAttributionPanel = ({ serviceAttribution = [] }) => {
                             <div style={{ fontSize: 10, fontWeight: 700, color: THEME.textDim,  marginBottom: 8, letterSpacing: '0.02em' }}>Database Time Distribution by Service</div>
                             <div style={{ height: 32, borderRadius: 6, overflow: 'hidden', display: 'flex' }}>
                                 {sorted.map((svc, i) => {
-                                    const colors = [THEME.primary, THEME.warning, '#818cf8', '#34d399', THEME.danger, '#f472b6'];
+                                    const colors = [THEME.primary, THEME.warning, THEME.secondary, THEME.success, THEME.danger, THEME.danger];
                                     return (
                                         <div key={svc.service} title={`${svc.service}: ${svc.cost_share.toFixed(1)}%`}
                                              style={{ flex: svc.cost_share, background: colors[i % colors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'flex 0.5s ease' }}>
@@ -932,7 +932,7 @@ const ServiceAttributionPanel = ({ serviceAttribution = [] }) => {
                             </div>
                             <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
                                 {sorted.map((svc, i) => {
-                                    const colors = [THEME.primary, THEME.warning, '#818cf8', '#34d399', THEME.danger, '#f472b6'];
+                                    const colors = [THEME.primary, THEME.warning, THEME.secondary, THEME.success, THEME.danger, THEME.danger];
                                     return (
                                         <span key={svc.service} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: THEME.textDim }}>
                                             <div style={{ width: 8, height: 8, borderRadius: 2, background: colors[i % colors.length], flexShrink: 0 }} />
@@ -945,7 +945,7 @@ const ServiceAttributionPanel = ({ serviceAttribution = [] }) => {
 
                         {/* Per-service cards */}
                         {sorted.map((svc, i) => {
-                            const colors = [THEME.primary, THEME.warning, '#818cf8', '#34d399', THEME.danger, '#f472b6'];
+                            const colors = [THEME.primary, THEME.warning, THEME.secondary, THEME.success, THEME.danger, THEME.danger];
                             const c = colors[i % colors.length];
                             const teamColor = teamColors[svc.team] || THEME.textDim;
                             return (
@@ -1216,7 +1216,7 @@ const SlowQueryPanel = ({ onLoadQuery, slowQueries = [] }) => {
         .sort((a, b) => (b?.[sortBy] || 0) - (a?.[sortBy] || 0));
 
     const selected = filtered.find(q => q.id === selectedId);
-    const tagColors = { 'no-index': THEME.danger, 'seq-scan': THEME.warning, 'aggregation': THEME.primary, 'hot-table': '#818cf8', 'wide-select': THEME.warning, 'bulk-delete': THEME.danger, 'locks': THEME.danger };
+    const tagColors = { 'no-index': THEME.danger, 'seq-scan': THEME.warning, 'aggregation': THEME.primary, 'hot-table': THEME.secondary, 'wide-select': THEME.warning, 'bulk-delete': THEME.danger, 'locks': THEME.danger };
 
     return (
         <div style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
@@ -1225,9 +1225,9 @@ const SlowQueryPanel = ({ onLoadQuery, slowQueries = [] }) => {
                     <div style={{ position: 'relative', flex: 1, minWidth: 120 }}>
                         <Search size={11} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: THEME.textDim }} />
                         <input value={searchText} onChange={e => setSearchText(e.target.value)} placeholder="Search queries…"
-                               style={{ width: '100%', background: `${THEME.surface}`, border: `1px solid ${THEME.grid}`, borderRadius: 5, padding: '5px 8px 5px 26px', fontSize: 10, color: THEME.textMain, outline: 'none', boxSizing: 'border-box' }} />
+                               style={{ width: '100%', background: `${THEME.surface}`, border: `1px solid ${THEME.glassBorder}`, borderRadius: 5, padding: '5px 8px 5px 26px', fontSize: 10, color: THEME.textMain, outline: 'none', boxSizing: 'border-box' }} />
                     </div>
-                    <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 5, padding: '4px 8px', fontSize: 10, color: THEME.textMain, cursor: 'pointer' }}>
+                    <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 5, padding: '4px 8px', fontSize: 10, color: THEME.textMain, cursor: 'pointer' }}>
                         <option value="mean_time">Sort: Mean Time</option>
                         <option value="p99_time">Sort: P99 Time</option>
                         <option value="total_time">Sort: Total Time</option>
@@ -1936,7 +1936,7 @@ const QueryOptimizerTab = () => {
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <ActiveUsersBadge />
                     {result && (
-                        <button onClick={exportPlan} className="opt-btn" style={{ background: 'transparent', color: THEME.textMuted, border: `1px solid ${THEME.grid}`, padding: '5px 10px', borderRadius: 5, cursor: 'pointer', display: 'flex', gap: 5, alignItems: 'center', fontSize: 11 }}>
+                        <button onClick={exportPlan} className="opt-btn" style={{ background: 'transparent', color: THEME.textMuted, border: `1px solid ${THEME.glassBorder}`, padding: '5px 10px', borderRadius: 5, cursor: 'pointer', display: 'flex', gap: 5, alignItems: 'center', fontSize: 11 }}>
                             <Download size={12} /> Export Plan
                         </button>
                     )}
@@ -1952,7 +1952,7 @@ const QueryOptimizerTab = () => {
             {showSamples && (
                 <div style={{ padding: '8px 20px', borderBottom: `1px solid ${THEME.grid}`, background: `${THEME.surface}90`, display: 'flex', gap: 7, flexWrap: 'wrap', flexShrink: 0 }}>
                     {SAMPLE_QUERIES.map((s, i) => (
-                        <button key={i} onClick={() => { setQuery(s.sql); setShowSamples(false); }} className="opt-btn" style={{ padding: '4px 12px', borderRadius: 14, border: `1px solid ${THEME.grid}`, background: 'transparent', color: THEME.textMuted, fontSize: 10, cursor: 'pointer' }}>
+                        <button key={i} onClick={() => { setQuery(s.sql); setShowSamples(false); }} className="opt-btn" style={{ padding: '4px 12px', borderRadius: 14, border: `1px solid ${THEME.glassBorder}`, background: 'transparent', color: THEME.textMuted, fontSize: 10, cursor: 'pointer' }}>
                             {s.label}
                         </button>
                     ))}

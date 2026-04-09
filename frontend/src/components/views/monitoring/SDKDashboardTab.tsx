@@ -117,7 +117,7 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
     };
 
     const bg = THEME.surface || '#131836';
-    const border = THEME.grid || '#333';
+    const border = THEME.glassBorder || '#333';
     const txt = THEME.textMain || '#e2e8f0';
     const sub = THEME.textMuted || '#94a3b8';
     const accent = THEME.primary || '#6366f1';
@@ -186,16 +186,16 @@ const Styles = () => (
     <style>{`
         .sdk-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
-            border: 1px solid ${THEME.grid};
+            border: 1px solid ${THEME.glassBorder};
             border-radius: 14px;
             padding: 20px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: ${THEME.shadowSm};
             transition: all 0.25s ease;
         }
         .sdk-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            box-shadow: ${THEME.shadowMd};
             transform: translateY(-2px);
         }
         .sdk-card::after {
@@ -228,7 +228,7 @@ export default function SDKDashboardTab() {
 
     const bg = THEME.bg || '#0a0d1e';
     const surface = THEME.surface || '#131836';
-    const border = THEME.grid || '#333';
+    const border = THEME.glassBorder || '#333';
     const txt = THEME.textMain || '#e2e8f0';
     const sub = THEME.textMuted || '#94a3b8';
     const accent = THEME.primary || '#6366f1';

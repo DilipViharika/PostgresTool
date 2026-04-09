@@ -108,15 +108,15 @@ const AdminStyles = () => (
 
         .adm-scrollbar::-webkit-scrollbar { width:4px; height:4px; }
         .adm-scrollbar::-webkit-scrollbar-track { background:transparent; }
-        .adm-scrollbar::-webkit-scrollbar-thumb { background:${T.grid}; border-radius:2px; }
+        .adm-scrollbar::-webkit-scrollbar-thumb { background:${T.grid}; border-radius:8px; }
 
-        .adm-ext-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:10px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
+        .adm-ext-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
         .adm-ext-card:hover { border-color:${T.primary}30; }
 
         .adm-input-field:focus { outline:none; border-color:${T.primary} !important; box-shadow:0 0 0 2px ${T.primary}25; }
         .adm-spin { animation:admSpin 1s linear infinite; }
 
-        .adm-stat-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:10px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
+        .adm-stat-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
         .adm-stat-card:hover { border-color:${T.primary}30; }
         .adm-stat-section { padding:16px 20px; border-bottom:1px solid ${T.glassBorder}; }
         .adm-stat-section:last-child { border-bottom:none; }
@@ -127,7 +127,7 @@ const AdminStyles = () => (
         .adm-btn:hover { transform:translateY(-1px); }
         .adm-btn:active { transform:translateY(0); }
 
-        .adm-kbd { display:inline-flex; align-items:center; justify-content:center; padding:1px 5px; border-radius:4px; font-size:9px; font-weight:700; background:${T.surface}; border:1px solid ${T.border}; color:${T.textDim}; font-family:${T.fontMono}; }
+        .adm-kbd { display:inline-flex; align-items:center; justify-content:center; padding:1px 5px; border-radius:6px; font-size:9px; font-weight:700; background:${T.surface}; border:1px solid ${T.glassBorder}; color:${T.textDim}; font-family:${T.fontMono}; }
 
         .adm-tooltip { position:relative; }
         .adm-tooltip:hover .adm-tooltip-content { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
@@ -146,9 +146,9 @@ const AdminStyles = () => (
             background-size: 24px 24px;
         }
 
-        .adm-segment-bar { position:relative; overflow:hidden; border-radius:4px; }
+        .adm-segment-bar { position:relative; overflow:hidden; border-radius:8px; }
 
-        .adm-heatmap-cell { transition:all 0.2s; border-radius:3px; }
+        .adm-heatmap-cell { transition:all 0.2s; border-radius:6px; }
         .adm-heatmap-cell:hover { transform:scale(1.3); z-index:2; position:relative; }
 
         .panel-glow { box-shadow:0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06); }

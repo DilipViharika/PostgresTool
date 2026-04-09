@@ -18,33 +18,33 @@ const Styles = () => (
         @keyframes qrFade  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes qrPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
         @keyframes qrSlide { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
-        .qr-card        { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); transition:all 0.25s ease; animation:qrFade .3s ease; }
-        .qr-card:hover  { box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+        .qr-card        { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; overflow:hidden; box-shadow:${THEME.shadowSm}; transition:all 0.25s ease; animation:qrFade .3s ease; }
+        .qr-card:hover  { box-shadow:${THEME.shadowMd}; }
         .qr-card-header { height:28px; background:${THEME.textMain}0a; display:flex; align-items:center; padding:0 12px; gap:6px; border-bottom:1px solid ${THEME.glassBorder}; }
         .qr-card-dot    { width:8px; height:8px; border-radius:50%; }
         .qr-card-title  { font-family:'JetBrains Mono','Fira Code',monospace; font-size:11px; color:${THEME.textMuted}; margin-left:8px; letter-spacing:0.03em; }
-        .qr-card-body   { padding:16px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02); }
+        .qr-card-body   { padding:16px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.05); }
         .qr-card.legacy { padding:20px; }
         .qr-metric      { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
-        .qr-badge       { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:700; }
-        .qr-textarea    { width:100%; background:${THEME.bg}90; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:8px; padding:12px; font-family:${THEME.fontMono}; font-size:12px; outline:none; resize:vertical; line-height:1.6; box-sizing:border-box; }
+        .qr-badge       { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:10px; font-size:11px; font-weight:700; }
+        .qr-textarea    { width:100%; background:${THEME.bg}90; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:12px; padding:12px; font-family:${THEME.fontMono}; font-size:12px; outline:none; resize:vertical; line-height:1.6; box-sizing:border-box; }
         .qr-textarea:focus { border-color:${THEME.primary}60; }
-        .qr-btn         { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; border:none; }
+        .qr-btn         { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; border:none; }
         .qr-btn:hover   { filter:brightness(1.1); }
         .qr-btn:disabled{ opacity:.45; cursor:not-allowed; filter:none; }
         .qr-baseline-row { padding:14px 16px; border-bottom:1px solid ${THEME.grid}20; display:flex; align-items:center; gap:12px; font-size:12px; transition:background .15s; }
         .qr-baseline-row:last-child { border-bottom:none; }
         .qr-baseline-row:hover { background:${THEME.primary}05; }
-        .qr-plan-box    { background:${THEME.bg}; border:1px solid ${THEME.grid}; border-radius:8px; padding:14px; font-family:${THEME.fontMono}; font-size:11px; color:${THEME.textMuted}; white-space:pre-wrap; overflow-x:auto; max-height:320px; overflow-y:auto; line-height:1.7; }
-        .qr-tab-btn     { display:flex; align-items:center; gap:7px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; }
+        .qr-plan-box    { background:${THEME.bg}; border:1px solid ${THEME.grid}; border-radius:12px; padding:14px; font-family:${THEME.fontMono}; font-size:11px; color:${THEME.textMuted}; white-space:pre-wrap; overflow-x:auto; max-height:320px; overflow-y:auto; line-height:1.7; }
+        .qr-tab-btn     { display:flex; align-items:center; gap:7px; padding:8px 16px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; }
         .qr-tab-btn.active { border-color:${THEME.primary}!important; background:${THEME.primary}12!important; color:${THEME.primary}!important; }
         .qr-watcher-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
         .qr-watcher-dot.active { background:${THEME.success}; animation:qrPulse 1.5s ease-in-out infinite; box-shadow:0 0 6px ${THEME.success}; }
         .qr-watcher-dot.inactive { background:${THEME.textDim}; }
         .qr-deploy-label { font-size:10px; font-weight:700; fill:${THEME.warning}; }
-        .qr-input { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:8px; padding:8px 12px; font-size:13px; outline:none; width:100%; box-sizing:border-box; }
+        .qr-input { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:12px; padding:8px 12px; font-size:13px; outline:none; width:100%; box-sizing:border-box; }
         .qr-input:focus { border-color:${THEME.primary}60; }
-        .qr-select { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:8px; padding:8px 12px; font-size:13px; outline:none; cursor:pointer; }
+        .qr-select { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:12px; padding:8px 12px; font-size:13px; outline:none; cursor:pointer; }
         .qr-section-label { font-size:11px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; display:block; }
     `}</style>
 );
@@ -109,7 +109,7 @@ const PlanTree = ({ plan, title, accent }) => {
     return (
         <div style={{ flex: 1 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 8,  letterSpacing: .5 }}>{title}</div>
-            <div style={{ background: THEME.bg, border: `1px solid ${THEME.grid}`, borderRadius: 8, padding: 12, maxHeight: 280, overflowY: 'auto' }}>
+            <div style={{ background: THEME.bg, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: 12, maxHeight: 280, overflowY: 'auto' }}>
                 {renderNode(node)}
             </div>
         </div>
@@ -122,7 +122,7 @@ const DeployTooltip = ({ x, y, payload, deployEvents }) => {
     const ts = payload[0]?.payload?.ts;
     const deploy = deployEvents?.find(d => Math.abs(new Date(d.ts) - new Date(ts)) < 60000 * 30);
     return (
-        <div style={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8, padding: '10px 14px', fontSize: 12 }}>
+        <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '10px 14px', fontSize: 12 }}>
             <div style={{ color: THEME.textMain, fontWeight: 700 }}>{fmtShortDate(ts)}</div>
             {payload.map(p => (
                 <div key={p.dataKey} style={{ color: p.color, marginTop: 4 }}>
@@ -231,7 +231,7 @@ const PlanRatioChart = ({ ratioHistory }) => {
                 <XAxis dataKey="label" tick={{ fontSize: 10, fill: THEME.textDim }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: THEME.textDim }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} domain={[0, 100]} />
                 <Tooltip
-                    contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8, fontSize: 12 }}
+                    contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, fontSize: 12 }}
                     formatter={(v, name) => [`${v.toFixed(1)}%`, name]}
                 />
                 <Legend iconType="square" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
@@ -296,7 +296,7 @@ const AutoWatcherPanel = ({ watcherConfig, setWatcherConfig, watcherActive, setW
                     </div>
                     <div>
                         <label className="qr-section-label">Queries to Watch</label>
-                        <div style={{ fontSize: 12, color: THEME.textMuted, padding: '8px 12px', background: `${THEME.bg}`, border: `1px solid ${THEME.grid}`, borderRadius: 8 }}>
+                        <div style={{ fontSize: 12, color: THEME.textMuted, padding: '8px 12px', background: `${THEME.bg}`, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8 }}>
                             {baselines.length === 0 ? 'No baselines yet' : `All ${baselines.length} stored baseline${baselines.length !== 1 ? 's' : ''}`}
                         </div>
                     </div>
@@ -526,7 +526,7 @@ export default function QueryPlanRegressionTab() {
             <Styles />
 
             {/* ── Header ── */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.grid}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.glassBorder}` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <TrendingUp size={20} color={THEME.primary} />
                     <span style={{ fontWeight: 700, fontSize: 15, color: THEME.textMain }}>Query Plan Regression Detection</span>
@@ -762,7 +762,7 @@ export default function QueryPlanRegressionTab() {
                                 { title: 'Alert condition', desc: 'A custom→generic switch is flagged as a soft regression. The cost may look similar but generic plans can be catastrophic for skewed data.' },
                                 { title: 'Fix strategies', desc: 'Run ANALYZE to refresh statistics, force custom plan via plan_cache_mode, or use pg_hint_plan to pin the preferred join order.' },
                             ].map(({ title, desc }) => (
-                                <div key={title} style={{ padding: '12px 14px', background: `${THEME.bg}60`, borderRadius: 8, border: `1px solid ${THEME.grid}` }}>
+                                <div key={title} style={{ padding: '12px 14px', background: `${THEME.bg}60`, borderRadius: 8, border: `1px solid ${THEME.glassBorder}` }}>
                                     <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 6 }}>{title}</div>
                                     <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.6 }}>{desc}</div>
                                 </div>
@@ -826,7 +826,7 @@ export default function QueryPlanRegressionTab() {
                                 { step: '3. Alert',    desc: 'Fires an in-app notification banner. Optional webhook/Slack/email when configured.' },
                                 { step: '4. Log',      desc: 'All watcher check results are appended to the timeline for trend analysis.' },
                             ].map(({ step, desc }) => (
-                                <div key={step} style={{ padding: '12px 14px', background: `${THEME.bg}60`, borderRadius: 8, border: `1px solid ${THEME.grid}` }}>
+                                <div key={step} style={{ padding: '12px 14px', background: `${THEME.bg}60`, borderRadius: 8, border: `1px solid ${THEME.glassBorder}` }}>
                                     <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 6 }}>{step}</div>
                                     <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.6 }}>{desc}</div>
                                 </div>
@@ -880,7 +880,7 @@ export default function QueryPlanRegressionTab() {
                         { step: '2. Compare Later',     desc: 'After schema changes, new indexes, or PostgreSQL upgrades, compare the current plan against the baseline. A >20% cost increase flags a regression.' },
                         { step: '3. Investigate',       desc: 'Side-by-side plan trees show exactly which nodes changed — e.g. a sequential scan replacing an index scan signals a missing or bloated index.' },
                     ].map(({ step, desc }) => (
-                        <div key={step} style={{ padding: '12px 14px', background: `${THEME.bg}60`, borderRadius: 8, border: `1px solid ${THEME.grid}` }}>
+                        <div key={step} style={{ padding: '12px 14px', background: `${THEME.bg}60`, borderRadius: 8, border: `1px solid ${THEME.glassBorder}` }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primary, marginBottom: 6 }}>{step}</div>
                             <div style={{ fontSize: 11, color: THEME.textMuted, lineHeight: 1.6 }}>{desc}</div>
                         </div>

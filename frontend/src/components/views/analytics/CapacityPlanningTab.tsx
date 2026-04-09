@@ -51,7 +51,7 @@ const CapStyles = () => (
             font-size: 11px;
             font-weight: 700;
             padding: 4px 8px;
-            border-radius: 6px;
+            border-radius: 10px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -59,10 +59,10 @@ const CapStyles = () => (
 
         .scenario-input {
             background: ${THEME.bg};
-            border: 1px solid ${THEME.border};
+            border: 1px solid ${THEME.glassBorder};
             color: ${THEME.textMain};
             padding: 8px;
-            border-radius: 6px;
+            border-radius: 10px;
             width: 100%;
             font-size: 12px;
             box-sizing: border-box;
@@ -70,9 +70,9 @@ const CapStyles = () => (
 
         .rec-item {
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 12px;
             background: ${THEME.surfaceHigh};
-            border: 1px solid ${THEME.border};
+            border: 1px solid ${THEME.glassBorder};
             margin-bottom: 8px;
         }
 
@@ -81,11 +81,11 @@ const CapStyles = () => (
 
         .window-btn {
             padding: 4px 10px;
-            border-radius: 4px;
+            border-radius: 12px;
             font-size: 11px;
             font-weight: 600;
             cursor: pointer;
-            border: 1px solid ${THEME.border};
+            border: 1px solid ${THEME.glassBorder};
             transition: all 0.15s ease;
         }
         .window-btn.active {
@@ -191,7 +191,7 @@ const GaugeBar = ({ used, total, color, unit = '' }) => {
                 <span>{used}{unit} used</span>
                 <span style={{ color: barColor, fontWeight: 700 }}>{pct}%</span>
             </div>
-            <div style={{ height: 4, background: THEME.border, borderRadius: 4 }}>
+            <div style={{ height: 4, background: THEME.glassBorder, borderRadius: 4 }}>
                 <div style={{
                     width: `${pct}%`, height: '100%',
                     background: barColor, borderRadius: 14,
@@ -250,7 +250,7 @@ const RecommendationCard = ({ rec }) => {
                     {showTip && (
                         <div style={{
                             position: 'absolute', bottom: '120%', right: 0,
-                            background: THEME.surfaceHigh, border: `1px solid ${THEME.border}`,
+                            background: THEME.surfaceHigh, border: `1px solid ${THEME.glassBorder}`,
                             borderRadius: 6, padding: '8px 10px', fontSize: 11,
                             color: THEME.textDim, width: 220, zIndex: 10,
                             lineHeight: 1.5, boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
@@ -260,7 +260,7 @@ const RecommendationCard = ({ rec }) => {
                     )}
                     <button
                         className="action-btn"
-                        style={{ padding: '4px 10px', borderRadius: 14, background: THEME.bg, border: `1px solid ${THEME.border}`, color: THEME.textMain, fontSize: 10, cursor: 'pointer' }}
+                        style={{ padding: '4px 10px', borderRadius: 14, background: THEME.bg, border: `1px solid ${THEME.glassBorder}`, color: THEME.textMain, fontSize: 10, cursor: 'pointer' }}
                     >
                         {rec.action}
                     </button>
@@ -367,7 +367,7 @@ const CapacityPlanningTab = () => {
                     <button
                         className="export-btn"
                         onClick={exportForecast}
-                        style={{ background: THEME.surface, color: THEME.textMain, border: `1px solid ${THEME.border}`, padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', gap: 6, alignItems: 'center' }}
+                        style={{ background: THEME.surface, color: THEME.textMain, border: `1px solid ${THEME.glassBorder}`, padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', gap: 6, alignItems: 'center' }}
                     >
                         <Database size={14} /> Export CSV
                     </button>
@@ -429,10 +429,10 @@ const CapacityPlanningTab = () => {
                             <div style={{ height: 250, width: '100%' }}>
                                 <ResponsiveContainer>
                                     <ComposedChart data={storageData}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} vertical={false} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} vertical={false} />
                                         <XAxis dataKey="date" hide />
                                         <YAxis stroke={THEME.textDim} fontSize={10} unit="GB" />
-                                        <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.border}` }} />
+                                        <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}` }} />
                                         <Legend wrapperStyle={{ fontSize: 11 }} />
                                         <Area type="monotone" dataKey="used" stroke={THEME.primary} fill={`${THEME.primary}20`} strokeWidth={2} name="History" />
                                         <Line type="monotone" dataKey="predicted" stroke={THEME.warning} strokeDasharray="5 5" strokeWidth={2} name="Forecast" dot={false} />
@@ -465,10 +465,10 @@ const CapacityPlanningTab = () => {
                                                 <stop offset="95%" stopColor={THEME.info} stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} vertical={false} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} vertical={false} />
                                         <XAxis dataKey="time" stroke={THEME.textDim} fontSize={10} interval={4} />
                                         <YAxis stroke={THEME.textDim} fontSize={10} />
-                                        <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.border}` }} />
+                                        <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}` }} />
                                         <Area type="monotone" dataKey="connections" stroke={THEME.info} fill="url(#colorConn)" strokeWidth={2} name="Connections" />
                                         <ReferenceLine y={200} label="Max Conns" stroke={THEME.danger} />
                                         <ReferenceLine
@@ -496,12 +496,12 @@ const CapacityPlanningTab = () => {
                             <div style={{ height: 180, width: '100%' }}>
                                 <ResponsiveContainer>
                                     <ComposedChart data={costData}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.grid} vertical={false} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={THEME.glassBorder} vertical={false} />
                                         <XAxis dataKey="month" stroke={THEME.textDim} fontSize={10} />
                                         <YAxis stroke={THEME.textDim} fontSize={10} tickFormatter={v => `$${v}`} />
                                         <Tooltip
                                             formatter={v => [`$${v}`, 'Cost']}
-                                            contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+                                            contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}` }}
                                         />
                                         <Bar dataKey="cost" fill={THEME.primary} radius={[4, 4, 0, 0]} name="Cost" />
                                         <ReferenceLine y={482.50} stroke={THEME.warning} strokeDasharray="4 4" label="Current" />

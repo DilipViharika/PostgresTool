@@ -43,21 +43,21 @@ const Styles: FC = () => (
         .up-card-section:last-child { border-bottom:none; }
         .up-card-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:${THEME.textMuted}; margin-bottom:12px; }
         .up-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .up-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.grid}; border-radius:8px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .up-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
         .up-input:focus { outline:none; border-color:${THEME.primary}; }
-        .up-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:8px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
+        .up-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:10px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
         .up-button:hover { background:${THEME.primaryLight}; }
         .up-button-secondary { background:${THEME.secondary}; }
         .up-button-secondary:hover { background:${THEME.primary}; }
         .up-spinner { animation:upSpin 1s linear infinite; }
         .up-avatar { width:80px; height:80px; border-radius:50%; background:${THEME.primary}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:24px; color:${THEME.textInverse}; }
         .up-toggle { display:flex; align-items:center; gap:10px; padding:10px 0; }
-        .up-toggle-switch { width:40px; height:24px; background:${THEME.grid}; border-radius:12px; position:relative; cursor:pointer; }
+        .up-toggle-switch { width:40px; height:24px; background:${THEME.glassBorder}; border-radius:12px; position:relative; cursor:pointer; }
         .up-toggle-switch.on { background:${THEME.success}; }
         .up-toggle-switch span { width:20px; height:20px; background:white; border-radius:50%; position:absolute; top:2px; left:2px; transition:left 0.2s; }
         .up-toggle-switch.on span { left:18px; }
         .up-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-        .up-activity-item { background:${THEME.surfaceHover}; border-left:3px solid ${THEME.primary}; border-radius:6px; padding:12px 16px; margin-bottom:10px; }
+        .up-activity-item { background:${THEME.surfaceHover}; border-left:3px solid ${THEME.primary}; border-radius:10px; padding:12px 16px; margin-bottom:10px; }
         .up-activity-time { font-size:11px; color:${THEME.textMuted}; text-transform:uppercase; }
         .up-activity-action { font-weight:600; color:${THEME.textMain}; margin:4px 0; }
         .up-activity-desc { font-size:12px; color:${THEME.textMuted}; }

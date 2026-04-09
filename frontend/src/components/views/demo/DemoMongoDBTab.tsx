@@ -1890,7 +1890,7 @@ function DemoMongoDBTab({ tabId }) {
                                             marginTop: 16,
                                             padding: 12,
                                             background: THEME.surface,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                             border: `1px solid ${THEME.glassBorder}`,
                                             fontFamily: THEME.fontMono,
                                             fontSize: 11,
@@ -1927,7 +1927,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 12,
                                                     background: `${THEME.primary}08`,
                                                     borderLeft: `3px solid ${THEME.primary}`,
-                                                    borderRadius: 6,
+                                                    borderRadius: 10,
                                                     fontSize: 12,
                                                 }}
                                             >
@@ -2038,7 +2038,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 padding: 12,
                                                 background: `${THEME.danger}08`,
                                                 borderLeft: `3px solid ${THEME.danger}`,
-                                                borderRadius: 6,
+                                                borderRadius: 10,
                                             }}
                                         >
                                             <div
@@ -2398,7 +2398,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 12,
                                                     background: `${a.severity === 'high' ? THEME.danger : THEME.warning}08`,
                                                     borderLeft: `3px solid ${a.severity === 'high' ? THEME.danger : THEME.warning}`,
-                                                    borderRadius: 6,
+                                                    borderRadius: 10,
                                                     fontSize: 11,
                                                 }}
                                             >
@@ -2616,7 +2616,7 @@ function DemoMongoDBTab({ tabId }) {
                                         marginTop: 16,
                                         padding: 12,
                                         background: THEME.surface,
-                                        borderRadius: 8,
+                                        borderRadius: 12,
                                         borderLeft: `3px solid ${THEME.success}`,
                                     }}
                                 >
@@ -2973,7 +2973,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 12,
                                                     background: THEME.surface,
                                                     border: `1px solid ${THEME.glassBorder}`,
-                                                    borderRadius: 6,
+                                                    borderRadius: 10,
                                                     borderLeft: `3px solid ${b.status === 'SUCCESS' ? THEME.success : THEME.danger}`,
                                                 }}
                                             >
@@ -3363,7 +3363,7 @@ function DemoMongoDBTab({ tabId }) {
                                             marginTop: 16,
                                             padding: 12,
                                             background: THEME.surface,
-                                            borderRadius: 8,
+                                            borderRadius: 12,
                                             border: `1px solid ${THEME.glassBorder}`,
                                             fontFamily: THEME.fontMono,
                                             fontSize: 10,
@@ -3420,7 +3420,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 12,
                                                     background: `${THEME.primary}08`,
                                                     borderLeft: `3px solid ${THEME.primary}`,
-                                                    borderRadius: 6,
+                                                    borderRadius: 10,
                                                     fontFamily: THEME.fontMono,
                                                     fontSize: 11,
                                                 }}
@@ -3524,7 +3524,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 style={{
                                                     padding: 12,
                                                     background: THEME.surface,
-                                                    borderRadius: 8,
+                                                    borderRadius: 12,
                                                     border: `1px solid ${THEME.glassBorder}`,
                                                 }}
                                             >
@@ -3558,7 +3558,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         color: THEME.textMuted,
                                                         background: THEME.surface,
                                                         padding: 8,
-                                                        borderRadius: 4,
+                                                        borderRadius: 12,
                                                         wordBreak: 'break-word',
                                                     }}
                                                 >
@@ -3670,7 +3670,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 style={{
                                                     padding: 12,
                                                     background: THEME.surface,
-                                                    borderRadius: 8,
+                                                    borderRadius: 12,
                                                     border: `1px solid ${THEME.glassBorder}`,
                                                 }}
                                             >
@@ -3691,7 +3691,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         color: THEME.textMuted,
                                                         background: THEME.surface,
                                                         padding: 8,
-                                                        borderRadius: 4,
+                                                        borderRadius: 12,
                                                         marginBottom: 10,
                                                         wordBreak: 'break-word',
                                                     }}
@@ -3715,7 +3715,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         color: THEME.success,
                                                         background: THEME.surface,
                                                         padding: 8,
-                                                        borderRadius: 4,
+                                                        borderRadius: 12,
                                                         wordBreak: 'break-word',
                                                     }}
                                                 >
@@ -3899,7 +3899,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 12,
                                                     background: `${THEME.ai}08`,
                                                     borderLeft: `3px solid ${THEME.ai}`,
-                                                    borderRadius: 6,
+                                                    borderRadius: 10,
                                                     fontSize: 11,
                                                 }}
                                             >
@@ -4172,7 +4172,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 style={{
                                                     padding: 12,
                                                     background: THEME.surface,
-                                                    borderRadius: 6,
+                                                    borderRadius: 10,
                                                     border: `1px solid ${THEME.glassBorder}`,
                                                     borderLeft: `3px solid ${i === 0 ? THEME.danger : i === 1 ? THEME.warning : THEME.info || THEME.primary}`,
                                                 }}
@@ -4300,7 +4300,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 style={{
                                                     padding: 12,
                                                     background: THEME.surface,
-                                                    borderRadius: 6,
+                                                    borderRadius: 10,
                                                     border: `1px solid ${THEME.glassBorder}`,
                                                 }}
                                             >
@@ -4330,7 +4330,7 @@ function DemoMongoDBTab({ tabId }) {
                                                                     s === trace.bottleneck
                                                                         ? `${THEME.danger}20`
                                                                         : `${THEME.primary}15`,
-                                                                borderRadius: 4,
+                                                                borderRadius: 12,
                                                                 color:
                                                                     s === trace.bottleneck
                                                                         ? THEME.danger
@@ -4397,7 +4397,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 style={{
                                                     padding: 12,
                                                     background: THEME.surface,
-                                                    borderRadius: 6,
+                                                    borderRadius: 10,
                                                     border: `1px solid ${THEME.glassBorder}`,
                                                     borderLeft: `3px solid ${replica.role === 'PRIMARY' ? THEME.success : THEME.info || THEME.primary}`,
                                                 }}
@@ -4536,7 +4536,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 10,
                                                     background: `${THEME.success}08`,
                                                     borderLeft: `3px solid ${THEME.success}`,
-                                                    borderRadius: 6,
+                                                    borderRadius: 10,
                                                     fontSize: 11,
                                                 }}
                                             >

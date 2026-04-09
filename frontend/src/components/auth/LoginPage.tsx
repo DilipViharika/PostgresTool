@@ -71,14 +71,15 @@ const STYLES = `
   .vdb-input:focus {
     outline: none;
     border-color: ${THEME.primary} !important;
-    box-shadow: 0 0 0 4px ${THEME.primaryFaint}, 0 1px 3px rgba(0,0,0,0.04) !important;
-    background: #fff !important;
+    box-shadow: 0 0 0 4px ${THEME.primary}0a, 0 1px 3px rgba(0,0,0,0.04) !important;
+    background: ${THEME.surfaceRaised} !important;
   }
   .vdb-input::placeholder { color: ${THEME.textDim}; font-weight: 400; }
+  .vdb-input { color: ${THEME.textMain}; background: ${THEME.surfaceHover}; }
   .vdb-input:-webkit-autofill,
   .vdb-input:-webkit-autofill:hover,
   .vdb-input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px ${THEME.surfaceHover} inset !important;
+    -webkit-box-shadow: 0 0 0 1000px ${THEME.surfaceRaised} inset !important;
     -webkit-text-fill-color: ${THEME.textMain} !important;
     caret-color: ${THEME.textMain};
     transition: background-color 5000s ease-in-out 0s;
@@ -91,7 +92,7 @@ const STYLES = `
   .vdb-submit:not(:disabled):active { transform: translateY(0) !important; }
   .vdb-forgot:hover { color: ${THEME.primary} !important; }
   .vdb-toggle:hover {
-    background: rgba(255,255,255,0.12) !important;
+    background: ${THEME.surfaceHover} !important;
     transform: scale(1.1) rotate(15deg) !important;
   }
 
@@ -300,7 +301,7 @@ const LoginPage = () => {
             }}>
                 <div className="vdb-container" style={{
                     display: 'flex', width: '100%', height: '100%',
-                    background: 'rgba(255,255,255,0.92)',
+                    background: THEME.surfaceRaised,
                     overflow: 'hidden',
                     animation: 'containerIn 0.8s cubic-bezier(0.16,1,0.3,1) both',
                 }}>
@@ -309,15 +310,15 @@ const LoginPage = () => {
                     <div className="vdb-brand" style={{
                         flex: 1, position: 'relative',
                         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                        padding: '36px 36px', overflow: 'hidden', color: '#fff',
-                        background: 'linear-gradient(145deg, #0b2030 0%, #0e2a3e 40%, #102535 100%)',
+                        padding: '36px 36px', overflow: 'hidden', color: THEME.textMain,
+                        background: `linear-gradient(145deg, ${THEME.bg} 0%, ${THEME.surface} 40%, ${THEME.bgAlt} 100%)`,
                     }}>
                         {/* Glow overlays */}
                         <div style={{
                             position: 'absolute', inset: 0, pointerEvents: 'none',
                             background: `
-                                radial-gradient(ellipse 60% 50% at 20% 20%, rgba(129,140,248,0.12), transparent 60%),
-                                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(71,179,255,0.08), transparent 60%)`,
+                                radial-gradient(ellipse 60% 50% at 20% 20%, ${THEME.primary}20, transparent 60%),
+                                radial-gradient(ellipse 50% 40% at 80% 80%, ${THEME.info}14, transparent 60%)`,
                         }} />
 
                         {/* Top content */}
@@ -325,20 +326,20 @@ const LoginPage = () => {
                             {/* Logo */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
                                 <div style={{
-                                    width: 42, height: 42, borderRadius: 12,
-                                    background: 'linear-gradient(135deg, #818cf8, #6366f1)',
+                                    width: 42, height: 42, borderRadius: THEME.radiusMd,
+                                    background: `linear-gradient(135deg, ${THEME.primaryLight}, ${THEME.primary})`,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    boxShadow: '0 8px 32px rgba(129,140,248,0.3)', position: 'relative',
+                                    boxShadow: `0 8px 32px ${THEME.primary}4d`, position: 'relative',
                                 }}>
-                                    <Server size={20} color="#fff" strokeWidth={1.5} style={{ position: 'relative', zIndex: 1 }} />
+                                    <Server size={20} color={THEME.textMain} strokeWidth={1.5} style={{ position: 'relative', zIndex: 1 }} />
                                     <div style={{
-                                        position: 'absolute', inset: 0, borderRadius: 12,
-                                        background: 'linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.22))',
+                                        position: 'absolute', inset: 0, borderRadius: THEME.radiusMd,
+                                        background: `linear-gradient(135deg, transparent 40%, ${THEME.textMain}38)`,
                                     }} />
                                 </div>
                                 <span style={{
                                     fontWeight: 800, fontSize: '1.3rem', letterSpacing: 3,
-                                    background: 'linear-gradient(135deg, #818cf8, #47b3ff)',
+                                    background: `linear-gradient(135deg, ${THEME.primaryLight}, ${THEME.info})`,
                                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                 }}>VIGIL</span>
                             </div>
@@ -346,18 +347,18 @@ const LoginPage = () => {
                             {/* Headline */}
                             <h1 style={{
                                 fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2,
-                                letterSpacing: -0.5, marginBottom: 12, color: '#fff',
+                                letterSpacing: -0.5, marginBottom: 12, color: THEME.textMain,
                                 whiteSpace: 'nowrap',
                                 animation: 'textIn 0.8s ease-out 0.3s both',
                             }}>
                                 Your databases, <span style={{
-                                    background: 'linear-gradient(135deg, #818cf8, rgba(129,140,248,0.6))',
+                                    background: `linear-gradient(135deg, ${THEME.primaryLight}, ${THEME.primary}99)`,
                                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                 }}>under control.</span>
                             </h1>
 
                             <p style={{
-                                fontSize: '0.82rem', color: 'rgba(255,255,255,0.55)',
+                                fontSize: '0.82rem', color: THEME.textMuted,
                                 lineHeight: 1.6, maxWidth: 420,
                                 animation: 'textIn 0.8s ease-out 0.45s both',
                             }}>
@@ -379,14 +380,14 @@ const LoginPage = () => {
                                 ].map((f, i) => (
                                     <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                                         <div style={{
-                                            width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                                            background: 'rgba(129,140,248,0.08)', border: '1px solid rgba(129,140,248,0.12)',
+                                            width: 32, height: 32, borderRadius: THEME.radiusSm, flexShrink: 0,
+                                            background: `${THEME.primary}14`, border: `1px solid ${THEME.primary}20`,
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             fontSize: '0.85rem',
                                         }}>{f.icon}</div>
                                         <div>
-                                            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', marginBottom: 2 }}>{f.title}</div>
-                                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.4 }}>{f.desc}</div>
+                                            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: THEME.textMain, marginBottom: 2 }}>{f.title}</div>
+                                            <div style={{ fontSize: '0.72rem', color: THEME.textMuted, lineHeight: 1.4 }}>{f.desc}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -407,8 +408,8 @@ const LoginPage = () => {
                                 { value: '12K+', label: 'Databases' },
                             ].map(s => (
                                 <div key={s.label}>
-                                    <div style={{ fontFamily: fontMono, fontWeight: 700, fontSize: '1.15rem', color: THEME.primaryLight }}>{s.value}</div>
-                                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>{s.label}</div>
+                                    <div style={{ fontFamily: fontMono, fontWeight: 700, fontSize: '1.15rem', color: THEME.primary }}>{s.value}</div>
+                                    <div style={{ fontSize: '0.68rem', color: THEME.textMuted, marginTop: 1 }}>{s.label}</div>
                                 </div>
                             ))}
                         </div>
@@ -417,16 +418,16 @@ const LoginPage = () => {
                     {/* ═══ RIGHT — FORM PANEL ═══ */}
                     <div className="vdb-form" style={{
                         flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                        padding: '32px 44px', position: 'relative', background: '#ffffff', overflowY: 'auto',
+                        padding: '32px 44px', position: 'relative', background: THEME.surfaceRaised, overflowY: 'auto',
                     }}>
                         {/* Title */}
                         <h2 style={{
-                            fontSize: '1.45rem', fontWeight: 800, color: '#1a1e2e',
+                            fontSize: '1.45rem', fontWeight: 800, color: THEME.textMain,
                             marginBottom: 4, letterSpacing: -0.3, textAlign: 'center',
                             animation: 'textIn 0.6s ease-out 0.2s both',
                         }}>Welcome back</h2>
                         <p style={{
-                            color: '#9198ae', fontSize: '0.85rem', marginBottom: 20, textAlign: 'center',
+                            color: THEME.textMuted, fontSize: '0.85rem', marginBottom: 20, textAlign: 'center',
                             animation: 'textIn 0.6s ease-out 0.3s both',
                         }}>
                             Sign in to your command center
@@ -440,8 +441,8 @@ const LoginPage = () => {
                         {/* Error */}
                         {(error || rateLimitError) && (
                             <div style={{
-                                marginBottom: 16, padding: '11px 14px', borderRadius: 10,
-                                background: 'rgba(229,62,92,0.07)', border: '1px solid rgba(229,62,92,0.2)',
+                                marginBottom: 16, padding: '11px 14px', borderRadius: THEME.radiusMd,
+                                background: `${THEME.danger}0f`, border: `1px solid ${THEME.danger}20`,
                                 display: 'flex', alignItems: 'center', gap: 10,
                                 animation: shake ? 'shake .5s ease' : 'none',
                             }}>
@@ -454,20 +455,20 @@ const LoginPage = () => {
                             {/* Username */}
                             <div style={{ marginBottom: 14, animation: 'textIn 0.6s ease-out 0.42s both' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5a6078', letterSpacing: 0.2 }}>Username</label>
+                                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: THEME.textMuted, letterSpacing: 0.2 }}>Username</label>
                                 </div>
                                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                    <User size={18} color="#b8bdd0" strokeWidth={1.5} style={{ position: 'absolute', left: 15, pointerEvents: 'none', transition: 'color 0.3s' }} />
+                                    <User size={18} color={THEME.textDim} strokeWidth={1.5} style={{ position: 'absolute', left: 15, pointerEvents: 'none', transition: 'color 0.3s' }} />
                                     <input ref={userRef} className="vdb-input" type="text" value={username}
                                         onChange={e => setUsername(e.target.value)} placeholder="Enter username"
                                         autoComplete="username" disabled={authLoading}
                                         style={{
                                             width: '100%', padding: '11px 16px 11px 44px',
-                                            background: '#f3f4f8', border: '1.5px solid rgba(0,0,0,0.08)',
-                                            borderRadius: 10, color: '#1a1e2e', fontFamily: fontDisplay,
+                                            background: THEME.surfaceHover, border: `1.5px solid ${THEME.glassBorder}`,
+                                            borderRadius: THEME.radiusMd, color: THEME.textMain, fontFamily: fontDisplay,
                                             fontSize: '0.88rem', outline: 'none',
                                             transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
-                                            boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)',
+                                            boxShadow: THEME.shadowSm,
                                             opacity: authLoading ? 0.5 : 1,
                                         }}
                                     />
@@ -477,35 +478,35 @@ const LoginPage = () => {
                             {/* Password */}
                             <div style={{ marginBottom: 14, animation: 'textIn 0.6s ease-out 0.48s both' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5a6078', letterSpacing: 0.2 }}>Password</label>
+                                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: THEME.textMuted, letterSpacing: 0.2 }}>Password</label>
                                     <button type="button" className="vdb-forgot" onClick={() => setShowForgotPassword(true)}
-                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9198ae', padding: 0, fontSize: '0.72rem', fontFamily: fontMono, transition: 'color 0.3s' }}>
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textMuted, padding: 0, fontSize: '0.72rem', fontFamily: fontMono, transition: 'color 0.3s' }}>
                                         Forgot password?
                                     </button>
                                 </div>
                                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                    <KeyRound size={18} color="#b8bdd0" strokeWidth={1.5} style={{ position: 'absolute', left: 15, pointerEvents: 'none', transition: 'color 0.3s' }} />
+                                    <KeyRound size={18} color={THEME.textDim} strokeWidth={1.5} style={{ position: 'absolute', left: 15, pointerEvents: 'none', transition: 'color 0.3s' }} />
                                     <input ref={pwdRef} className="vdb-input" type={showPwd ? 'text' : 'password'} value={password}
                                         onChange={e => setPassword(e.target.value)} placeholder="Enter your password"
                                         autoComplete="current-password" disabled={authLoading}
                                         style={{
                                             width: '100%', padding: '11px 44px 11px 44px',
-                                            background: '#f3f4f8', border: '1.5px solid rgba(0,0,0,0.08)',
-                                            borderRadius: 10, color: '#1a1e2e', fontFamily: fontDisplay,
+                                            background: THEME.surfaceHover, border: `1.5px solid ${THEME.glassBorder}`,
+                                            borderRadius: THEME.radiusMd, color: THEME.textMain, fontFamily: fontDisplay,
                                             fontSize: '0.88rem', outline: 'none',
                                             transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
-                                            boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)',
+                                            boxShadow: THEME.shadowSm,
                                             opacity: authLoading ? 0.5 : 1,
                                         }}
                                     />
                                     <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1}
                                         style={{
                                             position: 'absolute', right: 14, background: 'none', border: 'none',
-                                            cursor: 'pointer', color: '#b8bdd0', padding: 4, display: 'flex',
+                                            cursor: 'pointer', color: THEME.textDim, padding: 4, display: 'flex',
                                             transition: 'color 0.3s',
                                         }}
                                         onMouseEnter={e => { e.currentTarget.style.color = accent; }}
-                                        onMouseLeave={e => { e.currentTarget.style.color = '#b8bdd0'; }}>
+                                        onMouseLeave={e => { e.currentTarget.style.color = THEME.textDim; }}>
                                         {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
@@ -517,32 +518,32 @@ const LoginPage = () => {
                                 marginBottom: 18, animation: 'textIn 0.6s ease-out 0.52s both',
                             }}>
                                 <div onClick={() => setRememberMe(r => !r)} style={{
-                                    width: 20, height: 20, borderRadius: 6, flexShrink: 0, cursor: 'pointer',
-                                    border: `1.5px solid ${rememberMe ? accent : 'rgba(0,0,0,0.12)'}`,
-                                    background: rememberMe ? accent : '#f3f4f8',
+                                    width: 20, height: 20, borderRadius: THEME.radiusSm, flexShrink: 0, cursor: 'pointer',
+                                    border: `1.5px solid ${rememberMe ? accent : THEME.glassBorder}`,
+                                    background: rememberMe ? accent : THEME.surfaceHover,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
-                                    boxShadow: rememberMe ? `0 2px 8px rgba(99,102,241,0.15)` : '0 1px 3px rgba(0,0,0,0.04)',
+                                    boxShadow: rememberMe ? `0 2px 8px ${accent}26` : THEME.shadowSm,
                                 }}>
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={THEME.textMain} strokeWidth="3"
                                         style={{ opacity: rememberMe ? 1 : 0, transform: rememberMe ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s ease' }}>
                                         <polyline points="20 6 9 17 4 12" />
                                     </svg>
                                 </div>
-                                <span onClick={() => setRememberMe(r => !r)} style={{ fontSize: '0.84rem', color: '#5a6078', cursor: 'pointer' }}>
+                                <span onClick={() => setRememberMe(r => !r)} style={{ fontSize: '0.84rem', color: THEME.textMuted, cursor: 'pointer' }}>
                                     Remember this device for 30 days
                                 </span>
                             </div>
 
                             {/* Submit */}
                             <button type="submit" className="vdb-submit" disabled={!canSubmit} style={{
-                                width: '100%', padding: 12, border: 'none', borderRadius: 10,
-                                background: canSubmit ? `linear-gradient(135deg, ${accent}, ${accentHover})` : '#f3f4f8',
-                                color: canSubmit ? '#fff' : '#b8bdd0',
+                                width: '100%', padding: 12, border: 'none', borderRadius: THEME.radiusMd,
+                                background: canSubmit ? `linear-gradient(135deg, ${accent}, ${accentHover})` : THEME.surfaceHover,
+                                color: canSubmit ? THEME.textMain : THEME.textDim,
                                 fontFamily: fontDisplay, fontWeight: 700, fontSize: '0.95rem',
                                 letterSpacing: 0.3, cursor: canSubmit ? 'pointer' : 'not-allowed',
                                 transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)', position: 'relative', overflow: 'hidden',
-                                boxShadow: canSubmit ? '0 4px 16px rgba(99,102,241,0.15), 0 1px 3px rgba(0,0,0,0.04)' : 'none',
+                                boxShadow: canSubmit ? `0 4px 16px ${accent}26, 0 1px 3px rgba(0,0,0,0.04)` : 'none',
                                 animation: 'textIn 0.6s ease-out 0.56s both',
                             }}>
                                 {authLoading ? (
@@ -561,7 +562,7 @@ const LoginPage = () => {
                         <div style={{
                             textAlign: 'center', marginTop: 18, display: 'flex',
                             alignItems: 'center', justifyContent: 'center', gap: 6,
-                            fontSize: '0.72rem', color: '#b8bdd0', fontFamily: fontMono,
+                            fontSize: '0.72rem', color: THEME.textDim, fontFamily: fontMono,
                             animation: 'textIn 0.6s ease-out 0.65s both',
                         }}>
                             <Shield size={13} color={accent} />
@@ -571,22 +572,22 @@ const LoginPage = () => {
                         {/* Success overlay */}
                         {loginSuccess && (
                             <div style={{
-                                position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.96)',
+                                position: 'absolute', inset: 0, background: `${THEME.surfaceRaised}f5`,
                                 alignItems: 'center', justifyContent: 'center', zIndex: 10,
                                 borderRadius: '0 22px 22px 0',
                             }}>
                                 <div style={{
                                     width: 76, height: 76, borderRadius: '50%',
-                                    background: 'rgba(99,102,241,0.08)', border: '2px solid rgba(99,102,241,0.15)',
+                                    background: `${accent}14`, border: `2px solid ${accent}26`,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     marginBottom: 20, animation: 'successPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
                                 }}>
                                     <CheckCircle size={34} color={accent} strokeWidth={2} />
                                 </div>
-                                <div style={{ fontWeight: 800, fontSize: '1.35rem', color: '#1a1e2e', marginBottom: 6, animation: 'textIn 0.5s ease 0.5s both' }}>Welcome back!</div>
-                                <div style={{ color: '#9198ae', fontSize: '0.88rem', animation: 'textIn 0.5s ease 0.6s both' }}>Redirecting to your dashboard...</div>
-                                <div style={{ width: 180, height: 3, background: '#f3f4f8', borderRadius: 2, marginTop: 20, overflow: 'hidden', animation: 'textIn 0.5s ease 0.7s both' }}>
-                                    <div style={{ height: '100%', background: accent, borderRadius: 2, width: '0%', animation: 'progressFill 2s ease 0.8s forwards' }} />
+                                <div style={{ fontWeight: 800, fontSize: '1.35rem', color: THEME.textMain, marginBottom: 6, animation: 'textIn 0.5s ease 0.5s both' }}>Welcome back!</div>
+                                <div style={{ color: THEME.textMuted, fontSize: '0.88rem', animation: 'textIn 0.5s ease 0.6s both' }}>Redirecting to your dashboard...</div>
+                                <div style={{ width: 180, height: 3, background: THEME.surfaceHover, borderRadius: THEME.radiusSm, marginTop: 20, overflow: 'hidden', animation: 'textIn 0.5s ease 0.7s both' }}>
+                                    <div style={{ height: '100%', background: accent, borderRadius: THEME.radiusSm, width: '0%', animation: 'progressFill 2s ease 0.8s forwards' }} />
                                 </div>
                             </div>
                         )}
@@ -601,26 +602,26 @@ const LoginPage = () => {
                     zIndex: 1000, animation: 'textIn .3s ease',
                 }} onClick={() => setShowForgotPassword(false)}>
                     <div style={{
-                        background: '#fff', borderRadius: 20, padding: 32, maxWidth: 400, width: '90%',
-                        border: '1px solid rgba(0,0,0,0.08)',
-                        boxShadow: '0 24px 80px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.06)',
+                        background: THEME.surfaceRaised, borderRadius: THEME.radiusLg, padding: 32, maxWidth: 400, width: '90%',
+                        border: `1px solid ${THEME.glassBorder}`,
+                        boxShadow: THEME.shadowLg,
                     }} onClick={e => e.stopPropagation()}>
-                        <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1a1e2e', marginBottom: 8 }}>Reset Password</h3>
-                        <p style={{ fontSize: 13, color: '#9198ae', marginBottom: 20 }}>Enter your email and we'll send you a reset link.</p>
+                        <h3 style={{ fontSize: 18, fontWeight: 800, color: THEME.textMain, marginBottom: 8 }}>Reset Password</h3>
+                        <p style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 20 }}>Enter your email and we'll send you a reset link.</p>
                         <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                             <input className="vdb-input" type="email" placeholder="Enter your email" value={resetEmail}
                                 onChange={e => setResetEmail(e.target.value)} disabled={resetLoading}
                                 style={{
-                                    padding: '12px 14px', borderRadius: 10,
-                                    border: '1.5px solid rgba(0,0,0,0.08)', background: '#f3f4f8',
-                                    color: '#1a1e2e', fontSize: 13, fontFamily: fontDisplay, outline: 'none',
+                                    padding: '12px 14px', borderRadius: THEME.radiusMd,
+                                    border: `1.5px solid ${THEME.glassBorder}`, background: THEME.surfaceHover,
+                                    color: THEME.textMain, fontSize: 13, fontFamily: fontDisplay, outline: 'none',
                                     transition: 'all 0.3s',
                                 }}
                             />
                             {resetMessage && (
                                 <div style={{
-                                    padding: '10px 12px', borderRadius: 10,
-                                    background: resetMessage.includes('failed') || resetMessage.includes('Unable') ? 'rgba(229,62,92,0.07)' : 'rgba(99,102,241,0.07)',
+                                    padding: '10px 12px', borderRadius: THEME.radiusMd,
+                                    background: resetMessage.includes('failed') || resetMessage.includes('Unable') ? `${THEME.danger}0f` : `${accent}0f`,
                                     color: resetMessage.includes('failed') || resetMessage.includes('Unable') ? THEME.danger : accent, fontSize: 12,
                                 }}>
                                     {resetMessage}
@@ -628,18 +629,18 @@ const LoginPage = () => {
                             )}
                             <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                                 <button type="submit" disabled={!resetEmail.trim() || resetLoading} style={{
-                                    flex: 1, padding: '12px 16px', borderRadius: 10, border: 'none',
-                                    background: resetEmail.trim() && !resetLoading ? `linear-gradient(135deg, ${accent}, ${accentHover})` : '#f3f4f8',
-                                    color: resetEmail.trim() && !resetLoading ? '#fff' : '#b8bdd0',
+                                    flex: 1, padding: '12px 16px', borderRadius: THEME.radiusMd, border: 'none',
+                                    background: resetEmail.trim() && !resetLoading ? `linear-gradient(135deg, ${accent}, ${accentHover})` : THEME.surfaceHover,
+                                    color: resetEmail.trim() && !resetLoading ? THEME.textMain : THEME.textDim,
                                     fontSize: 13, fontWeight: 600, cursor: resetEmail.trim() && !resetLoading ? 'pointer' : 'not-allowed',
                                     fontFamily: fontDisplay, transition: 'all 0.3s',
                                 }}>
                                     {resetLoading ? 'Sending...' : 'Send Reset Link'}
                                 </button>
                                 <button type="button" onClick={() => setShowForgotPassword(false)} style={{
-                                    flex: 1, padding: '12px 16px', borderRadius: 10,
-                                    border: '1.5px solid rgba(0,0,0,0.08)', background: 'transparent',
-                                    color: '#5a6078', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                    flex: 1, padding: '12px 16px', borderRadius: THEME.radiusMd,
+                                    border: `1.5px solid ${THEME.glassBorder}`, background: 'transparent',
+                                    color: THEME.textMuted, fontSize: 13, fontWeight: 600, cursor: 'pointer',
                                     fontFamily: fontDisplay, transition: 'all 0.3s',
                                 }}>
                                     Cancel
@@ -655,8 +656,8 @@ const LoginPage = () => {
                 style={{
                     position: 'fixed', bottom: 24, left: 24, zIndex: 100,
                     width: 40, height: 40, borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.08)',
-                    cursor: 'pointer', color: '#9198ae', transition: 'all .3s', outline: 'none',
+                    background: THEME.surfaceHover, border: `1px solid ${THEME.glassBorder}`,
+                    cursor: 'pointer', color: THEME.textDim, transition: 'all .3s', outline: 'none',
                 }}>
                 {isDark ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}
             </button>

@@ -35,29 +35,29 @@ const DEMO_TABS = [
 const LT = {
     bg: '#f0f4f8',
     surface: '#ffffff',
-    surfaceHover: '#f8fafc',
+    surfaceHover: T.textMain,
     sidebarBg: '#ffffff',
     headerBg: 'rgba(255,255,255,0.92)',
     footerBg: 'rgba(248,250,252,0.95)',
-    border: '#e2e8f0',
+    border: T.textMain,
     borderLight: '#f1f5f9',
     borderAccent: 'rgba(139,92,246,0.15)',
-    text: '#0f172a',
+    text: T.bg,
     textMuted: '#475569',
-    textDim: '#94a3b8',
-    primary: '#6366f1',
-    secondary: '#10b981',
+    textDim: T.textMuted,
+    primary: T.primary,
+    secondary: T.success,
     success: '#16a34a',
     danger: '#dc2626',
     warning: '#d97706',
     info: '#0284c7',
-    ai: '#4f46e5',
+    ai: T.primaryDark,
     cardBg: '#ffffff',
-    cardBorder: '#e2e8f0',
+    cardBorder: T.textMain,
     cardShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)',
     cardShadowHover: '0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)',
     activeItemBg: 'rgba(139,92,246,0.08)',
-    activeItemBorder: '#6366f1',
+    activeItemBorder: T.primary,
     hoverBg: 'rgba(139,92,246,0.04)',
     badgeBg: 'rgba(139,92,246,0.1)',
     badgeColor: '#0284c7',
@@ -65,7 +65,7 @@ const LT = {
     liveBorder: 'rgba(22,163,74,0.2)',
     liveColor: '#16a34a',
     buttonBg: '#f1f5f9',
-    buttonHoverBg: '#e2e8f0',
+    buttonHoverBg: T.textMain,
     accentGradient: 'linear-gradient(135deg, #6366f1, #10b981)',
 };
 
@@ -135,7 +135,7 @@ const DemoLayout = ({
                         width: SIDEBAR_W,
                         minWidth: SIDEBAR_W,
                         background: LT.sidebarBg,
-                        borderRight: `1px solid ${LT.border}`,
+                        borderRight: `1px solid ${LT.glassBorder}`,
                         display: 'flex',
                         flexDirection: 'column',
                         overflowY: 'auto',
@@ -152,7 +152,7 @@ const DemoLayout = ({
                     <div
                         style={{
                             padding: '12px 14px',
-                            borderBottom: `1px solid ${LT.border}`,
+                            borderBottom: `1px solid ${LT.glassBorder}`,
                             background: LT.surface,
                             flexShrink: 0,
                         }}
@@ -167,7 +167,7 @@ const DemoLayout = ({
                                         width: 28,
                                         height: 28,
                                         borderRadius: 7,
-                                        border: `1px solid ${LT.border}`,
+                                        border: `1px solid ${LT.glassBorder}`,
                                         background: LT.buttonBg,
                                         cursor: 'pointer',
                                         display: 'flex',
@@ -181,7 +181,7 @@ const DemoLayout = ({
                                     }}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.background = LT.buttonHoverBg;
-                                        e.currentTarget.style.color = LT.text;
+                                        e.currentTarget.style.color = LT.textMain;
                                     }}
                                     onMouseLeave={(e) => {
                                         e.currentTarget.style.background = LT.buttonBg;
@@ -211,7 +211,7 @@ const DemoLayout = ({
                                 style={{
                                     fontSize: 14,
                                     fontWeight: 700,
-                                    color: LT.text,
+                                    color: LT.textMain,
                                     fontFamily: THEME.fontBody,
                                     letterSpacing: '-0.02em',
                                 }}
@@ -233,8 +233,8 @@ const DemoLayout = ({
                                             fontSize: 10,
                                             fontWeight: isActive ? 700 : 500,
                                             fontFamily: THEME.fontBody,
-                                            borderRadius: 6,
-                                            border: isActive ? `1px solid ${LT.primary}` : `1px solid ${LT.border}`,
+                                            borderRadius: 10,
+                                            border: isActive ? `1px solid ${LT.primary}` : `1px solid ${LT.glassBorder}`,
                                             background: isActive ? `${LT.primary}10` : LT.buttonBg,
                                             color: isActive ? LT.primary : LT.textMuted,
                                             cursor: isActive ? 'default' : 'pointer',
@@ -244,7 +244,7 @@ const DemoLayout = ({
                                         onMouseEnter={(e) => {
                                             if (!isActive) {
                                                 e.currentTarget.style.background = LT.buttonHoverBg;
-                                                e.currentTarget.style.color = LT.text;
+                                                e.currentTarget.style.color = LT.textMain;
                                             }
                                         }}
                                         onMouseLeave={(e) => {
@@ -275,7 +275,7 @@ const DemoLayout = ({
                     <div
                         style={{
                             padding: '12px 14px',
-                            borderBottom: `1px solid ${LT.border}`,
+                            borderBottom: `1px solid ${LT.glassBorder}`,
                             flexShrink: 0,
                         }}
                     >
@@ -299,9 +299,9 @@ const DemoLayout = ({
                             style={{
                                 width: '100%',
                                 padding: '6px 8px',
-                                borderRadius: 6,
+                                borderRadius: 10,
                                 background: LT.buttonBg,
-                                border: `1px solid ${LT.border}`,
+                                border: `1px solid ${LT.glassBorder}`,
                                 color: LT.textMuted,
                                 fontSize: 11,
                                 fontFamily: THEME.fontBody,
@@ -412,7 +412,7 @@ const DemoLayout = ({
                                                         onMouseEnter={(e) => {
                                                             if (!isActive) {
                                                                 e.currentTarget.style.background = LT.hoverBg;
-                                                                e.currentTarget.style.color = LT.text;
+                                                                e.currentTarget.style.color = LT.textMain;
                                                             }
                                                         }}
                                                         onMouseLeave={(e) => {
@@ -448,7 +448,7 @@ const DemoLayout = ({
                                                                     
                                                                     background: LT.badgeBg,
                                                                     color: LT.badgeColor,
-                                                                    borderRadius: 4,
+                                                                    borderRadius: 12,
                                                                     padding: '1px 6px',
                                                                     flexShrink: 0,
                                                                     fontFamily: THEME.fontMono,
@@ -472,7 +472,7 @@ const DemoLayout = ({
                     <div
                         style={{
                             padding: '12px 10px',
-                            borderTop: `1px solid ${LT.border}`,
+                            borderTop: `1px solid ${LT.glassBorder}`,
                             flexShrink: 0,
                             display: 'flex',
                             flexDirection: 'column',
@@ -486,8 +486,8 @@ const DemoLayout = ({
                                 padding: '6px 10px',
                                 fontSize: 11,
                                 fontWeight: 500,
-                                borderRadius: 6,
-                                border: `1px solid ${LT.border}`,
+                                borderRadius: 10,
+                                border: `1px solid ${LT.glassBorder}`,
                                 background: LT.buttonBg,
                                 color: LT.textMuted,
                                 cursor: onRefresh ? 'pointer' : 'not-allowed',
@@ -497,7 +497,7 @@ const DemoLayout = ({
                             onMouseEnter={(e) => {
                                 if (onRefresh) {
                                     e.currentTarget.style.background = LT.buttonHoverBg;
-                                    e.currentTarget.style.color = LT.text;
+                                    e.currentTarget.style.color = LT.textMain;
                                 }
                             }}
                             onMouseLeave={(e) => {
@@ -516,8 +516,8 @@ const DemoLayout = ({
                                         padding: '6px 10px',
                                         fontSize: 11,
                                         fontWeight: 500,
-                                        borderRadius: 6,
-                                        border: `1px solid ${LT.border}`,
+                                        borderRadius: 10,
+                                        border: `1px solid ${LT.glassBorder}`,
                                         background: LT.buttonBg,
                                         color: LT.textMuted,
                                         cursor: onExport ? 'pointer' : 'not-allowed',
@@ -527,7 +527,7 @@ const DemoLayout = ({
                                     onMouseEnter={(e) => {
                                         if (onExport) {
                                             e.currentTarget.style.background = LT.buttonHoverBg;
-                                            e.currentTarget.style.color = LT.text;
+                                            e.currentTarget.style.color = LT.textMain;
                                         }
                                     }}
                                     onMouseLeave={(e) => {
@@ -543,7 +543,7 @@ const DemoLayout = ({
                                         padding: '8px 10px',
                                         fontSize: 11,
                                         fontWeight: 600,
-                                        borderRadius: 6,
+                                        borderRadius: 10,
                                         border: 'none',
                                         background: LT.accentGradient,
                                         color: '#ffffff',
@@ -572,7 +572,7 @@ const DemoLayout = ({
                         style={{
                             height: 56,
                             background: LT.headerBg,
-                            borderBottom: `1px solid ${LT.border}`,
+                            borderBottom: `1px solid ${LT.glassBorder}`,
                             display: 'flex',
                             alignItems: 'center',
                             padding: '0 20px',
@@ -605,7 +605,7 @@ const DemoLayout = ({
                                 style={{
                                     fontSize: 16,
                                     fontWeight: 800,
-                                    color: LT.text,
+                                    color: LT.textMain,
                                     fontFamily: THEME.fontBody,
                                     letterSpacing: '-0.04em',
                                 }}
@@ -630,7 +630,7 @@ const DemoLayout = ({
                                                 alignItems: 'center',
                                                 padding: '6px 12px',
                                                 background: `${stat.color || LT.primary}10`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                                 border: `1px solid ${stat.color || LT.primary}20`,
                                             }}
                                         >
@@ -694,9 +694,9 @@ const DemoLayout = ({
                                 style={{
                                     width: 36,
                                     height: 36,
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     background: LT.buttonBg,
-                                    border: `1px solid ${LT.border}`,
+                                    border: `1px solid ${LT.glassBorder}`,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -720,7 +720,7 @@ const DemoLayout = ({
                                     height: 36,
                                     borderRadius: 50,
                                     background: LT.accentGradient,
-                                    border: `1px solid ${LT.border}`,
+                                    border: `1px solid ${LT.glassBorder}`,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -764,7 +764,7 @@ const DemoLayout = ({
                         right: 0,
                         height: 24,
                         background: LT.footerBg,
-                        borderTop: `1px solid ${LT.border}`,
+                        borderTop: `1px solid ${LT.glassBorder}`,
                         display: 'flex',
                         alignItems: 'center',
                         paddingLeft: SIDEBAR_W,
@@ -849,7 +849,7 @@ export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentCo
             <div
                 style={{
                     padding: '14px 20px',
-                    borderBottom: `1px solid ${LT.border}`,
+                    borderBottom: `1px solid ${LT.glassBorder}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -864,7 +864,7 @@ export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentCo
                             style={{
                                 width: 24,
                                 height: 24,
-                                borderRadius: 8,
+                                borderRadius: 12,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -1109,7 +1109,7 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
                     fontSize: 20,
                     fontWeight: 800,
                     fontFamily: THEME.fontMono,
-                    color: color || LT.text,
+                    color: color || LT.textMain,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 6,
@@ -1159,7 +1159,7 @@ export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spa
                     style={{
                         width: 30,
                         height: 30,
-                        borderRadius: 8,
+                        borderRadius: 12,
                         flexShrink: 0,
                         display: 'flex',
                         alignItems: 'center',
@@ -1253,7 +1253,7 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
                         style={{
                             width: 22,
                             height: 22,
-                            borderRadius: 6,
+                            borderRadius: 10,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1283,7 +1283,7 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
                     fontSize: 20,
                     fontWeight: 700,
                     fontFamily: THEME.fontMono,
-                    color: LT.text,
+                    color: LT.textMain,
                     lineHeight: 1,
                 }}
             >
@@ -1334,7 +1334,7 @@ export const TabPills = ({ tabs, active, onChange, accentColor }) => (
                         borderRadius: 22,
                         background: isActive ? ac : 'transparent',
                         color: isActive ? '#fff' : LT.textMuted,
-                        border: `1px solid ${isActive ? ac : LT.border}`,
+                        border: `1px solid ${isActive ? ac : LT.glassBorder}`,
                         boxShadow: isActive ? `0 2px 8px ${ac}30` : 'none',
                         cursor: 'pointer',
                         fontFamily: THEME.fontBody,
@@ -1350,7 +1350,7 @@ export const TabPills = ({ tabs, active, onChange, accentColor }) => (
                                 fontSize: 9,
                                 fontWeight: 700,
                                 padding: '2px 7px',
-                                borderRadius: 8,
+                                borderRadius: 12,
                                 background: isActive ? 'rgba(255,255,255,0.25)' : `${t.badgeColor || ac}15`,
                                 color: isActive ? '#fff' : t.badgeColor || ac,
                             }}
@@ -1373,7 +1373,7 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
             gap: 10,
             padding: '11px 14px',
             background: `${color}06`,
-            borderBottom: `1px solid ${LT.border}`,
+            borderBottom: `1px solid ${LT.glassBorder}`,
             borderLeft: `2px solid ${color}`,
             borderRadius: '0 8px 8px 0',
             marginBottom: 4,
@@ -1390,7 +1390,7 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
             }}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11.5, color: LT.text, fontWeight: 600, lineHeight: 1.35 }}>{title}</div>
+            <div style={{ fontSize: 11.5, color: LT.textMain, fontWeight: 600, lineHeight: 1.35 }}>{title}</div>
             <div style={{ display: 'flex', gap: 8, marginTop: 3 }}>
                 <span
                     style={{
@@ -1409,7 +1409,7 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
                 fontSize: 9,
                 fontWeight: 700,
                 padding: '2px 8px',
-                borderRadius: 8,
+                borderRadius: 12,
                 background: `${color}12`,
                 color,
                 
@@ -1433,7 +1433,7 @@ export const DataTable = ({ columns, rows, accentColor }) => (
                 gridTemplateColumns: columns.map((c) => c.width || '1fr').join(' '),
                 gap: 8,
                 padding: '8px 14px',
-                borderBottom: `1px solid ${LT.border}`,
+                borderBottom: `1px solid ${LT.glassBorder}`,
                 fontWeight: 700,
                 fontSize: '9.5px',
                 
@@ -1456,7 +1456,7 @@ export const DataTable = ({ columns, rows, accentColor }) => (
                     gridTemplateColumns: columns.map((c) => c.width || '1fr').join(' '),
                     gap: 8,
                     padding: '10px 14px',
-                    borderBottom: `1px solid ${LT.borderLight}`,
+                    borderBottom: `1px solid ${LT.glassBorderLight}`,
                     transition: 'background 0.15s',
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = LT.surfaceHover)}
@@ -1468,7 +1468,7 @@ export const DataTable = ({ columns, rows, accentColor }) => (
                         style={{
                             textAlign: c.align || 'left',
                             fontFamily: c.mono ? THEME.fontMono : 'inherit',
-                            color: row[c.key + 'Color'] || (c.mono ? LT.text : LT.textMuted),
+                            color: row[c.key + 'Color'] || (c.mono ? LT.textMain : LT.textMuted),
                             fontWeight: ci === 0 ? 600 : 400,
                             fontSize: 12,
                             whiteSpace: 'nowrap',
@@ -1514,7 +1514,7 @@ export const ChartTip = ({ active, payload, label }) => {
                         }}
                     />
                     <span style={{ color: LT.textMuted, fontSize: 11 }}>{p.name || p.dataKey}:</span>
-                    <span style={{ color: LT.text, fontWeight: 600, fontFamily: THEME.fontMono, fontSize: 11 }}>
+                    <span style={{ color: LT.textMain, fontWeight: 600, fontFamily: THEME.fontMono, fontSize: 11 }}>
                         {typeof p.value === 'number' ? p.value.toLocaleString() : p.value}
                     </span>
                 </div>
@@ -1560,7 +1560,7 @@ export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
                         key={i}
                         style={{
                             padding: '2px 6px',
-                            borderRadius: 4,
+                            borderRadius: 12,
                             fontSize: 10,
                             fontWeight: 600,
                             background: v === refreshInterval ? LT.primary : 'transparent',

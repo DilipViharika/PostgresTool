@@ -26,7 +26,7 @@ const Styles = () => (
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
             border-top: 3px solid #3E6D8E;
-            border-radius: 12px;
+            border-radius:14px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(62,109,142,0.06);
             transition: all 0.25s ease;
@@ -54,7 +54,7 @@ const Styles = () => (
         .mysql-metric-box {
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 16px;
             text-align: center;
         }
@@ -137,7 +137,7 @@ const Styles = () => (
         .mysql-error {
             background: ${DARK_THEME.danger}15;
             border: 1px solid ${DARK_THEME.danger};
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 16px;
             color: ${DARK_THEME.danger};
             margin-bottom: 16px;

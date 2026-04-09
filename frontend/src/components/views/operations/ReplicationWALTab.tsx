@@ -12,15 +12,15 @@ const Styles = () => (
         @keyframes rwSpin  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes rwFade  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes rwPulse { 0%,100%{opacity:1} 50%{opacity:.35} }
-        .rw-card  { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 14px 14px 0; padding:16px; animation:rwFade .3s ease; box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02); position:relative; overflow:hidden; transition: all 0.25s ease; }
-        .rw-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-left-width: 6px; }
+        .rw-card  { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 14px 14px 0; padding:16px; animation:rwFade .3s ease; box-shadow:${THEME.shadowSm}; position:relative; overflow:hidden; transition: all 0.25s ease; }
+        .rw-card:hover { box-shadow:${THEME.shadowMd}; border-left-width: 6px; }
         .rw-card::before { content:''; position:absolute; top:0; right:0; width:40%; height:100%; background:repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px); pointer-events:none; }
-        .rw-metric{ background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:12px; }
-        .rw-row   { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid ${THEME.grid}30; font-size:12px; }
+        .rw-metric{ background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:12px; }
+        .rw-row   { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid ${THEME.glassBorder}30; font-size:12px; }
         .rw-row:last-child { border-bottom:none; }
-        .rw-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:5px; font-size:10px; font-weight:700; }
-        .rw-table-head { display:grid; gap:8px; padding:8px 14px; font-size:10px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid ${THEME.grid}; }
-        .rw-table-row  { display:grid; gap:8px; padding:11px 14px; font-size:12px; border-bottom:1px solid ${THEME.grid}20; align-items:center; }
+        .rw-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:700; }
+        .rw-table-head { display:grid; gap:8px; padding:8px 14px; font-size:10px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .rw-table-row  { display:grid; gap:8px; padding:11px 14px; font-size:12px; border-bottom:1px solid ${THEME.glassBorder}20; align-items:center; }
         .rw-table-row:hover { background:${THEME.surfaceHover}; }
         .rw-table-row:last-child { border-bottom:none; }
     `}</style>
@@ -58,7 +58,7 @@ const MetricCard = ({ icon:Icon, label, value, sub, color=THEME.primary, warn })
 const ChartTip = ({ active, payload, label }) => {
     if (!active||!payload?.length) return null;
     return (
-        <div style={{background:THEME.surface,border:`1px solid ${THEME.grid}`,borderRadius:8,padding:'8px 12px',fontSize:12}}>
+        <div style={{background:THEME.surface,border:`1px solid ${THEME.glassBorder}`,borderRadius:10,padding:'8px 12px',fontSize:12,boxShadow:THEME.shadowMd}}>
             <div style={{color:THEME.textMuted,marginBottom:4}}>{label}</div>
             {payload.map(p=>(
                 <div key={p.name} style={{color:p.fill,fontWeight:600}}>{p.name}: {fmtBytes(p.value)}</div>
@@ -135,7 +135,7 @@ export default function ReplicationWALTab() {
             <Styles/>
 
             {/* Toolbar */}
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 20px',background:THEME.surface,borderRadius:12,border:`1px solid ${THEME.grid}`}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 20px',background:THEME.surface,borderRadius:12,border:`1px solid ${THEME.glassBorder}`}}>
                 <div style={{display:'flex',alignItems:'center',gap:12}}>
                     <Radio size={20} color={THEME.primary}/>
                     <span style={{fontWeight:700,fontSize:15,color:THEME.textMain}}>Replication & WAL</span>
@@ -146,13 +146,13 @@ export default function ReplicationWALTab() {
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:10}}>
                     <span style={{fontSize:11,color:THEME.textDim}}>{lastAt?`Updated ${fmtRel(lastAt)}`:''}</span>
-                    <select value={autoRfsh} onChange={e=>setAutoRfsh(+e.target.value)} style={{background:THEME.surface,border:`1px solid ${THEME.grid}`,color:THEME.textMain,borderRadius:6,padding:'4px 8px',fontSize:12}}>
+                    <select value={autoRfsh} onChange={e=>setAutoRfsh(+e.target.value)} style={{background:THEME.surface,border:`1px solid ${THEME.glassBorder}`,color:THEME.textMain,borderRadius:8,padding:'4px 8px',fontSize:12}}>
                         <option value={5}>5s</option><option value={10}>10s</option><option value={30}>30s</option><option value={0}>Off</option>
                     </select>
                 </div>
             </div>
 
-            {error && <div style={{padding:14,background:`${THEME.danger}10`,border:`1px solid ${THEME.danger}30`,borderRadius:10,color:THEME.danger,fontSize:13,display:'flex',alignItems:'center',gap:8}}><AlertCircle size={16}/> {error}</div>}
+            {error && <div style={{padding:14,background:`${THEME.danger}10`,border:`1px solid ${THEME.danger}30`,borderRadius:12,color:THEME.danger,fontSize:13,display:'flex',alignItems:'center',gap:8}}><AlertCircle size={16}/> {error}</div>}
 
             {/* Metric cards */}
             <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
@@ -165,7 +165,7 @@ export default function ReplicationWALTab() {
             {/* Sub-tabs */}
             <div style={{display:'flex',gap:6}}>
                 {[{id:'replicas',label:'Streaming Replicas',icon:Radio},{id:'slots',label:'Replication Slots',icon:Layers},{id:'wal',label:'WAL Settings',icon:Zap}].map(({id,label,icon:Icon})=>(
-                    <button key={id} onClick={()=>setActiveTab(id)} style={{display:'flex',alignItems:'center',gap:7,padding:'8px 16px',borderRadius:8,border:`1px solid ${activeTab===id?THEME.primary:THEME.grid}`,background:activeTab===id?`${THEME.primary}12`:'transparent',color:activeTab===id?THEME.primary:THEME.textMuted,cursor:'pointer',fontSize:13,fontWeight:600,transition:'all .15s'}}>
+                    <button key={id} onClick={()=>setActiveTab(id)} style={{display:'flex',alignItems:'center',gap:7,padding:'8px 16px',borderRadius:8,border:`1px solid ${activeTab===id?THEME.primary:THEME.glassBorder}`,background:activeTab===id?`${THEME.primary}12`:'transparent',color:activeTab===id?THEME.primary:THEME.textMuted,cursor:'pointer',fontSize:13,fontWeight:600,transition:'all .15s'}}>
                         <Icon size={14}/> {label}
                     </button>
                 ))}
@@ -200,7 +200,7 @@ export default function ReplicationWALTab() {
                         <div style={{display:'flex',gap:16,marginTop:6}}>
                             {[{c:THEME.primary,l:'Write'},{c:THEME.secondary,l:'Flush'},{c:THEME.warning,l:'Replay'}].map(({c,l})=>(
                                 <div key={l} style={{display:'flex',alignItems:'center',gap:5,fontSize:11,color:THEME.textMuted}}>
-                                    <div style={{width:10,height:3,borderRadius:2,background:c}}/>{l} Lag
+                                    <div style={{width:10,height:3,borderRadius:1,background:c}}/>{l} Lag
                                 </div>
                             ))}
                         </div>
@@ -208,7 +208,7 @@ export default function ReplicationWALTab() {
 
                     {/* Replica detail table */}
                     <div className="rw-card" style={{padding:0}}>
-                        <div style={{padding:'14px 16px',borderBottom:`1px solid ${THEME.grid}`,fontSize:13,fontWeight:700,color:THEME.textMain,display:'flex',alignItems:'center',gap:8}}>
+                        <div style={{padding:'14px 16px',borderBottom:`1px solid ${THEME.glassBorder}`,fontSize:13,fontWeight:700,color:THEME.textMain,display:'flex',alignItems:'center',gap:8}}>
                             <Radio size={15} color={THEME.primary}/> Replica Details
                         </div>
                         <div className="rw-table-head" style={{gridTemplateColumns:'1.5fr 1fr 1fr 1fr 1fr 1fr'}}>
@@ -234,7 +234,7 @@ export default function ReplicationWALTab() {
 
                 {/* WAL Receiver panel (if this is a replica) */}
                 {walReceiver && (
-                    <div className="rw-card" style={{borderColor:`${THEME.warning}30`}}>
+                    <div className="rw-card" style={{borderColor:`${THEME.warning}30`,borderRadius:'0 12px 12px 0'}}>
                         <div style={{fontSize:13,fontWeight:700,color:THEME.warning,marginBottom:14,display:'flex',alignItems:'center',gap:8}}>
                             <Wifi size={15}/> WAL Receiver Status (This server is a replica)
                         </div>
@@ -260,7 +260,7 @@ export default function ReplicationWALTab() {
             {/* Replication Slots tab */}
             {activeTab==='slots' && (
                 <div className="rw-card" style={{padding:0}}>
-                    <div style={{padding:'14px 16px',borderBottom:`1px solid ${THEME.grid}`,fontSize:13,fontWeight:700,color:THEME.textMain,display:'flex',alignItems:'center',gap:8}}>
+                    <div style={{padding:'14px 16px',borderBottom:`1px solid ${THEME.glassBorder}`,fontSize:13,fontWeight:700,color:THEME.textMain,display:'flex',alignItems:'center',gap:8}}>
                         <Layers size={15} color={THEME.primary}/> Replication Slots
                         {inactiveSlots>0 && <span className="rw-badge" style={{background:`${THEME.danger}15`,color:THEME.danger,border:`1px solid ${THEME.danger}30`}}><AlertTriangle size={9}/> {inactiveSlots} inactive — may cause WAL accumulation</span>}
                     </div>
@@ -318,7 +318,7 @@ export default function ReplicationWALTab() {
                             {label:'All replicas streaming (not catchup)', ok:replicas.every(r=>r.state==='streaming')},
                             {label:'Replay lag < 100 MB',                  ok:maxLagBytes<104857600},
                         ].map(({label,ok})=>(
-                            <div key={label} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:`1px solid ${THEME.grid}20`,fontSize:13}}>
+                            <div key={label} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:`1px solid ${THEME.glassBorder}20`,fontSize:13}}>
                                 {ok?<CheckCircle size={14} color={THEME.success}/>:<AlertTriangle size={14} color={THEME.warning}/>}
                                 <span style={{color:ok?THEME.textMain:THEME.textMuted}}>{label}</span>
                             </div>

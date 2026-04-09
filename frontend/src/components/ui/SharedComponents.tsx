@@ -354,7 +354,7 @@ export const ChipBadge = ({ label, color = _AT.primary, micro = false, animated 
             
             letterSpacing: '0.04em',
             padding: micro ? '2px 6px' : '3px 8px',
-            borderRadius: 6,
+            borderRadius: '6px',
             background: `${color}12`,
             color,
             whiteSpace: 'nowrap',
@@ -466,7 +466,7 @@ export const GlassCard = ({
             className="glass-card"
             style={{
                 background: _AT.surface,
-                borderRadius: 16,
+                borderRadius: '16px',
                 border: `1px solid ${_AT.glassBorder}`,
                 boxShadow: hovered ? _AT.shadowMd : _AT.shadowSm,
                 display: 'flex',
@@ -630,7 +630,7 @@ export const MetricCard = ({
             className="metric-value"
             style={{
                 background: _AT.surface,
-                borderRadius: 14,
+                borderRadius: '14px',
                 border: `1px solid ${active ? color + '40' : _AT.glassBorder}`,
                 padding: isCompact ? 14 : 20,
                 position: 'relative',
@@ -653,7 +653,7 @@ export const MetricCard = ({
                     style={{
                         width: isCompact ? 36 : 42,
                         height: isCompact ? 36 : 42,
-                        borderRadius: 12,
+                        borderRadius: '12px',
                         background: `${color}12`,
                         color,
                         display: 'flex',
@@ -721,7 +721,7 @@ export const MetricCard = ({
                             style={{
                                 width: 80,
                                 height: 28,
-                                borderRadius: 10,
+                                borderRadius: '10px',
                                 background: _AT.grid,
                                 animation: 'shimmer 1.5s infinite',
                                 backgroundSize: '400%',
@@ -930,7 +930,7 @@ export const NeonProgressBar = ({
                     width: '100%',
                     height,
                     background: _AT.grid,
-                    borderRadius: 10,
+                    borderRadius: '10px',
                     overflow: 'hidden',
                     position: 'relative',
                     border: `1px solid ${_AT.grid}`,
@@ -941,7 +941,7 @@ export const NeonProgressBar = ({
                         width: `${percent}%`,
                         height: '100%',
                         background: resolvedColor,
-                        borderRadius: 10,
+                        borderRadius: '10px',
                         transition: animate ? 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
                     }}
                 />
@@ -983,7 +983,7 @@ export const LiveStatusBadge = ({ connected = true, label, count, showLatency, l
                 gap: 8,
                 background: `${qColor}08`,
                 padding: '5px 12px',
-                borderRadius: 6,
+                borderRadius: '6px',
                 border: `1px solid ${qColor}18`,
             }}
         >
@@ -1062,7 +1062,7 @@ export const CustomTooltip = ({ active, payload, label, formatter, unit }) => {
             style={{
                 backgroundColor: _AT.surface,
                 border: `1px solid ${_AT.glassBorder}`,
-                borderRadius: 10,
+                borderRadius: '10px',
                 padding: '10px 14px',
                 boxShadow: _AT.shadowMd,
                 maxWidth: 260,
@@ -1168,7 +1168,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                     gap: 10,
                     padding: '8px 12px',
                     background: config.bg,
-                    borderRadius: 10,
+                    borderRadius: '10px',
                     border: `1px solid ${config.color}25`,
                     animation: 'alertSlide 0.3s ease backwards',
                 }}
@@ -1188,7 +1188,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                             border: `1px solid ${config.color}30`,
                             color: config.color,
                             padding: '2px 10px',
-                            borderRadius: 10,
+                            borderRadius: '10px',
                             cursor: 'pointer',
                             fontSize: 9,
                             fontWeight: 700,
@@ -1208,7 +1208,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
         <div
             style={{
                 background: config.bg,
-                borderRadius: 14,
+                borderRadius: '14px',
                 padding: 16,
                 border: `1px solid ${config.color}22`,
                 animation: 'alertSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards',
@@ -1235,7 +1235,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                 style={{
                     width: 38,
                     height: 38,
-                    borderRadius: 14,
+                    borderRadius: '14px',
                     flexShrink: 0,
                     background: `${config.color}12`,
                     color: config.color,
@@ -1299,7 +1299,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                             border: `1px solid ${config.color}30`,
                             color: config.color,
                             padding: '6px 14px',
-                            borderRadius: 10,
+                            borderRadius: '10px',
                             cursor: 'pointer',
                             fontSize: 9,
                             fontWeight: 700,
@@ -1319,7 +1319,7 @@ export const AlertBanner = ({ alert, onAcknowledge, onDismiss, compact = false }
                             color: _AT.textMuted,
                             cursor: 'pointer',
                             padding: '6px 8px',
-                            borderRadius: 10,
+                            borderRadius: '10px',
                             display: 'flex',
                             alignItems: 'center',
                         }}
@@ -1356,7 +1356,7 @@ export const AlertToast = ({ alerts, onDismiss }) => {
                         key={alert.id || i}
                         style={{
                             background: 'rgba(2,6,20,0.97)',
-                            borderRadius: 14,
+                            borderRadius: '14px',
                             padding: '12px 16px',
                             border: `1px solid ${config.color}30`,
                             boxShadow: `0 8px 32px rgba(0,0,0,0.8), 0 0 20px ${config.color}14`,
@@ -1468,10 +1468,10 @@ export const NanoButton = ({
             disabled={disabled}
             title={tooltip}
             style={{
-                background: disabled ? 'rgba(255,255,255,0.02)' : vs.bg,
+                background: disabled ? _AT.glass : vs.bg,
                 border: `1px solid ${disabled ? _AT.glassBorder : vs.border}`,
                 color: disabled ? _AT.textDim : vs.color,
-                borderRadius: 10,
+                borderRadius: '10px',
                 padding: sm ? '3px 6px' : lg ? '8px 16px' : label ? '5px 12px' : '5px 8px',
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 display: 'inline-flex',
@@ -1580,7 +1580,7 @@ export const DataTable = ({
                         gap: 8,
                         marginBottom: 10,
                         background: _AT.surfaceHover,
-                        borderRadius: 10,
+                        borderRadius: '10px',
                         padding: '7px 12px',
                         border: `1px solid ${_AT.glassBorder}`,
                     }}
@@ -1633,7 +1633,7 @@ export const DataTable = ({
                         marginBottom: 8,
                         padding: '6px 12px',
                         background: `${accentColor}08`,
-                        borderRadius: 10,
+                        borderRadius: '10px',
                         border: `1px solid ${accentColor}20`,
                     }}
                 >
@@ -1656,7 +1656,7 @@ export const DataTable = ({
                 </div>
             )}
 
-            <div style={{ overflowX: 'auto', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ overflowX: 'auto', borderRadius: '12px', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead
                         style={{
@@ -1843,7 +1843,7 @@ export const DataTable = ({
                                 color: _AT.textDim,
                                 width: 26,
                                 height: 26,
-                                borderRadius: 10,
+                                borderRadius: '10px',
                                 cursor: page === 0 ? 'not-allowed' : 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -1863,7 +1863,7 @@ export const DataTable = ({
                                     color: page === i ? accentColor : _AT.textDim,
                                     width: 26,
                                     height: 26,
-                                    borderRadius: 10,
+                                    borderRadius: '10px',
                                     cursor: 'pointer',
                                     fontSize: 10,
                                     fontFamily: _AT.fontMono,
@@ -1881,7 +1881,7 @@ export const DataTable = ({
                                 color: _AT.textDim,
                                 width: 26,
                                 height: 26,
-                                borderRadius: 10,
+                                borderRadius: '10px',
                                 cursor: page === totalPages - 1 ? 'not-allowed' : 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -1919,7 +1919,7 @@ export const EmptyState = ({ icon: Icon, title, text, action, onAction, color = 
                 style={{
                     width: 76,
                     height: 76,
-                    borderRadius: 14,
+                    borderRadius: '14px',
                     background: _AT.surfaceHover,
                     display: 'flex',
                     alignItems: 'center',
@@ -1980,8 +1980,8 @@ export const SkeletonLoader = ({ rows = 3, height = 16, gap = 10, style: customS
                         key={i}
                         style={{
                             height: 120,
-                            borderRadius: 14,
-                            background: 'rgba(255,255,255,0.03)',
+                            borderRadius: '14px',
+                            background: _AT.glass,
                             border: `1px solid ${_AT.glassBorder}`,
                             overflow: 'hidden',
                             position: 'relative',
@@ -2015,7 +2015,7 @@ export const SkeletonLoader = ({ rows = 3, height = 16, gap = 10, style: customS
                         backgroundSize: '400% 100%',
                         animation: `shimmer 2s ease ${i * 0.05}s infinite`,
                         width: i === rows - 1 ? '55%' : '100%',
-                        boxShadow: 'inset 0 1px 0 rgba(0,245,255,0.04)',
+                        boxShadow: `inset 0 1px 0 rgba(0,245,255,0.04)`,
                     }}
                 />
             ))}
@@ -2039,7 +2039,7 @@ export const LoadingOverlay = ({ message }) => {
                 justifyContent: 'center',
                 background: `${_AT.bg}cc`,
                 zIndex: 20,
-                borderRadius: 14,
+                borderRadius: '14px',
                 gap: 12,
             }}
         >
@@ -2086,11 +2086,11 @@ export const CopyButton = ({ text, size = 'default', label }) => {
         <button
             onClick={() => copy(text)}
             style={{
-                background: copied ? `${_AT.success}10` : 'rgba(255,255,255,0.03)',
+                background: copied ? `${_AT.success}10` : _AT.glass,
                 border: `1px solid ${copied ? _AT.success + '40' : _AT.glassBorder}`,
                 color: copied ? _AT.success : _AT.textMuted,
                 padding: sm ? '3px 8px' : '5px 12px',
-                borderRadius: 10,
+                borderRadius: '10px',
                 cursor: 'pointer',
                 fontSize: sm ? 9 : 10,
                 display: 'inline-flex',
@@ -2160,7 +2160,7 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
         <div
             style={{
                 background: _AT.deepTeal,
-                borderRadius: 14,
+                borderRadius: '14px',
                 border: `1px solid ${_AT.glassBorder}`,
                 overflow: 'hidden',
                 display: 'flex',
@@ -2188,8 +2188,8 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
                             width: 8,
                             height: 8,
                             borderRadius: '50%',
-                            background: '#ef4444',
-                            boxShadow: '0 0 6px #ef444490',
+                            background: _AT.danger,
+                            boxShadow: `0 0 6px ${_AT.danger}90`,
                         }}
                     />
                     <div
@@ -2197,8 +2197,8 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
                             width: 8,
                             height: 8,
                             borderRadius: '50%',
-                            background: '#f59e0b',
-                            boxShadow: '0 0 6px #f59e0b90',
+                            background: _AT.warning,
+                            boxShadow: `0 0 6px ${_AT.warning}90`,
                         }}
                     />
                     <div
@@ -2206,8 +2206,8 @@ export const Terminal = ({ lines = [], title = 'neural://shell', onExecute, read
                             width: 8,
                             height: 8,
                             borderRadius: '50%',
-                            background: '#22c55e',
-                            boxShadow: '0 0 6px #22c55e90',
+                            background: _AT.success,
+                            boxShadow: `0 0 6px ${_AT.success}90`,
                         }}
                     />
                     <span style={{ marginLeft: 8, fontSize: 10, color: _AT.textMuted, fontFamily: _AT.fontMono }}>
@@ -2323,7 +2323,7 @@ export const FilterPills = ({ options, active, onChange, multi = false, color = 
                     key={key}
                     onClick={() => onChange(key)}
                     style={{
-                        background: isActive ? `${color}14` : 'rgba(255,255,255,0.02)',
+                        background: isActive ? `${color}14` : _AT.glass,
                         border: `1px solid ${isActive ? color + '45' : _AT.glassBorder}`,
                         color: isActive ? color : _AT.textMuted,
                         padding: '4px 12px',
@@ -2375,7 +2375,7 @@ export const Timeline = ({ events = [], maxHeight = 400 }) => {
                                 style={{
                                     width: 28,
                                     height: 28,
-                                    borderRadius: 14,
+                                    borderRadius: '14px',
                                     background: `${config.color}12`,
                                     border: `1px solid ${config.color}28`,
                                     color: config.color,
@@ -2658,7 +2658,7 @@ export const HeatmapGrid = ({ data = [], weeks = 26, color = _AT.primary, label 
                                     width: 11,
                                     height: 11,
                                     borderRadius: 2,
-                                    background: intensity > 0 ? color : 'rgba(255,255,255,0.04)',
+                                    background: intensity > 0 ? color : _AT.glass,
                                     opacity: intensity > 0 ? Math.max(0.15, intensity) : 1,
                                     border: `1px solid rgba(255,255,255,0.04)`,
                                     cursor: 'default',
@@ -2679,7 +2679,7 @@ export const HeatmapGrid = ({ data = [], weeks = 26, color = _AT.primary, label 
                             width: 11,
                             height: 11,
                             borderRadius: 2,
-                            background: v > 0 ? color : 'rgba(255,255,255,0.04)',
+                            background: v > 0 ? color : _AT.glass,
                             opacity: v > 0 ? Math.max(0.15, v) : 1,
                         }}
                     />
@@ -2751,7 +2751,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                     width: '100%',
                     maxWidth: 580,
                     background: 'rgba(4,9,28,0.98)',
-                    borderRadius: 8,
+                    borderRadius: '12px',
                     border: `1px solid ${_AT.glassBorderHover}`,
                     boxShadow: `0 0 0 1px ${_AT.primary}20, 0 32px 80px rgba(0,0,0,0.9)`,
                     overflow: 'hidden',
@@ -2809,10 +2809,10 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                         style={{
                             fontSize: 9,
                             color: _AT.textDim,
-                            background: 'rgba(255,255,255,0.04)',
+                            background: _AT.glass,
                             border: `1px solid ${_AT.glassBorder}`,
                             padding: '2px 7px',
-                            borderRadius: 10,
+                            borderRadius: '10px',
                             fontFamily: _AT.fontMono,
                         }}
                     >
@@ -2862,7 +2862,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                                                 style={{
                                                     width: 30,
                                                     height: 30,
-                                                    borderRadius: 14,
+                                                    borderRadius: '14px',
                                                     background: `${_AT.primary}10`,
                                                     color: _AT.primary,
                                                     display: 'flex',
@@ -2897,10 +2897,10 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                                                 style={{
                                                     fontSize: 9,
                                                     color: _AT.textDim,
-                                                    background: 'rgba(255,255,255,0.04)',
+                                                    background: _AT.glass,
                                                     border: `1px solid ${_AT.glassBorder}`,
                                                     padding: '2px 7px',
-                                                    borderRadius: 10,
+                                                    borderRadius: '10px',
                                                     fontFamily: _AT.fontMono,
                                                 }}
                                             >
@@ -2940,7 +2940,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                     <span>
                         <kbd
                             style={{
-                                background: 'rgba(255,255,255,0.04)',
+                                background: _AT.glass,
                                 padding: '1px 5px',
                                 borderRadius: 2,
                                 border: `1px solid ${_AT.glassBorder}`,
@@ -2953,7 +2953,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                     <span>
                         <kbd
                             style={{
-                                background: 'rgba(255,255,255,0.04)',
+                                background: _AT.glass,
                                 padding: '1px 5px',
                                 borderRadius: 2,
                                 border: `1px solid ${_AT.glassBorder}`,
@@ -2966,7 +2966,7 @@ export const CommandPalette = ({ commands = [], onClose, placeholder = 'Search c
                     <span>
                         <kbd
                             style={{
-                                background: 'rgba(255,255,255,0.04)',
+                                background: _AT.glass,
                                 padding: '1px 5px',
                                 borderRadius: 2,
                                 border: `1px solid ${_AT.glassBorder}`,
@@ -3155,7 +3155,7 @@ export const StatCompare = ({ label, before, after, unit, color = _AT.primary, i
         <div
             style={{
                 background: 'rgba(4,9,28,0.7)',
-                borderRadius: 14,
+                borderRadius: '14px',
                 padding: 16,
                 border: `1px solid ${_AT.glassBorder}`,
                 position: 'relative',
@@ -3241,8 +3241,8 @@ export const PillInput = ({ value = [], onChange, placeholder = 'Add tag...', co
                 flexWrap: 'wrap',
                 gap: 6,
                 padding: '8px 12px',
-                background: 'rgba(0,0,0,0.2)',
-                borderRadius: 14,
+                background: _AT.shadowMd,
+                borderRadius: '14px',
                 border: `1px solid ${focused ? _AT.glassBorderHover : _AT.glassBorder}`,
                 minHeight: 40,
                 alignItems: 'center',
@@ -3355,7 +3355,7 @@ export const NeonSlider = ({
                         right: 0,
                         height: 4,
                         borderRadius: 2,
-                        background: 'rgba(255,255,255,0.06)',
+                        background: _AT.glassBorder,
                         overflow: 'hidden',
                     }}
                 >
@@ -3438,7 +3438,7 @@ export const NeonToggle = ({ value, onChange, label, color = _AT.primary, size =
                     borderRadius: h,
                     position: 'relative',
                     cursor: disabled ? 'not-allowed' : 'pointer',
-                    background: value ? `${color}30` : 'rgba(255,255,255,0.05)',
+                    background: value ? `${color}30` : _AT.glass,
                     border: `1px solid ${value ? color + '60' : _AT.glassBorder}`,
                     boxShadow: value ? `0 0 12px ${color}30, inset 0 0 8px ${color}10` : 'none',
                     transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
@@ -3499,9 +3499,9 @@ export const NeuralSelect = ({ value, options, onChange, label, color = _AT.prim
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '8px 12px',
-                    borderRadius: 10,
+                    borderRadius: '10px',
                     cursor: disabled ? 'not-allowed' : 'pointer',
-                    background: open ? `${color}08` : 'rgba(0,0,0,0.3)',
+                    background: open ? `${color}08` : _AT.shadowMd,
                     border: `1px solid ${open || hovered ? color + '40' : _AT.glassBorder}`,
                     transition: 'all 0.2s',
                     opacity: disabled ? 0.5 : 1,
@@ -3524,7 +3524,7 @@ export const NeuralSelect = ({ value, options, onChange, label, color = _AT.prim
                         marginTop: 4,
                         zIndex: 100,
                         background: 'rgba(2,6,20,0.98)',
-                        borderRadius: 10,
+                        borderRadius: '10px',
                         border: `1px solid ${_AT.glassBorderHover}`,
                         boxShadow: `0 8px 32px rgba(0,0,0,0.8), 0 0 20px ${color}10`,
                         overflow: 'hidden',
@@ -3679,9 +3679,9 @@ export const ConnectionPoolBar = ({ total, idle, active, waiting, max }) => {
                 style={{
                     display: 'flex',
                     height: 18,
-                    borderRadius: 10,
+                    borderRadius: '10px',
                     overflow: 'hidden',
-                    background: 'rgba(255,255,255,0.03)',
+                    background: _AT.glass,
                     border: `1px solid ${_AT.glassBorder}`,
                     gap: 1,
                 }}
@@ -3698,7 +3698,7 @@ export const ConnectionPoolBar = ({ total, idle, active, waiting, max }) => {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     fontSize: 9,
-                                    color: '#fff',
+                                    color: _AT.textMain,
                                     fontWeight: 700,
                                     fontFamily: _AT.fontMono,
                                     transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)',
@@ -3774,7 +3774,7 @@ export const SettingRow = ({ name, value, unit, description, category, context, 
                         <span
                             style={{
                                 fontSize: 8,
-                                background: 'rgba(255,255,255,0.04)',
+                                background: _AT.glass,
                                 padding: '1px 6px',
                                 borderRadius: 2,
                                 color: _AT.textDim,
@@ -3834,7 +3834,7 @@ export const RoleBadge = ({ role, showIcon = true, size = 'default' }) => {
                 gap: sm ? 4 : 6,
                 background: `${config.color}10`,
                 padding: sm ? '2px 8px' : '5px 12px',
-                borderRadius: 10,
+                borderRadius: '10px',
                 border: `1px solid ${config.color}22`,
             }}
         >
@@ -3891,7 +3891,7 @@ export const WebSocketStatus = ({ connected, clientCount, lastMessage, uptime, q
                         fontSize: 9,
                         fontFamily: _AT.fontMono,
                         color: _AT.textMuted,
-                        background: 'rgba(255,255,255,0.04)',
+                        background: _AT.glass,
                         padding: '1px 7px',
                         borderRadius: 2,
                     }}
@@ -3915,7 +3915,7 @@ export const NodeLink = ({ from, to, type = 'depends', latency, status = 'active
             <span
                 style={{
                     color: _AT.textMuted,
-                    background: 'rgba(255,255,255,0.04)',
+                    background: _AT.glass,
                     padding: '4px 10px',
                     borderRadius: '3px 0 0 3px',
                     border: `1px solid ${_AT.glassBorder}`,
@@ -3964,7 +3964,7 @@ export const NodeLink = ({ from, to, type = 'depends', latency, status = 'active
             <span
                 style={{
                     color: _AT.textMuted,
-                    background: 'rgba(255,255,255,0.04)',
+                    background: _AT.glass,
                     padding: '4px 10px',
                     borderRadius: '0 3px 3px 0',
                     border: `1px solid ${_AT.glassBorder}`,
@@ -4011,7 +4011,7 @@ export const ExtensionCard = ({ name, version, schema, description, enabled }) =
             {...hoverProps}
             style={{
                 background: hovered ? 'rgba(10,20,40,0.8)' : 'rgba(4,9,28,0.6)',
-                borderRadius: 10,
+                borderRadius: '10px',
                 border: `1px solid ${hovered ? _AT.glassBorderHover : _AT.glassBorder}`,
                 padding: 14,
                 display: 'flex',
@@ -4024,7 +4024,7 @@ export const ExtensionCard = ({ name, version, schema, description, enabled }) =
                 style={{
                     width: 38,
                     height: 38,
-                    borderRadius: 14,
+                    borderRadius: '14px',
                     background: `${_AT.primary}08`,
                     color: _AT.primary,
                     display: 'flex',
@@ -4112,7 +4112,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                 style={{
                     background: 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(123,47,255,0.05) 100%)',
                     border: `1px solid ${_AT.ai}28`,
-                    borderRadius: 14,
+                    borderRadius: '14px',
                     padding: 16,
                     position: 'relative',
                     overflow: 'hidden',
@@ -4200,9 +4200,9 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                 style={{
                     display: 'flex',
                     gap: 2,
-                    background: 'rgba(255,255,255,0.02)',
+                    background: _AT.glass,
                     padding: 3,
-                    borderRadius: 14,
+                    borderRadius: '14px',
                     border: `1px solid ${_AT.glassBorder}`,
                 }}
             >
@@ -4216,7 +4216,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                             border: activeTab === tab ? `1px solid ${_AT.primary}30` : '1px solid transparent',
                             color: activeTab === tab ? _AT.primary : _AT.textMuted,
                             padding: '5px 0',
-                            borderRadius: 10,
+                            borderRadius: '10px',
                             cursor: 'pointer',
                             fontSize: 8,
                             fontWeight: 700,
@@ -4236,7 +4236,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                 style={{
                     flex: 1,
                     background: _AT.deepTeal,
-                    borderRadius: 14,
+                    borderRadius: '14px',
                     border: `1px solid ${_AT.glassBorder}`,
                     overflow: 'hidden',
                     display: 'flex',
@@ -4257,7 +4257,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                     }}
                 >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {['#ef4444', '#f59e0b', '#22c55e'].map((c, i) => (
+                        {[_AT.danger, _AT.warning, _AT.success].map((c, i) => (
                             <div
                                 key={i}
                                 style={{
@@ -4265,7 +4265,7 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                                     height: 8,
                                     borderRadius: '50%',
                                     background: c,
-                                    
+
                                 }}
                             />
                         ))}
@@ -4313,11 +4313,11 @@ export const AIAgentView = ({ type, data, streaming = false }) => {
                                 <div
                                     style={{ color: _AT.textDim, fontSize: 10 }}
                                 >{`-- [${i + 1}] ${q.calls} calls · ${q.duration}ms avg`}</div>
-                                <div style={{ color: '#a5b4fc', marginTop: 4 }}>{q.sql}</div>
+                                <div style={{ color: _AT.info, marginTop: 4 }}>{q.sql}</div>
                             </div>
                         ))}
                     {!['missing', 'unused', 'api'].includes(type) && (
-                        <span style={{ color: '#a5b4fc' }}>{data.problem_query || '-- No context available'}</span>
+                        <span style={{ color: _AT.info }}>{data.problem_query || '-- No context available'}</span>
                     )}
                 </div>
             </div>
@@ -4336,7 +4336,7 @@ export const QueryHistoryItem = ({ entry, onFavourite, onTag, onReplay, onCopy }
             {...hoverProps}
             style={{
                 background: hovered ? 'rgba(7,15,36,0.9)' : 'rgba(4,9,28,0.7)',
-                borderRadius: 10,
+                borderRadius: '10px',
                 border: `1px solid ${hovered ? _AT.glassBorderHover : _AT.glassBorder}`,
                 overflow: 'hidden',
                 transition: 'all 0.2s',
@@ -4420,11 +4420,11 @@ export const QueryHistoryItem = ({ entry, onFavourite, onTag, onReplay, onCopy }
                     <pre
                         style={{
                             fontSize: 11,
-                            color: '#93c5fd',
+                            color: _AT.info,
                             fontFamily: _AT.fontMono,
                             background: _AT.deepTeal,
                             padding: 12,
-                            borderRadius: 10,
+                            borderRadius: '10px',
                             margin: '10px 0',
                             overflowX: 'auto',
                             lineHeight: 1.7,
@@ -4581,7 +4581,7 @@ export const BloatStatusBadge = ({ status, bloatPct }) => {
                 gap: 5,
                 background: `${config.color}10`,
                 padding: '3px 10px',
-                borderRadius: 10,
+                borderRadius: '10px',
                 border: `1px solid ${config.color}25`,
             }}
         >
@@ -4628,7 +4628,7 @@ export const BentoMetric = ({
             onClick={onClick}
             style={{
                 background: _AT.surface,
-                borderRadius: 14,
+                borderRadius: '14px',
                 padding: 20,
                 border: `1px solid ${_AT.glassBorder}`,
                 display: 'flex',
@@ -4665,7 +4665,7 @@ export const BentoMetric = ({
                 <div
                     style={{
                         padding: 8,
-                        borderRadius: 10,
+                        borderRadius: '10px',
                         background: `${color}12`,
                         color,
                     }}
@@ -4766,7 +4766,7 @@ export const CommandPaletteItem = ({
                 alignItems: 'center',
                 gap: 12,
                 padding: '10px 14px',
-                borderRadius: 10,
+                borderRadius: '10px',
                 background: isHighlighted ? `${color}08` : 'transparent',
                 border: `1px solid ${isHighlighted ? color + '22' : 'transparent'}`,
                 borderLeft: `2px solid ${isHighlighted ? color : 'transparent'}`,
@@ -4779,7 +4779,7 @@ export const CommandPaletteItem = ({
                     style={{
                         width: 30,
                         height: 30,
-                        borderRadius: 14,
+                        borderRadius: '14px',
                         background: `${color}12`,
                         color,
                         display: 'flex',
@@ -4810,10 +4810,10 @@ export const CommandPaletteItem = ({
                     style={{
                         fontSize: 9,
                         color: _AT.textDim,
-                        background: 'rgba(255,255,255,0.05)',
+                        background: _AT.glass,
                         border: `1px solid ${_AT.glassBorder}`,
                         padding: '2px 7px',
-                        borderRadius: 10,
+                        borderRadius: '10px',
                         fontFamily: _AT.fontMono,
                     }}
                 >
@@ -4881,25 +4881,25 @@ const ToastContainer = ({ toasts, onRemove }) => {
                 bg: 'rgba(16, 185, 129, 0.1)',
                 border: '1px solid rgba(16, 185, 129, 0.3)',
                 icon: CheckCircle,
-                color: '#10b981',
+                color: _AT.success,
             },
             error: {
                 bg: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
                 icon: XCircle,
-                color: '#ef4444',
+                color: _AT.danger,
             },
             warning: {
                 bg: 'rgba(251, 146, 60, 0.1)',
                 border: '1px solid rgba(251, 146, 60, 0.3)',
                 icon: AlertTriangle,
-                color: '#fb923c',
+                color: _AT.warning,
             },
             info: {
                 bg: 'rgba(59, 130, 246, 0.1)',
                 border: '1px solid rgba(59, 130, 246, 0.3)',
                 icon: Info,
-                color: '#3b82f6',
+                color: _AT.info,
             },
         };
         return baseStyles[type] || baseStyles.info;
@@ -4933,12 +4933,12 @@ const ToastContainer = ({ toasts, onRemove }) => {
                             style={{
                                 background: style.bg,
                                 border: style.border,
-                                borderRadius: 12,
+                                borderRadius: '12px',
                                 padding: '12px 16px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 12,
-                                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25), inset 0 0.5px 0 rgba(255,255,255,0.1)',
+                                boxShadow: `0 8px 24px rgba(0, 0, 0, 0.25), inset 0 0.5px 0 rgba(255,255,255,0.1)`,
                                 fontFamily: _AT.fontBody,
                                 fontSize: 13,
                                 color: _AT.textMain,
@@ -4988,7 +4988,7 @@ export const Breadcrumbs = ({ items, onNavigate }) => {
                 fontSize: 12,
                 color: _AT.textMuted,
                 borderBottom: `1px solid ${_AT.grid}`,
-                background: 'rgba(0, 0, 0, 0.2)',
+                background: _AT.shadowMd,
                 fontFamily: _AT.fontMono,
             }}
         >
@@ -5008,7 +5008,7 @@ export const Breadcrumbs = ({ items, onNavigate }) => {
                             fontFamily: _AT.fontMono,
                             fontSize: 12,
                             padding: '2px 4px',
-                            borderRadius: 14,
+                            borderRadius: '14px',
                         }}
                         onMouseEnter={(e) => {
                             if (idx !== items.length - 1 && onNavigate) {
@@ -5042,7 +5042,7 @@ export const SkeletonCard = ({ width = '100%', height = 200 }) => {
             style={{
                 width,
                 height,
-                borderRadius: 8,
+                borderRadius: '12px',
                 background:
                     'linear-gradient(90deg, rgba(0, 245, 255, 0.05) 0%, rgba(123, 47, 255, 0.05) 50%, rgba(0, 245, 255, 0.05) 100%)',
                 backgroundSize: '200% 100%',
@@ -5074,7 +5074,7 @@ export const ProgressBar = ({ progress = 0, isVisible = true }) => {
                 animation: 'waveFlow 2s ease-in-out infinite',
                 zIndex: 500,
                 transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: '0 0 10px rgba(0, 245, 255, 0.6)',
+                boxShadow: `0 0 10px rgba(0, 245, 255, 0.6)`,
             }}
         />
     );

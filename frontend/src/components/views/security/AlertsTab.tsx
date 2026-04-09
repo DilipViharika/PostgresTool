@@ -112,13 +112,13 @@ const SeverityBadge = ({ severity, small }) => {
 };
 
 const Toggle = ({ on, onChange, accent = THEME.primary }) => (
-    <button onClick={onChange} style={{ width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', padding: 0, background: on ? accent : THEME.grid, position: 'relative', transition: 'background 0.25s', outline: 'none', flexShrink: 0 }} aria-checked={on} role="switch">
+    <button onClick={onChange} style={{ width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', padding: 0, background: on ? accent : THEME.glassBorder, position: 'relative', transition: 'background 0.25s', outline: 'none', flexShrink: 0 }} aria-checked={on} role="switch">
       <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: on ? 19 : 3, transition: 'left 0.2s cubic-bezier(.4,0,.2,1)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }} />
     </button>
 );
 
 const ChannelDot = ({ active, label }) => (
-    <span title={label} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 10, background: active ? `${THEME.primary}12` : THEME.grid, border: `1px solid ${active ? `${THEME.primary}40` : THEME.grid}`, fontSize: 8, fontWeight: 700, color: active ? THEME.primary : THEME.textMuted, fontFamily: THEME.fontMono, cursor: 'default', transition: 'all 0.2s' }}>
+    <span title={label} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: 10, background: active ? `${THEME.primary}12` : THEME.glassBorder, border: `1px solid ${active ? `${THEME.primary}40` : THEME.glassBorder}`, fontSize: 8, fontWeight: 700, color: active ? THEME.primary : THEME.textMuted, fontFamily: THEME.fontMono, cursor: 'default', transition: 'all 0.2s' }}>
     {label.slice(0,2).toUpperCase()}
   </span>
 );
@@ -140,7 +140,7 @@ const MetricCard = ({ metricKey, data }) => {
   const pct = Math.min(100, (data.current / m.max) * 100);
   const color = pct > 85 ? SEVERITY.critical.color : pct > 65 ? SEVERITY.warning.color : SEVERITY.info.color;
   return (
-      <div style={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, ${color}00, ${color}, ${color}00)`, opacity: 0.4 }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -157,7 +157,7 @@ const MetricCard = ({ metricKey, data }) => {
           </span>
           <Sparkline data={data.data} color={color} />
         </div>
-        <div style={{ height: 2, background: THEME.grid, borderRadius: 1, overflow: 'hidden' }}>
+        <div style={{ height: 2, background: THEME.glassBorder, borderRadius: 1, overflow: 'hidden' }}>
           <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${color}70, ${color})`, borderRadius: 1, transition: 'width 0.5s ease' }} />
         </div>
       </div>
@@ -344,12 +344,12 @@ const VIGILDashboard = () => {
   // Styles
   const css = {
     wrap:     { color: THEME.textMain, fontFamily: THEME.fontMono },
-    card:     { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 12 },
-    input:    { background: THEME.surfaceHover, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '6px 10px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
+    card:     { background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12 },
+    input:    { background: THEME.surfaceHover, border: `1px solid ${THEME.glassBorder}`, borderRadius: 6, padding: '6px 10px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
     label:    { display: 'block', fontSize: 11, color: THEME.textMuted, marginBottom: 5, fontWeight: 600, letterSpacing: '0.02em' },
     tab:      (on) => ({ background: on ? 'rgba(99,102,241,0.08)' : 'transparent', border: `1px solid ${on ? 'rgba(99,102,241,0.2)' : 'transparent'}`, borderRadius: 8, padding: '6px 12px', color: on ? THEME.primary : THEME.textMuted, cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s', outline: 'none', letterSpacing: '0.02em', fontFamily: 'inherit' }),
-    btn:      (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.02em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: THEME.primary, color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.08)', color: SEVERITY.critical.color, border: `1px solid rgba(239,68,68,0.2)` } : v === 'success' ? { background: 'rgba(34,211,165,0.08)', color: SEVERITY.success.color, border: `1px solid rgba(34,211,165,0.2)` } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.grid}` }) }),
-    modalBox: { background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 12, width: 520, maxWidth: '95vw', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', color: THEME.textMain, maxHeight: '90vh', overflowY: 'auto' },
+    btn:      (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.02em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: THEME.primary, color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.08)', color: SEVERITY.critical.color, border: `1px solid rgba(239,68,68,0.2)` } : v === 'success' ? { background: 'rgba(34,211,165,0.08)', color: SEVERITY.success.color, border: `1px solid rgba(34,211,165,0.2)` } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.glassBorder}` }) }),
+    modalBox: { background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, width: 520, maxWidth: '95vw', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', color: THEME.textMain, maxHeight: '90vh', overflowY: 'auto' },
     sHdr:     { fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em',  marginBottom: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 },
   };
 
@@ -381,7 +381,7 @@ const VIGILDashboard = () => {
 
   // ─── RENDER: COMMENT PANEL ─────────────────────────────────────
   const renderCommentPanel = (alert) => (
-      <div style={{ background: THEME.bg, borderTop: `1px solid ${THEME.grid}`, padding: '12px 14px 12px 48px' }}>
+      <div style={{ background: THEME.bg, borderTop: `1px solid ${THEME.glassBorder}`, padding: '12px 14px 12px 48px' }}>
         <div style={{ ...css.sHdr, marginBottom: 10 }}>
           <MessageSquare size={10} /> Incident Notes &amp; Comments ({alert.comments?.length || 0})
         </div>
@@ -389,7 +389,7 @@ const VIGILDashboard = () => {
           {(alert.comments || []).map(c => (
               <div key={c.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <Avatar initials={c.avatar} size={22} />
-                <div style={{ flex: 1, background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 8, padding: '8px 12px' }}>
+                <div style={{ flex: 1, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
                     <span style={{ fontSize: 10, color: THEME.primary, fontWeight: 700 }}>{c.author}</span>
                     <span style={{ fontSize: 9, color: THEME.textMuted }}>{formatAge(c.timestamp)}</span>
@@ -432,7 +432,7 @@ const VIGILDashboard = () => {
     const score = ir.severity_score;
     const scoreColor = score >= 8 ? SEVERITY.critical.color : score >= 5 ? SEVERITY.warning.color : SEVERITY.info.color;
     return (
-        <div style={{ background: THEME.bg, borderTop: `1px solid ${THEME.grid}`, padding: '12px 14px 12px 48px' }}>
+        <div style={{ background: THEME.bg, borderTop: `1px solid ${THEME.glassBorder}`, padding: '12px 14px 12px 48px' }}>
           <div style={{ ...css.sHdr, marginBottom: 12 }}><GitMerge size={10} /> Impact Radius Estimator</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr', gap: 12, alignItems: 'center', marginBottom: 12 }}>
             <div style={{ textAlign: 'center' }}>
@@ -460,7 +460,7 @@ const VIGILDashboard = () => {
               <span style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em' }}>BLAST RADIUS</span>
               <span style={{ fontSize: 9, color: scoreColor }}>{score >= 8 ? 'CRITICAL — INCIDENT RESPONSE REQUIRED' : score >= 5 ? 'SIGNIFICANT — MONITOR CLOSELY' : 'CONTAINED — LOW RISK'}</span>
             </div>
-            <div style={{ height: 6, background: THEME.grid, borderRadius: 10, overflow: 'hidden' }}>
+            <div style={{ height: 6, background: THEME.glassBorder, borderRadius: 10, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${score * 10}%`, background: `linear-gradient(90deg, ${scoreColor}80, ${scoreColor})`, borderRadius: 3 }} />
             </div>
           </div>
@@ -545,7 +545,7 @@ const VIGILDashboard = () => {
                 return (
                     <div key={alert.id}>
                       {hasPending && renderApprovalBanner(alert)}
-                      <div style={{ padding: '12px 14px', borderBottom: idx < filteredAlerts.length - 1 || isDetail || isComments || isImpact ? `1px solid ${THEME.grid}` : 'none', display: 'flex', gap: 12, alignItems: 'flex-start', background: isSelected ? `${THEME.primary}06` : alert.acknowledged ? THEME.bg : 'transparent', borderLeft: `2px solid ${isSelected ? THEME.primary : s.color}`, transition: 'background 0.15s' }}>
+                      <div style={{ padding: '12px 14px', borderBottom: idx < filteredAlerts.length - 1 || isDetail || isComments || isImpact ? `1px solid ${THEME.glassBorder}` : 'none', display: 'flex', gap: 12, alignItems: 'flex-start', background: isSelected ? `${THEME.primary}06` : alert.acknowledged ? THEME.bg : 'transparent', borderLeft: `2px solid ${isSelected ? THEME.primary : s.color}`, transition: 'background 0.15s' }}>
                         <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(alert.id)} style={{ accentColor: THEME.primary, marginTop: 3, cursor: 'pointer', flexShrink: 0 }} />
                         <div style={{ marginTop: 2, flexShrink: 0 }}>
                           {!alert.acknowledged ? <PulseDot color={s.color} size={8} /> : <Icon size={13} color={THEME.textMuted} />}
@@ -560,10 +560,10 @@ const VIGILDashboard = () => {
                             <span style={{ fontSize: 11, color: THEME.textMuted, whiteSpace: 'nowrap', flexShrink: 0 }}>{formatAge(alert.timestamp)}</span>
                           </div>
                           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: alert.acknowledged ? 0 : 10 }}>
-                            <span style={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '2px 7px', fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{alert.source}</span>
+                            <span style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 6, padding: '2px 7px', fontSize: 10, color: THEME.textMuted, fontFamily: THEME.fontMono }}>{alert.source}</span>
                             <span style={{ fontSize: 11, color: THEME.textMuted,  letterSpacing: '0.04em' }}>{alert.category}</span>
                             <span style={{ fontSize: 11, color: THEME.textMuted }}>⟵ {alert.rule}</span>
-                            {alert.tags?.map(t => <span key={t} style={{ fontSize: 9, color: THEME.textMuted, borderRadius: 2, border: `1px solid ${THEME.grid}`, padding: '1px 5px' }}>#{t}</span>)}
+                            {alert.tags?.map(t => <span key={t} style={{ fontSize: 9, color: THEME.textMuted, borderRadius: 2, border: `1px solid ${THEME.glassBorder}`, padding: '1px 5px' }}>#{t}</span>)}
                             {alert.acknowledged && <span style={{ color: THEME.success, fontSize: 11 }}>✓ acked by {alert.acknowledged_by}</span>}
                           </div>
                           {!alert.acknowledged && (
@@ -596,7 +596,7 @@ const VIGILDashboard = () => {
                         </div>
                       </div>
                       {isDetail && (
-                          <div style={{ background: THEME.bg, borderBottom: `1px solid ${THEME.grid}`, padding: '12px 14px 12px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+                          <div style={{ background: THEME.bg, borderBottom: `1px solid ${THEME.glassBorder}`, padding: '12px 14px 12px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
                             {[
                               { label: 'First Seen',  val: formatTime(alert.timestamp - (alert.count - 1) * 60000) },
                               { label: 'Last Seen',   val: formatTime(alert.timestamp) },
@@ -690,7 +690,7 @@ const VIGILDashboard = () => {
           {alertRules.map(rule => {
             const s = SEVERITY[rule.severity] || SEVERITY.info;
             return (
-                <div key={rule.id} style={{ ...css.card, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, borderLeft: `2px solid ${rule.active ? s.color : THEME.grid}`, opacity: rule.active ? 1 : 0.55 }}>
+                <div key={rule.id} style={{ ...css.card, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, borderLeft: `2px solid ${rule.active ? s.color : THEME.glassBorder}`, opacity: rule.active ? 1 : 0.55 }}>
                   <Toggle on={rule.active} onChange={() => toggleRule(rule.id)} accent={s.color} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
@@ -753,7 +753,7 @@ const VIGILDashboard = () => {
                       <span style={{ color: THEME.textMuted, marginLeft: 12 }}>Next: {sw.nextRun}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {sw.rules.map(r => <span key={r} style={{ fontSize: 9, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '1px 6px' }}>{r}</span>)}
+                      {sw.rules.map(r => <span key={r} style={{ fontSize: 9, color: THEME.textMuted, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 6, padding: '1px 6px' }}>{r}</span>)}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -809,7 +809,7 @@ const VIGILDashboard = () => {
                               {ch.quota.used.toLocaleString()} / {ch.quota.limit.toLocaleString()}
                             </span>
                           </div>
-                          <div style={{ height: 5, background: THEME.grid, borderRadius: 2, overflow: 'hidden', marginBottom: 3 }}>
+                          <div style={{ height: 5, background: THEME.glassBorder, borderRadius: 2, overflow: 'hidden', marginBottom: 3 }}>
                             <div style={{ height: '100%', width: `${quotaPct * 100}%`, background: quotaPct > 0.85 ? `linear-gradient(90deg, ${SEVERITY.warning.color}80, ${SEVERITY.warning.color})` : 'linear-gradient(90deg, ${THEME.primary}80, ${THEME.primary})', borderRadius: 2, transition: 'width 0.5s' }} />
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -833,13 +833,13 @@ const VIGILDashboard = () => {
           </div>
         </div>
         <div style={{ ...css.card, overflow: 'hidden' }}>
-          <div style={{ padding: '10px 14px', borderBottom: `1px solid ${THEME.grid}`, display: 'grid', gridTemplateColumns: '80px 1fr 80px 90px 100px', gap: 12, alignItems: 'center' }}>
+          <div style={{ padding: '10px 14px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'grid', gridTemplateColumns: '80px 1fr 80px 90px 100px', gap: 12, alignItems: 'center' }}>
             {['SEVERITY', 'MESSAGE', 'DURATION', 'RULE', 'RESOLVED AT'].map(h => (
                 <div key={h} style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em', fontWeight: 700 }}>{h}</div>
             ))}
           </div>
           {filteredHistory.map((item, i) => (
-              <div key={item.id} style={{ padding: '12px 14px', borderBottom: i < filteredHistory.length - 1 ? `1px solid ${THEME.grid}` : 'none', display: 'grid', gridTemplateColumns: '80px 1fr 80px 90px 100px', gap: 12, alignItems: 'center' }}>
+              <div key={item.id} style={{ padding: '12px 14px', borderBottom: i < filteredHistory.length - 1 ? `1px solid ${THEME.glassBorder}` : 'none', display: 'grid', gridTemplateColumns: '80px 1fr 80px 90px 100px', gap: 12, alignItems: 'center' }}>
                 <SeverityBadge severity={item.severity} small />
                 <div>
                   <div style={{ fontSize: 12, color: THEME.textMain, fontFamily: THEME.fontBody, marginBottom: 3 }}>{item.message}</div>
@@ -918,7 +918,7 @@ const VIGILDashboard = () => {
                 <label style={css.label}>Notification Channels</label>
                 <div style={{ display: 'flex', gap: 12 }}>
                   {[{ key: 'email', label: 'Email', icon: '✉' }, { key: 'slack', label: 'Slack', icon: '#' }, { key: 'pagerduty', label: 'PagerDuty', icon: '⚡' }].map(ch => (
-                      <label key={ch.key} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 12px', background: newRule.channels[ch.key] ? THEME.primary+'10' : THEME.surface, border: `1px solid ${newRule.channels[ch.key] ? THEME.primary+'20' : THEME.grid}`, borderRadius: 6, transition: 'all 0.15s' }}>
+                      <label key={ch.key} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 12px', background: newRule.channels[ch.key] ? THEME.primary+'10' : THEME.surface, border: `1px solid ${newRule.channels[ch.key] ? THEME.primary+'20' : THEME.glassBorder}`, borderRadius: 6, transition: 'all 0.15s' }}>
                         <input type="checkbox" checked={!!newRule.channels[ch.key]} style={{ accentColor: THEME.primary }} onChange={e => setNewRule(r => ({ ...r, channels: { ...r.channels, [ch.key]: e.target.checked } }))} />
                         <span style={{ fontSize: 12, color: newRule.channels[ch.key] ? THEME.primary : THEME.textMuted }}>{ch.icon} {ch.label}</span>
                       </label>
@@ -926,7 +926,7 @@ const VIGILDashboard = () => {
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20, paddingTop: 16, borderTop: `1px solid ${THEME.grid}` }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20, paddingTop: 16, borderTop: `1px solid ${THEME.glassBorder}` }}>
               <button type="button" onClick={() => setShowCreateModal(false)} style={css.btn('ghost')}>Cancel</button>
               <button type="submit" style={css.btn('primary')}><Check size={13} /> {editingRule ? 'Save Changes' : 'Create Rule'}</button>
             </div>
@@ -956,12 +956,12 @@ const VIGILDashboard = () => {
           ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
           ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
           ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
-          select option { background: #111827; color: #fff; }
+          select option { background: var(--theme-bgAlt); color: #fff; }
           input[type=number] { -moz-appearance: textfield; }
           input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
           .alert-card {
               background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
-              border: 1px solid ${THEME.grid};
+              border: 1px solid ${THEME.glassBorder};
               border-radius: 14px;
               padding: 20px;
               position: relative;
@@ -991,7 +991,7 @@ const VIGILDashboard = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
               <Terminal size={16} color={THEME.primary} />
               <span style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, letterSpacing: '0.02em' }}>VIGIL</span>
-              <span style={{ fontSize: 9, color: THEME.textMuted, border: `1px solid ${THEME.grid}`, borderRadius: 6, padding: '2px 6px', letterSpacing: '0.02em' }}>v3.0</span>
+              <span style={{ fontSize: 9, color: THEME.textMuted, border: `1px solid ${THEME.glassBorder}`, borderRadius: 6, padding: '2px 6px', letterSpacing: '0.02em' }}>v3.0</span>
               {maintenanceMode && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.06)', border: `1px solid ${SEVERITY.warning.color}20`, color: SEVERITY.warning.color, borderRadius: 6, padding: '2px 8px', letterSpacing: '0.02em', fontWeight: 700 }}>MAINTENANCE WINDOW</span>}
             </div>
             <div style={{ fontSize: 11, color: THEME.textMuted, display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -1004,7 +1004,7 @@ const VIGILDashboard = () => {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button onClick={() => setSoundEnabled(s => !s)} title={soundEnabled ? 'Mute alerts' : 'Enable sounds'} style={{ background: THEME.surface, border: `1px solid ${THEME.grid}`, borderRadius: 6, color: THEME.textMuted, cursor: 'pointer', padding: '6px 8px' }}>
+            <button onClick={() => setSoundEnabled(s => !s)} title={soundEnabled ? 'Mute alerts' : 'Enable sounds'} style={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 6, color: THEME.textMuted, cursor: 'pointer', padding: '6px 8px' }}>
               {soundEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
             </button>
           </div>
@@ -1018,7 +1018,7 @@ const VIGILDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 6, paddingBottom: 12, borderBottom: `1px solid ${THEME.grid}`, marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 6, paddingBottom: 12, borderBottom: `1px solid ${THEME.glassBorder}`, marginBottom: 16 }}>
           <button onClick={() => setActiveTab('active')} style={css.tab(activeTab === 'active')}>
             <Bell size={12} /> ACTIVE
             {stats.unacked > 0 && <span style={{ background: SEVERITY.critical.color, color: '#fff', borderRadius: 6, padding: '1px 5px', fontSize: 9, fontWeight: 700 }}>{stats.unacked}</span>}

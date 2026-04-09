@@ -95,7 +95,7 @@ const S = {
         transition: 'all 0.25s ease',
         position: 'relative',
         overflow: 'hidden',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02)',
+        boxShadow: THEME.shadowSm,
         '--pipe-color': accent,
     }),
     badge: (color) => ({
@@ -105,7 +105,7 @@ const S = {
         border: `1px solid ${color}44`, letterSpacing: '0.02em',
     }),
     btn: (bg, border, color) => ({
-        background: bg, border: `1px solid ${border}`, borderRadius: 7,
+        background: bg, border: `1px solid ${border}`, borderRadius: 10,
         padding: '8px 14px', color, cursor: 'pointer', fontSize: 12, fontWeight: 600,
         transition: 'all 0.15s', display: 'inline-flex', alignItems: 'center', gap: 6,
         letterSpacing: '0.02em',
@@ -114,7 +114,7 @@ const S = {
         width: '100%', boxSizing: 'border-box',
         background: THEME.surfaceHover,
         border: `1px solid ${hasError ? THEME.danger : THEME.glassBorder}`,
-        borderRadius: 7, padding: '9px 12px', color: THEME.textMain, fontSize: 13,
+        borderRadius: 10, padding: '9px 12px', color: THEME.textMain, fontSize: 13,
         outline: 'none', transition: 'border-color 0.2s',
         fontFamily: FONT_UI,
     }),
@@ -153,7 +153,7 @@ const DBTypeSelector = ({ value, onChange }) => {
                     position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 200,
                     background: THEME.surfaceRaised, border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: 10, overflow: 'hidden',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                    boxShadow: THEME.shadowLg,
                 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', maxHeight: 360, overflowY: 'auto' }}>
                         {Object.entries(DB_TYPES).map(([key, db]) => (
@@ -203,7 +203,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                         id={`chk-${f}`}
                         checked={!!formData[f]}
                         onChange={e => setFormData(p => ({ ...p, [f]: e.target.checked }))}
-                        style={{ cursor: 'pointer', accentColor: '#6366f1', width: 16, height: 16 }}
+                        style={{ cursor: 'pointer', accentColor: THEME.primary, width: 16, height: 16 }}
                     />
                     <label htmlFor={`chk-${f}`} style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: THEME.textDim }}>
                         {meta.label}
@@ -224,10 +224,10 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                         placeholder={meta.placeholder}
                         rows={5}
                         style={{ ...S.input(!!formErrors[f]), resize: 'vertical', lineHeight: 1.5 }}
-                        onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
-                        onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : THEME.glassBorder}
+                        onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
+                        onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? THEME.danger : THEME.glassBorder}
                     />
-                    {formErrors[f] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
+                    {formErrors[f] && <div style={{ color: THEME.danger, fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
                 </div>
             );
             i++;
@@ -248,10 +248,10 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                                     onChange={e => setFormData(p => ({ ...p, [field]: e.target.value }))}
                                     placeholder={field === 'port' ? (DB_TYPES[dbType].defaultPort || '') : m.placeholder}
                                     style={S.input(!!formErrors[field])}
-                                    onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
-                                    onBlur={e => e.currentTarget.style.borderColor = formErrors[field] ? '#ef4444' : THEME.glassBorder}
+                                    onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
+                                    onBlur={e => e.currentTarget.style.borderColor = formErrors[field] ? THEME.danger : THEME.glassBorder}
                                 />
-                                {formErrors[field] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[field]}</div>}
+                                {formErrors[field] && <div style={{ color: THEME.danger, fontSize: 11, marginTop: 4 }}>{formErrors[field]}</div>}
                             </div>
                         );
                     })}
@@ -272,8 +272,8 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                             onChange={e => setFormData(p => ({ ...p, [f]: e.target.value }))}
                             placeholder={meta.placeholder}
                             style={{ ...S.input(!!formErrors[f]), paddingRight: 42 }}
-                            onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
-                            onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : THEME.glassBorder}
+                            onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
+                            onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? THEME.danger : THEME.glassBorder}
                         />
                         <button
                             type="button"
@@ -286,7 +286,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                             {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                         </button>
                     </div>
-                    {formErrors[f] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
+                    {formErrors[f] && <div style={{ color: THEME.danger, fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
                 </div>
             );
             i++;
@@ -302,10 +302,10 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
                     onChange={e => setFormData(p => ({ ...p, [f]: e.target.value }))}
                     placeholder={meta.placeholder}
                     style={S.input(!!formErrors[f])}
-                    onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
-                    onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? '#ef4444' : THEME.glassBorder}
+                    onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
+                    onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? THEME.danger : THEME.glassBorder}
                 />
-                {formErrors[f] && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
+                {formErrors[f] && <div style={{ color: THEME.danger, fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
             </div>
         );
         i++;
@@ -329,7 +329,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
 
     return (
         <div style={{
-            border: `1px solid ${formData.sshEnabled ? '#6366f1AA' : THEME.glassBorder}`,
+            border: `1px solid ${formData.sshEnabled ? THEME.primary : THEME.glassBorder}`,
             borderRadius: 10,
             overflow: 'hidden',
             transition: 'border-color 0.2s',
@@ -340,17 +340,17 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                 onClick={() => toggle(!formData.sshEnabled)}
                 style={{
                     width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '12px 16px', background: formData.sshEnabled ? '#6366f108' : THEME.surfaceHover,
+                    padding: '12px 16px', background: formData.sshEnabled ? '${THEME.primary}08' : THEME.surfaceHover,
                     border: 'none', cursor: 'pointer', textAlign: 'left',
                     borderBottom: open ? `1px solid ${THEME.glassBorder}` : 'none',
                     transition: 'background 0.15s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = formData.sshEnabled ? '#6366f114' : THEME.surface}
-                onMouseLeave={e => e.currentTarget.style.background = formData.sshEnabled ? '#6366f108' : THEME.surfaceHover}
+                onMouseEnter={e => e.currentTarget.style.background = formData.sshEnabled ? '${THEME.primary}14' : THEME.surface}
+                onMouseLeave={e => e.currentTarget.style.background = formData.sshEnabled ? '${THEME.primary}08' : THEME.surfaceHover}
             >
-                <Terminal size={15} color={formData.sshEnabled ? '#6366f1' : THEME.textMuted} />
+                <Terminal size={15} color={formData.sshEnabled ? THEME.primary : THEME.textMuted} />
                 <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: formData.sshEnabled ? '#6366f1' : THEME.textMain }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: formData.sshEnabled ? THEME.primary : THEME.textMain }}>
                         SSH Tunnel
                     </div>
                     <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 1 }}>
@@ -363,14 +363,14 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                 <div
                     style={{
                         width: 36, height: 20, borderRadius: 10, position: 'relative',
-                        background: formData.sshEnabled ? '#6366f1' : THEME.glassBorder,
+                        background: formData.sshEnabled ? THEME.primary : THEME.glassBorder,
                         transition: 'background 0.2s', flexShrink: 0,
                     }}
                 >
                     <div style={{
                         position: 'absolute', top: 3, left: formData.sshEnabled ? 19 : 3,
                         width: 14, height: 14, borderRadius: '50%', background: '#fff',
-                        transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                        transition: 'left 0.2s', boxShadow: THEME.shadowMd,
                     }} />
                 </div>
                 <ChevronRight size={14} color={THEME.textMuted}
@@ -383,15 +383,15 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
 
                     {/* Info banner */}
                     <div style={{
-                        display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 7,
-                        background: '#6366f108', border: '1px solid #6366f130',
+                        display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 10,
+                        background: '${THEME.primary}08', border: '1px solid ${THEME.primary}30',
                         fontSize: 12, color: THEME.textMuted, lineHeight: 1.5,
                     }}>
-                        <Lock size={13} color="#6366f1" style={{ flexShrink: 0, marginTop: 1 }} />
+                        <Lock size={13} color={THEME.primary} style={{ flexShrink: 0, marginTop: 1 }} />
                         <span>
                             Traffic is routed through your bastion/jump host via local port forwarding.
                             The DB host below should be the <strong style={{ color: THEME.textDim }}>private</strong> address
-                            reachable from the bastion (e.g. <code style={{ fontFamily: 'monospace', color: '#6366f1' }}>db.internal</code> or <code style={{ fontFamily: 'monospace', color: '#6366f1' }}>10.0.1.5</code>).
+                            reachable from the bastion (e.g. <code style={{ fontFamily: 'monospace', color: THEME.primary }}>db.internal</code> or <code style={{ fontFamily: 'monospace', color: THEME.primary }}>10.0.1.5</code>).
                         </span>
                     </div>
 
@@ -404,7 +404,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                                 onChange={e => setFormData(p => ({ ...p, sshHost: e.target.value }))}
                                 placeholder="bastion.example.com"
                                 style={S.input(!formData.sshHost && formData.sshEnabled)}
-                                onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
                                 onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
                             />
                         </div>
@@ -415,7 +415,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                                 onChange={e => setFormData(p => ({ ...p, sshPort: e.target.value }))}
                                 placeholder="22"
                                 style={S.input(false)}
-                                onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
                                 onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
                             />
                         </div>
@@ -429,7 +429,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                             onChange={e => setFormData(p => ({ ...p, sshUser: e.target.value }))}
                             placeholder="ec2-user"
                             style={S.input(!formData.sshUser && formData.sshEnabled)}
-                            onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                            onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
                             onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
                         />
                     </div>
@@ -442,11 +442,11 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                                 <button key={val} type="button"
                                     onClick={() => setFormData(p => ({ ...p, sshAuthType: val }))}
                                     style={{
-                                        flex: 1, padding: '8px 12px', borderRadius: 7, fontSize: 12, fontWeight: 600,
+                                        flex: 1, padding: '8px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600,
                                         cursor: 'pointer', transition: 'all 0.15s',
-                                        background: formData.sshAuthType === val ? '#6366f122' : THEME.surfaceHover,
-                                        border: `1px solid ${formData.sshAuthType === val ? '#6366f166' : THEME.glassBorder}`,
-                                        color: formData.sshAuthType === val ? '#6366f1' : THEME.textMuted,
+                                        background: formData.sshAuthType === val ? '${THEME.primary}22' : THEME.surfaceHover,
+                                        border: `1px solid ${formData.sshAuthType === val ? '${THEME.primary}66' : THEME.glassBorder}`,
+                                        color: formData.sshAuthType === val ? THEME.primary : THEME.textMuted,
                                     }}
                                 >{label}</button>
                             ))}
@@ -467,7 +467,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                                     resize: 'vertical', lineHeight: 1.4,
                                     fontFamily: 'JetBrains Mono, Fira Code, monospace', fontSize: 11,
                                 }}
-                                onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
                                 onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
                             />
                             <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4 }}>
@@ -483,7 +483,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                                     onChange={e => setFormData(p => ({ ...p, sshPassphrase: e.target.value }))}
                                     placeholder="Leave blank if key has no passphrase"
                                     style={{ ...S.input(false), paddingRight: 42 }}
-                                    onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                    onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
                                     onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
                                 />
                                 <button type="button" onClick={() => setShowPassphrase(p => !p)}
@@ -505,7 +505,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                                     onChange={e => setFormData(p => ({ ...p, sshPassword: e.target.value }))}
                                     placeholder="••••••••"
                                     style={{ ...S.input(!formData.sshPassword && formData.sshEnabled), paddingRight: 42 }}
-                                    onFocus={e => e.currentTarget.style.borderColor = '#6366f1'}
+                                    onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
                                     onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
                                 />
                                 <button type="button" onClick={() => setShowSshPass(p => !p)}
@@ -580,8 +580,8 @@ const LeakDetector = () => {
                     </div>
                 </div>
                 {suspects.length > 0 && (
-                    <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700,
-                        background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}>
+                    <span style={{ padding: '3px 10px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+                        background: 'rgba(239,68,68,0.15)', color: THEME.danger, border: '1px solid rgba(239,68,68,0.3)' }}>
                         {suspects.length} suspect{suspects.length !== 1 ? 's' : ''}
                     </span>
                 )}
@@ -589,12 +589,12 @@ const LeakDetector = () => {
                     <label style={{ fontSize: 11, color: THEME.textDim, whiteSpace: 'nowrap' }}>Threshold:</label>
                     <select value={threshold} onChange={e => { setThreshold(Number(e.target.value)); e.stopPropagation(); }}
                         onClick={e => e.stopPropagation()}
-                        style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, border: `1px solid ${THEME.glassBorder}`,
+                        style={{ fontSize: 12, padding: '3px 8px', borderRadius: 10, border: `1px solid ${THEME.glassBorder}`,
                             background: THEME.bg, color: THEME.textMain, cursor: 'pointer' }}>
                         {[5, 15, 30, 60, 120].map(m => <option key={m} value={m}>{m} min</option>)}
                     </select>
                     <button onClick={e => { e.stopPropagation(); scan(); }}
-                        style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${THEME.glassBorder}`,
+                        style={{ padding: '4px 10px', borderRadius: 10, border: `1px solid ${THEME.glassBorder}`,
                             background: 'transparent', color: THEME.textDim, cursor: 'pointer', fontSize: 12 }}>
                         {loading ? '⟳' : '↻ Scan'}
                     </button>
@@ -623,12 +623,12 @@ const LeakDetector = () => {
                                     background: s.state === 'idle in transaction' ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
                                     <span style={{ color: THEME.textMuted, fontFamily: THEME.fontMono }}>{s.pid}</span>
                                     <span style={{ color: THEME.textMain, fontWeight: 600 }}>{s.usename}</span>
-                                    <span style={{ padding: '2px 8px', borderRadius: 5, fontSize: 11, fontWeight: 600,
+                                    <span style={{ padding: '2px 8px', borderRadius: 8, fontSize: 11, fontWeight: 600,
                                         background: s.state === 'idle in transaction' ? 'rgba(239,68,68,0.15)' : 'rgba(249,115,22,0.12)',
-                                        color: s.state === 'idle in transaction' ? '#ef4444' : '#f97316' }}>
+                                        color: s.state === 'idle in transaction' ? THEME.danger : THEME.warning }}>
                                         {s.state}
                                     </span>
-                                    <span style={{ color: '#ef4444', fontWeight: 700, fontFamily: THEME.fontMono }}>{fmtDur(s.duration_sec)}</span>
+                                    <span style={{ color: THEME.danger, fontWeight: 700, fontFamily: THEME.fontMono }}>{fmtDur(s.duration_sec)}</span>
                                     <span style={{ color: THEME.textDim, fontFamily: THEME.fontMono, fontSize: 11,
                                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {s.query?.slice(0, 60) || '—'}
@@ -637,7 +637,7 @@ const LeakDetector = () => {
                                 </div>
                             ))}
                             <div style={{ padding: '12px 20px', fontSize: 11, color: THEME.textDim, borderTop: `1px solid ${THEME.glassBorder}22` }}>
-                                💡 Tip: <code style={{ background: THEME.bg, padding: '2px 6px', borderRadius: 4 }}>SELECT pg_terminate_backend(pid)</code> to terminate a leaked connection
+                                💡 Tip: <code style={{ background: THEME.bg, padding: '2px 6px', borderRadius: 8 }}>SELECT pg_terminate_backend(pid)</code> to terminate a leaked connection
                             </div>
                         </>
                     )}
@@ -925,7 +925,7 @@ const ConnectionsTab = () => {
                     padding: '12px 18px', borderRadius: 12, maxWidth: 420,
                     background: saveSuccess.includes('failed') ? `${THEME.danger}12` : `${THEME.success}12`,
                     border: `1px solid ${saveSuccess.includes('failed') ? THEME.danger : THEME.success}30`,
-                    boxShadow: '0 8px 28px rgba(0,0,0,.3)',
+                    boxShadow: THEME.shadowLg,
                     display: 'flex', alignItems: 'center', gap: 10,
                     animation: 'fadeUp .3s ease', cursor: 'pointer',
                 }} onClick={() => setSaveSuccess('')}>
@@ -1161,9 +1161,9 @@ const ConnectionsTab = () => {
                                             <div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                                                     <span style={{ fontSize: 15, fontWeight: 700, color: THEME.textMain }}>{conn.name}</span>
-                                                    {conn.isDefault && <span style={S.badge('#4ade80')}>DEFAULT</span>}
+                                                    {conn.isDefault && <span style={S.badge(THEME.success)}>DEFAULT</span>}
                                                     {isActive && <span style={S.badge(dbMeta.accent)}>ACTIVE</span>}
-                                                    {conn.sshEnabled && <span style={{ ...S.badge('#6366f1'), display: 'inline-flex', alignItems: 'center', gap: 4 }}><Terminal size={10} /> SSH</span>}
+                                                    {conn.sshEnabled && <span style={{ ...S.badge(THEME.primary), display: 'inline-flex', alignItems: 'center', gap: 4 }}><Terminal size={10} /> SSH</span>}
                                                 </div>
                                                 <div style={{ fontSize: 12, color: THEME.textMuted, marginTop: 4 }}>
                                                     <span style={{ color: dbMeta.accent, fontWeight: 600 }}>{dbMeta.label}</span>
@@ -1177,8 +1177,8 @@ const ConnectionsTab = () => {
                                         {conn.database && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>database</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.database}</span></div>}
                                         {conn.username && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>user</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.username}</span></div>}
                                         {conn.replicaSet && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>replica set</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.replicaSet}</span></div>}
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.textMuted }}>ssl</span><span style={{ color: conn.ssl ? '#4ade80' : '#6b7280', fontWeight: 500 }}>{conn.ssl ? 'enabled' : 'disabled'}</span></div>
-                                        {conn.sshEnabled && conn.sshHost && <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, paddingTop: 4, borderTop: `1px solid ${THEME.glassBorder}` }}><span style={{ color: THEME.textMuted }}>tunnel via</span><span style={{ color: '#6366f1', fontWeight: 500 }}>{conn.sshUser ? `${conn.sshUser}@` : ''}{conn.sshHost}:{conn.sshPort || 22}</span></div>}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: THEME.textMuted }}>ssl</span><span style={{ color: conn.ssl ? THEME.success : THEME.textDim, fontWeight: 500 }}>{conn.ssl ? 'enabled' : 'disabled'}</span></div>
+                                        {conn.sshEnabled && conn.sshHost && <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, paddingTop: 4, borderTop: `1px solid ${THEME.glassBorder}` }}><span style={{ color: THEME.textMuted }}>tunnel via</span><span style={{ color: THEME.primary, fontWeight: 500 }}>{conn.sshUser ? `${conn.sshUser}@` : ''}{conn.sshHost}:{conn.sshPort || 22}</span></div>}
                                     </div>
 
                                     {conn.lastTested && (
@@ -1188,8 +1188,8 @@ const ConnectionsTab = () => {
                                             border: `1px solid ${conn.status === 'success' ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)'}`,
                                             position: 'relative', zIndex: 1,
                                         }}>
-                                            {conn.status === 'success' ? <CheckCircle size={13} color="#4ade80" /> : <AlertCircle size={13} color="#ef4444" />}
-                                            <span style={{ fontSize: 11, color: conn.status === 'success' ? '#4ade80' : '#ef4444', fontWeight: 600 }}>
+                                            {conn.status === 'success' ? <CheckCircle size={13} color={THEME.success} /> : <AlertCircle size={13} color={THEME.danger} />}
+                                            <span style={{ fontSize: 11, color: conn.status === 'success' ? THEME.success : THEME.danger, fontWeight: 600 }}>
                                                 {conn.status === 'success' ? 'Test passed' : 'Test failed'}
                                             </span>
                                         </div>
@@ -1197,14 +1197,14 @@ const ConnectionsTab = () => {
 
                                     <div style={{ display: 'flex', gap: 8, position: 'relative', zIndex: 1 }}>
                                         <button onClick={() => testConnection(conn)} disabled={testingConnection === conn.id} title="Test connection"
-                                            style={{ ...S.btn('rgba(99,102,241,0.12)', 'rgba(99,102,241,0.25)', '#6366f1'), flex: 1, justifyContent: 'center', opacity: testingConnection === conn.id ? 0.6 : 1 }}
+                                            style={{ ...S.btn('rgba(99,102,241,0.12)', 'rgba(99,102,241,0.25)', THEME.primary), flex: 1, justifyContent: 'center', opacity: testingConnection === conn.id ? 0.6 : 1 }}
                                             onMouseEnter={e => testingConnection !== conn.id && (e.currentTarget.style.background = 'rgba(99,102,241,0.22)')}
                                             onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.12)'}>
                                             {testingConnection === conn.id ? <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <><Zap size={12} /> Test</>}
                                         </button>
                                         {!conn.isDefault && (
                                             <button onClick={() => setDefaultConnection(conn.id)} title="Set as default"
-                                                style={S.btn('rgba(74,222,128,0.1)', 'rgba(74,222,128,0.25)', '#4ade80')}
+                                                style={S.btn('rgba(74,222,128,0.1)', 'rgba(74,222,128,0.25)', THEME.success)}
                                                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,222,128,0.2)'}
                                                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(74,222,128,0.1)'}>
                                                 <Check size={12} />
@@ -1221,7 +1221,7 @@ const ConnectionsTab = () => {
                                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(251,191,36,0.22)'}
                                             onMouseLeave={e => e.currentTarget.style.background = 'rgba(251,191,36,0.1)'}><Edit size={12} /></button>
                                         <button onClick={() => deleteConnection(conn.id)} title="Delete connection"
-                                            style={{ ...S.btn('rgba(239,68,68,0.1)', 'rgba(239,68,68,0.25)', '#ef4444'), cursor: 'pointer' }}
+                                            style={{ ...S.btn('rgba(239,68,68,0.1)', 'rgba(239,68,68,0.25)', THEME.danger), cursor: 'pointer' }}
                                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.22)'}
                                             onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}><Trash2 size={12} /></button>
                                     </div>
@@ -1308,7 +1308,7 @@ const ConnectionsTab = () => {
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     transition: 'all 0.15s',
                                 }}
-                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.12)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; e.currentTarget.style.color = '#ef4444'; }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.12)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; e.currentTarget.style.color = THEME.danger; }}
                                 onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = THEME.glassBorder; e.currentTarget.style.color = THEME.textMuted; }}
                             >
                                 <X size={16} />
@@ -1331,9 +1331,9 @@ const ConnectionsTab = () => {
                                     placeholder={`My ${DB_TYPES[formData.dbType].label} DB`}
                                     style={S.input(!!formErrors.name)}
                                     onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                                    onBlur={e => e.currentTarget.style.borderColor = formErrors.name ? '#ef4444' : THEME.glassBorder}
+                                    onBlur={e => e.currentTarget.style.borderColor = formErrors.name ? THEME.danger : THEME.glassBorder}
                                 />
-                                {formErrors.name && <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>{formErrors.name}</div>}
+                                {formErrors.name && <div style={{ color: THEME.danger, fontSize: 11, marginTop: 4 }}>{formErrors.name}</div>}
                             </div>
 
                             <DynamicFields
@@ -1355,7 +1355,7 @@ const ConnectionsTab = () => {
                                         id="isDefault"
                                         checked={formData.isDefault}
                                         onChange={e => setFormData(p => ({ ...p, isDefault: e.target.checked }))}
-                                        style={{ cursor: 'pointer', accentColor: '#6366f1', width: 16, height: 16 }}
+                                        style={{ cursor: 'pointer', accentColor: THEME.primary, width: 16, height: 16 }}
                                     />
                                     <label htmlFor="isDefault" style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: THEME.textDim }}>
                                         Set as default connection
@@ -1370,11 +1370,11 @@ const ConnectionsTab = () => {
                                     background: 'rgba(239,68,68,0.08)',
                                     border: '1px solid rgba(239,68,68,0.3)',
                                 }}>
-                                    <AlertCircle size={15} color="#ef4444" style={{ flexShrink: 0, marginTop: 1 }} />
-                                    <span style={{ fontSize: 13, color: '#ef4444', lineHeight: 1.4 }}>{errorMsg}</span>
+                                    <AlertCircle size={15} color={THEME.danger} style={{ flexShrink: 0, marginTop: 1 }} />
+                                    <span style={{ fontSize: 13, color: THEME.danger, lineHeight: 1.4 }}>{errorMsg}</span>
                                     <button
                                         onClick={() => setErrorMsg('')}
-                                        style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0, flexShrink: 0 }}
+                                        style={{ marginLeft: 'auto', background: 'none', border: 'none', color: THEME.danger, cursor: 'pointer', padding: 0, flexShrink: 0 }}
                                     >
                                         <X size={14} />
                                     </button>

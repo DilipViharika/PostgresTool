@@ -12,12 +12,12 @@ const Styles = () => (
         @keyframes brSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes brFade { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         @keyframes brPulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
-        .br-card { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 14px 14px 0; padding:20px; animation:brFade .3s ease; position:relative; overflow:hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02); transition: all 0.25s ease; }
-        .br-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-left-width: 6px; }
+        .br-card { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 14px 14px 0; padding:20px; animation:brFade .3s ease; position:relative; overflow:hidden; box-shadow:${THEME.shadowSm}; transition: all 0.25s ease; }
+        .br-card:hover { box-shadow:${THEME.shadowMd}; border-left-width: 6px; }
         .br-card::before { content:''; position:absolute; top:0; right:0; width:40%; height:100%; background:repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px); pointer-events:none; }
-        .br-metric { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
-        .br-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:700; }
-        .br-setting-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid ${THEME.grid}40; font-size:13px; }
+        .br-metric { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
+        .br-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:8px; font-size:11px; font-weight:700; }
+        .br-setting-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid ${THEME.glassBorder}40; font-size:13px; }
         .br-setting-row:last-child { border-bottom:none; }
     `}</style>
 );
@@ -131,7 +131,7 @@ export default function BackupRecoveryTab() {
             <Styles/>
 
             {/* ── Toolbar ───────────────────────────────────────────────── */}
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 20px', background:THEME.surface, borderRadius:12, border:`1px solid ${THEME.grid}` }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 20px', background:THEME.surface, borderRadius:12, border:`1px solid ${THEME.glassBorder}` }}>
                 <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                     <Archive size={20} color={THEME.primary}/>
                     <span style={{ fontWeight:700, fontSize:15, color:THEME.textMain }}>Backup & Recovery</span>
@@ -146,7 +146,7 @@ export default function BackupRecoveryTab() {
                         {lastAt ? `Updated ${fmtRelative(lastAt)}` : ''}
                     </span>
                     <select value={interval} onChange={e => setInterval_(+e.target.value)}
-                        style={{ background:THEME.surface, border:`1px solid ${THEME.grid}`, color:THEME.textMain, borderRadius:6, padding:'4px 8px', fontSize:12 }}>
+                        style={{ background:THEME.surface, border:`1px solid ${THEME.glassBorder}`, color:THEME.textMain, borderRadius:8, padding:'4px 8px', fontSize:12 }}>
                         <option value={10}>10s</option>
                         <option value={30}>30s</option>
                         <option value={60}>1m</option>
@@ -156,7 +156,7 @@ export default function BackupRecoveryTab() {
             </div>
 
             {error && (
-                <div style={{ padding:14, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius:10, color:THEME.danger, fontSize:13, display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ padding:14, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius:12, color:THEME.danger, fontSize:13, display:'flex', alignItems:'center', gap:8 }}>
                     <AlertCircle size={16}/> {error}
                 </div>
             )}
@@ -199,12 +199,12 @@ export default function BackupRecoveryTab() {
                     </div>
 
                     {!archiveEnabled && (
-                        <div style={{ marginTop:16, padding:12, background:`${THEME.warning}10`, border:`1px solid ${THEME.warning}30`, borderRadius:8, fontSize:12, color:THEME.warning }}>
+                        <div style={{ marginTop:16, padding:12, background:`${THEME.warning}10`, border:`1px solid ${THEME.warning}30`, borderRadius:10, fontSize:12, color:THEME.warning }}>
                             ⚠ WAL archiving is disabled. Set <code>archive_mode = on</code> in postgresql.conf to enable point-in-time recovery.
                         </div>
                     )}
                     {parseInt(archiver.failed_count) > 0 && (
-                        <div style={{ marginTop:12, padding:12, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius:8, fontSize:12, color:THEME.danger }}>
+                        <div style={{ marginTop:12, padding:12, background:`${THEME.danger}10`, border:`1px solid ${THEME.danger}30`, borderRadius:10, fontSize:12, color:THEME.danger }}>
                             ❌ Archive failures detected. Last failed: <strong>{archiver.last_failed_wal}</strong> at {fmtDate(archiver.last_failed_time)}
                         </div>
                     )}
@@ -280,7 +280,7 @@ export default function BackupRecoveryTab() {
                         { title:'PITR Testing',   desc:'Regularly test point-in-time recovery to verify backups are restorable.' },
                         { title:'Retention Policy', desc:'Keep at least 7 daily + 4 weekly + 12 monthly backups following a 3-2-1 rule.' },
                     ].map(({ title, desc }) => (
-                        <div key={title} style={{ padding:'12px 14px', background:`${THEME.bg}80`, borderRadius:8, border:`1px solid ${THEME.grid}` }}>
+                        <div key={title} style={{ padding:'12px 14px', background:`${THEME.surface}`, borderRadius:10, border:`1px solid ${THEME.glassBorder}` }}>
                             <div style={{ fontSize:12, fontWeight:700, color:THEME.primary, marginBottom:4 }}>{title}</div>
                             <div style={{ fontSize:11, color:THEME.textMuted, lineHeight:1.5 }}>{desc}</div>
                         </div>

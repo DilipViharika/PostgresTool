@@ -13,7 +13,7 @@ export const GlobalStyles = () => (
 
     .um-root {
         font-family: ${THEME.fontBody};
-        color: ${T.text};
+        color: ${T.textMain};
         background: ${T.bg};
         min-height: 100vh;
     }
@@ -40,7 +40,7 @@ export const GlobalStyles = () => (
         align-items: center;
         padding: 0 20px;
         height: 62px;
-        border-bottom: 1px solid ${T.border};
+        border-bottom: 1px solid ${T.glassBorder};
         transition: background 0.15s, border-color 0.15s;
         cursor: pointer;
     }
@@ -51,24 +51,24 @@ export const GlobalStyles = () => (
     /* ── Buttons ──────────────────────────────────────────────────────── */
     .um-btn {
         display: inline-flex; align-items: center; gap: 7px;
-        padding: 8px 16px; border-radius: 8px; border: none;
+        padding: 8px 16px; border-radius: 12px; border: none;
         font-family: ${THEME.fontBody}; font-size: 13px; font-weight: 600;
         cursor: pointer; transition: all 0.15s; white-space: nowrap; outline: none;
     }
     .um-btn:active  { transform: scale(0.97); }
     .um-btn-primary { background: ${T.primary}; color: #fff; }
-    .um-btn-primary:hover { background: #6b8fff; box-shadow: 0 0 20px ${T.primary}55; }
-    .um-btn-ghost   { background: transparent; color: ${T.textSub}; border: 1px solid ${T.border}; }
+    .um-btn-primary:hover { background: #6b8fff; box-shadow: ${T.shadowMd}; }
+    .um-btn-ghost   { background: transparent; color: ${T.textSub}; border: 1px solid ${T.glassBorder}; }
     .um-btn-ghost:hover { border-color: ${T.primary}; color: ${T.primary}; background: ${T.primaryDim}; }
     .um-btn-danger  { background: ${T.dangerDim}; color: ${T.danger}; border: 1px solid ${T.danger}44; }
     .um-btn-danger:hover { background: ${T.danger}; color: #fff; }
-    .um-btn-sm   { padding: 5px 10px; font-size: 11px; border-radius: 6px; }
-    .um-btn-icon { padding: 7px; border-radius: 7px; }
+    .um-btn-sm   { padding: 5px 10px; font-size: 11px; border-radius: 12px; }
+    .um-btn-icon { padding: 7px; border-radius: 12px; }
 
     /* ── Inputs ───────────────────────────────────────────────────────── */
     .um-input {
-        background: ${T.surface}; border: 1px solid ${T.border}; border-radius: 8px;
-        color: ${T.text}; font-family: ${THEME.fontBody}; font-size: 13px;
+        background: ${T.surface}; border: 1px solid ${T.glassBorder}; border-radius: 12px;
+        color: ${T.textMain}; font-family: ${THEME.fontBody}; font-size: 13px;
         outline: none; padding: 9px 12px;
         transition: border 0.2s, box-shadow 0.2s; width: 100%;
     }
@@ -90,10 +90,10 @@ export const GlobalStyles = () => (
 
     /* ── Cards ────────────────────────────────────────────────────────── */
     .um-card {
-        background: ${T.surface}; border: 1px solid ${T.border}; border-radius: 14px;
+        background: ${T.surface}; border: 1px solid ${T.glassBorder}; border-radius: 14px;
         padding: 20px; transition: border-color 0.2s;
     }
-    .um-card:hover { border-color: ${T.borderHigh}; }
+    .um-card:hover { border-color: ${T.glassBorder}; }
 
     /* ── Overlay / modal / drawer ─────────────────────────────────────── */
     .um-overlay {
@@ -104,14 +104,14 @@ export const GlobalStyles = () => (
     }
     .um-drawer {
         position: fixed; top: 0; right: 0; bottom: 0; width: 580px; max-width: 95vw;
-        background: ${T.surface}; border-left: 1px solid ${T.border};
-        box-shadow: -30px 0 80px rgba(0,0,0,0.6);
+        background: ${T.surface}; border-left: 1px solid ${T.glassBorder};
+        box-shadow: ${T.shadowLg};
         animation: umSlideRight 0.32s cubic-bezier(0.16,1,0.3,1);
         display: flex; flex-direction: column; z-index: 2000;
     }
     .um-modal {
-        background: ${T.surface}; border: 1px solid ${T.borderHigh}; border-radius: 18px;
-        box-shadow: 0 32px 80px rgba(0,0,0,0.7); overflow: hidden;
+        background: ${T.surface}; border: 1px solid ${T.glassBorder}; border-radius: 18px;
+        box-shadow: ${T.shadowLg}; overflow: hidden;
         animation: umFadeUp 0.3s cubic-bezier(0.16,1,0.3,1);
     }
 
@@ -119,20 +119,20 @@ export const GlobalStyles = () => (
     .um-scroll { overflow-y: auto; }
     .um-scroll::-webkit-scrollbar { width: 4px; }
     .um-scroll::-webkit-scrollbar-track { background: transparent; }
-    .um-scroll::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 2px; }
-    .um-scroll::-webkit-scrollbar-thumb:hover { background: ${T.borderHigh}; }
+    .um-scroll::-webkit-scrollbar-thumb { background: ${T.glassBorder}; border-radius: 2px; }
+    .um-scroll::-webkit-scrollbar-thumb:hover { background: ${T.glassBorder}; }
 
     /* ── Utilities ────────────────────────────────────────────────────── */
     .um-mono { font-family: ${THEME.fontMono}; }
     .um-perm-chip {
-        padding: 3px 7px; border-radius: 5px; font-size: 10px; font-weight: 700;
+        padding: 3px 7px; border-radius: 12px; font-size: 10px; font-weight: 700;
         letter-spacing: 0.06em; font-family: ${THEME.fontMono};
     }
     .shimmer-skeleton {
-        background: linear-gradient(90deg, ${T.surface} 25%, ${T.surfaceHigh} 50%, ${T.surface} 75%);
+        background: linear-gradient(90deg, ${T.surface} 25%, ${T.surfaceRaised} 50%, ${T.surface} 75%);
         background-size: 200% 100%;
         animation: umShimmer 1.5s infinite;
-        border-radius: 6px;
+        border-radius: 12px;
     }
     .um-grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
     .um-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }

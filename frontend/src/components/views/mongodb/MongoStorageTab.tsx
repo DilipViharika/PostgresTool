@@ -41,7 +41,7 @@ const Styles = () => (
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
             border-left: 3px solid #00684A;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,104,74,0.06);
             transition: all 0.25s ease;
@@ -126,7 +126,7 @@ const Styles = () => (
         .mongo-metric-box {
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 16px;
             text-align: center;
         }
@@ -186,7 +186,7 @@ const Styles = () => (
         .mongo-error {
             background: ${DARK_THEME.danger}15;
             border: 1px solid ${DARK_THEME.danger};
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 16px;
             color: ${DARK_THEME.danger};
             margin-bottom: 16px;
@@ -199,7 +199,7 @@ const Styles = () => (
             background: ${DARK_THEME.accent}15;
             border: 1px solid ${DARK_THEME.accent}30;
             border-left: 3px solid ${DARK_THEME.accent};
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 12px;
             margin-bottom: 12px;
             font-size: 12px;

@@ -46,19 +46,19 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
     const tierDisplay = tier?.charAt(0).toUpperCase() + tier?.slice(1) || 'Pro';
 
     const styles = isDark ? {
-        bg: '#0d1224',
-        border: 'rgba(139,92,246,0.2)',
-        text: '#f0f4ff',
-        muted: '#94a3b8',
-        accent: '#6366f1',
-        accentDark: '#4f46e5',
+        bg: 'T.surface',
+        border: 'T.glassBorder',
+        text: 'T.textMain',
+        muted: 'T.textMuted',
+        accent: 'T.primary',
+        accentDark: 'T.primaryDark',
     } : {
-        bg: '#f8fafc',
-        border: 'rgba(99,102,241,0.2)',
-        text: '#1e293b',
-        muted: '#64748b',
-        accent: '#6366f1',
-        accentDark: '#4f46e5',
+        bg: 'T.surface',
+        border: 'T.glassBorder',
+        text: 'T.textMain',
+        muted: 'T.textMuted',
+        accent: 'T.primary',
+        accentDark: 'T.primaryDark',
     };
 
     const containerStyle = {
@@ -67,8 +67,8 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
         gap: '16px',
         padding: '16px 20px',
         backgroundColor: styles.bg,
-        border: `1px solid ${styles.border}`,
-        borderRadius: '8px',
+        border: `1px solid T.glassBorder`,
+        borderRadius: '12px',
         marginBottom: '16px',
         width: '100%',
         boxSizing: 'border-box',
@@ -80,8 +80,8 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
         justifyContent: 'center',
         width: '40px',
         height: '40px',
-        backgroundColor: `${styles.accent}20`,
-        borderRadius: '6px',
+        backgroundColor: 'T.surfaceRaised',
+        borderRadius: '10px',
         flexShrink: 0,
     };
 
@@ -93,13 +93,13 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
     const titleStyle = {
         fontSize: '14px',
         fontWeight: '600',
-        color: styles.text,
+        color: 'T.textMain',
         margin: '0 0 4px 0',
     };
 
     const descStyle = {
         fontSize: '13px',
-        color: styles.muted,
+        color: 'T.textMuted',
         margin: '0',
         lineHeight: '1.4',
     };
@@ -109,10 +109,10 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
         alignItems: 'center',
         gap: '6px',
         padding: '8px 14px',
-        backgroundColor: styles.accent,
+        backgroundColor: 'T.primary',
         color: '#fff',
         border: 'none',
-        borderRadius: '6px',
+        borderRadius: '10px',
         fontSize: '13px',
         fontWeight: '600',
         cursor: 'pointer',
@@ -122,7 +122,7 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
 
     const buttonHoverStyle = {
         ...buttonStyle,
-        backgroundColor: styles.accentDark,
+        backgroundColor: 'T.primaryDark',
         transform: 'translateX(2px)',
     };
 
