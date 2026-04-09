@@ -279,6 +279,139 @@ registerComponents({
     PoolMetricsDashboard,
 });
 
+/* ── Derived constants from tabConfig ── */
+const SECTION_GROUPS = getSectionGroups(buildTabConfig());
+const TABS_ONLY = getTabsOnly(buildTabConfig());
+
+/* ── Constants ── */
+const MAX_NOTIFICATIONS = 20;
+const ALERT_AUTO_DISMISS_TIME = 5000;
+const SEV_COLORS = {
+    critical: '#FF4560',
+    warning: '#FFB520',
+    info: '#5BB8F5',
+};
+
+/* ── Helper wrappers (tabConfig functions expect groups as first arg) ── */
+const getSectionForTab = (tabId) => {
+    for (const g of SECTION_GROUPS) {
+        if (g.tabs.some((t) => t.id === tabId)) return g.section;
+    }
+    return null;
+};
+const getSectionAccent = (tabId) => {
+    for (const g of SECTION_GROUPS) {
+        if (g.tabs.some((t) => t.id === tabId)) return g.accent;
+    }
+    return DS.cyan;
+};
+
+/* ── Stub components for header toolbar ── */
+const AmbientOrbs = () => null;
+
+const GlobalRefreshButton = () => (
+    <button
+        onClick={() => window.location.reload()}
+        title="Refresh"
+        style={{
+            background: 'transparent',
+            border: 'none',
+            color: DS.textMuted,
+            cursor: 'pointer',
+            padding: 6,
+            borderRadius: 8,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+        }}
+    >
+        <RefreshCw size={16} />
+    </button>
+);
+
+const ThemeToggle = () => {
+    const { isDark, toggleTheme } = useTheme();
+    return (
+        <button
+            onClick={toggleTheme}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            style={{
+                background: 'transparent',
+                border: 'none',
+                color: DS.textMuted,
+                cursor: 'pointer',
+                padding: 6,
+                borderRadius: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+        >
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+    );
+};
+
+const StatusPill = ({ connected }) => (
+    <div
+        style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '4px 10px',
+            borderRadius: 20,
+            background: connected ? 'rgba(16,185,129,0.08)' : 'rgba(255,69,96,0.08)',
+            color: connected ? DS.emerald : DS.rose,
+            fontSize: 11,
+            fontWeight: 600,
+            fontFamily: DS.fontMono,
+        }}
+    >
+        <span
+            style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: connected ? DS.emerald : DS.rose,
+            }}
+        />
+        {connected ? 'Connected' : 'Offline'}
+    </div>
+);
+
+const NotFoundPage = () => (
+    <div
+        style={{
+            height: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: DS.bg,
+            color: DS.textPrimary,
+            fontFamily: DS.fontUI,
+            gap: 16,
+        }}
+    >
+        <h1 style={{ fontSize: 48, fontWeight: 800, margin: 0, color: DS.textMuted }}>404</h1>
+        <p style={{ fontSize: 14, color: DS.textSub, margin: 0 }}>Page not found</p>
+        <a
+            href="/"
+            style={{
+                fontSize: 13,
+                color: DS.cyan,
+                textDecoration: 'none',
+                padding: '8px 20px',
+                borderRadius: 8,
+                border: `1px solid ${DS.cyan}40`,
+                marginTop: 8,
+            }}
+        >
+            Go to Dashboard
+        </a>
+    </div>
+);
+
 const useWebSocket = (onMessage) => {
     const [connected, setConnected] = useState(false);
     const [reconnecting] = useState(false); // polling never shows "reconnecting"
