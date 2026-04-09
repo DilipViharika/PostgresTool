@@ -142,7 +142,7 @@ const getStyles = () => `
   @media (max-width: 960px) {
     .vdb-container { flex-direction: column !important; }
     .vdb-brand { display: none !important; }
-    .vdb-form { padding: 40px 32px !important; }
+    .vdb-form { padding: 48px 36px !important; }
   }
   @media (max-width: 480px) {
     .vdb-form { padding: 32px 20px !important; }
@@ -308,47 +308,22 @@ const LoginPage = () => {
         <div style={{ height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative', fontFamily: fontDisplay }}>
             <style>{getStyles()}</style>
 
-            {/* ═══ BACKGROUND ═══ */}
-            <div style={{
-                position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden',
-                background: isDark
-                    ? `radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,102,241,0.08), transparent 50%),
-                       radial-gradient(ellipse 70% 50% at 80% 90%, rgba(59,130,246,0.06), transparent 50%),
-                       ${THEME.bg}`
-                    : `radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,102,241,0.07), transparent 50%),
-                       radial-gradient(ellipse 70% 50% at 80% 90%, rgba(59,130,246,0.05), transparent 50%),
-                       linear-gradient(135deg, #f0f1f8 0%, #e8eaf6 50%, #f5f5fa 100%)`,
-            }}>
-                {/* Grid pattern */}
-                <div style={{
-                    position: 'absolute', inset: 0, opacity: isDark ? 0.15 : 0.25,
-                    backgroundImage: `linear-gradient(${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'} 1px, transparent 1px),
-                                      linear-gradient(90deg, ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'} 1px, transparent 1px)`,
-                    backgroundSize: '40px 40px',
-                }} />
-                <FloatingOrbs />
-            </div>
+            {/* Background is handled by the two panels filling 100% */}
 
             {/* ═══ MAIN LAYOUT ═══ */}
             <div style={{
                 position: 'relative', zIndex: 1, display: 'flex', height: '100%',
-                alignItems: 'center', justifyContent: 'center', padding: 24,
+                alignItems: 'stretch', justifyContent: 'stretch',
             }}>
                 <div className="vdb-container" style={{
-                    display: 'flex', width: '100%', maxWidth: 1100, height: '90vh', maxHeight: 720,
-                    borderRadius: 24,
+                    display: 'flex', width: '100%', height: '100%',
                     overflow: 'hidden',
-                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                    boxShadow: isDark
-                        ? '0 24px 80px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)'
-                        : '0 24px 80px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)',
                     animation: 'containerIn 0.9s cubic-bezier(0.16,1,0.3,1) both',
-                    backdropFilter: 'blur(20px)',
                 }}>
 
                     {/* ═══ LEFT — BRAND PANEL ═══ */}
                     <div className="vdb-brand" style={{
-                        flex: '0 0 48%', position: 'relative',
+                        flex: '0 0 50%', position: 'relative',
                         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                         padding: '40px 36px', overflow: 'hidden', color: THEME.textMain,
                         background: isDark
