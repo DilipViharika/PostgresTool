@@ -69,17 +69,24 @@ export const DS_LIGHT = {
     _dark: false,
 };
 
-/* ── Z-Index Scale ── consistent layering across the app ──────────────── */
+/* ── Z-Index Scale ── consistent layering across the app ──────────────── *
+ *  Use these instead of arbitrary values (e.g. 9999, 10000).
+ *  Import: import { Z } from '@/config/designTokens';
+ *
+ *  TODO: Migrate remaining hardcoded accent colors (#38bdf8, #00b874,
+ *        #34d399, #fbbf24, #fb7185) in ~11 component files to use
+ *        DS.cyan / DS.violet / DS.emerald / DS.amber / DS.rose instead.
+ * ──────────────────────────────────────────────────────────────────────── */
 export const Z = {
-    base:       1,
-    dropdown:   100,
-    sticky:     200,
-    sidebar:    300,
-    overlay:    400,
-    modal:      500,
-    toast:      600,
-    popover:    700,
-    max:        999,
+    base:       1,      // default stacking (sticky headers, relative layers)
+    dropdown:   100,    // dropdowns, popovers, tooltips
+    sticky:     200,    // sticky elements, floating action buttons
+    sidebar:    300,    // sidebar, panels
+    overlay:    400,    // overlays, backdrops
+    modal:      500,    // modal dialogs
+    toast:      600,    // toast notifications, snackbars
+    popover:    700,    // popovers that sit above modals
+    max:        999,    // absolute top (debug tools, critical alerts)
 };
 
 /* Mutable DS — swapped by ThemeToggle, picked up on re-render */
