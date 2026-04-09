@@ -54,8 +54,8 @@ const LT = {
     ai: T.primaryDark,
     cardBg: '#ffffff',
     cardBorder: T.textMain,
-    cardShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)',
-    cardShadowHover: '0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)',
+    cardShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+    cardShadowHover: '0 12px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08)',
     activeItemBg: 'rgba(139,92,246,0.08)',
     activeItemBorder: T.primary,
     hoverBg: 'rgba(139,92,246,0.04)',
@@ -196,7 +196,7 @@ const DemoLayout = ({
                                     style={{
                                         width: 32,
                                         height: 32,
-                                        borderRadius: 10,
+                                        borderRadius: 12,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -233,7 +233,7 @@ const DemoLayout = ({
                                             fontSize: 10,
                                             fontWeight: isActive ? 700 : 500,
                                             fontFamily: THEME.fontBody,
-                                            borderRadius: 10,
+                                            borderRadius: 12,
                                             border: isActive ? `1px solid ${LT.primary}` : `1px solid ${LT.glassBorder}`,
                                             background: isActive ? `${LT.primary}10` : LT.buttonBg,
                                             color: isActive ? LT.primary : LT.textMuted,
@@ -299,7 +299,7 @@ const DemoLayout = ({
                             style={{
                                 width: '100%',
                                 padding: '6px 8px',
-                                borderRadius: 10,
+                                borderRadius: 12,
                                 background: LT.buttonBg,
                                 border: `1px solid ${LT.glassBorder}`,
                                 color: LT.textMuted,
@@ -448,7 +448,7 @@ const DemoLayout = ({
                                                                     
                                                                     background: LT.badgeBg,
                                                                     color: LT.badgeColor,
-                                                                    borderRadius: 12,
+                                                                    borderRadius: 14,
                                                                     padding: '1px 6px',
                                                                     flexShrink: 0,
                                                                     fontFamily: THEME.fontMono,
@@ -486,7 +486,7 @@ const DemoLayout = ({
                                 padding: '6px 10px',
                                 fontSize: 11,
                                 fontWeight: 500,
-                                borderRadius: 10,
+                                borderRadius: 12,
                                 border: `1px solid ${LT.glassBorder}`,
                                 background: LT.buttonBg,
                                 color: LT.textMuted,
@@ -516,7 +516,7 @@ const DemoLayout = ({
                                         padding: '6px 10px',
                                         fontSize: 11,
                                         fontWeight: 500,
-                                        borderRadius: 10,
+                                        borderRadius: 12,
                                         border: `1px solid ${LT.glassBorder}`,
                                         background: LT.buttonBg,
                                         color: LT.textMuted,
@@ -543,7 +543,7 @@ const DemoLayout = ({
                                         padding: '8px 10px',
                                         fontSize: 11,
                                         fontWeight: 600,
-                                        borderRadius: 10,
+                                        borderRadius: 12,
                                         border: 'none',
                                         background: LT.accentGradient,
                                         color: '#ffffff',
@@ -617,10 +617,10 @@ const DemoLayout = ({
                         </div>
 
                         {/* Right: Stats, Live Badge, Notification, Avatar */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexShrink: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexShrink: 0 }}>
                             {/* Stat Pills */}
                             {headerStats && headerStats.length > 0 && (
-                                <div style={{ display: 'flex', gap: 12 }}>
+                                <div style={{ display: 'flex', gap: 16 }}>
                                     {headerStats.map((stat, i) => (
                                         <div
                                             key={i}
@@ -630,7 +630,7 @@ const DemoLayout = ({
                                                 alignItems: 'center',
                                                 padding: '6px 12px',
                                                 background: `${stat.color || LT.primary}10`,
-                                                borderRadius: 12,
+                                                borderRadius: 14,
                                                 border: `1px solid ${stat.color || LT.primary}20`,
                                             }}
                                         >
@@ -694,7 +694,7 @@ const DemoLayout = ({
                                 style={{
                                     width: 36,
                                     height: 36,
-                                    borderRadius: 12,
+                                    borderRadius: 14,
                                     background: LT.buttonBg,
                                     border: `1px solid ${LT.glassBorder}`,
                                     display: 'flex',
@@ -828,7 +828,7 @@ export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentCo
         style={{
             background: LT.cardBg,
             border: `1px solid ${LT.cardBorder}`,
-            borderRadius: 12,
+            borderRadius: 14,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -864,7 +864,7 @@ export const Panel = ({ title, icon: TIcon, rightNode, children, noPad, accentCo
                             style={{
                                 width: 24,
                                 height: 24,
-                                borderRadius: 12,
+                                borderRadius: 14,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -903,7 +903,7 @@ export const StatusBadge = ({ label, color, pulse }) => (
             fontSize: 9.5,
             fontWeight: 700,
             padding: '4px 11px',
-            borderRadius: 12,
+            borderRadius: 14,
             background: `${color}12`,
             color,
             border: `1px solid ${color}20`,
@@ -1065,7 +1065,7 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
     <div
         style={{
             background: LT.cardBg,
-            borderRadius: 12,
+            borderRadius: 14,
             border: `1px solid ${LT.cardBorder}`,
             padding: '14px 16px',
             position: 'relative',
@@ -1080,7 +1080,7 @@ export const HeroMetric = ({ icon: Icon, label, value, trend, color, sparkData }
             style={{
                 width: 36,
                 height: 36,
-                borderRadius: 10,
+                borderRadius: 12,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1159,7 +1159,7 @@ export const MetricCard = ({ icon: Icon, label, value, sub, subtitle, color, spa
                     style={{
                         width: 30,
                         height: 30,
-                        borderRadius: 12,
+                        borderRadius: 14,
                         flexShrink: 0,
                         display: 'flex',
                         alignItems: 'center',
@@ -1236,7 +1236,7 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
             flexDirection: 'column',
             gap: 6,
             padding: '12px 14px',
-            borderRadius: 12,
+            borderRadius: 14,
             background: LT.cardBg,
             border: `1px solid ${LT.cardBorder}`,
             position: 'relative',
@@ -1253,7 +1253,7 @@ export const LiveMetric = ({ icon: Icon, label, value, unit, spark, color, progr
                         style={{
                             width: 22,
                             height: 22,
-                            borderRadius: 10,
+                            borderRadius: 12,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1350,7 +1350,7 @@ export const TabPills = ({ tabs, active, onChange, accentColor }) => (
                                 fontSize: 9,
                                 fontWeight: 700,
                                 padding: '2px 7px',
-                                borderRadius: 12,
+                                borderRadius: 14,
                                 background: isActive ? 'rgba(255,255,255,0.25)' : `${t.badgeColor || ac}15`,
                                 color: isActive ? '#fff' : t.badgeColor || ac,
                             }}
@@ -1409,7 +1409,7 @@ export const AlertRow = ({ severity, title, time, source, color }) => (
                 fontSize: 9,
                 fontWeight: 700,
                 padding: '2px 8px',
-                borderRadius: 12,
+                borderRadius: 14,
                 background: `${color}12`,
                 color,
                 
@@ -1491,7 +1491,7 @@ export const ChartTip = ({ active, payload, label }) => {
             style={{
                 background: LT.cardBg,
                 border: `1px solid ${LT.cardBorder}`,
-                borderRadius: 10,
+                borderRadius: 12,
                 padding: '10px 14px',
                 fontSize: 12,
                 boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
@@ -1533,14 +1533,14 @@ export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
             padding: '8px 16px',
             background: LT.cardBg,
             border: `1px solid ${LT.cardBorder}`,
-            borderRadius: 10,
+            borderRadius: 12,
             fontSize: 11,
             color: LT.textDim,
             marginBottom: 4,
             boxShadow: LT.cardShadow,
         }}
     >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span
                     style={{
@@ -1560,7 +1560,7 @@ export const ConnectionBar = ({ lastSync = '8s', refreshInterval = '30s' }) => (
                         key={i}
                         style={{
                             padding: '2px 6px',
-                            borderRadius: 12,
+                            borderRadius: 14,
                             fontSize: 10,
                             fontWeight: 600,
                             background: v === refreshInterval ? LT.primary : 'transparent',

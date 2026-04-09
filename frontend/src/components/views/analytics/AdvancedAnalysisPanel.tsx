@@ -42,11 +42,11 @@ const AnimCSS = () => <style>{`
 .vfade{animation:vs .22s ease-out both}
 .vsel::-webkit-scrollbar{height:4px;width:4px}
 .vsel::-webkit-scrollbar-track{background:transparent}
-.vsel::-webkit-scrollbar-thumb{background:${THEME.glassBorder}40;border-radius: 12px}
-.analytics-card{background:${THEME.surface};border:1px solid ${THEME.glassBorder};border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all 0.25s ease}
-.analytics-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.08);transform:translateY(-2px)}
-.analytics-card-ribbon{height:48px;background:linear-gradient(135deg,var(--ribbon-color,${THEME.primary}) 0%,var(--ribbon-end,${THEME.primary}cc) 100%);display:flex;align-items:center;padding:0 18px;gap:10px;color:white;font-weight:600;font-size:13px;letter-spacing:0.02em}
-.analytics-card-body{padding:18px}
+.vsel::-webkit-scrollbar-thumb{background:${THEME.glassBorder}40;border-radius:12px}
+.analytics-card{background:${THEME.surface};border:1px solid ${THEME.glassBorder};border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.08);backdrop-filter:blur(12px);transition:all 0.25s ease}
+.analytics-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.12);transform:translateY(-2px)}
+.analytics-card-ribbon{height:50px;background:linear-gradient(135deg,var(--ribbon-color,${THEME.primary}) 0%,var(--ribbon-end,${THEME.primary}cc) 100%);display:flex;align-items:center;padding:0 20px;gap:12px;color:white;font-weight:600;font-size:13px;letter-spacing:0.02em}
+.analytics-card-body{padding:20px}
 `}</style>;
 
 /* ═══════════ CODEBLOCK — with syntax HL + macOS chrome ═══════════ */
@@ -65,8 +65,8 @@ const CodeBlock = ({code, lang='sql', maxH=350}) => {
         .replace(/\b(pg_\w+|repack\.\w+|current_\w+|information_schema)\b/g,'<span style="color:#7ee787">$1</span>')
         .replace(/\b(now|count|sum|avg|min|max|round|coalesce|nullif|extract|array_length|array_agg|string_agg|row_number|rank|dense_rank|lead|lag|first_value|last_value|generate_series|date_trunc|age|clock_timestamp)\b/gi,'<span style="color:#ffa657">$1</span>');
     return (
-        <div style={{position:'relative',borderRadius:8,overflow:'hidden',marginTop:8,border:`1px solid ${THEME.glassBorder}`}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:THEME.surfaceRaised,padding:'5px 10px',borderBottom:`1px solid ${THEME.glassBorder}`}}>
+        <div style={{position:'relative',borderRadius:12,overflow:'hidden',marginTop:10,border:`1px solid ${THEME.glassBorder}`,boxShadow:'0 4px 16px rgba(0,0,0,0.08)',backdropFilter:'blur(12px)'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:THEME.surfaceRaised,padding:'6px 12px',borderBottom:`1px solid ${THEME.glassBorder}`}}>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
                     {['#ff5f56','#ffbd2e','#27c93f'].map(c=><span key={c} style={{width:7,height:7,borderRadius:'50%',background:c,display:'inline-block'}}/>)}
                     <span style={{fontSize:8.5,color:THEME.textDim,fontWeight:600,marginLeft:5,letterSpacing:'0.02em'}}>{lang} · {lines.length}L</span>
@@ -101,8 +101,8 @@ const AreaChart = ({data=[],color=THEME.primary,width=280,height=80,label,yFmt=v
     const path=pts.map((pt,i)=>`${i===0?'M':'L'}${pt.x},${pt.y}`).join(' ');
     const area=`${path} L${pts[pts.length-1].x},${p.t+ch} L${p.l},${p.t+ch} Z`;
     const gid=`a${color.replace(/[^a-z0-9]/gi,'')}`;
-    return (<div style={{borderRadius:8,background:THEME.surface,border:`1px solid ${THEME.glassBorder}30`,padding:8}}>
-        {label&&<div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,letterSpacing:'0.02em',marginBottom:3}}>{label}</div>}
+    return (<div style={{borderRadius:12,background:THEME.surface,border:`1px solid ${THEME.glassBorder}30`,padding:12,boxShadow:'0 4px 16px rgba(0,0,0,0.08)',backdropFilter:'blur(12px)'}}>
+        {label&&<div style={{fontSize:8.5,fontWeight:700,color:THEME.textDim,letterSpacing:'0.02em',marginBottom:4}}>{label}</div>}
         <svg width={width} height={height} style={{display:'block',width:'100%'}} viewBox={`0 0 ${width} ${height}`}>
             <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity=".18"/><stop offset="100%" stopColor={color} stopOpacity=".01"/></linearGradient></defs>
             {showGrid&&[0,.25,.5,.75,1].map(f=>{const y=p.t+ch-f*ch;return <g key={f}><line x1={p.l} y1={y} x2={width-p.r} y2={y} stroke={`${THEME.glassBorder}18`} strokeWidth=".5" strokeDasharray="2,3"/><text x={p.l-3} y={y+3} textAnchor="end" style={{fontSize:6.5,fill:THEME.textDim,fontFamily:'inherit'}}>{yFmt(mn+rng*f)}</text></g>;})}

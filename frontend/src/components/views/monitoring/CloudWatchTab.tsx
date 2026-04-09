@@ -204,15 +204,16 @@ const CW_STYLES = `
     .cw-card {
         background: linear-gradient(180deg, #120A1F 0%, #120A1Ff8 100%);
         border: 1px solid rgba(139,92,246,0.2);
-        border-radius: 14px;
-        padding: 20px;
+        border-radius: 16px;
+        padding: 24px;
         position: relative;
         overflow: hidden;
-        box-shadow: ${THEME.shadowSm};
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
         transition: all 0.25s ease;
+        backdrop-filter: blur(12px);
     }
     .cw-card:hover {
-        box-shadow: ${THEME.shadowMd};
+        box-shadow: 0 8px 28px rgba(0,0,0,0.12);
         transform: translateY(-2px);
     }
     .cw-card::after {
@@ -255,7 +256,7 @@ const CWTooltip = ({ active, payload, label, unit, T }) => {
             style={{
                 background: T.glassHeavy,
                 border: `1px solid ${T.glassBorder}`,
-                borderRadius: 8,
+                borderRadius: 12,
                 padding: '8px 14px',
                 fontSize: 12,
                 color: T.textMain,
@@ -313,7 +314,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
         fontSize: 13,
         background: T.bg,
         border: `1px solid ${errors[k] ? T.danger + '60' : T.glassBorder}`,
-        borderRadius: 8,
+        borderRadius: 12,
         color: T.textMain,
         outline: 'none',
         fontFamily: T.fontMono,
@@ -378,7 +379,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: 16,
+                padding: 20,
             }}
         >
             <div
@@ -410,7 +411,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                         borderRadius: '20px 20px 0 0',
                     }}
                 >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                         <div
                             style={{
                                 width: 36,
@@ -579,7 +580,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                             fontWeight: 500,
                             background: 'transparent',
                             border: `1px solid ${T.glassBorder}`,
-                            borderRadius: 8,
+                            borderRadius: 12,
                             color: T.textMuted,
                             cursor: 'pointer',
                             fontFamily: T.fontBody,
@@ -595,7 +596,7 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
                             fontWeight: 600,
                             background: `${T.primary}15`,
                             border: `1px solid ${T.primary}35`,
-                            borderRadius: 8,
+                            borderRadius: 12,
                             color: T.primary,
                             cursor: 'pointer',
                             fontFamily: T.fontBody,
@@ -709,7 +710,7 @@ const EmptyState = ({ T, onAdd }) => (
                         style={{
                             width: 28,
                             height: 28,
-                            borderRadius: 8,
+                            borderRadius: 12,
                             background: `${T.primary}12`,
                             border: `1px solid ${T.primary}25`,
                             display: 'flex',
@@ -771,7 +772,7 @@ const MetricCard = ({ def, datapoints, metricsLoading, T }) => {
                     style={{
                         width: 28,
                         height: 28,
-                        borderRadius: 8,
+                        borderRadius: 12,
                         background: `${color}15`,
                         border: `1px solid ${color}30`,
                         display: 'flex',
@@ -802,7 +803,7 @@ const MetricCard = ({ def, datapoints, metricsLoading, T }) => {
                 <div
                     style={{
                         height: 36,
-                        borderRadius: 8,
+                        borderRadius: 12,
                         marginBottom: 14,
                         background: `linear-gradient(90deg, ${T.surface} 20%, ${T.surfaceHover} 50%, ${T.surface} 80%)`,
                         backgroundSize: '300% 100%',
@@ -976,7 +977,7 @@ const InstanceDashboard = ({ instance, timeRange, refreshInterval, T }) => {
                         fontWeight: 600,
                         background: `${T.primary}15`,
                         border: `1px solid ${T.primary}35`,
-                        borderRadius: 8,
+                        borderRadius: 12,
                         color: T.primary,
                         cursor: 'pointer',
                         fontFamily: T.fontBody,
@@ -1036,7 +1037,7 @@ const InstanceDashboard = ({ instance, timeRange, refreshInterval, T }) => {
                         {instance.region}
                     </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                     {lastRefresh && (
                         <span style={{ color: T.textDim, fontSize: 11, fontFamily: T.fontMono }}>
                             Updated {lastRefresh.toLocaleTimeString()}
@@ -1136,10 +1137,10 @@ export default function CloudWatchTab() {
                     justifyContent: 'space-between',
                     marginBottom: 20,
                     flexWrap: 'wrap',
-                    gap: 12,
+                    gap: 18,
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                     <div
                         style={{
                             width: 36,
@@ -1171,7 +1172,7 @@ export default function CloudWatchTab() {
                             style={{
                                 display: 'flex',
                                 background: T.surface,
-                                borderRadius: 8,
+                                borderRadius: 12,
                                 overflow: 'hidden',
                                 border: `1px solid ${T.glassBorder}`,
                             }}
@@ -1204,7 +1205,7 @@ export default function CloudWatchTab() {
                                 style={{
                                     display: 'flex',
                                     background: T.surface,
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     overflow: 'hidden',
                                     border: `1px solid ${T.glassBorder}`,
                                 }}
@@ -1311,7 +1312,7 @@ export default function CloudWatchTab() {
                                 padding: '6px 14px',
                                 background: `${T.secondary}15`,
                                 border: `1px solid ${T.secondary}35`,
-                                borderRadius: 8,
+                                borderRadius: 12,
                                 color: T.secondary,
                                 fontSize: 12,
                                 fontWeight: 600,

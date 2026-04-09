@@ -46,20 +46,22 @@ const CSS = `
 .ud-card {
     background:${THEME.surface};
     border:1px solid ${THEME.grid};
-    border-radius:12px;
+    border-radius:16px;
     overflow:hidden;
-    box-shadow:0 1px 4px rgba(0,0,0,0.04);
+    box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    backdrop-filter:blur(12px);
     transition:all 0.2s ease;
 }
-.ud-card:hover{box-shadow:${THEME.shadowSm}}
+.ud-card:hover{box-shadow:0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);transform:translateY(-2px)}
 .ud-card-header {
     height:30px;
-    background:${THEME.textMain}08;
+    background:${THEME.textMain}06;
     display:flex;
     align-items:center;
-    padding:0 14px;
+    padding:14px 20px;
     gap:6px;
     border-bottom:1px solid ${THEME.glassBorder};
+    font-weight:700;
 }
 .ud-card-dot {width:7px;height:7px;border-radius:50%}
 .ud-card-title {
@@ -69,7 +71,7 @@ const CSS = `
     margin-left:8px;
     letter-spacing:0.03em;
 }
-.ud-card-body {padding:16px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.05)}
+.ud-card-body {padding:20px 24px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.05)}
 .ud-navitem{transition:all .15s}
 .ud-navitem:hover{background:${THEME.primary}08!important}
 .ud-row{transition:background .14s}
@@ -79,7 +81,7 @@ const CSS = `
 .ai-thinking{background:linear-gradient(90deg,${THEME.primary}10 25%,${THEME.primary}30 50%,${THEME.primary}10 75%);background-size:200% 100%;animation:ud-shimmer 1.6s ease-in-out infinite}
 .ai-token{animation:ud-typewriter .15s ease both}
 .ud-group-tab{
-    padding:6px 14px;
+    padding:8px 16px;
     border-radius:12px;
     border:1px solid transparent;
     cursor:pointer;
@@ -101,7 +103,7 @@ const CSS = `
     font-weight:700;
 }
 .ud-sub-tab{
-    padding:5px 12px;
+    padding:7px 14px;
     border-radius:10px;
     border:none;
     cursor:pointer;

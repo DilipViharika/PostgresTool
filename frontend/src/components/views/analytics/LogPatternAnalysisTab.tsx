@@ -43,29 +43,30 @@ const Styles = () => (
     .analytics-card {
       background: ${THEME.surface};
       border: 1px solid ${THEME.glassBorder};
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      backdrop-filter: blur(12px);
       transition: all 0.25s ease;
     }
     .analytics-card:hover {
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
       transform: translateY(-2px);
     }
     .analytics-card-ribbon {
-      height: 48px;
+      height: 50px;
       background: linear-gradient(135deg, var(--ribbon-color, ${THEME.primary}) 0%, var(--ribbon-end, ${THEME.primary}cc) 100%);
       display: flex;
       align-items: center;
-      padding: 0 18px;
-      gap: 10px;
+      padding: 0 20px;
+      gap: 12px;
       color: white;
       font-weight: 600;
       font-size: 13px;
       letter-spacing: 0.02em;
     }
     .analytics-card-body {
-      padding: 18px;
+      padding: 20px;
     }
   `}</style>
 );
@@ -100,11 +101,11 @@ const SummaryCard = ({ label, value, subtext, color = THEME.primary, isLoading }
                 cursor: 'pointer',
             }}
             onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)';
                 e.currentTarget.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)';
                 e.currentTarget.style.transform = 'translateY(0)';
             }}
         >
@@ -165,22 +166,22 @@ const LockWaitsTable = ({ lockWaits }) => {
                 >
                     <thead>
                     <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
-                        <th style={{ padding: '12px 16px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                        <th style={{ padding: '14px 18px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                             Blocked PID
                         </th>
-                        <th style={{ padding: '12px 16px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                        <th style={{ padding: '14px 18px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                             Blocked User
                         </th>
-                        <th style={{ padding: '12px 16px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                        <th style={{ padding: '14px 18px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                             Query
                         </th>
-                        <th style={{ padding: '12px 16px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                        <th style={{ padding: '14px 18px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                             Blocking PID
                         </th>
-                        <th style={{ padding: '12px 16px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                        <th style={{ padding: '14px 18px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                             Blocking User
                         </th>
-                        <th style={{ padding: '12px 16px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                        <th style={{ padding: '14px 18px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                             Wait (s)
                         </th>
                     </tr>
@@ -203,22 +204,22 @@ const LockWaitsTable = ({ lockWaits }) => {
                                     e.currentTarget.style.background = 'transparent';
                                 }}
                             >
-                                <td style={{ padding: '12px 16px', color: THEME.textMain, fontSize: '13px' }}>
+                                <td style={{ padding: '14px 18px', color: THEME.textMain, fontSize: '13px' }}>
                                     {wait.blocked_pid}
                                 </td>
-                                <td style={{ padding: '12px 16px', color: THEME.textMain, fontSize: '13px' }}>
+                                <td style={{ padding: '14px 18px', color: THEME.textMain, fontSize: '13px' }}>
                                     {wait.blocked_user}
                                 </td>
-                                <td style={{ padding: '12px 16px', color: THEME.textMuted, fontSize: '13px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                <td style={{ padding: '14px 18px', color: THEME.textMuted, fontSize: '13px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {wait.blocked_query}
                                 </td>
-                                <td style={{ padding: '12px 16px', color: THEME.textMain, fontSize: '13px' }}>
+                                <td style={{ padding: '14px 18px', color: THEME.textMain, fontSize: '13px' }}>
                                     {wait.blocking_pid}
                                 </td>
-                                <td style={{ padding: '12px 16px', color: THEME.textMain, fontSize: '13px' }}>
+                                <td style={{ padding: '14px 18px', color: THEME.textMain, fontSize: '13px' }}>
                                     {wait.blocking_user}
                                 </td>
-                                <td style={{ padding: '12px 16px', color: waitColor, fontSize: '13px', fontWeight: '500' }}>
+                                <td style={{ padding: '14px 18px', color: waitColor, fontSize: '13px', fontWeight: '500' }}>
                                     {waitSec.toFixed(1)}
                                 </td>
                             </tr>
@@ -257,7 +258,7 @@ const WaitEventBreakdown = ({ waitEvents }) => {
                 background: THEME.surface,
                 border: `1px solid ${THEME.glassBorder}`,
                 borderRadius: '12px',
-                padding: '20px',
+                padding: '24px',
                 marginTop: '16px',
             }}
         >
@@ -380,22 +381,22 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
                         >
                             <thead>
                             <tr style={{ borderBottom: `1px solid ${THEME.glassBorder}` }}>
-                                <th style={{ padding: '12px 16px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                                <th style={{ padding: '14px 18px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                                     Query
                                 </th>
-                                <th style={{ padding: '12px 16px', textAlign: 'right', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                                <th style={{ padding: '14px 18px', textAlign: 'right', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                                     Calls
                                 </th>
-                                <th style={{ padding: '12px 16px', textAlign: 'right', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                                <th style={{ padding: '14px 18px', textAlign: 'right', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                                     Mean (ms)
                                 </th>
-                                <th style={{ padding: '12px 16px', textAlign: 'right', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                                <th style={{ padding: '14px 18px', textAlign: 'right', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                                     Max (ms)
                                 </th>
-                                <th style={{ padding: '12px 16px', textAlign: 'right', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                                <th style={{ padding: '14px 18px', textAlign: 'right', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                                     StdDev
                                 </th>
-                                <th style={{ padding: '12px 16px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
+                                <th style={{ padding: '14px 18px', textAlign: 'left', color: THEME.textMuted, fontWeight: '500', fontSize: '12px' }}>
                                     % of Total
                                 </th>
                             </tr>
@@ -422,22 +423,22 @@ const SlowQueriesTable = ({ slowQueries, searchTerm, onSearchChange }) => {
                                             e.currentTarget.style.background = 'transparent';
                                         }}
                                     >
-                                        <td style={{ padding: '12px 16px', color: THEME.textMain, fontSize: '13px', maxWidth: '350px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <td style={{ padding: '14px 18px', color: THEME.textMain, fontSize: '13px', maxWidth: '350px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {q.query_preview}
                                         </td>
-                                        <td style={{ padding: '12px 16px', textAlign: 'right', color: THEME.textMain, fontSize: '13px' }}>
+                                        <td style={{ padding: '14px 18px', textAlign: 'right', color: THEME.textMain, fontSize: '13px' }}>
                                             {calls.toLocaleString()}
                                         </td>
-                                        <td style={{ padding: '12px 16px', textAlign: 'right', color: meanColor, fontSize: '13px', fontWeight: '500' }}>
+                                        <td style={{ padding: '14px 18px', textAlign: 'right', color: meanColor, fontSize: '13px', fontWeight: '500' }}>
                                             {meanMs.toFixed(2)}
                                         </td>
-                                        <td style={{ padding: '12px 16px', textAlign: 'right', color: THEME.textMain, fontSize: '13px' }}>
+                                        <td style={{ padding: '14px 18px', textAlign: 'right', color: THEME.textMain, fontSize: '13px' }}>
                                             {maxMs.toFixed(0)}
                                         </td>
-                                        <td style={{ padding: '12px 16px', textAlign: 'right', color: THEME.textMain, fontSize: '13px' }}>
+                                        <td style={{ padding: '14px 18px', textAlign: 'right', color: THEME.textMain, fontSize: '13px' }}>
                                             {stddevMs.toFixed(2)}
                                         </td>
-                                        <td style={{ padding: '12px 16px', fontSize: '13px' }}>
+                                        <td style={{ padding: '14px 18px', fontSize: '13px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <div
                                                     style={{
@@ -607,7 +608,7 @@ const DBActivitySection = ({ dbActivity }) => {
                     background: THEME.surface,
                     border: `1px solid ${THEME.glassBorder}`,
                     borderRadius: '12px',
-                    padding: '20px',
+                    padding: '24px',
                 }}
             >
                 <div style={{ marginBottom: '16px', color: THEME.textMain, fontWeight: '500' }}>
@@ -693,7 +694,7 @@ const HealthInsights = ({ data }) => {
                 background: THEME.surface,
                 border: `1px solid ${THEME.glassBorder}`,
                 borderRadius: '12px',
-                padding: '20px',
+                padding: '24px',
                 marginTop: '24px',
             }}
         >
@@ -907,7 +908,7 @@ export default function LogPatternAnalysisTab() {
                                 background: 'transparent',
                                 border: 'none',
                                 color: isActive ? THEME.primary : THEME.textMuted,
-                                padding: '12px 16px',
+                                padding: '14px 18px',
                                 cursor: 'pointer',
                                 fontSize: '13px',
                                 fontWeight: isActive ? '600' : '500',

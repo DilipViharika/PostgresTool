@@ -51,16 +51,17 @@ const Styles = () => (
         .oh-card {
             background: linear-gradient(180deg, ${T.surface} 0%, ${T.surface}f8 100%);
             border: 1px solid ${T.border};
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: ${THEME.shadowSm};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
             transition: all 0.25s ease;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(12px);
         }
         .oh-card:hover {
-            box-shadow: ${THEME.shadowMd};
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         .oh-card::after {
@@ -73,9 +74,9 @@ const Styles = () => (
             background: var(--tile-accent, ${T.primary});
             opacity: 0.7;
         }
-        .oh-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-        .oh-grid-3 { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
-        .oh-grid-6 { display:grid; grid-template-columns:repeat(6, 1fr); gap:12px; }
+        .oh-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+        .oh-grid-3 { display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; }
+        .oh-grid-6 { display:grid; grid-template-columns:repeat(6, 1fr); gap:18px; }
         .oh-metric-card { background:${T.raised}; border:1px solid ${T.border}; border-radius:10px; padding:16px; text-align:center; }
         .oh-metric-value { font-size:28px; font-weight:700; color:${T.primary}; margin:8px 0; }
         .oh-metric-label { font-size:12px; color:${T.text2}; text-transform:uppercase; }
@@ -135,7 +136,7 @@ const ChartTooltip = ({ active, payload, label }) => {
         <div style={{
             background: T.surface,
             border: `1px solid ${T.border}`,
-            borderRadius: 8,
+            borderRadius: 12,
             padding: '8px 12px',
             fontSize: 12,
         }}>
@@ -250,13 +251,13 @@ export default function ObservabilityHub() {
                         background: T.primary,
                         color: THEME.textInverse,
                         border: 'none',
-                        borderRadius: 8,
+                        borderRadius: 12,
                         cursor: 'pointer',
                         fontSize: 12,
                         fontWeight: 600,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 8,
+                        gap: 12,
                     }}
                 >
                     <RefreshCw size={14} />
@@ -422,7 +423,7 @@ export default function ObservabilityHub() {
                                 style={{
                                     padding: 12,
                                     background: i % 2 === 0 ? T.raised : 'transparent',
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     marginBottom: 8,
                                     borderLeft: `3px solid ${T.warning}`,
                                 }}
@@ -547,7 +548,7 @@ export default function ObservabilityHub() {
                                 style={{
                                     padding: 12,
                                     background: T.raised,
-                                    borderRadius: 8,
+                                    borderRadius: 12,
                                     marginBottom: 8,
                                     borderLeft: `3px solid ${T.danger}`,
                                 }}
@@ -574,7 +575,7 @@ export default function ObservabilityHub() {
             {activeTab === 'audit' && auditLog && (
                 <div>
                     <div className="oh-subtitle">Audit Log Filters</div>
-                    <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                    <div style={{ display: 'flex', gap: 18, marginBottom: 20 }}>
                         <input
                             type="text"
                             placeholder="Search username..."
@@ -585,7 +586,7 @@ export default function ObservabilityHub() {
                                 padding: '8px 12px',
                                 background: T.surface,
                                 border: `1px solid ${T.border}`,
-                                borderRadius: 8,
+                                borderRadius: 12,
                                 color: T.text1,
                                 fontSize: 12,
                                 minWidth: 0,
@@ -598,7 +599,7 @@ export default function ObservabilityHub() {
                                 padding: '8px 12px',
                                 background: T.surface,
                                 border: `1px solid ${T.border}`,
-                                borderRadius: 8,
+                                borderRadius: 12,
                                 color: T.text1,
                                 fontSize: 12,
                             }}
@@ -638,7 +639,7 @@ export default function ObservabilityHub() {
                         </div>
 
                         {/* Summary Stats */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                             <div className="oh-metric-card">
                                 <Shield size={20} color={T.primary} style={{ margin: '0 auto', marginBottom: 8 }} />
                                 <div className="oh-metric-label">Total Audit Events</div>
@@ -734,7 +735,7 @@ export default function ObservabilityHub() {
                                             <div style={{
                                                 background: T.surface,
                                                 border: `1px solid ${T.border}`,
-                                                borderRadius: 8,
+                                                borderRadius: 12,
                                                 padding: '8px 12px',
                                                 fontSize: 12,
                                             }}>

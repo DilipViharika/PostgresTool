@@ -7,21 +7,21 @@ import { FileCode, Download, Copy, Package, Settings, Code, RefreshCw, CheckCirc
 const Styles = () => (
     <style>{`
         @keyframes tfFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .tf-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); animation:tfFade .3s ease; transition:border-color 0.2s ease; }
-        .tf-card:hover { border-color:${THEME.primary}30; }
-        .tf-card-section { padding:16px 20px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .tf-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:20px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); animation:tfFade .3s ease; transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .tf-card:hover { border-color:${THEME.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+        .tf-card-section { padding:14px 20px; border-bottom:1px solid ${THEME.glassBorder}; background:${THEME.bg}06; }
         .tf-card-section:last-child { border-bottom:none; }
-        .tf-export-card { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:16px; margin-bottom:12px; display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start; }
-        .tf-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:10px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
+        .tf-export-card { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:20px; margin-bottom:16px; display:grid; grid-template-columns:1fr auto; gap:16px; align-items:start; }
+        .tf-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:12px; padding:12px 18px; font-weight:700; font-size:13px; cursor:pointer; }
         .tf-button:hover { background:${THEME.primaryLight}; }
         .tf-button-secondary { background:${THEME.secondary}; }
         .tf-button-secondary:hover { background:${THEME.secondaryLight}; }
-        .tf-code-block { background:${THEME.bg}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:16px; margin:12px 0; max-height:300px; overflow-y:auto; position:relative; }
+        .tf-code-block { background:${THEME.bg}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:20px; margin:16px 0; max-height:300px; overflow-y:auto; position:relative; }
         .tf-code { font-family:monospace; font-size:12px; color:${THEME.textMain}; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
         .tf-code-copy { position:absolute; top:8px; right:8px; cursor:pointer; padding:8px; background:${THEME.primary}20; border-radius:8px; border:1px solid ${THEME.primary}40; color:${THEME.primary}; }
         .tf-code-copy:hover { background:${THEME.primary}40; }
         .tf-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .tf-select { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; cursor:pointer; }
+        .tf-select { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:12px 14px; color:${THEME.textMain}; font-size:13px; width:100%; cursor:pointer; }
     `}</style>
 );
 

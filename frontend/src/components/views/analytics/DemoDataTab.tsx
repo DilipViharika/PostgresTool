@@ -408,14 +408,16 @@ function Panel({ title, icon: TIcon, accentColor, rightNode, noPad, children, st
       style={{
         background: THEME.surface,
         border: `1px solid ${accentColor ? `${accentColor}22` : THEME.glassBorder}`,
-        borderRadius: 16,
+        borderRadius: 18,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
         position: 'relative',
         boxShadow: accentColor
-          ? `0 0 0 1px ${accentColor}08, inset 0 1px 0 rgba(255,255,255,0.05)`
-          : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+          ? `0 4px 16px ${accentColor}12, 0 1px 4px rgba(0,0,0,0.04)`
+          : '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+        backdropFilter: 'blur(12px)',
+        transition: 'all 0.2s ease',
         ...style,
       }}
     >
@@ -423,38 +425,38 @@ function Panel({ title, icon: TIcon, accentColor, rightNode, noPad, children, st
       {title && (
         <div
           style={{
-            padding: '12px 18px',
+            padding: '14px 20px',
             borderBottom: `1px solid ${THEME.glassBorder}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexShrink: 0,
             minHeight: 44,
-            background: 'rgba(255,255,255,0.012)',
+            background: 'rgba(0,0,0,0.06)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {TIcon && (
               <div
                 style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 6,
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   background: `${accentColor || THEME.textDim}14`,
                 }}
               >
-                <TIcon size={12} color={accentColor || THEME.textDim} />
+                <TIcon size={13} color={accentColor || THEME.textDim} />
               </div>
             )}
             <span
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 700,
-                color: THEME.textMuted,
-                
+                color: THEME.textMain,
+
                 letterSpacing: '0.02em',
               }}
             >
@@ -464,7 +466,7 @@ function Panel({ title, icon: TIcon, accentColor, rightNode, noPad, children, st
           {rightNode}
         </div>
       )}
-      <div style={{ flex: 1, minHeight: 0, padding: noPad ? 0 : '16px 18px' }}>
+      <div style={{ flex: 1, minHeight: 0, padding: noPad ? 0 : '18px 20px' }}>
         {children}
       </div>
     </div>
@@ -660,9 +662,9 @@ function HorizontalBarList({ items, color }) {
             <span style={{ fontSize: 11, color: THEME.textMuted }}>{item.label}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color, fontFamily: "'JetBrains Mono',monospace" }}>{item.display}</span>
           </div>
-          <div style={{ height: 6, borderRadius: 10, background: THEME.glassBorder, overflow: 'hidden' }}>
+          <div style={{ height: 6, borderRadius: 12, background: THEME.glassBorder, overflow: 'hidden' }}>
             <div style={{
-              height: '100%', borderRadius: 10, width: `${(item.value / maxVal) * 100}%`,
+              height: '100%', borderRadius: 12, width: `${(item.value / maxVal) * 100}%`,
               background: `linear-gradient(90deg, ${color}, ${color}88)`,
               animation: 'demoBarGrow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both',
               transformOrigin: 'left',
@@ -676,14 +678,14 @@ function HorizontalBarList({ items, color }) {
 
 function ResourceGaugeRow({ resources, color }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${resources.length}, 1fr)`, gap: 14 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${resources.length}, 1fr)`, gap: 20 }}>
       {resources.map((res, i) => {
         const r = 34, sw = 7, circ = Math.PI * r;
         const filled = circ * Math.min(res.value, 100) / 100;
         const statusColor = res.value > 80 ? THEME.danger : res.value > 60 ? THEME.warning : THEME.success;
         return (
           <div key={i} style={{
-            background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 14,
+            background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16,
             padding: '14px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
           }}>
             <svg width={76} height={46} viewBox="0 0 76 46">
@@ -740,7 +742,7 @@ function MultiLineChartWidget({ data, lines, color }) {
           <CartesianGrid stroke={THEME.glassBorder} strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
-          <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, fontSize: 11 }} />
+          <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, fontSize: 11 }} />
           {lines.map((line, i) => (
             <Line key={i} type="monotone" dataKey={line.key} stroke={line.color} strokeWidth={2} dot={false} strokeDasharray={line.dashed ? '5 3' : undefined} />
           ))}
@@ -758,7 +760,7 @@ function MiniBarChart({ data, color }) {
           <CartesianGrid stroke={THEME.glassBorder} strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 9, fill: THEME.textDim }} axisLine={false} tickLine={false} width={36} />
-          <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, fontSize: 11 }} />
+          <Tooltip contentStyle={{ background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, fontSize: 11 }} />
           <Bar dataKey="reads" fill={color} radius={[3, 3, 0, 0]} opacity={0.8} />
           <Bar dataKey="writes" fill={`${color}60`} radius={[3, 3, 0, 0]} />
         </BarChart>
@@ -1285,7 +1287,7 @@ function SeverityBadge({ label, severity }) {
     <span style={{
       display: 'inline-block',
       padding: '2px 6px',
-      borderRadius: 14,
+      borderRadius: 16,
       background: `${color}20`,
       color: color,
       fontSize: 9,
@@ -1305,7 +1307,7 @@ function SectionContent({ section, db }) {
 
   // Section header
   const headerNode = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingLeft: 16, borderLeft: `4px solid ${db.color}` }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 16, paddingLeft: 16, borderLeft: `4px solid ${db.color}` }}>
       <h2 style={{ margin: 0, fontSize: 12, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.02em' }}>{section.name}</h2>
       <StatusBadge label={`${section.tabs.length} tabs`} color={db.color} />
     </div>
@@ -1314,7 +1316,7 @@ function SectionContent({ section, db }) {
   // Core section — keep existing layout
   const coreSection = sw.pool && sw.workload && (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 16 }}>
         <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
           <DonutWidget {...sw.pool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
         </Panel>
@@ -1378,7 +1380,7 @@ function SectionContent({ section, db }) {
         </Panel>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 16 }}>
         <Panel title="Index Usage" icon={Gauge} accentColor={db.color}>
           <DonutWidget
             data={[
@@ -1394,7 +1396,7 @@ function SectionContent({ section, db }) {
           />
         </Panel>
         <Panel title="Index Health" icon={BarChart3} accentColor={db.color}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 11, color: THEME.textMuted }}>Hit Ratio</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: THEME.success }}>{DB_INDEX_STATS[key].indexPct}%</span>
@@ -1420,7 +1422,7 @@ function SectionContent({ section, db }) {
   // Infrastructure section — KPI row + connection pool donut + replication + connection list
   const infraSection = (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 16 }}>
         <Panel title="Buffer Hit Rate" icon={Zap} accentColor={db.color} noPad>
           <div style={{ padding: 16, textAlign: 'center' }}>
             <div style={{ fontSize: 28, fontWeight: 700, color: THEME.success }}>99.2%</div>
@@ -1441,7 +1443,7 @@ function SectionContent({ section, db }) {
         </Panel>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 14, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 20, marginBottom: 16 }}>
         <Panel title="Connection Pool" icon={Layers} accentColor={db.color}>
           <DonutWidget {...sw.pool} color={db.color} size={100} innerRadius={34} outerRadius={46} />
         </Panel>
@@ -1492,7 +1494,7 @@ function SectionContent({ section, db }) {
         </Panel>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 16 }}>
         <Panel title="Schema Objects" icon={Layers} accentColor={db.color}>
           <DonutWidget
             data={[
@@ -1549,7 +1551,7 @@ function SectionContent({ section, db }) {
   // Observability section — metric cards with sparklines + active alerts + log patterns
   const observabilitySection = (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 16 }}>
         <Panel title="Trace Volume" icon={Activity} accentColor={db.color} noPad>
           <div style={{ padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -1606,7 +1608,7 @@ function SectionContent({ section, db }) {
 
       <div style={{ marginBottom: 16 }}>
         <Panel title="Log Patterns" icon={Eye} accentColor={db.color}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             {[
               { pattern: 'connection timeout', count: 24, trend: [5, 8, 12, 15, 18, 22, 24] },
               { pattern: 'query slow', count: 156, trend: [120, 128, 135, 142, 150, 153, 156] },
@@ -1665,7 +1667,7 @@ function SectionContent({ section, db }) {
             ].map((q, idx) => (
               <div key={idx} style={{ borderLeft: `3px solid ${db.color}`, paddingLeft: 12 }}>
                 <div style={{ fontSize: 10, color: THEME.textMain, fontFamily: "'JetBrains Mono',monospace" }}>{q.sql}</div>
-                <div style={{ fontSize: 9, color: THEME.textMuted, marginTop: 4, display: 'flex', gap: 12 }}>
+                <div style={{ fontSize: 9, color: THEME.textMuted, marginTop: 4, display: 'flex', gap: 18 }}>
                   <span>{q.timestamp}</span>
                   <span style={{ color: db.color }}>{q.duration}</span>
                 </div>
@@ -1700,7 +1702,7 @@ function SectionContent({ section, db }) {
         </Panel>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 16 }}>
         <Panel title="Backup Schedule" icon={HardDrive} accentColor={db.color}>
           <DemoTable
             columns={[
@@ -1776,14 +1778,14 @@ function SectionContent({ section, db }) {
       {headerNode}
       {middleContent}
 
-      <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+      <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
         {section.tabs.map((tab, idx) => (
           <div
             key={idx}
             style={{
               background: THEME.surface,
               border: `1px solid ${THEME.glassBorder}`,
-              borderRadius: 14,
+              borderRadius: 16,
               padding: '14px 16px',
               position: 'relative',
               overflow: 'hidden',
@@ -1851,7 +1853,7 @@ function SectionContent({ section, db }) {
 /* ── Helper: shared backup/txn/maintenance panels ── */
 function OverviewPanels({ widgets, db }) {
   return (
-    <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+    <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
       <Panel title="Last Backup" icon={HardDrive} accentColor={THEME.success}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1880,7 +1882,7 @@ function OverviewPanels({ widgets, db }) {
       </Panel>
 
       <Panel title="Long-Running Txns" icon={Hourglass} accentColor={THEME.warning}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {widgets.longTxns.map((txn, idx) => (
             <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1900,7 +1902,7 @@ function OverviewPanels({ widgets, db }) {
       </Panel>
 
       <Panel title="Maintenance Health" icon={Leaf} accentColor={db.color}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div style={{ display: 'flex', height: 18, borderRadius: 6, overflow: 'hidden', gap: 2 }}>
             <div style={{ flex: widgets.vacuum.urgent, background: THEME.danger, opacity: 0.8 }} />
             <div style={{ flex: widgets.vacuum.soon, background: THEME.warning, opacity: 0.6 }} />
@@ -1995,7 +1997,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
     return (
       <>
         {/* Row 1: 6 Hero KPI Cards with trend arrows and vs last hr text */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 18 }}>
           {db.kpis && db.kpis.slice(0, 6).map((kpi, i) => {
             const trendUp = hashNorm(`${seed}-kpi-trend-${i}`) > 0.5;
             const trendPct = Math.floor(hashNorm(`${seed}-kpi-pct-${i}`) * 25 + 2);
@@ -2016,7 +2018,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 2: 3 Cards (Last Backup, Long-Running Txns, Vacuum Health) */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
           <Panel title="Last Backup" icon={Archive} accentColor={THEME.success}>
             <StatCard label="Time" value={`${Math.floor(hashNorm(`${seed}-lb`) * 6 + 1)}`} unit="hours ago" color={THEME.success} />
             <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 8 }}>
@@ -2037,7 +2039,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 3: 2-col — Cluster Velocity AreaChart with stats footer | Database Health + Connection Pool with progress bars */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
           <Panel title="Cluster Velocity (24h)" icon={TrendingUp} accentColor={db.color}
             rightNode={<div style={{ display: 'flex', gap: 10 }}>
               <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 3, background: db.color, borderRadius: 1 }} />QPS</span>
@@ -2053,14 +2055,14 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
                 <Area type="monotone" dataKey="secondary" name="TPS" stroke={THEME.success} fill={`${THEME.success}10`} strokeWidth={1.5} />
               </AreaChart>
             </ResponsiveContainer>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, borderTop: `1px solid ${THEME.gridLine}`, paddingTop: 12, marginTop: 12, fontSize: 9 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, borderTop: `1px solid ${THEME.gridLine}`, paddingTop: 12, marginTop: 12, fontSize: 9 }}>
               <div><span style={{ color: THEME.textDim }}>Peak QPS</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-pqps`) * 2000 + 500)}</div></div>
               <div><span style={{ color: THEME.textDim }}>Avg QPS</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-aqps`) * 1500 + 300)}</div></div>
               <div><span style={{ color: THEME.textDim }}>Peak TPS</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-ptps`) * 1200 + 200)}</div></div>
               <div><span style={{ color: THEME.textDim }}>Avg TPS</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{Math.floor(hashNorm(`${seed}-atps`) * 800 + 100)}</div></div>
             </div>
           </Panel>
-          <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 20 }}>
             <Panel title="Database Health" icon={Shield} accentColor={THEME.success}>
               <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
                 <RingGauge value={Math.floor(hashNorm(`${seed}-dh`) * 5 + 94)} color={THEME.success} size={70} strokeWidth={5} label="HEALTH" />
@@ -2087,7 +2089,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
               </div>
             </Panel>
             <Panel title="Connection Pool" icon={Network} accentColor={db.color}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, fontSize: 10 }}>
                 <div style={{ textAlign: 'center', padding: 8, background: THEME.glassBorder, borderRadius: 4 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: db.color }}>{Math.floor(hashNorm(`${seed}-cpactive`) * 20 + 5)}</div>
                   <div style={{ fontSize: 9, color: THEME.textDim }}>Active</div>
@@ -2129,7 +2131,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
                 <Line type="monotone" dataKey="p99" name="P99" stroke={THEME.danger} strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, borderTop: `1px solid ${THEME.gridLine}`, paddingTop: 12, marginTop: 12, fontSize: 9 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, borderTop: `1px solid ${THEME.gridLine}`, paddingTop: 12, marginTop: 12, fontSize: 9 }}>
               <div><span style={{ color: THEME.textDim }}>P50 avg</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{(2 + Math.random() * 2).toFixed(2)}ms</div></div>
               <div><span style={{ color: THEME.textDim }}>P95 avg</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{(5 + Math.random() * 3).toFixed(2)}ms</div></div>
               <div><span style={{ color: THEME.textDim }}>P99 avg</span> <div style={{ color: THEME.textMain, fontWeight: 600 }}>{(8 + Math.random() * 4).toFixed(2)}ms</div></div>
@@ -2139,7 +2141,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 5: 3-col — Workload Split PieChart | Throughput Breakdown | Ops/Second BarChart */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Workload Split" icon={PieChart} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
               <ResponsiveContainer width="100%" height={140}>
@@ -2193,7 +2195,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 6: 3-col — CPU Load | Memory Usage | Disk I/O RingGauges with secondary values */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="CPU Load" icon={Cpu} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
               <RingGauge value={Math.floor(hashNorm(`${seed}-cpu`) * 40 + 20)} color={db.color} size={90} strokeWidth={7} label="CPU" />
@@ -2224,7 +2226,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 7: 3-col — Replication with lag badges | Top Impacted Tables with reads/writes | WAL with sparkline & checkpoint stats */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Replication" icon={Lock} accentColor={db.color}>
             <div style={{ fontSize: 10, padding: '8px 12px' }}>
               <div style={{ marginBottom: 12 }}>
@@ -2303,7 +2305,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
       <>
         {/* ACTIVE SESSIONS VIEW */}
         {/* Row 1: Session KPI Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 18 }}>
           <Panel title="Active" icon={Activity} accentColor={THEME.success}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ fontSize: 28, fontWeight: 800, color: THEME.success, letterSpacing: '-0.02em' }}>
@@ -2357,7 +2359,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 2: Slow Queries Table + Wait Events */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 20 }}>
           <Panel title="Slow Queries (5 Most Recent)" icon={Clock} accentColor={THEME.warning}>
             <DemoTable
               columns={[
@@ -2381,7 +2383,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 10, fontWeight: 600, color: THEME.textMain, marginBottom: 2 }}>{evt.name}</div>
-                    <div style={{ width: '100%', height: 6, background: `${evt.color}15`, borderRadius: 10, overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: 6, background: `${evt.color}15`, borderRadius: 12, overflow: 'hidden' }}>
                       <div style={{ width: `${(evt.value / 100) * 100}%`, height: '100%', background: evt.color, borderRadius: 3 }} />
                     </div>
                   </div>
@@ -2394,7 +2396,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
 
         {/* HEALTH VIEW */}
         {/* Row 3: Cache Hit Ratio + Lock Monitor */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Cache Hit Ratio (24h)" icon={Zap} accentColor={THEME.success}>
             <ResponsiveContainer width="100%" height={160}>
               <AreaChart data={cacheHitData}>
@@ -2411,8 +2413,8 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </div>
           </Panel>
           <Panel title="Lock Monitor" icon={Lock} accentColor={THEME.danger}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
                 <div>
                   <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 4, fontWeight: 600,  letterSpacing: '0.02em' }}>Current Locks</div>
                   <div style={{ fontSize: 24, fontWeight: 800, color: THEME.danger, letterSpacing: '-0.02em' }}>
@@ -2438,7 +2440,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
 
         {/* INSIGHTS VIEW */}
         {/* Row 4: N+1 Patterns + Session Timeline */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="N+1 Query Patterns" icon={Eye} accentColor={db.color}>
             <DemoTable
               columns={[
@@ -2483,7 +2485,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
     return (
       <>
         {/* Row 1: Quick Metric Strip (4 columns) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
           <Panel title="Total Storage" icon={HardDrive} accentColor={db.color}>
             <div style={{ fontSize: 14, fontWeight: 700, color: db.color, marginBottom: 4 }}>485 GB</div>
             <div style={{ fontSize: 10, color: THEME.textDim }}>of 1.2 TB capacity</div>
@@ -2546,7 +2548,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
                 <button key={level} style={{
                   padding: '6px 12px', fontSize: 10, fontWeight: 600, border: 'none',
                   background: level === 'All' ? db.color : THEME.glassBorder, color: THEME.textMain,
-                  borderRadius: 14, cursor: 'pointer', transition: 'all 0.2s',
+                  borderRadius: 16, cursor: 'pointer', transition: 'all 0.2s',
                 }}>
                   {level}
                 </button>
@@ -2558,7 +2560,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
                 const severity = bloatPct > 25 ? 'critical' : bloatPct > 15 ? 'high' : 'medium';
                 const severityColor = severity === 'critical' ? THEME.danger : severity === 'high' ? THEME.warning : db.color;
                 return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0' }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '8px 0' }}>
                     <span style={{ fontSize: 10, color: THEME.textDim, width: 120 }}>{t}</span>
                     <div style={{ flex: 1, minWidth: 0, height: 6, background: THEME.gridLine, borderRadius: 2, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${bloatPct}%`, background: severityColor }}></div>
@@ -2595,7 +2597,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
     return (
       <>
         {/* Row 1: 5 KPI cards with visual enhancements */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 18 }}>
           <Panel title="Uptime Days" icon={CheckCircle} accentColor={THEME.success}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ fontSize: 32, fontWeight: 800, color: THEME.success, letterSpacing: '-0.02em' }}>47</div>
@@ -2646,12 +2648,12 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 2: Alert trend + SLO burn rate */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Error Budget Status" icon={Shield} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
               <RingGauge value={Math.floor(hashNorm(`${seed}-ebs`) * 30 + 60)} color={THEME.success} size={110} strokeWidth={9} label="BUDGET %" />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${THEME.gridLine}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${THEME.gridLine}` }}>
               <div>
                 <div style={{ fontSize: 9, color: THEME.textDim, marginBottom: 3, fontWeight: 600,  letterSpacing: '0.02em' }}>Monthly Budget</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>43.2 min</div>
@@ -2677,7 +2679,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 3: MTTR Trend + Incident Severity */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="MTTR Trend (7 Days)" icon={Clock} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={mttrData}>
@@ -2748,7 +2750,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
     return (
       <>
         {/* Row 1: 6 Enhanced KPI cards with status indicators */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 18 }}>
           <Panel title="Active Alerts" icon={AlertTriangle} accentColor={THEME.warning}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ fontSize: 28, fontWeight: 800, color: THEME.warning, letterSpacing: '-0.02em' }}>
@@ -2835,7 +2837,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 3: Alert Trend + Rules Configuration */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Alert Frequency (7 Days)" icon={Activity} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={140}>
               <BarChart data={alertFreqData}>
@@ -2862,7 +2864,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
                 color={db.color} size={120} innerRadius={40} outerRadius={55}
               />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${THEME.gridLine}`, fontSize: 9 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${THEME.gridLine}`, fontSize: 9 }}>
               <div>
                 <span style={{ color: THEME.textDim }}>Active: </span>
                 <span style={{ color: THEME.success, fontWeight: 600 }}>28</span>
@@ -2925,7 +2927,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
     return (
       <>
         {/* Row 1: 5 KPI cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 18 }}>
           <Panel title="Total Cost" icon={Zap} accentColor={db.color}>
             <StatCard label="Avg" value={`${Math.floor(hashNorm(`${seed}-tc`) * 500 + 100)}`} unit="" color={db.color} />
           </Panel>
@@ -2944,7 +2946,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 2: Scan Type Distribution DonutWidget + Query Plan Cost Trend LineChart */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Scan Type Distribution" icon={Eye} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
               <DonutWidget
@@ -2998,7 +3000,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
     return (
       <>
         {/* Row 1: 5 KPI cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 18 }}>
           <Panel title="Hit Ratio" icon={Zap} accentColor={THEME.success}>
             <StatCard label="Ratio" value={`${Math.floor(hashNorm(`${seed}-ihr`) * 10 + 85)}`} unit="%" color={THEME.success} />
           </Panel>
@@ -3041,7 +3043,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 3: 2-col — Index Size vs Bloat BarChart | Index Health RingGauge */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Index Size vs Bloat" icon={BarChart3} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={150}>
               <BarChart data={(DB_TABLE_NAMES[key] || DB_TABLE_NAMES.postgresql).slice(0, 5).map((t, i) => ({
@@ -3134,7 +3136,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </Panel>
 
         {/* Row 2: 3 stat cards */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Total Bloat" icon={Layers} accentColor={THEME.warning}>
             <StatCard label="Across all tables" value={`${Math.floor(hashNorm(`${seed}-tb`) * 200 + 50)}`} unit="MB" color={THEME.warning} />
           </Panel>
@@ -3215,7 +3217,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
     return (
       <>
         {/* Row 1: 2-col — Pool Utilization RingGauge + stats | Connection History AreaChart */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 20 }}>
           <Panel title="Pool Utilization" icon={Network} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
               <RingGauge value={Math.floor(hashNorm(`${seed}-pu`) * 30 + 30)} color={db.color} size={110} strokeWidth={9} label="POOL" />
@@ -3274,7 +3276,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
     return (
       <>
         {/* Row 1: 4 KPI cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
           <Panel title="Streaming Replicas" icon={Radio} accentColor={THEME.success}>
             <StatCard label="Active" value={`${Math.floor(hashNorm(`${seed}-sr`) * 4 + 1)}`} unit="" color={THEME.success} />
           </Panel>
@@ -3328,7 +3330,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 4: WAL Configuration stats cards */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20 }}>
           <Panel title="WAL Level" icon={Activity} accentColor={db.color}>
             <StatCard label="Setting" value="replica" unit="" color={db.color} />
           </Panel>
@@ -3353,7 +3355,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
     return (
       <>
         {/* Row 1: 2-col — Checkpoint Frequency BarChart | Duration Trend LineChart */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Checkpoint Frequency (24h)" icon={CheckCircle} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={gen24h(seed, 8, 6, 5, 10)}>
@@ -3380,7 +3382,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
         </div>
 
         {/* Row 2: 3 stat cards */}
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Per Day" icon={Activity} accentColor={db.color}>
             <StatCard label="Checkpoints" value="288" color={db.color} />
           </Panel>
@@ -3460,7 +3462,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </AreaChart>
           </ResponsiveContainer>
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Current Size" icon={Database} accentColor={db.color}>
             <StatCard label="Database" value="14.8" unit="GB" color={db.color} />
           </Panel>
@@ -3497,7 +3499,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </BarChart>
           </ResponsiveContainer>
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Last Backup" icon={CheckCircle} accentColor={THEME.success}>
             <StatCard label="Ago" value="1" unit="hour" color={THEME.success} />
           </Panel>
@@ -3543,7 +3545,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             color={db.color}
           />
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Tables" icon={Database} accentColor={db.color}><StatCard label="Total" value="234" color={db.color} /></Panel>
           <Panel title="Views" icon={Eye} accentColor={db.color}><StatCard label="Total" value="89" color={db.color} /></Panel>
           <Panel title="Pending" icon={Clock} accentColor={THEME.success}><StatCard label="Migrations" value="0" color={THEME.success} /></Panel>
@@ -3577,7 +3579,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </div>
           </div>
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Sample Schema" icon={Database} accentColor={db.color}>
             <div style={{ fontSize: '12px', color: THEME.textMain, marginBottom: '12px' }}>
               <strong>PostgreSQL E-Commerce:</strong>
@@ -3631,7 +3633,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </AreaChart>
           </ResponsiveContainer>
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Compliance" icon={Shield} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
               <RingGauge value={98} color={THEME.success} size={80} strokeWidth={6} label="SCORE" />
@@ -3670,7 +3672,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </AreaChart>
           </ResponsiveContainer>
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Metrics" icon={Activity} accentColor={db.color}><StatCard label="Active" value="124" color={db.color} /></Panel>
           <Panel title="Alarms" icon={Bell} accentColor={THEME.success}><StatCard label="Active" value="0" color={THEME.success} /></Panel>
           <Panel title="Data Points" icon={Database} accentColor={db.color}><StatCard label="Total" value="98.2M" color={db.color} /></Panel>
@@ -3686,7 +3688,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
   if (subTabId === 'log-patterns') {
     return (
       <>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Log Level Distribution" icon={FileSearch} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
               <DonutWidget
@@ -3758,14 +3760,14 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             color={db.color}
           />
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Root Cause Accuracy" icon={Shield} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
               <RingGauge value={89} color={THEME.success} size={90} strokeWidth={7} label="ACC" />
             </div>
           </Panel>
           <Panel title="Correlation Stats" icon={Activity} accentColor={db.color}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '16px 0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, padding: '16px 0' }}>
               <div style={{ textAlign: 'center' }}><div style={{ fontSize: 20, fontWeight: 700, color: db.color, fontFamily: "'JetBrains Mono',monospace" }}>12</div><div style={{ fontSize: 9, color: THEME.textDim }}>Correlations</div></div>
               <div style={{ textAlign: 'center' }}><div style={{ fontSize: 20, fontWeight: 700, color: THEME.success, fontFamily: "'JetBrains Mono',monospace" }}>2</div><div style={{ fontSize: 9, color: THEME.textDim }}>False Positives</div></div>
             </div>
@@ -3793,7 +3795,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </AreaChart>
           </ResponsiveContainer>
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Traces/sec" icon={Activity} accentColor={db.color}><StatCard label="Current" value="4,500" color={db.color} /></Panel>
           <Panel title="Spans" icon={Layers} accentColor={db.color}><StatCard label="Per day" value="234M" color={db.color} /></Panel>
           <Panel title="Sampling" icon={Eye} accentColor={THEME.success}><StatCard label="Rate" value="100" unit="%" color={THEME.success} /></Panel>
@@ -3809,7 +3811,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
   if (subTabId === 'kubernetes') {
     return (
       <>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Pod Status" icon={Container} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
               <DonutWidget
@@ -3824,7 +3826,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </div>
           </Panel>
           <Panel title="Resource Utilization" icon={Cpu} accentColor={db.color}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '12px 0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, padding: '12px 0' }}>
               <div style={{ display: 'flex', justifyContent: 'center' }}><RingGauge value={62} color={db.color} size={70} strokeWidth={5} label="CPU" /></div>
               <div style={{ display: 'flex', justifyContent: 'center' }}><RingGauge value={71} color={THEME.warning} size={70} strokeWidth={5} label="MEM" /></div>
             </div>
@@ -3880,7 +3882,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             color={db.color}
           />
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Overall Uptime" icon={CheckCircle} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
               <RingGauge value={99} color={THEME.success} size={80} strokeWidth={6} label="SLA" />
@@ -3910,7 +3912,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </AreaChart>
           </ResponsiveContainer>
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="AI Accuracy" icon={Brain} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
               <RingGauge value={96} color={THEME.success} size={80} strokeWidth={6} label="ACC" />
@@ -3933,7 +3935,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
   if (subTabId === 'sql') {
     return (
       <>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Queries Run" icon={Terminal} accentColor={db.color}><StatCard label="Today" value="1,245" color={db.color} /></Panel>
           <Panel title="Avg Time" icon={Clock} accentColor={db.color}><StatCard label="Execution" value="3.2" unit="ms" color={db.color} /></Panel>
           <Panel title="Favorites" icon={Star} accentColor={db.color}><StatCard label="Saved" value="34" color={db.color} /></Panel>
@@ -4022,7 +4024,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </BarChart>
           </ResponsiveContainer>
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Total Commits" icon={GitBranch} accentColor={db.color}><StatCard label="All time" value="3,456" color={db.color} /></Panel>
           <Panel title="Branches" icon={GitBranch} accentColor={db.color}><StatCard label="Active" value="24" color={db.color} /></Panel>
           <Panel title="Pull Requests" icon={Code} accentColor={THEME.warning}><StatCard label="Open" value="12" color={THEME.warning} /></Panel>
@@ -4055,7 +4057,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             color={db.color}
           />
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Adoption Rate" icon={Activity} accentColor={db.color}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
               <RingGauge value={76} color={db.color} size={80} strokeWidth={6} label="ADOPT" />
@@ -4097,7 +4099,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             color={db.color}
           />
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Task Status" icon={Shield} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
               <DonutWidget
@@ -4127,7 +4129,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
   if (subTabId === 'users') {
     return (
       <>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
           <Panel title="Active Users" icon={Users} accentColor={db.color}>
             <DemoTable
               columns={[
@@ -4171,7 +4173,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
   if (subTabId === 'admin-panel') {
     return (
       <>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="System Health" icon={Shield} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
               <RingGauge value={97} color={THEME.success} size={90} strokeWidth={7} label="HEALTH" />
@@ -4227,7 +4229,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             color={db.color}
           />
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <Panel title="Storage Freed (7d)" icon={HardDrive} accentColor={THEME.success}>
             <ResponsiveContainer width="100%" height={140}>
               <BarChart data={gen7d(seed, 20, 30)}>
@@ -4254,7 +4256,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
   if (subTabId === 'terraform') {
     return (
       <>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Resources" icon={Database} accentColor={db.color}><StatCard label="Managed" value="456" color={db.color} /></Panel>
           <Panel title="Modules" icon={Layers} accentColor={db.color}><StatCard label="Total" value="23" color={db.color} /></Panel>
           <Panel title="Last Export" icon={Clock} accentColor={db.color}><StatCard label="Ago" value="2" unit="hours" color={db.color} /></Panel>
@@ -4309,7 +4311,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             color={db.color}
           />
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Dashboards" icon={LayoutDashboard} accentColor={db.color}><StatCard label="Total" value="18" color={db.color} /></Panel>
           <Panel title="Total Panels" icon={Layers} accentColor={db.color}><StatCard label="Across all" value="567" color={db.color} /></Panel>
           <Panel title="Active Users" icon={Users} accentColor={db.color}><StatCard label="This week" value="89" color={db.color} /></Panel>
@@ -4342,7 +4344,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
             </AreaChart>
           </ResponsiveContainer>
         </Panel>
-        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
           <Panel title="Health" icon={Shield} accentColor={THEME.success}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
               <RingGauge value={Math.floor(hashNorm(`${seed}-h`) * 10 + 88)} color={THEME.success} size={80} strokeWidth={6} label="OK" />
@@ -4359,7 +4361,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
     /* Layout B: bar chart + donut + stats */
     return (
       <>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
           <Panel title={`${SUB_TAB_DISPLAY_NAMES[subTabId] || subTabId} Activity (7d)`} icon={BarChart3} accentColor={db.color}>
             <ResponsiveContainer width="100%" height={170}>
               <BarChart data={weekData}>
@@ -4431,7 +4433,7 @@ function SubTabContent({ subTabId, _section, db, _widgets }) {
   /* Layout D: 3 gauges + area chart */
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
         <Panel title="Primary" icon={Activity} accentColor={db.color}>
           <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
             <RingGauge value={Math.floor(hashNorm(`${seed}-g1`) * 30 + 60)} color={db.color} size={80} strokeWidth={6} label="P1" />
@@ -4526,14 +4528,14 @@ export default function DemoDataTab({ dbKey = 'postgresql', sectionId, subTabId 
 
       {/* ── KPI Cards: show tab-specific metrics when subTab is active, else DB-level KPIs ── */}
       {tabMetrics ? (
-        <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${tabMetrics.length}, 1fr)`, gap: 12 }}>
+        <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${tabMetrics.length}, 1fr)`, gap: 18 }}>
           {tabMetrics.map((m, i) => {
             const Icon = kpiIcons[i] || Activity;
             const trend = genTrend(m.label);
             return (
               <div key={i} className="demo-card-shine" style={{
                 display: 'flex', flexDirection: 'column', gap: 10,
-                padding: '14px 16px', borderRadius: 14,
+                padding: '14px 16px', borderRadius: 16,
                 border: `1px solid ${THEME.glassBorder}`,
                 position: 'relative', overflow: 'hidden',
               }}>
@@ -4568,14 +4570,14 @@ export default function DemoDataTab({ dbKey = 'postgresql', sectionId, subTabId 
           })}
         </div>
       ) : (
-        <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+        <div className="demo-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 18 }}>
           {db.kpis.map((kpi, i) => {
             const Icon = kpiIcons[i] || Activity;
             const trend = genTrend(kpi.label);
             return (
               <div key={i} className="demo-card-shine" style={{
                 display: 'flex', flexDirection: 'column', gap: 10,
-                padding: '14px 16px', borderRadius: 14,
+                padding: '14px 16px', borderRadius: 16,
                 border: `1px solid ${THEME.glassBorder}`,
                 position: 'relative', overflow: 'hidden',
               }}>

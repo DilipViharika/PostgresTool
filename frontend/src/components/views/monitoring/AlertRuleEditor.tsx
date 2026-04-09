@@ -14,16 +14,17 @@ const Styles = () => (
         .are-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: ${THEME.shadowSm};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
             transition: all 0.25s ease;
             animation: areFade 0.3s ease;
+            backdrop-filter: blur(12px);
         }
         .are-card:hover {
-            box-shadow: ${THEME.shadowMd};
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         .are-card::after {
@@ -126,7 +127,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                 marginBottom: '20px',
             }}
         >
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                 {/* Name */}
                 <div>
                     <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted,  letterSpacing: '0.5px', marginBottom: '6px', display: 'block' }}>
@@ -142,7 +143,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             padding: '10px 12px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
-                            borderRadius: '10px',
+                            borderRadius: '14px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -167,7 +168,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             padding: '10px 12px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
-                            borderRadius: '10px',
+                            borderRadius: '14px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -194,7 +195,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             padding: '10px 12px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
-                            borderRadius: '10px',
+                            borderRadius: '14px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -223,7 +224,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             padding: '10px 12px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
-                            borderRadius: '10px',
+                            borderRadius: '14px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -248,7 +249,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             padding: '10px 12px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
-                            borderRadius: '10px',
+                            borderRadius: '14px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -275,7 +276,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                             padding: '10px 12px',
                             background: THEME.surface,
                             border: `1px solid ${THEME.glassBorder}`,
-                            borderRadius: '10px',
+                            borderRadius: '14px',
                             color: THEME.textMain,
                             fontSize: '13px',
                             fontFamily: THEME.fontBody,
@@ -295,7 +296,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                 <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted,  letterSpacing: '0.5px', marginBottom: '10px', display: 'block' }}>
                     Notification Channels
                 </label>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap' }}>
                     {CHANNELS.map(channel => {
                         const ChannelIcon = channel.icon;
                         const isActive = form.notification_channels.includes(channel.id);
@@ -308,14 +309,14 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                                     padding: '8px 12px',
                                     background: isActive ? `${THEME.primary}20` : THEME.surface,
                                     border: `1px solid ${isActive ? THEME.borderHot : THEME.glassBorder}`,
-                                    borderRadius: '10px',
+                                    borderRadius: '14px',
                                     color: isActive ? THEME.primary : THEME.textMuted,
                                     fontSize: '12px',
                                     fontWeight: 600,
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '6px',
+                                    gap: '10px',
                                     transition: 'all 0.2s ease',
                                     fontFamily: THEME.fontBody,
                                 }}
@@ -360,7 +361,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
             </div>
 
             {/* Form Actions */}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '14px', justifyContent: 'flex-end' }}>
                 <button
                     type="button"
                     onClick={onCancel}
@@ -369,7 +370,7 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                         background: THEME.surfaceLight,
                         color: THEME.textMain,
                         border: `1px solid ${THEME.glassBorder}`,
-                        borderRadius: '10px',
+                        borderRadius: '14px',
                         fontSize: '13px',
                         fontWeight: 600,
                         cursor: 'pointer',
@@ -395,13 +396,13 @@ const RuleForm = ({ rule, onSave, onCancel, saving }) => {
                         background: THEME.primary,
                         color: THEME.void,
                         border: 'none',
-                        borderRadius: '8px',
+                        borderRadius: '12px',
                         fontSize: '13px',
                         fontWeight: 600,
                         cursor: saving ? 'wait' : 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
+                        gap: '12px',
                         transition: 'all 0.2s ease',
                         fontFamily: THEME.fontBody,
                     }}
@@ -435,17 +436,17 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
-                gap: '16px',
+                gap: '20px',
             }}
         >
             <div style={{ flex: 1, minWidth: 0 }}>
                 {/* Rule Header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '12px' }}>
                     <div
                         style={{
                             width: '40px',
                             height: '40px',
-                            borderRadius: '10px',
+                            borderRadius: '14px',
                             background: `${getSeverityColor(rule.severity)}15`,
                             border: `1px solid ${getSeverityColor(rule.severity)}40`,
                             display: 'flex',
@@ -466,7 +467,7 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                 </div>
 
                 {/* Rule Details */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', fontSize: '12px' }}>
                     <div>
                         <div style={{ color: THEME.textMuted, marginBottom: '2px' }}>Condition</div>
                         <div style={{ color: THEME.textMain, fontWeight: 600 }}>
@@ -482,7 +483,7 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                 </div>
 
                 {/* Severity & Status */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '12px', flexWrap: 'wrap' }}>
                     <span
                         className="are-badge"
                         style={{
@@ -507,7 +508,7 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
                 <button
                     onClick={() => onEdit(rule)}
                     style={{
@@ -515,11 +516,11 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                         background: THEME.surfaceLight,
                         color: THEME.textMain,
                         border: `1px solid ${THEME.glassBorder}`,
-                        borderRadius: '10px',
+                        borderRadius: '14px',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
+                        gap: '10px',
                         fontSize: '12px',
                         fontWeight: 600,
                         transition: 'all 0.2s ease',
@@ -545,11 +546,11 @@ const RuleCard = ({ rule, onEdit, onDelete, onToggle, deleting }) => {
                         background: `${THEME.danger}15`,
                         color: THEME.danger,
                         border: `1px solid ${THEME.danger}40`,
-                        borderRadius: '8px',
+                        borderRadius: '12px',
                         cursor: deleting ? 'wait' : 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
+                        gap: '10px',
                         fontSize: '12px',
                         fontWeight: 600,
                         transition: 'all 0.2s ease',
@@ -683,13 +684,13 @@ export default function AlertRuleEditor() {
                             background: THEME.primary,
                             color: THEME.void,
                             border: 'none',
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             fontSize: '13px',
                             fontWeight: 600,
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
+                            gap: '12px',
                             transition: 'all 0.2s ease',
                             fontFamily: THEME.fontBody,
                         }}
@@ -736,7 +737,7 @@ export default function AlertRuleEditor() {
                                 marginBottom: '20px',
                                 display: 'flex',
                                 alignItems: 'flex-start',
-                                gap: '12px',
+                                gap: '18px',
                                 boxShadow: THEME.shadowSm,
                             }}
                         >
@@ -754,7 +755,7 @@ export default function AlertRuleEditor() {
 
                     {/* Rules List */}
                     {!loading && rules.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                             {rules.map(rule => (
                                 <RuleCard
                                     key={rule.id}
@@ -793,13 +794,13 @@ export default function AlertRuleEditor() {
                                     background: THEME.primary,
                                     color: THEME.void,
                                     border: 'none',
-                                    borderRadius: '8px',
+                                    borderRadius: '12px',
                                     fontSize: '13px',
                                     fontWeight: 600,
                                     cursor: 'pointer',
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '8px',
+                                    gap: '12px',
                                     transition: 'all 0.2s ease',
                                     fontFamily: THEME.fontBody,
                                 }}

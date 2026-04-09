@@ -53,16 +53,18 @@ const Styles = () => (
     .sec-card {
       background: var(--theme-surface);
       border: 1px solid var(--theme-glassBorder);
-      border-radius: 12px;
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      backdrop-filter: blur(12px);
       transition: all 0.25s ease;
       display: flex;
       position: relative;
     }
     .sec-card:hover {
       border-color: var(--theme-danger);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      transform: translateY(-2px);
     }
 
     .sec-card-stripe {
@@ -73,18 +75,18 @@ const Styles = () => (
 
     .sec-card-content {
       flex: 1;
-      padding: 16px 18px;
+      padding: 20px 22px;
     }
 
     .sec-card-header {
-      background: var(--theme-textMain)08;
-      padding: 10px 18px;
+      background: var(--theme-textMain)06;
+      padding: 14px 20px;
       border-bottom: 1px solid var(--theme-glassBorder);
-      font-weight: 600;
+      font-weight: 700;
       font-size: 13px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
   `}</style>
 );

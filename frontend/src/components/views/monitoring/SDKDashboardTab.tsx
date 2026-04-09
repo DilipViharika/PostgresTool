@@ -129,25 +129,25 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
                 {generatedKey ? (
                     <div>
                         <p style={{ margin:'0 0 12px', fontSize:13, color:sub }}>Your API key (save it — shown only once):</p>
-                        <div style={{ background:THEME.surfaceHover||'#1a1f45', border:`1px solid ${border}`, borderRadius:8, padding:12, marginBottom:16, display:'flex', alignItems:'center', gap:8, fontFamily:'monospace', fontSize:12 }}>
+                        <div style={{ background:THEME.surfaceHover||'#1a1f45', border:`1px solid ${border}`, borderRadius:12, padding:12, marginBottom:16, display:'flex', alignItems:'center', gap:18, fontFamily:'monospace', fontSize:12 }}>
                             <code style={{ flex:1, overflow:'auto', color:txt }}>{generatedKey}</code>
                             <button onClick={handleCopy} style={{ border:'none', background:'transparent', color:accent, cursor:'pointer', flexShrink:0 }}>
                                 {copied ? <CheckCircle size={16}/> : <Copy size={16}/>}
                             </button>
                         </div>
-                        <button onClick={() => { setGeneratedKey(null); onClose(); }} style={{ width:'100%', padding:'10px 16px', borderRadius:8, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>Done</button>
+                        <button onClick={() => { setGeneratedKey(null); onClose(); }} style={{ width:'100%', padding:'10px 16px', borderRadius:12, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>Done</button>
                     </div>
                 ) : (
-                    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                    <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
                         <div>
                             <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, letterSpacing:'0.02em', marginBottom:6 }}>App Name</label>
                             <input type="text" placeholder="My Salesforce Integration" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
-                                style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13 }} />
+                                style={{ width:'100%', padding:'10px 12px', borderRadius:12, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13 }} />
                         </div>
                         <div>
                             <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, letterSpacing:'0.02em', marginBottom:6 }}>App Type</label>
                             <select value={form.appType} onChange={e => setForm({...form, appType: e.target.value})}
-                                style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13, cursor:'pointer' }}>
+                                style={{ width:'100%', padding:'10px 12px', borderRadius:12, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13, cursor:'pointer' }}>
                                 <option value="salesforce">Salesforce</option>
                                 <option value="mulesoft">MuleSoft</option>
                                 <option value="nodejs">Node.js</option>
@@ -160,20 +160,20 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
                         <div>
                             <label style={{ display:'block', fontSize:12, fontWeight:700, color:sub, letterSpacing:'0.02em', marginBottom:6 }}>Environment</label>
                             <select value={form.environment} onChange={e => setForm({...form, environment: e.target.value})}
-                                style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13, cursor:'pointer' }}>
+                                style={{ width:'100%', padding:'10px 12px', borderRadius:12, border:`1px solid ${border}`, background:THEME.surfaceHover||'#1a1f45', color:txt, fontSize:13, cursor:'pointer' }}>
                                 <option value="development">Development</option>
                                 <option value="staging">Staging</option>
                                 <option value="production">Production</option>
                             </select>
                         </div>
-                        {error && <div style={{ padding:'10px 14px', borderRadius:8, background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'#ef4444', fontSize:12 }}>{error}</div>}
-                        <div style={{ display:'flex', gap:8 }}>
+                        {error && <div style={{ padding:'10px 14px', borderRadius:12, background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', color:'#ef4444', fontSize:12 }}>{error}</div>}
+                        <div style={{ display:'flex', gap:18 }}>
                             <button onClick={handleSubmit} disabled={submitting}
-                                style={{ flex:1, padding:'10px 16px', borderRadius:8, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer', opacity:submitting?0.6:1 }}>
+                                style={{ flex:1, padding:'10px 16px', borderRadius:12, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer', opacity:submitting?0.6:1 }}>
                                 {submitting ? 'Registering...' : 'Register Application'}
                             </button>
                             <button onClick={onClose}
-                                style={{ padding:'10px 16px', borderRadius:8, border:`1px solid ${border}`, background:'transparent', color:sub, fontWeight:700, fontSize:13, cursor:'pointer' }}>Cancel</button>
+                                style={{ padding:'10px 16px', borderRadius:12, border:`1px solid ${border}`, background:'transparent', color:sub, fontWeight:700, fontSize:13, cursor:'pointer' }}>Cancel</button>
                         </div>
                     </div>
                 )}
@@ -303,9 +303,9 @@ export default function SDKDashboardTab() {
                     <h2 style={{ margin:'0 0 6px', fontSize:24, fontWeight:700, color:txt }}>SDK Integration Hub</h2>
                     <p style={{ margin:0, fontSize:13, color:sub }}>Monitor all registered SDK applications and their event data</p>
                 </div>
-                <div style={{ display:'flex', gap:12 }}>
+                <div style={{ display:'flex', gap:18 }}>
                     <button onClick={() => setShowModal(true)}
-                        style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 16px', borderRadius:8, border:'none', background:accent, color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                        style={{ display:'flex', alignItems:'center', gap:18, padding:'10px 16px', borderRadius:12, border:'none', background:accent, color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer' }}>
                         <Plus size={16}/> Register App
                     </button>
                 </div>
@@ -313,13 +313,13 @@ export default function SDKDashboardTab() {
 
             {/* Error */}
             {error && (
-                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderRadius:8, background:'rgba(239,68,68,0.1)', border:`1px solid ${red}`, color:red, marginBottom:24, fontSize:13 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:18, padding:'12px 16px', borderRadius:12, background:'rgba(239,68,68,0.1)', border:`1px solid ${red}`, color:red, marginBottom:24, fontSize:13 }}>
                     <AlertCircle size={16}/> {error}
                 </div>
             )}
 
             {/* Stats */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px, 1fr))', gap:16, marginBottom:32 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px, 1fr))', gap:20, marginBottom:32 }}>
                 {[
                     { label:'Total Applications', value:stats.total, icon:Layers, color:accent },
                     { label:'Events (24h)', value:stats.events.toLocaleString(), icon:Activity, color:green },
@@ -344,7 +344,7 @@ export default function SDKDashboardTab() {
                                     <h4 style={{ margin:'0 0 4px', color:txt, fontSize:14, fontWeight:700 }}>{app.name}</h4>
                                     <p style={{ margin:0, color:sub, fontSize:12 }}>{typeLabel(app.app_type || app.appType)}</p>
                                 </div>
-                                <div style={{ display:'flex', alignItems:'flex-start', gap:8 }}>
+                                <div style={{ display:'flex', alignItems:'flex-start', gap:18 }}>
                                     <span style={{ padding:'4px 10px', borderRadius:4, fontSize:11, fontWeight:700, background:`${envColor(app.environment)}20`, color:envColor(app.environment) }}>
                                         {app.environment}
                                     </span>
@@ -359,9 +359,9 @@ export default function SDKDashboardTab() {
 
                             {/* Delete confirmation */}
                             {confirmDeleteId === app.id && (
-                                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 12px', marginBottom:12, borderRadius:8, background:`${red}10`, border:`1px solid ${red}30` }}>
+                                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 12px', marginBottom:12, borderRadius:12, background:`${red}10`, border:`1px solid ${red}30` }}>
                                     <span style={{ fontSize:12, color:red, fontWeight:600 }}>Delete this app?</span>
-                                    <div style={{ display:'flex', gap:8 }}>
+                                    <div style={{ display:'flex', gap:18 }}>
                                         <button onClick={() => setConfirmDeleteId(null)}
                                             style={{ padding:'4px 12px', borderRadius:6, border:`1px solid ${border}`, background:'transparent', color:sub, fontSize:12, fontWeight:600, cursor:'pointer' }}>Cancel</button>
                                         <button onClick={() => handleDelete(app.id)} disabled={deletingId === app.id}
@@ -372,7 +372,7 @@ export default function SDKDashboardTab() {
                                 </div>
                             )}
 
-                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, fontSize:12 }}>
+                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:18, fontSize:12 }}>
                                 <div><div style={{ color:sub, marginBottom:4 }}>Events/24h</div><div style={{ fontWeight:700, color:txt }}>{app.totalEvents24h||0}</div></div>
                                 <div><div style={{ color:sub, marginBottom:4 }}>Errors</div><div style={{ fontWeight:700, color:(app.errorCount||0)>0?red:green }}>{app.errorCount||0}</div></div>
                                 <div><div style={{ color:sub, marginBottom:4 }}>Latency</div><div style={{ fontWeight:700, color:txt }}>{app.avgLatency||0}ms</div></div>
@@ -386,7 +386,7 @@ export default function SDKDashboardTab() {
                     <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:700, color:txt }}>No SDK Applications Yet</h3>
                     <p style={{ margin:'0 0 16px', fontSize:13, color:sub }}>Register your first SDK application to start monitoring events and metrics.</p>
                     <button onClick={() => setShowModal(true)}
-                        style={{ padding:'10px 20px', borderRadius:8, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>
+                        style={{ padding:'10px 20px', borderRadius:12, border:'none', background:accent, color:'#fff', fontWeight:700, fontSize:13, cursor:'pointer' }}>
                         <Plus size={16} style={{ display:'inline', marginRight:6, verticalAlign:'middle' }}/> Register First Application
                     </button>
                 </div>

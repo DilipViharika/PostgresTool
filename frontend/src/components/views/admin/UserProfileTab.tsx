@@ -37,15 +37,15 @@ const Styles: FC = () => (
     <style>{`
         @keyframes upFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes upSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .up-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); animation:upFade .3s ease; }
-        .up-card:hover { border-color:${THEME.primary}30; }
-        .up-card-section { padding:16px 20px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .up-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:20px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); animation:upFade .3s ease; transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .up-card:hover { border-color:${THEME.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+        .up-card-section { padding:14px 20px; border-bottom:1px solid ${THEME.glassBorder}; background:${THEME.bg}06; }
         .up-card-section:last-child { border-bottom:none; }
         .up-card-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:${THEME.textMuted}; margin-bottom:12px; }
         .up-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .up-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .up-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:12px 14px; color:${THEME.textMain}; font-size:13px; width:100%; }
         .up-input:focus { outline:none; border-color:${THEME.primary}; }
-        .up-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:10px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
+        .up-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:12px; padding:12px 18px; font-weight:700; font-size:13px; cursor:pointer; }
         .up-button:hover { background:${THEME.primaryLight}; }
         .up-button-secondary { background:${THEME.secondary}; }
         .up-button-secondary:hover { background:${THEME.primary}; }
@@ -56,8 +56,8 @@ const Styles: FC = () => (
         .up-toggle-switch.on { background:${THEME.success}; }
         .up-toggle-switch span { width:20px; height:20px; background:white; border-radius:50%; position:absolute; top:2px; left:2px; transition:left 0.2s; }
         .up-toggle-switch.on span { left:18px; }
-        .up-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-        .up-activity-item { background:${THEME.surfaceHover}; border-left:3px solid ${THEME.primary}; border-radius:10px; padding:12px 16px; margin-bottom:10px; }
+        .up-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+        .up-activity-item { background:${THEME.surfaceHover}; border-left:3px solid ${THEME.primary}; border-radius:12px; padding:14px 18px; margin-bottom:12px; }
         .up-activity-time { font-size:11px; color:${THEME.textMuted}; text-transform:uppercase; }
         .up-activity-action { font-weight:600; color:${THEME.textMain}; margin:4px 0; }
         .up-activity-desc { font-size:12px; color:${THEME.textMuted}; }

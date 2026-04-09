@@ -20,10 +20,10 @@ const _DARK = {
     surfaceRaised: '#243848',
 
     // ── Glass ─────────────────────────────────────────────────────────────────
-    glass:             'rgba(26, 39, 54, 0.75)',
+    glass:             'rgba(26, 39, 54, 0.80)',
     glassHeavy:        'rgba(15, 25, 35, 0.95)',
-    glassBorder:       'rgba(255, 255, 255, 0.08)',
-    glassBorderHover:  'rgba(255, 255, 255, 0.15)',
+    glassBorder:       'rgba(255, 255, 255, 0.12)',
+    glassBorderHover:  'rgba(255, 255, 255, 0.22)',
 
     // ── Typography ────────────────────────────────────────────────────────────
     textMain:    '#f0f4ff',
@@ -130,10 +130,10 @@ const _LIGHT = {
     surfaceRaised: '#ffffff',
 
     // ── Glass ─────────────────────────────────────────────────────────────────
-    glass:             'rgba(255, 255, 255, 0.85)',
+    glass:             'rgba(255, 255, 255, 0.88)',
     glassHeavy:        'rgba(255, 255, 255, 0.96)',
-    glassBorder:       'rgba(0, 0, 0, 0.07)',
-    glassBorderHover:  'rgba(0, 0, 0, 0.13)',
+    glassBorder:       'rgba(0, 0, 0, 0.10)',
+    glassBorderHover:  'rgba(0, 0, 0, 0.18)',
 
     // ── Typography ────────────────────────────────────────────────────────────
     textMain:    '#111827',
@@ -192,17 +192,17 @@ const _LIGHT = {
     biolume:   '#6366f1',
     mariana:   '#f5f5f9',
 
-    // ── Shadows — minimal, soft ────────────────────────────────────────────────
-    shadowSm:     '0 1px 2px rgba(0,0,0,0.03)',
-    shadowMd:     '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)',
-    shadowLg:     '0 4px 12px rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.03)',
-    shadowXl:     '0 8px 24px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04)',
-    shadowInner:  'inset 0 1px 2px rgba(0,0,0,0.03)',
-    shadowNeon:       (color) => `0 0 2px ${color}15`,
-    shadowNeonStrong: (color) => `0 0 4px ${color}20`,
-    shadowGold:   '0 1px 4px rgba(99,102,241,0.08)',
-    shadowTeal:   '0 1px 4px rgba(99,102,241,0.10)',
-    shadowDeep:   '0 12px 36px rgba(0,0,0,0.08)',
+    // ── Shadows — elevated modern ─────────────────────────────────────────────
+    shadowSm:     '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)',
+    shadowMd:     '0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)',
+    shadowLg:     '0 10px 28px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.06)',
+    shadowXl:     '0 20px 44px rgba(0,0,0,0.14), 0 6px 16px rgba(0,0,0,0.08)',
+    shadowInner:  'inset 0 2px 6px rgba(0,0,0,0.06)',
+    shadowNeon:       (color) => `0 0 6px ${color}25, 0 0 16px ${color}10`,
+    shadowNeonStrong: (color) => `0 0 10px ${color}40, 0 0 24px ${color}18`,
+    shadowGold:   '0 4px 14px rgba(99,102,241,0.14), 0 0 20px rgba(99,102,241,0.06)',
+    shadowTeal:   '0 4px 14px rgba(99,102,241,0.18), 0 0 20px rgba(99,102,241,0.08)',
+    shadowDeep:   '0 20px 50px rgba(0,0,0,0.14), 0 8px 20px rgba(0,0,0,0.06)',
 
     // ── Border Radius (same) ──────────────────────────────────────────────────
     radiusXs:   '4px',
@@ -1585,4 +1585,4 @@ export const GlobalStyles = () => (
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export const LoginStyles = GlobalStyles;
-export default THEME;
+export default THEME;

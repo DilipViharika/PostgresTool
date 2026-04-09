@@ -102,23 +102,26 @@ function ensureSvStyles() {
         `.sv-card {
             background: ${THEME.surface};
             border: 1px solid ${THEME.grid};
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: ${THEME.shadowSm};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            backdrop-filter: blur(12px);
             transition: all 0.25s ease;
             animation: svFadeUp .4s ease both;
         }`,
         `.sv-card:hover {
-            box-shadow: ${THEME.shadowMd};
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
         }`,
         `.sv-card-header {
             height: 28px;
-            background: ${THEME.textMain}0a;
+            background: ${THEME.textMain}06;
             display: flex;
             align-items: center;
-            padding: 0 12px;
+            padding: 14px 20px;
             gap: 6px;
             border-bottom: 1px solid ${THEME.glassBorder};
+            font-weight: 700;
         }`,
         `.sv-card-dot {
             width: 8px;
@@ -133,7 +136,7 @@ function ensureSvStyles() {
             letter-spacing: 0.03em;
         }`,
         `.sv-card-body {
-            padding: 16px;
+            padding: 20px 24px;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
         }`,
         `.sv-card.legacy {
@@ -165,8 +168,8 @@ function ensureSvStyles() {
 
         '/* ── Migration card ── */',
         `.sv-mig-card {
-            position: relative; display: flex; gap: 14px; padding: 16px;
-            border-radius: 10px;
+            position: relative; display: flex; gap: 16px; padding: 18px 20px;
+            border-radius: 14px;
             background: linear-gradient(135deg, ${THEME.surface}, ${THEME.surface});
             border: 1px solid ${THEME.grid};
             transition: all .25s;
@@ -176,8 +179,8 @@ function ensureSvStyles() {
         `.sv-mig-card:hover {
             background: ${THEME.surfaceHover};
             border-color: rgba(99,102,241,.35);
-            transform: translateY(-1px);
-            box-shadow: ${THEME.shadowMd};
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
         }`,
         '.sv-mig-card.is-hovered { border-color: rgba(99,102,241,.5); }',
 
@@ -239,8 +242,8 @@ function ensureSvStyles() {
             background: ${THEME.surfaceHover};
             border: 1px solid ${THEME.grid};
             color: ${THEME.textMain};
-            border-radius: 10px;
-            padding: 9px 12px;
+            border-radius: 11px;
+            padding: 11px 14px;
             font-size: 13px;
             outline: none;
             transition: border-color .2s, background .2s;
@@ -279,8 +282,8 @@ function ensureSvStyles() {
 
         '/* ── Code block ── */',
         `.sv-code {
-            background: ${THEME.surfaceHover}; border: 1px solid ${THEME.grid}; border-radius: 10px;
-            padding: 14px 16px; font-family: ${THEME.fontMono};
+            background: ${THEME.surfaceHover}; border: 1px solid ${THEME.grid}; border-radius: 12px;
+            padding: 16px 18px; font-family: ${THEME.fontMono};
             font-size: 12px; line-height: 1.7; color: ${THEME.textMain};
             overflow-x: auto; position: relative;
         }`,

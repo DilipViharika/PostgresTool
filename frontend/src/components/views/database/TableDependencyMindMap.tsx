@@ -456,41 +456,43 @@ const TableDependencyMindMap = ({ selectedTableId = null, onTableSelect = null }
             flex: 1,
             background: THEME.surface,
             border: `1px solid ${THEME.glassBorder}`,
-            borderRadius: THEME.radiusMd,
+            borderRadius: 16,
             overflow: 'hidden',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+            backdropFilter: 'blur(12px)',
         },
         toolbar: {
-            padding: '12px 16px',
+            padding: '14px 20px',
             borderBottom: `1px solid ${THEME.glassBorder}`,
             display: 'flex',
-            gap: '12px',
+            gap: '16px',
             alignItems: 'center',
             flexWrap: 'wrap',
         },
         input: {
-            padding: '8px 12px',
+            padding: '10px 14px',
             background: THEME.surface,
             border: `1px solid ${THEME.glassBorder}`,
-            borderRadius: THEME.radiusSm,
+            borderRadius: 10,
             color: THEME.textMain,
             fontFamily: THEME.fontBody,
             fontSize: '13px',
         },
         select: {
-            padding: '8px 12px',
+            padding: '10px 14px',
             background: THEME.surface,
             border: `1px solid ${THEME.glassBorder}`,
-            borderRadius: THEME.radiusSm,
+            borderRadius: 10,
             color: THEME.textMain,
             fontFamily: THEME.fontBody,
             fontSize: '13px',
         },
         button: {
-            padding: '8px 12px',
+            padding: '10px 16px',
             background: THEME.primary,
             color: THEME.textInverse,
             border: 'none',
-            borderRadius: THEME.radiusSm,
+            borderRadius: 10,
             cursor: 'pointer',
             fontSize: '13px',
             fontWeight: '600',
@@ -502,12 +504,12 @@ const TableDependencyMindMap = ({ selectedTableId = null, onTableSelect = null }
         svg: {
             flex: 1,
             background: THEME.bgAlt,
-            borderRadius: THEME.radiusMd,
+            borderRadius: 8,
         },
         sidePanel: {
             width: '260px',
             borderLeft: `1px solid ${THEME.glassBorder}`,
-            padding: '16px',
+            padding: '20px',
             overflowY: 'auto',
             background: THEME.surface,
             fontSize: '13px',
@@ -648,7 +650,7 @@ const TableDependencyMindMap = ({ selectedTableId = null, onTableSelect = null }
                         })()}
                     </div>
 
-                    <div style={{ ...styles.legend, borderBottom: `1px solid ${THEME.gridAlt}`, paddingBottom: '12px' }}>
+                    <div style={{ ...styles.legend, borderBottom: `1px solid ${THEME.gridAlt}`, paddingBottom: '14px' }}>
                         <div style={{ color: THEME.primary, fontWeight: '600', marginBottom: '8px', fontSize: '12px' }}>
                             Relationship Types
                         </div>

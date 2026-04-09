@@ -9,22 +9,22 @@ const Styles = () => (
     <style>{`
         @keyframes cdFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .cd-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:14px; padding:0; animation:cdFade .3s ease; overflow:hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.25s ease; }
-        .cd-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
-        .cd-card-ribbon { height:48px; background:linear-gradient(135deg, var(--ribbon-color, ${THEME.primary}) 0%, var(--ribbon-end, ${THEME.primary}cc) 100%); display:flex; align-items:center; padding:0 18px; gap:10px; color:white; font-weight:600; font-size:13px; letter-spacing:0.02em; }
+        .cd-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:0; animation:cdFade .3s ease; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08); backdrop-filter:blur(12px); transition:all 0.25s ease; }
+        .cd-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.12); transform:translateY(-2px); }
+        .cd-card-ribbon { height:50px; background:linear-gradient(135deg, var(--ribbon-color, ${THEME.primary}) 0%, var(--ribbon-end, ${THEME.primary}cc) 100%); display:flex; align-items:center; padding:0 20px; gap:12px; color:white; font-weight:600; font-size:13px; letter-spacing:0.02em; }
         .cd-card-body { padding:20px; }
-        .cd-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius: 12px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; transition:all .2s ease; }
+        .cd-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:12px; padding:10px 18px; font-weight:700; font-size:13px; cursor:pointer; transition:all .2s ease; }
         .cd-button:hover { background:${THEME.primaryLight}; }
         .cd-button-secondary { background:${THEME.secondary}; }
         .cd-button-secondary:hover { background:${THEME.secondaryLight}; }
         .cd-button-danger { background:${THEME.danger}; }
         .cd-button-danger:hover { background:${THEME.dangerLight}; }
-        .cd-select { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius: 12px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; cursor:pointer; }
-        .cd-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius: 12px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .cd-select { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:11px 14px; color:${THEME.textMain}; font-size:13px; width:100%; cursor:pointer; }
+        .cd-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:11px 14px; color:${THEME.textMain}; font-size:13px; width:100%; }
         .cd-input:focus { outline:none; border-color:${THEME.primary}; }
         .cd-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .cd-widget { background:${THEME.glassBorder}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:16px; position:relative; animation:cdFade .3s ease; cursor:grab; transition:all .2s ease; }
-        .cd-widget:hover { border-color:${THEME.primary}40; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .cd-widget { background:${THEME.glassBorder}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:16px; position:relative; animation:cdFade .3s ease; cursor:grab; transition:all .2s ease; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+        .cd-widget:hover { border-color:${THEME.primary}40; box-shadow:0 4px 16px rgba(0,0,0,0.08); }
         .cd-widget.dragging { opacity:0.7; }
         .cd-widget-drag-handle { cursor:grab; padding:8px; position:absolute; top:8px; left:8px; color:${THEME.textDim}; }
         .cd-widget-toolbar { position:absolute; top:8px; right:8px; display:flex; gap:8px; }
@@ -32,13 +32,13 @@ const Styles = () => (
         .cd-widget-icon:hover { color:${THEME.primary}; }
         .cd-widget-remove:hover { color:${THEME.danger}; }
         .cd-modal { position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000; }
-        .cd-modal-content { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:24px; max-width:600px; width:90%; max-height:90vh; overflow-y:auto; }
+        .cd-modal-content { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:24px; max-width:600px; width:90%; max-height:90vh; overflow-y:auto; box-shadow:0 4px 16px rgba(0,0,0,0.08); backdrop-filter:blur(12px); }
         .cd-modal-title { font-size:18px; font-weight:700; color:${THEME.textMain}; margin-bottom:16px; }
         .cd-modal-field { margin-bottom:16px; }
         .cd-modal-section { margin-bottom:24px; }
         .cd-modal-section-title { font-size:13px; font-weight:700; color:${THEME.primary}; margin-bottom:12px; text-transform:uppercase; }
         .cd-tabs { display:flex; gap:12px; margin-bottom:20px; border-bottom:1px solid ${THEME.glassBorder}; }
-        .cd-tab { padding:12px 16px; font-size:13px; font-weight:600; color:${THEME.textDim}; cursor:pointer; border-bottom:2px solid transparent; transition:all .2s ease; }
+        .cd-tab { padding:14px 18px; font-size:13px; font-weight:700; color:${THEME.textDim}; cursor:pointer; border-bottom:2px solid transparent; transition:all .2s ease; }
         .cd-tab.active { color:${THEME.primary}; border-bottom-color:${THEME.primary}; }
         .cd-grid { display:grid; gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))'; gap:20px; marginBottom:20px; }
         .cd-gauge-container { position:relative; width:200px; height:200px; margin:0 auto; }
@@ -46,12 +46,12 @@ const Styles = () => (
         .cd-gauge-value { fontSize:32px; fontWeight:800; color:${THEME.primary}; }
         .cd-gauge-unit { fontSize:12px; color:${THEME.textMuted}; marginTop:4px; }
         .cd-health-grid { display:grid; gridTemplateColumns:'repeat(auto-fit, minmax(80px, 1fr))'; gap:12px; }
-        .cd-health-item { textAlign:center; padding:16px; borderRadius:8px; background:${THEME.surfaceHover}; }
+        .cd-health-item { textAlign:center; padding:16px; borderRadius:12px; background:${THEME.surfaceHover}; }
         .cd-health-dot { fontSize:32px; marginBottom:8px; }
         .cd-health-label { fontSize:11px; color:${THEME.textMuted}; }
         .cd-spinner { animation:spin 1s linear infinite; display:inline-block; }
         .cd-templateGallery { display:grid; gridTemplateColumns:'repeat(2, 1fr)'; gap:12px; }
-        .cd-templateCard { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; borderRadius:8px; padding:16px; cursor:pointer; transition:all .2s ease; }
+        .cd-templateCard { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; borderRadius:12px; padding:16px; cursor:pointer; transition:all .2s ease; }
         .cd-templateCard:hover { borderColor:${THEME.primary}40; background:${THEME.surface}; }
         .cd-templateCard.selected { borderColor:${THEME.primary}; background:${THEME.primary}15; }
         .cd-templateIcon { fontSize:24px; marginBottom:8px; }

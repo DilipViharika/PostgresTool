@@ -26,25 +26,27 @@ const Styles = () => (
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
             border-top: 3px solid #3E6D8E;
-            border-radius:14px;
+            border-radius:16px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(62,109,142,0.06);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            backdrop-filter: blur(12px);
             transition: all 0.25s ease;
             animation: mysql-fade 0.3s ease;
         }
 
         .mysql-card:hover {
-            box-shadow: 0 6px 20px rgba(62,109,142,0.10);
-            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(62,109,142,0.16);
+            transform: translateY(-2px);
         }
 
         .mysql-card-head {
-            background: rgba(62,109,142,0.04);
-            padding: 14px 18px;
+            background: rgba(62,109,142,0.06);
+            padding: 14px 20px;
             border-bottom: 1px solid ${DARK_THEME.border};
             display: flex;
             align-items: center;
             gap: 10px;
+            font-weight: 700;
         }
 
         .mysql-card-body {
@@ -54,8 +56,8 @@ const Styles = () => (
         .mysql-metric-box {
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 10px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
         }
 
@@ -158,7 +160,7 @@ const Styles = () => (
         .mysql-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
+            gap: 20px;
         }
     `}</style>
 );

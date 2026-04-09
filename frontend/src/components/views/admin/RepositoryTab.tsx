@@ -165,8 +165,8 @@ const RepoStyles = () => (
         .r8-stagger > *:nth-child(3) { animation-delay:120ms; }
         .r8-stagger > *:nth-child(4) { animation-delay:180ms; }
 
-        .r8-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
-        .r8-card:hover { border-color:${THEME.primary}30; }
+        .r8-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:0; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .r8-card:hover { border-color:${THEME.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
         .r8-card-remote:hover { border-color:${THEME.primary}30 !important; }
         .r8-card-local:hover  { border-color:${THEME.info}30 !important; }
 
@@ -222,9 +222,9 @@ const RocketIcon = ({ size=14, color='currentColor' }) => (
 );
 
 const Panel = ({ title, icon:TIcon, rightNode, noPad, children, style={} }) => (
-    <div style={{ background: THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden', height:'100%', boxShadow:'0 4px 30px rgba(0,0,0,.1)', ...style }}>
+    <div style={{ background: THEME.surface, border:`1px solid ${THEME.glassBorder}`, borderRadius:16, display:'flex', flexDirection:'column', overflow:'hidden', height:'100%', boxShadow:'0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)', backdropFilter:'blur(12px)', ...style }}>
         {title && (
-            <div style={{ padding:'13px 20px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, background:`linear-gradient(90deg, ${THEME.primary}06, transparent)` }}>
+            <div style={{ padding:'14px 20px', borderBottom:`1px solid ${THEME.glassBorder}`, display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, background:`${THEME.bg}06`, fontWeight:700 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                     {TIcon && <TIcon size={13} color={THEME.primary} />}
                     <span style={{ fontSize:10.5, fontWeight:800, color:THEME.textMain, letterSpacing:'0.02em' }}>{title}</span>
@@ -232,7 +232,7 @@ const Panel = ({ title, icon:TIcon, rightNode, noPad, children, style={} }) => (
                 {rightNode}
             </div>
         )}
-        <div className="r8-scroll" style={{ flex:1, minHeight:0, padding:noPad?0:'16px 20px', overflowY:'auto' }}>{children}</div>
+        <div className="r8-scroll" style={{ flex:1, minHeight:0, padding:noPad?0:'20px', overflowY:'auto' }}>{children}</div>
     </div>
 );
 
@@ -258,7 +258,7 @@ const SectionTitle = ({ children, icon:Icon }) => (
 );
 
 const MetricCard = ({ label, value, icon:Icon, color }) => (
-    <div className="r8-metric" style={{ padding:16, borderRadius:12, background:`${color}08`, border:`1px solid ${color}20` }}>
+    <div className="r8-metric" style={{ padding:20, borderRadius:16, background:`${color}08`, border:`1px solid ${color}20` }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8 }}>
             <span style={{ fontSize:10, color:THEME.textDim, fontWeight:700, letterSpacing:'0.02em' }}>{label}</span>
             {Icon && <Icon size={13} color={color}/>}

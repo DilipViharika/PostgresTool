@@ -18,16 +18,17 @@ const Styles = () => (
         .pmd-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 20px;
             position: relative;
             overflow: hidden;
-            box-shadow: ${THEME.shadowSm};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
             transition: all 0.25s ease;
             animation: pmdFade 0.3s ease;
+            backdrop-filter: blur(12px);
         }
         .pmd-card:hover {
-            box-shadow: ${THEME.shadowMd};
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         .pmd-card::after {
@@ -40,7 +41,7 @@ const Styles = () => (
             background: var(--tile-accent, ${THEME.primary});
             opacity: 0.7;
         }
-        .pmd-metric { display: flex; align-items: center; gap: 12px; padding: 12px; background: ${THEME.surface}; border: 1px solid ${THEME.glassBorder}; border-radius: 12px; }
+        .pmd-metric { display: flex; align-items: center; gap: 18px; padding: 16px; background: ${THEME.surface}; border: 1px solid ${THEME.glassBorder}; border-radius: 16px; }
         .pmd-spin { animation: pmdSpin 1s linear infinite; }
         .pmd-slider { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: ${THEME.grid}; outline: none; cursor: pointer; }
         .pmd-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${THEME.primary}; cursor: pointer; }
@@ -77,7 +78,7 @@ const MetricCard = ({ icon: Icon, label, value, unit = '', sub, color = THEME.pr
             style={{
                 width: 40,
                 height: 40,
-                borderRadius: 10,
+                borderRadius: 14,
                 background: `${color}15`,
                 display: 'flex',
                 alignItems: 'center',
@@ -109,7 +110,7 @@ const ChartTip = ({ active, payload, label }) => {
             style={{
                 background: THEME.surface,
                 border: `1px solid ${THEME.glassBorder}`,
-                borderRadius: 10,
+                borderRadius: 14,
                 padding: '8px 12px',
                 fontSize: 12,
                 boxShadow: THEME.shadowSm,
@@ -155,14 +156,14 @@ const PoolConfigSection = ({ config, onUpdate }) => {
 
     return (
         <div className="pmd-card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
                 <Settings size={18} color={THEME.primary} />
                 <h3 style={{ fontSize: '13px', fontWeight: 700, color: THEME.textMain, margin: 0 }}>
                     Pool Configuration
                 </h3>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
                 {/* Min Size */}
                 <div>
                     <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, marginBottom: '8px', display: 'block' }}>
@@ -214,7 +215,7 @@ const PoolConfigSection = ({ config, onUpdate }) => {
             </div>
 
             {updated && (
-                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${THEME.grid}`, display: 'flex', justifyContent: 'flex-end', gap: '14px' }}>
                     <button
                         onClick={() => setLocalConfig(config || { min: 0, max: 0, idleTimeout: 0 })}
                         style={{
@@ -222,7 +223,7 @@ const PoolConfigSection = ({ config, onUpdate }) => {
                             background: THEME.surfaceLight,
                             color: THEME.textMain,
                             border: `1px solid ${THEME.border}`,
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             fontSize: '12px',
                             fontWeight: 600,
                             cursor: 'pointer',
@@ -245,7 +246,7 @@ const PoolConfigSection = ({ config, onUpdate }) => {
                             background: THEME.primary,
                             color: THEME.void,
                             border: 'none',
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             fontSize: '12px',
                             fontWeight: 600,
                             cursor: 'pointer',
@@ -348,7 +349,7 @@ export default function PoolMetricsDashboard() {
                         {lastUpdate && `Last updated: ${lastUpdate.toLocaleTimeString()}`}
                     </p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
                     <div>
                         <label style={{ fontSize: '12px', fontWeight: 600, color: THEME.textMuted, marginRight: '8px' }}>
                             Auto-refresh:
@@ -386,7 +387,7 @@ export default function PoolMetricsDashboard() {
                         marginBottom: '20px',
                         display: 'flex',
                         alignItems: 'flex-start',
-                        gap: '12px',
+                        gap: '18px',
                         boxShadow: THEME.shadowSm,
                     }}
                 >
@@ -406,7 +407,7 @@ export default function PoolMetricsDashboard() {
             {metrics && (
                 <>
                     {/* Top Stats */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '18px', marginBottom: '20px' }}>
                         <MetricCard
                             icon={Activity}
                             label="Active Connections"
@@ -466,7 +467,7 @@ export default function PoolMetricsDashboard() {
                             <h3 style={{ fontSize: '15px', fontWeight: 700, color: THEME.textMain, margin: 0, marginBottom: '16px' }}>
                                 Connection Lifecycle
                             </h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: `1px solid ${THEME.grid}` }}>
                                     <span style={{ fontSize: '13px', color: THEME.textMuted }}>Avg Connect Time</span>
                                     <span style={{ fontSize: '14px', fontWeight: 700, color: THEME.textMain }}>
@@ -493,16 +494,16 @@ export default function PoolMetricsDashboard() {
                             <h3 style={{ fontSize: '15px', fontWeight: 700, color: THEME.textMain, margin: 0, marginBottom: '16px' }}>
                                 Connection Health
                             </h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                                 <div
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '10px',
+                                        gap: '14px',
                                         padding: '12px',
                                         background: metrics.dead_connections > 0 ? `${THEME.warning}15` : `${THEME.success}15`,
                                         border: metrics.dead_connections > 0 ? `1px solid ${THEME.warning}40` : `1px solid ${THEME.success}40`,
-                                        borderRadius: '8px',
+                                        borderRadius: '12px',
                                     }}
                                 >
                                     {metrics.dead_connections > 0 ? (

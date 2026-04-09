@@ -292,11 +292,11 @@ const SegBar = ({pct,color,h=4}) =>
     </div>;
 
 const Card = ({children,style={}}) =>
-    <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,overflow:'hidden',boxShadow:`${THEME.shadowSm}`,transition:'all 0.25s ease',...style}}>{children}</div>;
+    <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:16,overflow:'hidden',boxShadow:'0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',backdropFilter:'blur(12px)',transition:'all 0.25s ease',...style}}>{children}</div>;
 
 const CH = ({title,right,sub}) =>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
-        padding:'12px 16px',borderBottom:`1px solid ${C.border}`}}>
+        padding:'14px 20px',borderBottom:`1px solid ${C.border}`,fontWeight:'700'}}>
         <div>
             <Lbl>{title}</Lbl>
             {sub&&<div style={{fontSize:11,color:C.textDim,fontFamily:THEME.fontBody,marginTop:2}}>{sub}</div>}
@@ -311,17 +311,17 @@ const SqlBlock = ({sql}) => {
         .replace(/(btree|hash|gin|gist)/gi,`<span style="color:${C.ok}">$1</span>`)
         .replace(/('.*?')/g,`<span style="color:${C.warn}">$1</span>`)
         .replace(/(--.*$)/gm,`<span style="color:${C.textDim}">$1</span>`);
-    return <div style={{border:`1px solid ${C.border}`,borderRadius:12,overflow:'hidden',boxShadow:'0 1px 3px rgba(0,0,0,0.04)'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 12px',
+    return <div style={{border:`1px solid ${C.border}`,borderRadius:16,overflow:'hidden',boxShadow:'0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',backdropFilter:'blur(12px)'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 14px',
             background:C.bg,borderBottom:`1px solid ${C.border}`}}>
             <Lbl>SQL  PostgreSQL 14+</Lbl>
             <button onClick={()=>{navigator.clipboard?.writeText(sql);setCp(true);setTimeout(()=>setCp(false),2000);}}
                     className="btn" style={{background:'none',border:`1px solid ${C.border}`,borderRadius:10,
-                color:cp?C.ok:C.textSub,fontSize:11,fontFamily:THEME.fontMono,padding:'3px 10px'}}>
+                color:cp?C.ok:C.textSub,fontSize:11,fontFamily:THEME.fontMono,padding:'5px 12px'}}>
                 {cp?'✓ Copied':'Copy'}
             </button>
         </div>
-        <pre style={{margin:0,padding:'12px 14px',fontSize:12,lineHeight:1.8,background:C.bg,
+        <pre style={{margin:0,padding:'14px 16px',fontSize:12,lineHeight:1.8,background:C.bg,
             color:C.textPrimary,fontFamily:THEME.fontMono,overflowX:'auto',whiteSpace:'pre-wrap'}}>
       <code dangerouslySetInnerHTML={{__html:DOMPurify.sanitize(h)}}/>
     </pre>

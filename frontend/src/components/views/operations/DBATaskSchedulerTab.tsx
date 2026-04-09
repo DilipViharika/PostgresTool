@@ -1026,12 +1026,14 @@ const styles = {
   },
 
   formContainer: {
-    padding: 20,
+    padding: 24,
     backgroundColor: THEME.surface,
     border: `1px solid ${THEME.glassBorder}`,
-    borderRadius: 8,
+    borderRadius: 16,
     marginBottom: 32,
     animation: 'slideIn 0.3s ease-out',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+    backdropFilter: 'blur(12px)',
   },
 
   formTitle: {
@@ -1044,27 +1046,27 @@ const styles = {
   formGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-    gap: 12,
-    marginBottom: 16,
+    gap: 16,
+    marginBottom: 20,
   },
 
   formInput: {
-    padding: '8px 12px',
+    padding: '10px 14px',
     backgroundColor: THEME.surfaceHover,
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
-    borderRadius: 10,
+    borderRadius: 12,
     fontSize: 13,
     fontFamily: THEME.fontBody,
     transition: 'all 0.2s ease',
   },
 
   formSelect: {
-    padding: '8px 12px',
+    padding: '10px 14px',
     backgroundColor: THEME.surfaceHover,
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
-    borderRadius: 10,
+    borderRadius: 12,
     fontSize: 13,
     fontFamily: THEME.fontBody,
     transition: 'all 0.2s ease',
@@ -1072,16 +1074,16 @@ const styles = {
 
   formActions: {
     display: 'flex',
-    gap: 12,
+    gap: 14,
     justifyContent: 'flex-end',
   },
 
   saveButton: {
-    padding: '8px 20px',
+    padding: '10px 24px',
     backgroundColor: THEME.primary,
     border: 'none',
     color: THEME.bg,
-    borderRadius: 10,
+    borderRadius: 12,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 600,
@@ -1090,11 +1092,11 @@ const styles = {
   },
 
   cancelButton: {
-    padding: '8px 20px',
+    padding: '10px 24px',
     backgroundColor: 'transparent',
     border: `1px solid ${THEME.textMuted}40`,
     color: THEME.textMuted,
-    borderRadius: 10,
+    borderRadius: 12,
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 600,
@@ -1112,13 +1114,13 @@ const styles = {
   errorState: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
-    padding: 16,
+    gap: 14,
+    padding: 18,
     backgroundColor: `${THEME.danger}20`,
     border: `1px solid ${THEME.danger}40`,
     color: THEME.danger,
-    borderRadius: 8,
-    marginBottom: 16,
+    borderRadius: 12,
+    marginBottom: 20,
     fontSize: 13,
   },
 
@@ -1144,12 +1146,12 @@ const styles = {
   categoryHeader: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
-    padding: '12px 16px',
+    gap: 14,
+    padding: '14px 20px',
     backgroundColor: THEME.surfaceHover,
-    borderRadius: 10,
+    borderRadius: 12,
     borderLeft: '4px solid',
-    marginBottom: 8,
+    marginBottom: 12,
   },
 
   categoryName: {
@@ -1172,13 +1174,14 @@ const styles = {
   taskRow: {
     display: 'flex',
     flexDirection: 'column',
-    padding: 12,
+    padding: 16,
     backgroundColor: THEME.surface,
     border: 'none',
     borderLeft: `4px solid ${THEME.primary}`,
-    borderRadius: '0 6px 6px 0',
+    borderRadius: '0 12px 12px 0',
     transition: 'all 0.2s ease',
-    boxShadow: THEME.shadowSm,
+    boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+    backdropFilter: 'blur(12px)',
     position: 'relative',
     overflow: 'hidden',
   },
@@ -1186,7 +1189,7 @@ const styles = {
   taskMainRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
 
   taskCheckbox: {
@@ -1302,60 +1305,60 @@ const styles = {
     fontSize: 12,
     color: THEME.textMuted,
     lineHeight: 1.6,
-    padding: '8px',
+    padding: '10px',
     backgroundColor: THEME.surfaceHover,
-    borderRadius: 14,
+    borderRadius: 12,
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-word',
   },
 
   taskRowEdit: {
-    padding: 12,
+    padding: 16,
     backgroundColor: THEME.surface,
     border: `2px solid ${THEME.primary}`,
-    borderRadius: 10,
+    borderRadius: 12,
   },
 
   editFormInline: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-    gap: 10,
+    gap: 12,
   },
 
   editInput: {
-    padding: '8px 10px',
+    padding: '10px 14px',
     backgroundColor: THEME.surfaceHover,
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
-    borderRadius: 14,
+    borderRadius: 12,
     fontSize: 12,
     fontFamily: THEME.fontBody,
   },
 
   editSelect: {
-    padding: '8px 10px',
+    padding: '10px 14px',
     backgroundColor: THEME.surfaceHover,
     border: `1px solid ${THEME.glassBorder}`,
     color: THEME.textMain,
-    borderRadius: 14,
+    borderRadius: 12,
     fontSize: 12,
     fontFamily: THEME.fontBody,
   },
 
   editActions: {
     display: 'flex',
-    gap: 8,
+    gap: 10,
     gridColumn: '1 / -1',
     justifyContent: 'flex-end',
-    marginTop: 8,
+    marginTop: 12,
   },
 
   editSaveBtn: {
-    padding: '6px 14px',
+    padding: '8px 16px',
     backgroundColor: THEME.success,
     border: 'none',
     color: THEME.bg,
-    borderRadius: 14,
+    borderRadius: 12,
     cursor: 'pointer',
     fontSize: 12,
     fontWeight: 600,
@@ -1364,11 +1367,11 @@ const styles = {
   },
 
   editCancelBtn: {
-    padding: '6px 14px',
+    padding: '8px 16px',
     backgroundColor: 'transparent',
     border: `1px solid ${THEME.textMuted}40`,
     color: THEME.textMuted,
-    borderRadius: 14,
+    borderRadius: 12,
     cursor: 'pointer',
     fontSize: 12,
     fontWeight: 600,
@@ -1378,14 +1381,14 @@ const styles = {
 
   mainTabsContainer: {
     display: 'flex',
-    gap: 12,
-    marginTop: 16,
+    gap: 16,
+    marginTop: 20,
     borderBottom: `1px solid ${THEME.glassBorder}`,
-    paddingBottom: 12,
+    paddingBottom: 14,
   },
 
   mainTabButton: {
-    padding: '8px 16px',
+    padding: '10px 18px',
     backgroundColor: 'transparent',
     border: 'none',
     color: THEME.textMuted,

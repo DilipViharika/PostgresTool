@@ -33,17 +33,18 @@ const Styles = () => (
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
             border-left: 3px solid #00684A;
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,104,74,0.06);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            backdrop-filter: blur(12px);
             transition: all 0.25s ease;
             position: relative;
             animation: mongoFade 0.3s ease;
         }
 
         .mongo-card:hover {
-            box-shadow: 0 6px 20px rgba(0,104,74,0.10);
-            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(0,104,74,0.12);
+            transform: translateY(-2px);
         }
 
         .mongo-card::after {
@@ -58,11 +59,12 @@ const Styles = () => (
         }
 
         .mongo-card-head {
-            padding: 14px 18px;
+            padding: 14px 20px;
             border-bottom: 1px solid ${DARK_THEME.border};
             display: flex;
             align-items: center;
             gap: 10px;
+            font-weight: 700;
         }
 
         .mongo-card-body {
@@ -89,11 +91,11 @@ const Styles = () => (
             width: 100%;
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 8px;
-            padding: 10px 12px;
+            border-radius: 12px;
+            padding: 12px 14px;
             color: ${DARK_THEME.text};
             font-size: 13px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             font-family: 'Monaco', 'Courier New', monospace;
         }
 
@@ -107,14 +109,14 @@ const Styles = () => (
             width: 100%;
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 16px;
             color: ${DARK_THEME.text};
             font-size: 12px;
             font-family: 'Monaco', 'Courier New', monospace;
             min-height: 200px;
             resize: vertical;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .mongo-textarea:focus {
@@ -127,13 +129,13 @@ const Styles = () => (
             background: ${DARK_THEME.accent};
             color: ${DARK_THEME.bg};
             border: none;
-            border-radius: 8px;
-            padding: 8px 16px;
+            border-radius: 10px;
+            padding: 10px 18px;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             font-size: 12px;
             transition: all 0.2s;
         }
@@ -178,11 +180,11 @@ const Styles = () => (
             width: 100%;
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 8px;
-            padding: 10px 12px;
+            border-radius: 12px;
+            padding: 12px 14px;
             color: ${DARK_THEME.text};
             font-size: 13px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .mongo-select:focus {
@@ -202,16 +204,16 @@ const Styles = () => (
         .mongo-stage-card {
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 12px;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
 
         .mongo-result-box {
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 10px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 16px;
             max-height: 400px;
             overflow-y: auto;
             font-family: 'Monaco', 'Courier New', monospace;
@@ -238,27 +240,27 @@ const Styles = () => (
         .mongo-error {
             background: ${DARK_THEME.danger}15;
             border: 1px solid ${DARK_THEME.danger};
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 14px;
             color: ${DARK_THEME.danger};
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             font-size: 12px;
             display: flex;
             align-items: flex-start;
-            gap: 8px;
+            gap: 10px;
         }
 
         .mongo-success {
             background: ${DARK_THEME.success}15;
             border: 1px solid ${DARK_THEME.success};
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 14px;
             color: ${DARK_THEME.success};
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             font-size: 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
     `}</style>
 );

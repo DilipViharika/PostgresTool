@@ -110,15 +110,15 @@ const AdminStyles = () => (
         .adm-scrollbar::-webkit-scrollbar-track { background:transparent; }
         .adm-scrollbar::-webkit-scrollbar-thumb { background:${T.grid}; border-radius:8px; }
 
-        .adm-ext-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
-        .adm-ext-card:hover { border-color:${T.primary}30; }
+        .adm-ext-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:16px; padding:0; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .adm-ext-card:hover { border-color:${T.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
 
         .adm-input-field:focus { outline:none; border-color:${T.primary} !important; box-shadow:0 0 0 2px ${T.primary}25; }
         .adm-spin { animation:admSpin 1s linear infinite; }
 
-        .adm-stat-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); transition:border-color 0.2s ease; }
-        .adm-stat-card:hover { border-color:${T.primary}30; }
-        .adm-stat-section { padding:16px 20px; border-bottom:1px solid ${T.glassBorder}; }
+        .adm-stat-card { background:${T.surface}; border:1px solid ${T.glassBorder}; border-radius:16px; padding:0; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .adm-stat-card:hover { border-color:${T.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+        .adm-stat-section { padding:14px 20px; border-bottom:1px solid ${T.glassBorder}; background:${T.bg}06; }
         .adm-stat-section:last-child { border-bottom:none; }
 
         .adm-tab-btn { transition:all 0.2s cubic-bezier(0.22,1,0.36,1); position:relative; overflow:hidden; }

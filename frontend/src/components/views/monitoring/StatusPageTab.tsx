@@ -12,16 +12,17 @@ const Styles = () => (
         .sp-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: ${THEME.shadowSm};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
             transition: all 0.25s ease;
             animation: spFade 0.3s ease;
+            backdrop-filter: blur(12px);
         }
         .sp-card:hover {
-            box-shadow: ${THEME.shadowMd};
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         .sp-card::after {
@@ -35,11 +36,11 @@ const Styles = () => (
             opacity: 0.7;
         }
         .sp-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .sp-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .sp-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:14px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
         .sp-input:focus { outline:none; border-color:${THEME.primary}; }
-        .sp-textarea { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; min-height:100px; resize:vertical; }
+        .sp-textarea { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:14px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; min-height:100px; resize:vertical; }
         .sp-textarea:focus { outline:none; border-color:${THEME.primary}; }
-        .sp-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:8px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
+        .sp-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:12px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
         .sp-button:hover { background:${THEME.primaryLight}; }
         .sp-button-danger { background:${THEME.danger}; }
         .sp-button-danger:hover { background:${THEME.dangerLight}; }
@@ -50,7 +51,7 @@ const Styles = () => (
         .sp-status-outage { color:${THEME.danger}; }
         .sp-component-row { display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid ${THEME.glassBorder}40; }
         .sp-component-row:last-child { border-bottom:none; }
-        .sp-incident { background:${THEME.grid}; border-left:4px solid ${THEME.warning}; border-radius:10px; padding:12px; margin-bottom:12px; }
+        .sp-incident { background:${THEME.grid}; border-left:4px solid ${THEME.warning}; border-radius:14px; padding:12px; margin-bottom:12px; }
         .sp-spinner { animation:spSpin 1s linear infinite; }
     `}</style>
 );

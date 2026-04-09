@@ -16,13 +16,20 @@ const Styles = () => (
         .rb-panel {
             background:${THEME.surface};
             border:1px solid ${THEME.glassBorder};
-            border-radius:12px;
+            border-radius:16px;
             padding:20px;
             animation:rbFade .3s ease;
             max-height:calc(100vh - 100px);
             overflow-y:auto;
+            box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            backdrop-filter:blur(12px);
+            transition:all 0.2s ease;
         }
-        .rb-preview { background:${THEME.surfaceRaised}; border-radius:12px; }
+        .rb-panel:hover {
+            transform:translateY(-2px);
+            box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .rb-preview { background:${THEME.surfaceRaised}; border-radius:16px; }
         .rb-section-title {
             font-size:14px;
             font-weight:700;
@@ -52,9 +59,9 @@ const Styles = () => (
             display:flex;
             align-items:center;
             gap:8px;
-            padding:8px;
+            padding:10px;
             background:${THEME.bg};
-            border-radius:10px;
+            border-radius:12px;
             cursor:pointer;
             transition:background .2s;
         }
@@ -102,18 +109,21 @@ const Styles = () => (
         .rb-report-card {
             background:${THEME.surface};
             border:1px solid ${THEME.glassBorder};
-            border-radius:12px;
+            border-radius:16px;
             padding:0;
-            margin-bottom:16px;
+            margin-bottom:20px;
             overflow:hidden;
-            box-shadow:0 1px 3px rgba(0,0,0,0.03);
-            transition:border-color 0.2s ease;
+            box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            transition:all 0.2s ease;
+            backdrop-filter:blur(12px);
         }
         .rb-report-card:hover {
             border-color:${THEME.primary}30;
+            transform:translateY(-2px);
+            box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
         }
         .rb-report-card > * {
-            padding:16px;
+            padding:20px;
             border-bottom:1px solid ${THEME.glassBorder};
         }
         .rb-report-card > *:last-child {
@@ -127,17 +137,20 @@ const Styles = () => (
             display:flex;
             align-items:center;
             gap:8px;
+            background:${THEME.bg}06;
+            padding:14px 20px;
+            margin:-20px -20px 12px -20px;
         }
         .rb-report-metric {
             display:grid;
             grid-template-columns:1fr 1fr;
-            gap:12px;
+            gap:18px;
             margin-bottom:12px;
         }
         .rb-metric-item {
             background:${THEME.bg};
-            border-radius:10px;
-            padding:12px;
+            border-radius:12px;
+            padding:16px;
         }
         .rb-metric-label {
             font-size:11px;
@@ -219,15 +232,18 @@ const Styles = () => (
         .rb-template-card {
             background:${THEME.bg};
             border:1px solid ${THEME.glassBorder};
-            border-radius:10px;
-            padding:12px;
+            border-radius:12px;
+            padding:14px;
             margin-bottom:8px;
             cursor:pointer;
             transition:all .2s;
+            box-shadow:0 2px 6px rgba(0,0,0,0.04);
         }
         .rb-template-card:hover {
             border-color:${THEME.primary};
             background:${THEME.primary}08;
+            transform:translateY(-1px);
+            box-shadow:0 4px 12px rgba(0,0,0,0.08);
         }
         .rb-template-card.active {
             border-color:${THEME.primary};

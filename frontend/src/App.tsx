@@ -377,12 +377,147 @@ const AppStyles = () => (
             animation: tabIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
-        /* ═══ MODERN CLEAN CARD STYLE ═══ */
-        /* Cards: consistent rounded corners */
-        [style*="border-radius: 4px"],
-        [style*="borderRadius: 4"],
-        [style*="border-radius:4px"] {
+        /* ═══ VIGIL GLOBAL VISUAL OVERHAUL ═══ */
+
+        /* ── Cards: glass depth & elevation ── */
+        [class*="-card"],
+        [class*="_card"],
+        [class*="Card"] {
             border-radius: 16px !important;
+            box-shadow: ${DS._dark
+                ? '0 4px 16px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.04)'
+                : '0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6)'
+            } !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            border: 1px solid ${DS._dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'} !important;
+        }
+
+        [class*="-card"]:hover,
+        [class*="_card"]:hover,
+        [class*="Card"]:hover {
+            box-shadow: ${DS._dark
+                ? '0 8px 28px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)'
+                : '0 6px 20px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)'
+            } !important;
+            transform: translateY(-2px) !important;
+            border-color: ${DS._dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.09)'} !important;
+        }
+
+        /* ── Panels & sections: subtle depth ── */
+        [class*="-panel"],
+        [class*="_panel"],
+        [class*="-section"],
+        [class*="_section"] {
+            border-radius: 14px !important;
+            border: 1px solid ${DS._dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'} !important;
+            box-shadow: ${DS._dark
+                ? '0 2px 8px rgba(0,0,0,0.18)'
+                : '0 1px 4px rgba(0,0,0,0.04)'
+            } !important;
+        }
+
+        /* ── Card headers: prominent & distinct ── */
+        [class*="-card-header"],
+        [class*="_card_header"],
+        [class*="card-header"],
+        [class*="CardHeader"] {
+            background: ${DS._dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)'} !important;
+            padding: 14px 20px !important;
+            border-bottom: 1px solid ${DS._dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'} !important;
+            font-weight: 700 !important;
+        }
+
+        /* ── Row items: better hover ── */
+        [class*="-row"]:not(table tr) {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            border-radius: 10px !important;
+        }
+
+        [class*="-row"]:not(table tr):hover {
+            background: ${DS._dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'} !important;
+        }
+
+        /* ── Metric badges: modern rounded ── */
+        [class*="-badge"],
+        [class*="_badge"],
+        [class*="Badge"] {
+            border-radius: 20px !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.01em !important;
+        }
+
+        /* ── Stat values: weight & spacing ── */
+        [class*="-stat"],
+        [class*="_stat"],
+        [class*="-value"],
+        [class*="_value"] {
+            font-weight: 700 !important;
+            letter-spacing: -0.02em !important;
+        }
+
+        /* ── Primary buttons: elevated with glow ── */
+        button[style*="background: linear-gradient"],
+        button[style*="background:linear-gradient"],
+        button[style*="background: #6366f1"],
+        button[style*="background:#6366f1"],
+        button[style*="background: rgb(99"],
+        [class*="-btn-primary"],
+        [class*="_btn_primary"] {
+            box-shadow: 0 4px 14px rgba(99,102,241,0.30), 0 1px 3px rgba(99,102,241,0.15) !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+
+        button[style*="background: linear-gradient"]:hover,
+        button[style*="background:linear-gradient"]:hover,
+        button[style*="background: #6366f1"]:hover,
+        button[style*="background:#6366f1"]:hover,
+        [class*="-btn-primary"]:hover,
+        [class*="_btn_primary"]:hover {
+            box-shadow: 0 6px 22px rgba(99,102,241,0.40), 0 2px 6px rgba(99,102,241,0.20) !important;
+            transform: translateY(-2px) scale(1.02) !important;
+        }
+
+        button[style*="background: linear-gradient"]:active,
+        button[style*="background:linear-gradient"]:active,
+        [class*="-btn-primary"]:active,
+        [class*="_btn_primary"]:active {
+            transform: translateY(0) scale(0.98) !important;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.20) !important;
+        }
+
+        /* ── Ghost/outline buttons ── */
+        button[style*="background: none"],
+        button[style*="background:none"],
+        button[style*="background: transparent"],
+        button[style*="background:transparent"] {
+            border-radius: 10px !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        button[style*="background: none"]:hover,
+        button[style*="background:none"]:hover,
+        button[style*="background: transparent"]:hover,
+        button[style*="background:transparent"]:hover {
+            background: ${DS._dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'} !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* ── Tab buttons: modern active indicator ── */
+        [class*="-tab"][class*="active"],
+        [class*="-tab"][class*="Active"],
+        [class*="_tab"][class*="active"] {
+            position: relative;
+            font-weight: 700 !important;
+        }
+
+        /* ── Charts tooltip: elevated glass ── */
+        .recharts-default-tooltip {
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
         }
 
         /* Tables: clean modern styling */
@@ -395,10 +530,10 @@ const AppStyles = () => (
             text-transform: uppercase !important;
             letter-spacing: 0.06em !important;
             font-size: 11px !important;
-            font-weight: 600 !important;
-            padding: 12px 16px !important;
-            background: ${DS._dark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)'} !important;
-            border-bottom: 1px solid ${DS.border} !important;
+            font-weight: 700 !important;
+            padding: 14px 18px !important;
+            background: ${DS._dark ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.025)'} !important;
+            border-bottom: 1px solid ${DS._dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'} !important;
             color: ${DS.textMuted} !important;
         }
 
@@ -417,23 +552,9 @@ const AppStyles = () => (
             border-bottom: none !important;
         }
 
-        /* ═══ BUTTONS — clean & subtle ═══ */
+        /* ═══ BUTTONS — global transition ═══ */
         button {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-
-        button[style*="background: linear-gradient"],
-        button[style*="background:linear-gradient"],
-        button[style*="background: #6366f1"],
-        button[style*="background:#6366f1"] {
-            box-shadow: 0 2px 8px rgba(99,102,241,0.25) !important;
-            border-radius: 10px !important;
-        }
-
-        button[style*="background: linear-gradient"]:hover,
-        button[style*="background:linear-gradient"]:hover {
-            box-shadow: 0 4px 16px rgba(99,102,241,0.3) !important;
-            transform: translateY(-1px) !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
 
         /* ═══ INPUT FIELDS — clean ═══ */
@@ -443,8 +564,8 @@ const AppStyles = () => (
         }
 
         input:focus, textarea:focus, select:focus {
-            border-color: ${DS.cyan}60 !important;
-            box-shadow: 0 0 0 3px ${DS.cyan}10 !important;
+            border-color: ${DS.cyan}50 !important;
+            box-shadow: 0 0 0 3px ${DS.cyan}18, 0 2px 8px ${DS.cyan}10 !important;
             outline: none !important;
         }
 

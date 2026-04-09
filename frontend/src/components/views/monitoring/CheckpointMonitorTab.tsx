@@ -15,16 +15,17 @@ const Styles = () => (
         .cm-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: ${THEME.shadowSm};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
             transition: all 0.25s ease;
             animation: cmFade 0.3s ease;
+            backdrop-filter: blur(12px);
         }
         .cm-card:hover {
-            box-shadow: ${THEME.shadowMd};
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         .cm-card::after {
@@ -37,7 +38,7 @@ const Styles = () => (
             background: var(--tile-accent, ${THEME.primary});
             opacity: 0.7;
         }
-        .cm-metric { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
+        .cm-metric { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:20px 24px; display:flex; align-items:center; gap:18px; }
         .cm-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid ${THEME.glassBorder}40; font-size:13px; }
         .cm-row:last-child { border-bottom:none; }
     `}</style>

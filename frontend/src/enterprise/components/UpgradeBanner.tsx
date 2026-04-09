@@ -64,25 +64,30 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
     const containerStyle = {
         display: 'flex',
         alignItems: 'center',
-        gap: '16px',
+        gap: '20px',
         padding: '16px 20px',
         backgroundColor: styles.bg,
         border: `1px solid T.glassBorder`,
-        borderRadius: '12px',
+        borderRadius: '16px',
         marginBottom: '16px',
         width: '100%',
         boxSizing: 'border-box',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+        backdropFilter: 'blur(12px)',
+        transition: 'all 0.2s ease',
     };
 
     const iconContainerStyle = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: '40px',
-        height: '40px',
+        width: '44px',
+        height: '44px',
         backgroundColor: 'T.surfaceRaised',
-        borderRadius: '10px',
+        borderRadius: '12px',
         flexShrink: 0,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        backdropFilter: 'blur(8px)',
     };
 
     const contentStyle = {
@@ -108,22 +113,24 @@ const UpgradeBanner = ({ feature = 'advanced_features', tier = 'pro', ds = 'auto
         display: 'flex',
         alignItems: 'center',
         gap: '6px',
-        padding: '8px 14px',
+        padding: '10px 18px',
         backgroundColor: 'T.primary',
         color: '#fff',
         border: 'none',
-        borderRadius: '10px',
+        borderRadius: '12px',
         fontSize: '13px',
         fontWeight: '600',
         cursor: 'pointer',
         flexShrink: 0,
         transition: 'all 0.2s ease',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
     };
 
     const buttonHoverStyle = {
         ...buttonStyle,
         backgroundColor: 'T.primaryDark',
-        transform: 'translateX(2px)',
+        transform: 'translateY(-2px) translateX(2px)',
+        boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
     };
 
     const [isHovered, setIsHovered] = React.useState(false);

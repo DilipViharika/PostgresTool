@@ -12,16 +12,17 @@ const Styles = () => (
         .k-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: ${THEME.shadowSm};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
             transition: all 0.25s ease;
             animation: kFade 0.3s ease;
+            backdrop-filter: blur(12px);
         }
         .k-card:hover {
-            box-shadow: ${THEME.shadowMd};
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         .k-card::after {
@@ -35,10 +36,10 @@ const Styles = () => (
             opacity: 0.7;
         }
         .k-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .k-metric { background:${THEME.grid}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:16px; margin-bottom:12px; }
+        .k-metric { background:${THEME.grid}; border:1px solid ${THEME.glassBorder}; border-radius:14px; padding:16px; margin-bottom:12px; }
         .k-progress-bar { width:100%; height:8px; background:${THEME.grid}; border-radius:8px; overflow:hidden; margin-top:8px; }
         .k-progress-fill { height:100%; border-radius:8px; }
-        .k-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:16px; }
+        .k-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:16px; }
         .k-status-ok { color:${THEME.success}; }
         .k-status-fail { color:${THEME.danger}; }
         .k-spinner { animation:kSpin 1s linear infinite; }

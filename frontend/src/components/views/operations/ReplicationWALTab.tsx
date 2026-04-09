@@ -12,15 +12,15 @@ const Styles = () => (
         @keyframes rwSpin  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes rwFade  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes rwPulse { 0%,100%{opacity:1} 50%{opacity:.35} }
-        .rw-card  { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 14px 14px 0; padding:16px; animation:rwFade .3s ease; box-shadow:${THEME.shadowSm}; position:relative; overflow:hidden; transition: all 0.25s ease; }
-        .rw-card:hover { box-shadow:${THEME.shadowMd}; border-left-width: 6px; }
+        .rw-card  { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 16px 16px 0; padding:20px; animation:rwFade .3s ease; box-shadow:0 4px 16px rgba(0,0,0,0.08); backdrop-filter:blur(12px); position:relative; overflow:hidden; transition: all 0.25s ease; }
+        .rw-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.12); border-left-width: 6px; transform: translateY(-2px); }
         .rw-card::before { content:''; position:absolute; top:0; right:0; width:40%; height:100%; background:repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px); pointer-events:none; }
-        .rw-metric{ background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:12px; }
-        .rw-row   { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid ${THEME.glassBorder}30; font-size:12px; }
+        .rw-metric{ background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:16px 20px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,0.08); backdrop-filter:blur(12px); }
+        .rw-row   { display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom:1px solid ${THEME.glassBorder}30; font-size:12px; }
         .rw-row:last-child { border-bottom:none; }
-        .rw-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:700; }
-        .rw-table-head { display:grid; gap:8px; padding:8px 14px; font-size:10px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid ${THEME.glassBorder}; }
-        .rw-table-row  { display:grid; gap:8px; padding:11px 14px; font-size:12px; border-bottom:1px solid ${THEME.glassBorder}20; align-items:center; }
+        .rw-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:10px; font-size:10px; font-weight:700; }
+        .rw-table-head { display:grid; gap:12px; padding:12px 18px; font-size:10px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .rw-table-row  { display:grid; gap:12px; padding:13px 18px; font-size:12px; border-bottom:1px solid ${THEME.glassBorder}20; align-items:center; }
         .rw-table-row:hover { background:${THEME.surfaceHover}; }
         .rw-table-row:last-child { border-bottom:none; }
     `}</style>
@@ -44,7 +44,7 @@ const StateBadge = ({ state, sync }) => {
 
 const MetricCard = ({ icon:Icon, label, value, sub, color=THEME.primary, warn }) => (
     <div className="rw-metric" style={{ borderColor:warn?`${THEME.warning}40`:undefined }}>
-        <div style={{width:40,height:40,borderRadius:10,background:`${color}15`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+        <div style={{width:44,height:44,borderRadius:12,background:`${color}15`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <Icon size={20} color={color}/>
         </div>
         <div>
@@ -58,7 +58,7 @@ const MetricCard = ({ icon:Icon, label, value, sub, color=THEME.primary, warn })
 const ChartTip = ({ active, payload, label }) => {
     if (!active||!payload?.length) return null;
     return (
-        <div style={{background:THEME.surface,border:`1px solid ${THEME.glassBorder}`,borderRadius:10,padding:'8px 12px',fontSize:12,boxShadow:THEME.shadowMd}}>
+        <div style={{background:THEME.surface,border:`1px solid ${THEME.glassBorder}`,borderRadius:12,padding:'10px 14px',fontSize:12,boxShadow:'0 4px 16px rgba(0,0,0,0.08)',backdropFilter:'blur(12px)'}}>
             <div style={{color:THEME.textMuted,marginBottom:4}}>{label}</div>
             {payload.map(p=>(
                 <div key={p.name} style={{color:p.fill,fontWeight:600}}>{p.name}: {fmtBytes(p.value)}</div>

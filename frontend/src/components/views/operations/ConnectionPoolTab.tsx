@@ -90,12 +90,13 @@ const S = {
         background: THEME.surface,
         border: 'none',
         borderLeft: `4px solid ${accent || THEME.primary}`,
-        borderRadius: '0 14px 14px 0',
-        padding: 20,
+        borderRadius: '0 16px 16px 0',
+        padding: 24,
         transition: 'all 0.25s ease',
         position: 'relative',
         overflow: 'hidden',
-        boxShadow: THEME.shadowSm,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+        backdropFilter: 'blur(12px)',
         '--pipe-color': accent,
     }),
     badge: (color) => ({
@@ -915,7 +916,7 @@ const ConnectionsTab = () => {
                 @keyframes cpPulse { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
                 @keyframes cpFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
                 .cp-pipe-card::before { content:''; position:absolute; top:0; right:0; width:40%; height:100%; background:repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px); pointer-events:none; }
-                .cp-pipe-card:hover { border-left-width: 6px; }
+                .cp-pipe-card:hover { border-left-width: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
             `}</style>
 
             {/* ── Success / Error Toast ── */}
@@ -1127,10 +1128,10 @@ const ConnectionsTab = () => {
 
                     {/* Loading */}
                     {connectionsLoading && connections.length === 0 && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14, marginBottom: 14 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20, marginBottom: 20 }}>
                             {[0, 1, 2].map(i => (
                                 <div key={i} style={{
-                                    height: 200, borderRadius: 14, background: THEME.surface,
+                                    height: 200, borderRadius: 16, background: THEME.surface,
                                     border: `1px solid ${THEME.glassBorder}`, opacity: 0.4,
                                     animation: `fadeUp 0.3s ease-out, pulse 1.5s ease-in-out infinite`,
                                     animationDelay: `${i * 0.1}s`,
@@ -1140,7 +1141,7 @@ const ConnectionsTab = () => {
                     )}
 
                     {/* Cards Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
                         {filteredConnections.map((conn, idx) => {
                             const dbMeta = DB_TYPES[conn.dbType] || DB_TYPES.postgresql;
                             const isActive = conn.id === activeConnectionId;
@@ -1173,7 +1174,7 @@ const ConnectionsTab = () => {
                                         </div>
                                     </div>
 
-                                    <div style={{ background: THEME.surfaceHover, borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 11, position: 'relative', zIndex: 1 }}>
+                                    <div style={{ background: THEME.surfaceHover, borderRadius: 12, padding: '12px 16px', marginBottom: 14, fontSize: 11, position: 'relative', zIndex: 1 }}>
                                         {conn.database && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>database</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.database}</span></div>}
                                         {conn.username && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>user</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.username}</span></div>}
                                         {conn.replicaSet && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ color: THEME.textMuted }}>replica set</span><span style={{ color: THEME.textDim, fontWeight: 500 }}>{conn.replicaSet}</span></div>}
@@ -1183,7 +1184,7 @@ const ConnectionsTab = () => {
 
                                     {conn.lastTested && (
                                         <div style={{
-                                            display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8, marginBottom: 14,
+                                            display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', borderRadius: 12, marginBottom: 14,
                                             background: conn.status === 'success' ? 'rgba(74,222,128,0.08)' : 'rgba(239,68,68,0.08)',
                                             border: `1px solid ${conn.status === 'success' ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)'}`,
                                             position: 'relative', zIndex: 1,

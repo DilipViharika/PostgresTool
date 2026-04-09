@@ -55,17 +55,19 @@ function ensureVmStyles() {
             background: ${THEME.surface};
             border: none;
             border-left: 4px solid var(--pipe-color, ${THEME.primary});
-            border-radius: 0 14px 14px 0;
-            padding: 20px;
+            border-radius: 0 16px 16px 0;
+            padding: 24px;
             animation: vmFadeUp .4s ease both;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            backdrop-filter: blur(12px);
             transition: all 0.25s ease;
         }`,
         `.vm-card:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
             border-left-width: 6px;
+            transform: translateY(-2px);
         }`,
         `.vm-card::before {
             content: '';
@@ -83,14 +85,16 @@ function ensureVmStyles() {
             background: linear-gradient(145deg, ${THEME.surfaceHover} 0%, ${THEME.surface} 100%);
             border: 1px solid ${THEME.glassBorder};
             border-radius: 16px;
-            padding: 20px 24px;
-            display: flex; flex-direction: column; gap: 10px;
+            padding: 24px 28px;
+            display: flex; flex-direction: column; gap: 14px;
             position: relative; overflow: hidden;
-            transition: transform .2s, border-color .2s;
+            transition: transform .2s, border-color .2s, box-shadow .2s;
             cursor: default;
             animation: vmFadeUp .4s ease both;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            backdrop-filter: blur(12px);
         }`,
-        `.vm-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.glassBorder}; }`,
+        `.vm-metric-card:hover { transform: translateY(-2px); border-color: ${THEME.glassBorder}; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }`,
         `.vm-metric-card::after {
             content: '';
             position: absolute;
@@ -117,8 +121,8 @@ function ensureVmStyles() {
         /* ── Column header ── */
         `.vm-head {
             display: grid;
-            gap: 8px;
-            padding: 10px 16px;
+            gap: 12px;
+            padding: 14px 20px;
             font-size: 10px;
             font-weight: 700;
             color: ${THEME.textDim};
@@ -133,8 +137,8 @@ function ensureVmStyles() {
             background: ${THEME.surface};
             border: 1px solid ${THEME.glassBorder};
             color: ${THEME.textMain};
-            border-radius: 10px;
-            padding: 9px 12px;
+            border-radius: 12px;
+            padding: 11px 16px;
             font-size: 13px;
             outline: none;
             transition: border-color .2s, background .2s;
@@ -145,8 +149,8 @@ function ensureVmStyles() {
 
         /* ── Tabs ── */
         `.vm-tab {
-            padding: 8px 18px;
-            border-radius: 9px;
+            padding: 10px 20px;
+            border-radius: 12px;
             border: 1px solid ${THEME.glassBorder};
             background: transparent;
             color: ${THEME.textMuted};
@@ -156,7 +160,7 @@ function ensureVmStyles() {
             font-family: ${THEME.fontBody};
             transition: all .2s;
             letter-spacing: .3px;
-            display: inline-flex; align-items: center; gap: 7px;
+            display: inline-flex; align-items: center; gap: 8px;
         }`,
         `.vm-tab.active {
             background: linear-gradient(135deg, ${THEME.primary}40, ${THEME.primary}26);
@@ -211,9 +215,9 @@ function ensureVmStyles() {
 
         /* ── Action button ── */
         `.vm-action-btn {
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 5px 12px;
-            border-radius: 7px;
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 14px;
+            border-radius: 10px;
             font-size: 11px; font-weight: 700;
             cursor: pointer;
             border: 1px solid ${THEME.primary}4D;
@@ -225,7 +229,7 @@ function ensureVmStyles() {
         `.vm-action-btn:hover:not(:disabled) {
             background: ${THEME.primary}33;
             border-color: ${THEME.primary}80;
-            box-shadow: 0 0 12px ${THEME.primary}33;
+            box-shadow: 0 4px 16px ${THEME.primary}33;
         }`,
         `.vm-action-btn:disabled { opacity: .5; cursor: not-allowed; }`,
 
@@ -241,9 +245,9 @@ function ensureVmStyles() {
         /* ── Worker card ── */
         `.vm-worker {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 16px;
+            padding: 14px 20px;
             background: ${THEME.success}0F;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid ${THEME.success}2E;
             animation: vmFadeUp .3s ease both;
         }`,

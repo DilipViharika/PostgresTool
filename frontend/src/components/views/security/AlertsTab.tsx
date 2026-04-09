@@ -344,25 +344,25 @@ const VIGILDashboard = () => {
   // Styles
   const css = {
     wrap:     { color: THEME.textMain, fontFamily: THEME.fontMono },
-    card:     { background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12 },
-    input:    { background: THEME.surfaceHover, border: `1px solid ${THEME.glassBorder}`, borderRadius: 6, padding: '6px 10px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
-    label:    { display: 'block', fontSize: 11, color: THEME.textMuted, marginBottom: 5, fontWeight: 600, letterSpacing: '0.02em' },
-    tab:      (on) => ({ background: on ? 'rgba(99,102,241,0.08)' : 'transparent', border: `1px solid ${on ? 'rgba(99,102,241,0.2)' : 'transparent'}`, borderRadius: 8, padding: '6px 12px', color: on ? THEME.primary : THEME.textMuted, cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s', outline: 'none', letterSpacing: '0.02em', fontFamily: 'inherit' }),
-    btn:      (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.02em', transition: 'all 0.15s', outline: 'none', padding: '6px 12px', ...(v === 'primary' ? { background: THEME.primary, color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.08)', color: SEVERITY.critical.color, border: `1px solid rgba(239,68,68,0.2)` } : v === 'success' ? { background: 'rgba(34,211,165,0.08)', color: SEVERITY.success.color, border: `1px solid rgba(34,211,165,0.2)` } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.glassBorder}` }) }),
-    modalBox: { background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, width: 520, maxWidth: '95vw', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', color: THEME.textMain, maxHeight: '90vh', overflowY: 'auto' },
-    sHdr:     { fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em',  marginBottom: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 },
+    card:     { background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', backdropFilter: 'blur(12px)' },
+    input:    { background: THEME.surfaceHover, border: `1px solid ${THEME.glassBorder}`, borderRadius: 10, padding: '8px 12px', color: THEME.textMain, width: '100%', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
+    label:    { display: 'block', fontSize: 11, color: THEME.textMuted, marginBottom: 6, fontWeight: 600, letterSpacing: '0.02em' },
+    tab:      (on) => ({ background: on ? 'rgba(99,102,241,0.08)' : 'transparent', border: `1px solid ${on ? 'rgba(99,102,241,0.2)' : 'transparent'}`, borderRadius: 10, padding: '8px 14px', color: on ? THEME.primary : THEME.textMuted, cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 7, transition: 'all 0.15s', outline: 'none', letterSpacing: '0.02em', fontFamily: 'inherit' }),
+    btn:      (v = 'ghost') => ({ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, letterSpacing: '0.02em', transition: 'all 0.15s', outline: 'none', padding: '8px 14px', ...(v === 'primary' ? { background: THEME.primary, color: '#fff' } : v === 'danger' ? { background: 'rgba(239,68,68,0.08)', color: SEVERITY.critical.color, border: `1px solid rgba(239,68,68,0.2)` } : v === 'success' ? { background: 'rgba(34,211,165,0.08)', color: SEVERITY.success.color, border: `1px solid rgba(34,211,165,0.2)` } : { background: THEME.surface, color: THEME.textMuted, border: `1px solid ${THEME.glassBorder}` }) }),
+    modalBox: { background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 16, width: 520, maxWidth: '95vw', padding: 24, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', backdropFilter: 'blur(12px)', color: THEME.textMain, maxHeight: '90vh', overflowY: 'auto' },
+    sHdr:     { fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em',  marginBottom: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 },
   };
 
   // ─── RENDER: STATS ─────────────────────────────────────────────
   const renderStats = () => (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 20 }}>
         {[
           { label: 'Total Alerts', val: stats.total,    sub: `${stats.unacked} unacknowledged`, color: THEME.textMuted },
           { label: 'Critical',     val: stats.critical, sub: 'requires attention',              color: SEVERITY.critical.color },
           { label: 'Warning',      val: stats.warning,  sub: 'monitor closely',                 color: SEVERITY.warning.color },
           { label: 'Active Rules', val: `${stats.activeRules}/${alertRules.length}`, sub: 'rules enabled', color: THEME.primary },
         ].map((s, i) => (
-            <div key={i} style={{ ...css.card, padding: '12px 14px', position: 'relative', overflow: 'hidden' }}>
+            <div key={i} style={{ ...css.card, padding: '16px 18px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', bottom: 0, right: 0, width: 60, height: 60, borderRadius: '50%', background: `radial-gradient(circle, ${s.color}08 0%, transparent 70%)` }} />
               <div style={{ fontSize: 11, color: THEME.textMuted, letterSpacing: '0.02em',  marginBottom: 6 }}>{s.label}</div>
               <div style={{ fontSize: 26, fontWeight: 700, color: s.color, lineHeight: 1, marginBottom: 4 }}>{s.val}</div>
@@ -374,22 +374,22 @@ const VIGILDashboard = () => {
 
   // ─── RENDER: LIVE METRICS ──────────────────────────────────────
   const renderLiveMetrics = () => (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16, marginBottom: 20 }}>
         {Object.entries(liveMetrics).map(([k, v]) => <MetricCard key={k} metricKey={k} data={v} />)}
       </div>
   );
 
   // ─── RENDER: COMMENT PANEL ─────────────────────────────────────
   const renderCommentPanel = (alert) => (
-      <div style={{ background: THEME.bg, borderTop: `1px solid ${THEME.glassBorder}`, padding: '12px 14px 12px 48px' }}>
-        <div style={{ ...css.sHdr, marginBottom: 10 }}>
+      <div style={{ background: THEME.bg, borderTop: `1px solid ${THEME.glassBorder}`, padding: '14px 16px 14px 52px' }}>
+        <div style={{ ...css.sHdr, marginBottom: 12 }}>
           <MessageSquare size={10} /> Incident Notes &amp; Comments ({alert.comments?.length || 0})
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
           {(alert.comments || []).map(c => (
-              <div key={c.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <Avatar initials={c.avatar} size={22} />
-                <div style={{ flex: 1, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 8, padding: '8px 12px' }}>
+              <div key={c.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <Avatar initials={c.avatar} size={24} />
+                <div style={{ flex: 1, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, padding: '10px 14px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
                     <span style={{ fontSize: 10, color: THEME.primary, fontWeight: 700 }}>{c.author}</span>
                     <span style={{ fontSize: 9, color: THEME.textMuted }}>{formatAge(c.timestamp)}</span>
@@ -962,15 +962,16 @@ const VIGILDashboard = () => {
           .alert-card {
               background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
               border: 1px solid ${THEME.glassBorder};
-              border-radius: 14px;
-              padding: 20px;
+              border-radius: 16px;
+              padding: 24px;
               position: relative;
               overflow: hidden;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+              box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+              backdrop-filter: blur(12px);
               transition: all 0.25s ease;
           }
           .alert-card:hover {
-              box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+              box-shadow: 0 4px 16px rgba(0,0,0,0.12);
               transform: translateY(-2px);
           }
           .alert-card::after {

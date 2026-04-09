@@ -41,17 +41,18 @@ const Styles = () => (
             background: ${DARK_THEME.card};
             border: 1px solid ${DARK_THEME.border};
             border-left: 3px solid #00684A;
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,104,74,0.06);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            backdrop-filter: blur(12px);
             transition: all 0.25s ease;
             position: relative;
             animation: mongoFade 0.3s ease;
         }
 
         .mongo-card:hover {
-            box-shadow: 0 6px 20px rgba(0,104,74,0.10);
-            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(0,104,74,0.12);
+            transform: translateY(-2px);
         }
 
         .mongo-card::after {
@@ -66,11 +67,12 @@ const Styles = () => (
         }
 
         .mongo-card-head {
-            padding: 14px 18px;
+            padding: 14px 20px;
             border-bottom: 1px solid ${DARK_THEME.border};
             display: flex;
             align-items: center;
             gap: 10px;
+            font-weight: 700;
         }
 
         .mongo-card-body {
@@ -126,8 +128,8 @@ const Styles = () => (
         .mongo-metric-box {
             background: ${DARK_THEME.bg};
             border: 1px solid ${DARK_THEME.border};
-            border-radius: 10px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
         }
 

@@ -23,16 +23,17 @@ const Styles = () => (
         .aim-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
             transition: all 0.25s ease;
             animation: aimFade 0.3s ease;
+            backdrop-filter: blur(12px);
         }
         .aim-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         .aim-card::after {
@@ -100,7 +101,7 @@ const Styles = () => (
 
         .aim-input-group {
             display: flex;
-            gap: 10px;
+            gap: 14px;
             align-items: stretch;
         }
 
@@ -130,7 +131,7 @@ const Styles = () => (
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
             font-size: 14px;
             transition: all 0.2s;
         }
@@ -159,7 +160,7 @@ const Styles = () => (
             color: ${THEME.textMain};
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
             margin-bottom: 8px;
         }
 
@@ -173,7 +174,7 @@ const Styles = () => (
         .aim-suggestion-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 12px;
         }
 
         .aim-action-tag {
@@ -218,7 +219,7 @@ const Styles = () => (
             margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
 
         .aim-modal-overlay {
@@ -260,7 +261,7 @@ const Styles = () => (
 
         .aim-modal-actions {
             display: flex;
-            gap: 12px;
+            gap: 18px;
             justify-content: flex-end;
         }
 
@@ -295,7 +296,7 @@ const Styles = () => (
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 12px;
             padding: 20px;
             color: ${THEME.textMuted};
             font-size: 14px;
@@ -314,7 +315,7 @@ const Styles = () => (
             margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 14px;
         }
     `}</style>
 );

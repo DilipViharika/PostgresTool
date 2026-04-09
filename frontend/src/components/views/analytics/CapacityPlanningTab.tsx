@@ -22,29 +22,30 @@ const CapStyles = () => (
         .analytics-card {
             background: ${THEME.surface};
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            backdrop-filter: blur(12px);
             transition: all 0.25s ease;
         }
         .analytics-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         .analytics-card-ribbon {
-            height: 48px;
+            height: 50px;
             background: linear-gradient(135deg, var(--ribbon-color, ${THEME.primary}) 0%, var(--ribbon-end, ${THEME.primary}cc) 100%);
             display: flex;
             align-items: center;
-            padding: 0 18px;
-            gap: 10px;
+            padding: 0 20px;
+            gap: 12px;
             color: white;
             font-weight: 600;
             font-size: 13px;
             letter-spacing: 0.02em;
         }
         .analytics-card-body {
-            padding: 18px;
+            padding: 20px;
         }
 
         .forecast-badge {
@@ -69,18 +70,19 @@ const CapStyles = () => (
         }
 
         .rec-item {
-            padding: 12px;
-            border-radius: 12px;
+            padding: 14px;
+            border-radius: 14px;
             background: ${THEME.surfaceHigh};
             border: 1px solid ${THEME.glassBorder};
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
         .export-btn:hover { opacity: 0.85; }
         .action-btn:hover { background: ${THEME.primary}20 !important; }
 
         .window-btn {
-            padding: 4px 10px;
+            padding: 6px 14px;
             border-radius: 12px;
             font-size: 11px;
             font-weight: 600;

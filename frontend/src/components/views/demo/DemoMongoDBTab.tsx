@@ -953,7 +953,7 @@ function DemoMongoDBTab({ tabId }) {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {/* Row 1: 4 Large Hero KPI Cards */}
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -983,7 +983,7 @@ function DemoMongoDBTab({ tabId }) {
                                 </div>
 
                                 {/* Row 2: 2 Charts side-by-side */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18 }}>
                                     <Panel title="Operations per second — 30 min" accentColor={THEME.primary}>
                                         <ResponsiveContainer width="100%" height={220}>
                                             <LineChart data={demoData.opsPerSecond30m}>
@@ -1064,7 +1064,7 @@ function DemoMongoDBTab({ tabId }) {
                                 </div>
 
                                 {/* Row 3: 3 Charts */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
                                     <Panel title="CPU & memory %" accentColor={THEME.info}>
                                         <ResponsiveContainer width="100%" height={180}>
                                             <LineChart data={demoData.cpuMemory}>
@@ -1131,7 +1131,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}
                                     className="dpg-stagger"
                                 >
                                     <MetricCard
@@ -1890,7 +1890,7 @@ function DemoMongoDBTab({ tabId }) {
                                             marginTop: 16,
                                             padding: 12,
                                             background: THEME.surface,
-                                            borderRadius: 12,
+                                            borderRadius: 14,
                                             border: `1px solid ${THEME.glassBorder}`,
                                             fontFamily: THEME.fontMono,
                                             fontSize: 11,
@@ -1927,7 +1927,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 12,
                                                     background: `${THEME.primary}08`,
                                                     borderLeft: `3px solid ${THEME.primary}`,
-                                                    borderRadius: 10,
+                                                    borderRadius: 12,
                                                     fontSize: 12,
                                                 }}
                                             >
@@ -2030,7 +2030,7 @@ function DemoMongoDBTab({ tabId }) {
                     case 'slowqueries':
                         return (
                             <Panel title="Slow Queries" icon={AlertTriangle} accentColor={THEME.danger}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                     {demoData.slowQueries.map((q, i) => (
                                         <div
                                             key={i}
@@ -2038,7 +2038,7 @@ function DemoMongoDBTab({ tabId }) {
                                                 padding: 12,
                                                 background: `${THEME.danger}08`,
                                                 borderLeft: `3px solid ${THEME.danger}`,
-                                                borderRadius: 10,
+                                                borderRadius: 12,
                                             }}
                                         >
                                             <div
@@ -2398,7 +2398,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 12,
                                                     background: `${a.severity === 'high' ? THEME.danger : THEME.warning}08`,
                                                     borderLeft: `3px solid ${a.severity === 'high' ? THEME.danger : THEME.warning}`,
-                                                    borderRadius: 10,
+                                                    borderRadius: 12,
                                                     fontSize: 11,
                                                 }}
                                             >
@@ -2616,7 +2616,7 @@ function DemoMongoDBTab({ tabId }) {
                                         marginTop: 16,
                                         padding: 12,
                                         background: THEME.surface,
-                                        borderRadius: 12,
+                                        borderRadius: 14,
                                         borderLeft: `3px solid ${THEME.success}`,
                                     }}
                                 >
@@ -2965,7 +2965,7 @@ function DemoMongoDBTab({ tabId }) {
                                     <MetricCard label="Next Scheduled" value="4h" sub="Auto backup" icon={Clock} />
                                 </div>
                                 <Panel title="Backup Monitor" icon={Archive} accentColor={THEME.success}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                         {demoData.backups.map((b, i) => (
                                             <div
                                                 key={i}
@@ -2973,7 +2973,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 12,
                                                     background: THEME.surface,
                                                     border: `1px solid ${THEME.glassBorder}`,
-                                                    borderRadius: 10,
+                                                    borderRadius: 12,
                                                     borderLeft: `3px solid ${b.status === 'SUCCESS' ? THEME.success : THEME.danger}`,
                                                 }}
                                             >
@@ -3292,7 +3292,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="34" label="Collections" subtitle="Available" color="#0284c7" />
@@ -3363,7 +3363,7 @@ function DemoMongoDBTab({ tabId }) {
                                             marginTop: 16,
                                             padding: 12,
                                             background: THEME.surface,
-                                            borderRadius: 12,
+                                            borderRadius: 14,
                                             border: `1px solid ${THEME.glassBorder}`,
                                             fontFamily: THEME.fontMono,
                                             fontSize: 10,
@@ -3383,7 +3383,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -3420,7 +3420,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 12,
                                                     background: `${THEME.primary}08`,
                                                     borderLeft: `3px solid ${THEME.primary}`,
-                                                    borderRadius: 10,
+                                                    borderRadius: 12,
                                                     fontFamily: THEME.fontMono,
                                                     fontSize: 11,
                                                 }}
@@ -3493,7 +3493,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -3517,14 +3517,14 @@ function DemoMongoDBTab({ tabId }) {
                                     <ExecStatCard value="8" label="COLLECTIONS" subtitle="Supported" color="#d97706" />
                                 </div>
                                 <Panel title="Natural Language Query Generator" icon={Brain} accentColor={THEME.ai}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                         {demoData.naturalLanguageExamples.map((ex, i) => (
                                             <div
                                                 key={i}
                                                 style={{
                                                     padding: 12,
                                                     background: THEME.surface,
-                                                    borderRadius: 12,
+                                                    borderRadius: 14,
                                                     border: `1px solid ${THEME.glassBorder}`,
                                                 }}
                                             >
@@ -3558,7 +3558,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         color: THEME.textMuted,
                                                         background: THEME.surface,
                                                         padding: 8,
-                                                        borderRadius: 12,
+                                                        borderRadius: 14,
                                                         wordBreak: 'break-word',
                                                     }}
                                                 >
@@ -3574,7 +3574,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="2.4 GB" label="IMPORTED" subtitle="Last 7d" color="#16a34a" />
@@ -3635,7 +3635,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -3663,14 +3663,14 @@ function DemoMongoDBTab({ tabId }) {
                                     icon={Code}
                                     accentColor={THEME.info || THEME.primary}
                                 >
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                         {demoData.sqlToMongoExamples.map((ex, i) => (
                                             <div
                                                 key={i}
                                                 style={{
                                                     padding: 12,
                                                     background: THEME.surface,
-                                                    borderRadius: 12,
+                                                    borderRadius: 14,
                                                     border: `1px solid ${THEME.glassBorder}`,
                                                 }}
                                             >
@@ -3691,7 +3691,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         color: THEME.textMuted,
                                                         background: THEME.surface,
                                                         padding: 8,
-                                                        borderRadius: 12,
+                                                        borderRadius: 14,
                                                         marginBottom: 10,
                                                         wordBreak: 'break-word',
                                                     }}
@@ -3715,7 +3715,7 @@ function DemoMongoDBTab({ tabId }) {
                                                         color: THEME.success,
                                                         background: THEME.surface,
                                                         padding: 8,
-                                                        borderRadius: 12,
+                                                        borderRadius: 14,
                                                         wordBreak: 'break-word',
                                                     }}
                                                 >
@@ -3731,7 +3731,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -3809,7 +3809,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="3" label="GEO INDEXES" subtitle="2dsphere" color="#0284c7" />
@@ -3877,7 +3877,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="12" label="ACTIVE HINTS" subtitle="+3 new" color="#0284c7" />
@@ -3891,7 +3891,7 @@ function DemoMongoDBTab({ tabId }) {
                                     />
                                 </div>
                                 <Panel title="AI Hints & Recommendations" icon={Brain} accentColor={THEME.ai}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                         {demoData.aiHints.map((h, i) => (
                                             <div
                                                 key={i}
@@ -3899,7 +3899,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 12,
                                                     background: `${THEME.ai}08`,
                                                     borderLeft: `3px solid ${THEME.ai}`,
-                                                    borderRadius: 10,
+                                                    borderRadius: 12,
                                                     fontSize: 11,
                                                 }}
                                             >
@@ -4018,7 +4018,7 @@ function DemoMongoDBTab({ tabId }) {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Cluster Comparison</h1>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="3" label="CLUSTERS" subtitle="Monitored" color="#0284c7" />
@@ -4072,7 +4072,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -4151,7 +4151,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="8" label="RECOMMENDATIONS" subtitle="Active" color="#0284c7" />
@@ -4165,14 +4165,14 @@ function DemoMongoDBTab({ tabId }) {
                                     <ExecStatCard value="5" label="APPLIED" subtitle="This month" color="#6366f1" />
                                 </div>
                                 <Panel title="Performance Advisor v2" icon={Lightbulb} accentColor={THEME.warning}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                         {demoData.perfAdvisor.map((rec, i) => (
                                             <div
                                                 key={i}
                                                 style={{
                                                     padding: 12,
                                                     background: THEME.surface,
-                                                    borderRadius: 10,
+                                                    borderRadius: 12,
                                                     border: `1px solid ${THEME.glassBorder}`,
                                                     borderLeft: `3px solid ${i === 0 ? THEME.danger : i === 1 ? THEME.warning : THEME.info || THEME.primary}`,
                                                 }}
@@ -4279,7 +4279,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="24" label="ACTIVE TRACES" subtitle="Running" color="#0284c7" />
@@ -4293,14 +4293,14 @@ function DemoMongoDBTab({ tabId }) {
                                     />
                                 </div>
                                 <Panel title="Trace Correlator" icon={Radio} accentColor={THEME.primary}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                         {demoData.traceCorrelations.map((trace, i) => (
                                             <div
                                                 key={i}
                                                 style={{
                                                     padding: 12,
                                                     background: THEME.surface,
-                                                    borderRadius: 10,
+                                                    borderRadius: 12,
                                                     border: `1px solid ${THEME.glassBorder}`,
                                                 }}
                                             >
@@ -4330,7 +4330,7 @@ function DemoMongoDBTab({ tabId }) {
                                                                     s === trace.bottleneck
                                                                         ? `${THEME.danger}20`
                                                                         : `${THEME.primary}15`,
-                                                                borderRadius: 12,
+                                                                borderRadius: 14,
                                                                 color:
                                                                     s === trace.bottleneck
                                                                         ? THEME.danger
@@ -4361,7 +4361,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -4390,14 +4390,14 @@ function DemoMongoDBTab({ tabId }) {
                                     />
                                 </div>
                                 <Panel title="Replica Set & Failover" icon={GitBranch} accentColor={THEME.success}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                         {demoData.replicas.map((replica, i) => (
                                             <div
                                                 key={i}
                                                 style={{
                                                     padding: 12,
                                                     background: THEME.surface,
-                                                    borderRadius: 10,
+                                                    borderRadius: 12,
                                                     border: `1px solid ${THEME.glassBorder}`,
                                                     borderLeft: `3px solid ${replica.role === 'PRIMARY' ? THEME.success : THEME.info || THEME.primary}`,
                                                 }}
@@ -4454,7 +4454,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="3" label="SHARDS" subtitle="Active" color="#0284c7" />
@@ -4504,7 +4504,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -4536,7 +4536,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     padding: 10,
                                                     background: `${THEME.success}08`,
                                                     borderLeft: `3px solid ${THEME.success}`,
-                                                    borderRadius: 10,
+                                                    borderRadius: 12,
                                                     fontSize: 11,
                                                 }}
                                             >
@@ -4552,7 +4552,7 @@ function DemoMongoDBTab({ tabId }) {
                                                     </span>
                                                     <span style={{ color: THEME.textDim }}>{event.duration}ms</span>
                                                 </div>
-                                                <div style={{ display: 'flex', gap: 12, fontSize: 10 }}>
+                                                <div style={{ display: 'flex', gap: 16, fontSize: 10 }}>
                                                     <span>
                                                         Op: <span style={{ fontWeight: 600 }}>{event.operation}</span>
                                                     </span>
@@ -4656,7 +4656,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -4691,7 +4691,7 @@ function DemoMongoDBTab({ tabId }) {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Prometheus Export</h1>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -4754,7 +4754,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -4904,7 +4904,7 @@ function DemoMongoDBTab({ tabId }) {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Atlas API Bridge</h1>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="2,840" label="API CALLS" subtitle="Last 24h" color="#0284c7" />
@@ -4974,7 +4974,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="8" label="DASHBOARDS" subtitle="Created" color="#0284c7" />
@@ -5012,7 +5012,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="24" label="REPORTS" subtitle="Generated" color="#0284c7" />
@@ -5081,7 +5081,7 @@ function DemoMongoDBTab({ tabId }) {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <h1>Audit Log</h1>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard
@@ -5156,7 +5156,7 @@ function DemoMongoDBTab({ tabId }) {
                         return (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                                 <div
-                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}
+                                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
                                     className="dpg-stagger"
                                 >
                                     <ExecStatCard value="4" label="TOTAL USERS" subtitle="Active" color="#0284c7" />

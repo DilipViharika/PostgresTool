@@ -36,16 +36,18 @@ const SecStyles = () => (
         .sec-card {
             background: ${THEME.surface};
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            backdrop-filter: blur(12px);
             transition: all 0.25s ease;
             display: flex;
             position: relative;
         }
         .sec-card:hover {
             border-color: ${THEME.danger}40;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
         }
 
         .sec-card-stripe {
@@ -56,37 +58,40 @@ const SecStyles = () => (
 
         .sec-card-content {
             flex: 1;
-            padding: 16px 18px;
+            padding: 20px 22px;
         }
 
         .sec-card-header {
-            background: ${THEME.textMain}08;
-            padding: 10px 18px;
+            background: ${THEME.textMain}06;
+            padding: 14px 20px;
             border-bottom: 1px solid ${THEME.glassBorder};
-            font-weight: 600;
+            font-weight: 700;
             font-size: 13px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         /* Legacy .card fallback for compatibility */
         .card {
             background: ${THEME.surface};
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
             transition: border-color 0.2s, box-shadow 0.2s;
             position: relative;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            backdrop-filter: blur(12px);
         }
         .card:hover {
             border-color: ${THEME.primary}33;
-            box-shadow: 0 0 24px ${THEME.primary}0d;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
         }
 
         .card-glow-red:hover {
             border-color: ${THEME.danger}4d !important;
-            box-shadow: 0 0 24px ${THEME.danger}14 !important;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
         }
 
         .mono { font-family: ${THEME.fontMono}; }
@@ -98,7 +103,7 @@ const SecStyles = () => (
 
         /* Tabs */
         .nav-tab {
-            padding: 8px 18px;
+            padding: 10px 20px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: 700;
@@ -121,12 +126,12 @@ const SecStyles = () => (
         .threat-row {
             display: grid;
             grid-template-columns: 32px 1.8fr 1fr 90px 110px 36px;
-            padding: 13px 20px;
+            padding: 15px 22px;
             border-bottom: 1px solid ${THEME.glassBorder};
             align-items: center;
             font-size: 12px;
             transition: background 0.15s;
-            gap: 12px;
+            gap: 14px;
         }
         .threat-row:hover { background: ${THEME.danger}0a; }
         .threat-row.critical-row { border-left: 2px solid ${THEME.danger}; }
@@ -137,14 +142,14 @@ const SecStyles = () => (
         .threat-row-header {
             display: grid;
             grid-template-columns: 32px 1.8fr 1fr 90px 110px 36px;
-            padding: 8px 20px;
+            padding: 12px 22px;
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.1em;
             text-transform: uppercase;
             color: ${THEME.textDim};
             border-bottom: 1px solid ${THEME.glassBorder};
-            gap: 12px;
+            gap: 14px;
         }
 
         /* Compliance items */
@@ -152,8 +157,8 @@ const SecStyles = () => (
             display: grid;
             grid-template-columns: 20px 1fr 70px 80px;
             align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
+            gap: 14px;
+            padding: 14px 18px;
             border-radius: 12px;
             border: 1px solid transparent;
             transition: all 0.2s;

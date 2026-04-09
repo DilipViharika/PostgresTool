@@ -69,7 +69,7 @@ const PerfStyles = () => (
         .perf-spin { animation: perfSpin 1s linear infinite; }
         .perf-equal-row {
             display: grid;
-            gap: 16px;
+            gap: 20px;
         }
         .perf-equal-row > * {
             height: 100%;
@@ -1188,7 +1188,7 @@ const QueryAnalysisModal = ({ queryData, onClose, onApply, onKill, tags, onTag }
                 <div onClick={e => e.stopPropagation()} style={{ width: '94%', maxWidth: 1100, maxHeight: '90vh', background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     {/* Header */}
                     <div style={{ padding: '16px 24px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                             <div style={{ width: 40, height: 40, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${THEME.danger}15`, border: `1px solid ${THEME.danger}25` }}>
                                 <AlertTriangle size={18} color={THEME.danger} />
                             </div>
@@ -1583,7 +1583,7 @@ const PerformanceTab = () => {
     const SessionMetric = ({ icon: Icon, title, value, color, filterKey }) => {
         const isActive = sessionFilter === filterKey;
         return (
-            <div onClick={() => setSessionFilter(filterKey)} style={{ cursor: 'pointer', padding: '20px 20px', borderRadius: 12, background: isActive ? `${color}12` : THEME.surface, border: `1px solid ${isActive ? `${color}30` : `${THEME.grid}50`}`, display: 'flex', flexDirection: 'column', gap: 14, position: 'relative', overflow: 'hidden', minHeight: 110 }}
+            <div onClick={() => setSessionFilter(filterKey)} style={{ cursor: 'pointer', padding: '20px 20px', borderRadius: 12, background: isActive ? `${color}12` : THEME.surface, border: `1px solid ${isActive ? `${color}30` : `${THEME.grid}50`}`, display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', overflow: 'hidden', minHeight: 110 }}
                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.borderColor = `${color}25`; e.currentTarget.style.background = `${color}06`; e.currentTarget.style.transform = 'translateY(-2px)'; } }}
                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.borderColor = `${THEME.grid}50`; e.currentTarget.style.background = THEME.surface; e.currentTarget.style.transform = 'translateY(0)'; } }}
             >
@@ -1602,7 +1602,7 @@ const PerformanceTab = () => {
     };
 
     const HealthMetricCard = ({ title, value, unit, icon: Icon, color, trend, detail }) => (
-        <div style={{ padding: 16, borderRadius: 8, background: THEME.surface, border: `1px solid ${THEME.grid}40`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ padding: 20, borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.grid}40`, display: 'flex', flexDirection: 'column', gap: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)', transition: 'all 0.2s ease', cursor: 'default' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ width: 30, height: 30, borderRadius: 8, background: `${color}12`, border: `1px solid ${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={14} color={color} /></div>
@@ -1620,7 +1620,7 @@ const PerformanceTab = () => {
     );
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '0 24px 40px 24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 24px 40px 24px' }}>
             <PerfStyles />
 
             {/* View Switcher */}
@@ -1632,7 +1632,7 @@ const PerformanceTab = () => {
 
             {/* ════════════════════ ACTIVITY VIEW ════════════════════ */}
             {activeView === 'activity' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     {/* Live Sessions */}
                     <GlassCard title={sessionFilter ? `${sessionFilter.charAt(0).toUpperCase() + sessionFilter.slice(1)} Sessions` : "Live Sessions"}
                                rightNode={
@@ -1655,7 +1655,7 @@ const PerformanceTab = () => {
                                 {getFilteredSessionList().length === 0 && <div style={{ textAlign: 'center', padding: 32, color: THEME.textDim, fontSize: 12 }}>No sessions in this category</div>}
                             </div>
                         ) : (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, padding: '4px 0' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, padding: '4px 0' }}>
                                 <SessionMetric icon={Activity} title="Active" value={activeSessions.length} color={THEME.success} filterKey="active" />
                                 <SessionMetric icon={Clock} title="Long Running" value={longRunning.length} color={THEME.warning} filterKey="long" />
                                 <SessionMetric icon={Server} title="Idle" value={idleSessions.length} color={THEME.textMuted} filterKey="idle" />
@@ -1667,7 +1667,7 @@ const PerformanceTab = () => {
                     {/* Session Traffic */}
                     <GlassCard title="Session Traffic" style={{ minHeight: 280 }}
                                rightNode={
-                                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 11, color: THEME.textDim }}>
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: 18, fontSize: 11, color: THEME.textDim }}>
                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 3, borderRadius: 2, background: THEME.primary }} /> Active</span>
                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 3, borderRadius: 2, background: `${THEME.textDim}80` }} /> Idle</span>
                                    </div>
@@ -1702,7 +1702,7 @@ const PerformanceTab = () => {
                                    </div>
                                }
                     >
-                        <div style={{ padding: '12px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', gap: 6, flex: 1, minWidth: 0, flexWrap: 'wrap' }}>
                                 <SubViewTab id="queries" label="Slow Queries" icon={List} stateKey={activitySubView} setState={setActivitySubView} />
                                 <SubViewTab id="gantt" label="Timeline" icon={Calendar} stateKey={activitySubView} setState={setActivitySubView} />
@@ -1726,7 +1726,7 @@ const PerformanceTab = () => {
                         </div>
 
                         {showFilterPanel && activitySubView === 'queries' && (
-                            <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 12, background: `${THEME.primary}04`, flexWrap: 'wrap', alignItems: 'center' }}>
+                            <div style={{ padding: '12px 20px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 12, background: `${THEME.primary}04`, flexWrap: 'wrap', alignItems: 'center' }}>
                                 <span style={{ fontSize: 10, color: THEME.textDim, fontWeight: 600 }}>FILTER BY:</span>
                                 <select value={filterApp} onChange={e => setFilterApp(e.target.value)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${THEME.grid}50`, background: THEME.surface, color: filterApp ? THEME.primary : THEME.textDim, fontSize: 11, cursor: 'pointer', outline: 'none' }}>
                                     <option value="">All Apps</option>
@@ -1744,7 +1744,7 @@ const PerformanceTab = () => {
                             </div>
                         )}
 
-                        <div style={{ padding: activitySubView === 'queries' && !queryGroupMode ? 0 : 16, flex: 1, minHeight: 0 }}>
+                        <div style={{ padding: activitySubView === 'queries' && !queryGroupMode ? 0 : 20, flex: 1, minHeight: 0 }}>
                             {activitySubView === 'queries' && !queryGroupMode && (
                                 <DataTable columns={slowQueryCols} data={filteredSlowQueries} pageSize={7} compact />
                             )}
@@ -1834,7 +1834,7 @@ const PerformanceTab = () => {
 
             {/* ════════════════════ DEEP INSIGHTS VIEW   ════════════════════ */}
             {activeView === 'insights' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     {/* Sub-view tabs */}
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {[
@@ -1947,7 +1947,7 @@ const PerformanceTab = () => {
 
             {/* ════════════════════ HEALTH VIEW ════════════════════ */}
             {activeView === 'health' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {[
                             { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -1963,8 +1963,8 @@ const PerformanceTab = () => {
 
                     {/* ── OVERVIEW ── */}
                     {healthSubView === 'overview' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
                                 {[
                                     { title: 'Connections', icon: Network, pct: Math.round((totalConns / maxConnections) * 100), displayValue: `${totalConns}`, unit: `/ ${maxConnections}`, color: totalConns > maxConnections * 0.8 ? THEME.warning : THEME.primary, chips: [{ label: 'Active', value: totalConns, icon: Network }, { label: 'Max', value: maxConnections, icon: Server }] },
                                     { title: 'Cache Hit', icon: Database, pct: Number(cacheHitPct) || 0, displayValue: `${cacheHitPct}`, unit: '%', color: THEME.success, chips: [{ label: 'Reads', value: Number(deepDbStats?.blks_read || 0).toLocaleString(), icon: HardDrive }, { label: 'Hits', value: Number(deepDbStats?.blks_hit || 0).toLocaleString(), icon: Database }] },

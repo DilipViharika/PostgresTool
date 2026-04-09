@@ -9,19 +9,19 @@ const Styles = () => (
     <style>{`
         @keyframes rmSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes rmFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .rm-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.03); animation:rmFade .3s ease; transition:border-color 0.2s ease; }
-        .rm-card:hover { border-color:${THEME.primary}30; }
-        .rm-card-section { padding:16px 20px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .rm-card { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:20px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); animation:rmFade .3s ease; transition:all 0.2s ease; backdrop-filter:blur(12px); }
+        .rm-card:hover { border-color:${THEME.primary}30; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+        .rm-card-section { padding:14px 20px; border-bottom:1px solid ${THEME.glassBorder}; background:${THEME.bg}06; }
         .rm-card-section:last-child { border-bottom:none; }
         .rm-label { font-size:12px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
-        .rm-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:10px; padding:10px 12px; color:${THEME.textMain}; font-size:13px; width:100%; }
+        .rm-input { background:${THEME.surfaceHover}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:12px 14px; color:${THEME.textMain}; font-size:13px; width:100%; }
         .rm-input:focus { outline:none; border-color:${THEME.primary}; }
-        .rm-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:10px; padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; }
+        .rm-button { background:${THEME.primary}; color:${THEME.textInverse}; border:none; border-radius:12px; padding:12px 18px; font-weight:700; font-size:13px; cursor:pointer; }
         .rm-button:hover { background:${THEME.primaryLight}; }
         .rm-button-danger { background:${THEME.danger}; }
         .rm-button-danger:hover { background:${THEME.dangerLight}; }
         .rm-spinner { animation:rmSpin 1s linear infinite; }
-        .rm-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+        .rm-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
     `}</style>
 );
 

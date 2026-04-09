@@ -2079,14 +2079,14 @@ const SqlConsoleTab = () => {
                             {activePanel === 'snippets' && (
                                 <div style={{ display:'flex', flexDirection:'column', gap:5, height:'100%', overflow:'auto' }} className="sql-scrollbar">
                                     {SNIPPETS.map(s=>(
-                                        <div key={s.id} className="sql-snippet-card" style={{ padding:'9px 11px', borderRadius:10, background:THEME.surface, border:`1px solid ${THEME.grid}28` }}>
+                                        <div key={s.id} className="sql-snippet-card" style={{ padding:'11px 13px', borderRadius:12, background:THEME.surface, border:`1px solid ${THEME.grid}28` }}>
                                             <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
                                                 <Scissors size={10} color={THEME.secondary}/>
                                                 <span style={{ fontSize:11, fontWeight:700, color:THEME.textMain }}>{s.name}</span>
                                                 <Pill label={s.tag} color={THEME.secondary}/>
                                             </div>
                                             <pre style={{ fontSize:9, color:THEME.textDim, fontFamily:'monospace', margin:'0 0 7px', whiteSpace:'pre-wrap', lineHeight:1.55, maxHeight:64, overflow:'hidden' }}>{s.sql}</pre>
-                                            <button onClick={()=>setSql(s.sql)} style={{ padding:'3px 9px', borderRadius:5, border:'none', cursor:'pointer', background:`${THEME.secondary}12`, color:THEME.secondary, fontSize:9, fontWeight:700, display:'inline-flex', alignItems:'center', gap:3 }}>
+                                            <button onClick={()=>setSql(s.sql)} style={{ padding:'5px 11px', borderRadius:7, border:'none', cursor:'pointer', background:`${THEME.secondary}12`, color:THEME.secondary, fontSize:9, fontWeight:700, display:'inline-flex', alignItems:'center', gap:3 }}>
                                                 <Code size={9}/> Insert
                                             </button>
                                         </div>

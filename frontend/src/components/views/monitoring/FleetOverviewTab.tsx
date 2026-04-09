@@ -45,19 +45,20 @@ const FleetStyles = () => (
         .fleet-stagger > *:nth-child(5) { animation-delay: 0.24s; }
         .fleet-stagger > *:nth-child(6) { animation-delay: 0.30s; }
         .fleet-card-hover { transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
-        .fleet-card-hover:hover { transform: translateY(-2px); box-shadow: 0 1px 3px rgba(0,0,0,0.04); border-color: ${THEME.primary}40 !important; }
+        .fleet-card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.12); border-color: ${THEME.primary}40 !important; }
         .fleet-card {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: ${THEME.shadowSm};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
             transition: all 0.25s ease;
+            backdrop-filter: blur(12px);
         }
         .fleet-card:hover {
-            box-shadow: ${THEME.shadowMd};
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         .fleet-card::after {
@@ -93,12 +94,15 @@ const StatusBadge = ({ label, color, pulse }) => (
 /* ── Panel ── */
 const Panel = ({ title, icon: TIcon, rightNode, children, accentColor }) => (
     <div style={{
-        border: `1px solid ${THEME.glassBorder}`, borderRadius: 12,
+        border: `1px solid ${THEME.glassBorder}`, borderRadius: 16,
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+        backdropFilter: 'blur(12px)',
     }}>
         <div style={{
-            padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             borderBottom: `1px solid ${THEME.glassBorder}`,
+            fontWeight: 700,
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {TIcon && <TIcon size={13} color={accentColor || THEME.primary} />}
@@ -106,7 +110,7 @@ const Panel = ({ title, icon: TIcon, rightNode, children, accentColor }) => (
             </div>
             {rightNode}
         </div>
-        <div style={{ padding: 14 }}>{children}</div>
+        <div style={{ padding: '16px 20px' }}>{children}</div>
     </div>
 );
 
@@ -115,12 +119,12 @@ const ChartTip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
         <div style={{
-            border: `1px solid ${THEME.glassBorder}`, borderRadius: 10,
-            padding: '8px 12px', fontSize: 11, boxShadow: THEME.shadowSm,
+            border: `1px solid ${THEME.glassBorder}`, borderRadius: 12,
+            padding: '10px 16px', fontSize: 11, boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
         }}>
             <div style={{ fontWeight: 700, color: THEME.textMain, marginBottom: 4 }}>{label}</div>
             {payload.map((p, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, color: p.color }}>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 20, color: p.color }}>
                     <span style={{ color: THEME.textMuted }}>{p.name}:</span>
                     <span style={{ fontWeight: 700 }}>{typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</span>
                 </div>
@@ -219,7 +223,7 @@ const DatabaseCard = ({ connection, health, isActive, onSwitch }) => {
             </div>
 
             {/* Metrics Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 12 }}>
                 <div>
                     <div style={{ fontSize: 9, fontWeight: 600, color: THEME.textDim,  letterSpacing: '0.04em', marginBottom: 4 }}>Status</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600 }}>
@@ -371,7 +375,7 @@ const FleetOverviewTab = () => {
         return (
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <FleetStyles />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 18 }}>
                     {[0,1,2,3,4,5].map(i => (
                         <div key={i} style={{ height: 96, borderRadius: 12, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.3, animation: 'fleetPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
                     ))}
@@ -406,7 +410,7 @@ const FleetOverviewTab = () => {
             </div>
 
             {/* ── Metric Cards Grid ── */}
-            <div className="fleet-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
+            <div className="fleet-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 20 }}>
                 <MetricCard icon={Server} label="Total Servers" value={String(connections.length)} sub={`${healthyCount} online`} color={THEME.primary} spark={latencySparks.length > 1 ? latencySparks : undefined} />
                 <MetricCard icon={CheckCircle} label="Healthy" value={String(healthyCount)} sub={`of ${connections.length}`} color={THEME.success} trend={healthyCount === connections.length ? '100%' : `${Math.round(healthyCount / Math.max(connections.length, 1) * 100)}%`} trendUp={healthyCount === connections.length} />
                 <MetricCard icon={Clock} label="Uptime" value={uptimePct !== '—' ? `${uptimePct}%` : uptimeStr} sub={uptimeStr !== '—' ? uptimeStr : undefined} color={THEME.primary} />
@@ -416,7 +420,7 @@ const FleetOverviewTab = () => {
             </div>
 
             {/* ── Charts Row ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 20 }}>
                 {/* Traffic / Query Rate Chart */}
                 <Panel title="Query Traffic" icon={Zap} accentColor={THEME.primary}
                     rightNode={trafficData ? <span style={{ fontSize: 10, color: THEME.textDim }}>Reads: {(trafficData.tup_fetched || 0).toLocaleString()} · Writes: {((trafficData.tup_inserted || 0) + (trafficData.tup_updated || 0) + (trafficData.tup_deleted || 0)).toLocaleString()}</span> : null}
@@ -475,7 +479,7 @@ const FleetOverviewTab = () => {
             <Panel title="Fleet Instances" icon={Server} accentColor={THEME.primary}
                 rightNode={<span style={{ fontSize: 10, color: THEME.textDim }}>{connections.length} database{connections.length !== 1 ? 's' : ''}</span>}
             >
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
                     {connections.map((conn) => {
                         const health = healthData.find(h => h.id === conn.id);
                         const isActive = conn.id === activeConnectionId;
@@ -496,7 +500,7 @@ const FleetOverviewTab = () => {
             {/* ── Region Distribution ── */}
             {connections.length > 0 && (
                 <Panel title="Connection Details" icon={Globe} accentColor={THEME.primary}>
-                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(connections.length, 4)}, 1fr)`, gap: 12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(connections.length, 4)}, 1fr)`, gap: 18 }}>
                         {connections.map((conn) => {
                             const health = healthData.find(h => h.id === conn.id);
                             const host = conn.host || '';

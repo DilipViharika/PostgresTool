@@ -18,33 +18,33 @@ const Styles = () => (
         @keyframes qrFade  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes qrPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
         @keyframes qrSlide { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
-        .qr-card        { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:12px; overflow:hidden; box-shadow:${THEME.shadowSm}; transition:all 0.25s ease; animation:qrFade .3s ease; }
-        .qr-card:hover  { box-shadow:${THEME.shadowMd}; }
-        .qr-card-header { height:28px; background:${THEME.textMain}0a; display:flex; align-items:center; padding:0 12px; gap:6px; border-bottom:1px solid ${THEME.glassBorder}; }
+        .qr-card        { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); backdrop-filter:blur(12px); transition:all 0.25s ease; animation:qrFade .3s ease; }
+        .qr-card:hover  { box-shadow:0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08); transform:translateY(-2px); }
+        .qr-card-header { height:28px; background:${THEME.textMain}06; display:flex; align-items:center; padding:14px 20px; gap:6px; border-bottom:1px solid ${THEME.glassBorder}; font-weight:700; }
         .qr-card-dot    { width:8px; height:8px; border-radius:50%; }
         .qr-card-title  { font-family:'JetBrains Mono','Fira Code',monospace; font-size:11px; color:${THEME.textMuted}; margin-left:8px; letter-spacing:0.03em; }
-        .qr-card-body   { padding:16px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.05); }
+        .qr-card-body   { padding:20px 24px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.05); }
         .qr-card.legacy { padding:20px; }
-        .qr-metric      { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
+        .qr-metric      { background:${THEME.surface}; border:1px solid ${THEME.grid}; border-radius:14px; padding:18px 24px; display:flex; align-items:center; gap:16px; }
         .qr-badge       { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:10px; font-size:11px; font-weight:700; }
-        .qr-textarea    { width:100%; background:${THEME.bg}90; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:12px; padding:12px; font-family:${THEME.fontMono}; font-size:12px; outline:none; resize:vertical; line-height:1.6; box-sizing:border-box; }
+        .qr-textarea    { width:100%; background:${THEME.bg}90; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:14px; padding:14px 16px; font-family:${THEME.fontMono}; font-size:12px; outline:none; resize:vertical; line-height:1.6; box-sizing:border-box; }
         .qr-textarea:focus { border-color:${THEME.primary}60; }
-        .qr-btn         { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; border:none; }
+        .qr-btn         { display:inline-flex; align-items:center; gap:6px; padding:10px 18px; border-radius:14px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; border:none; }
         .qr-btn:hover   { filter:brightness(1.1); }
         .qr-btn:disabled{ opacity:.45; cursor:not-allowed; filter:none; }
         .qr-baseline-row { padding:14px 16px; border-bottom:1px solid ${THEME.grid}20; display:flex; align-items:center; gap:12px; font-size:12px; transition:background .15s; }
         .qr-baseline-row:last-child { border-bottom:none; }
         .qr-baseline-row:hover { background:${THEME.primary}05; }
-        .qr-plan-box    { background:${THEME.bg}; border:1px solid ${THEME.grid}; border-radius:12px; padding:14px; font-family:${THEME.fontMono}; font-size:11px; color:${THEME.textMuted}; white-space:pre-wrap; overflow-x:auto; max-height:320px; overflow-y:auto; line-height:1.7; }
-        .qr-tab-btn     { display:flex; align-items:center; gap:7px; padding:8px 16px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; }
+        .qr-plan-box    { background:${THEME.bg}; border:1px solid ${THEME.grid}; border-radius:14px; padding:16px 18px; font-family:${THEME.fontMono}; font-size:11px; color:${THEME.textMuted}; white-space:pre-wrap; overflow-x:auto; max-height:320px; overflow-y:auto; line-height:1.7; }
+        .qr-tab-btn     { display:flex; align-items:center; gap:7px; padding:10px 18px; border-radius:14px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; }
         .qr-tab-btn.active { border-color:${THEME.primary}!important; background:${THEME.primary}12!important; color:${THEME.primary}!important; }
         .qr-watcher-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
         .qr-watcher-dot.active { background:${THEME.success}; animation:qrPulse 1.5s ease-in-out infinite; box-shadow:0 0 6px ${THEME.success}; }
         .qr-watcher-dot.inactive { background:${THEME.textDim}; }
         .qr-deploy-label { font-size:10px; font-weight:700; fill:${THEME.warning}; }
-        .qr-input { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:12px; padding:8px 12px; font-size:13px; outline:none; width:100%; box-sizing:border-box; }
+        .qr-input { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:12px; padding:10px 14px; font-size:13px; outline:none; width:100%; box-sizing:border-box; }
         .qr-input:focus { border-color:${THEME.primary}60; }
-        .qr-select { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:12px; padding:8px 12px; font-size:13px; outline:none; cursor:pointer; }
+        .qr-select { background:${THEME.bg}; border:1px solid ${THEME.grid}; color:${THEME.textMain}; border-radius:12px; padding:10px 14px; font-size:13px; outline:none; cursor:pointer; }
         .qr-section-label { font-size:11px; font-weight:700; color:${THEME.textMuted}; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; display:block; }
     `}</style>
 );

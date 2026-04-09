@@ -43,22 +43,25 @@ const OptimizerStyles = () => (
         .opt-card {
             background: ${THEME.surface};
             border: 1px solid ${THEME.grid};
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: ${THEME.shadowSm};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            backdrop-filter: blur(12px);
             transition: all 0.25s ease;
         }
         .opt-card:hover {
-            box-shadow: ${THEME.shadowMd};
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
         }
         .opt-card-header {
             height: 28px;
-            background: ${THEME.textMain}0a;
+            background: ${THEME.textMain}06;
             display: flex;
             align-items: center;
-            padding: 0 12px;
+            padding: 14px 20px;
             gap: 6px;
             border-bottom: 1px solid ${THEME.glassBorder};
+            font-weight: 700;
         }
         .opt-card-dot {
             width: 8px;
@@ -73,7 +76,7 @@ const OptimizerStyles = () => (
             letter-spacing: 0.03em;
         }
         .opt-card-body {
-            padding: 16px;
+            padding: 20px 24px;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
         }
         .opt-card.legacy {

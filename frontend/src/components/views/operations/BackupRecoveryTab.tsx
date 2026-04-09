@@ -12,12 +12,12 @@ const Styles = () => (
         @keyframes brSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes brFade { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         @keyframes brPulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
-        .br-card { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 14px 14px 0; padding:20px; animation:brFade .3s ease; position:relative; overflow:hidden; box-shadow:${THEME.shadowSm}; transition: all 0.25s ease; }
-        .br-card:hover { box-shadow:${THEME.shadowMd}; border-left-width: 6px; }
+        .br-card { background:${THEME.surface}; border:none; border-left:4px solid var(--pipe-color, ${THEME.primary}); border-radius:0 16px 16px 0; padding:24px; animation:brFade .3s ease; position:relative; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.08); backdrop-filter:blur(12px); transition: all 0.25s ease; }
+        .br-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.12); border-left-width: 6px; transform: translateY(-2px); }
         .br-card::before { content:''; position:absolute; top:0; right:0; width:40%; height:100%; background:repeating-linear-gradient(-45deg, transparent, transparent 8px, ${THEME.glassBorder}15 8px, ${THEME.glassBorder}15 9px); pointer-events:none; }
-        .br-metric { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:12px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
-        .br-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:8px; font-size:11px; font-weight:700; }
-        .br-setting-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid ${THEME.glassBorder}40; font-size:13px; }
+        .br-metric { background:${THEME.surface}; border:1px solid ${THEME.glassBorder}; border-radius:16px; padding:20px 24px; display:flex; align-items:center; gap:16px; box-shadow:0 4px 16px rgba(0,0,0,0.08); backdrop-filter:blur(12px); }
+        .br-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:12px; font-size:11px; font-weight:700; }
+        .br-setting-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid ${THEME.glassBorder}40; font-size:13px; }
         .br-setting-row:last-child { border-bottom:none; }
     `}</style>
 );
@@ -47,7 +47,7 @@ const HealthBadge = ({ ok, label }) => (
 /* ── Metric card ──────────────────────────────────────────────────────────── */
 const MetricCard = ({ icon: Icon, label, value, sub, color = THEME.primary }) => (
     <div className="br-metric">
-        <div style={{ width:40, height:40, borderRadius:10, background:`${color}15`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+        <div style={{ width:44, height:44, borderRadius:12, background:`${color}15`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
             <Icon size={20} color={color}/>
         </div>
         <div>
@@ -131,7 +131,7 @@ export default function BackupRecoveryTab() {
             <Styles/>
 
             {/* ── Toolbar ───────────────────────────────────────────────── */}
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 20px', background:THEME.surface, borderRadius:12, border:`1px solid ${THEME.glassBorder}` }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'18px 24px', background:THEME.surface, borderRadius:16, border:`1px solid ${THEME.glassBorder}`, boxShadow:'0 4px 16px rgba(0,0,0,0.08)', backdropFilter:'blur(12px)' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                     <Archive size={20} color={THEME.primary}/>
                     <span style={{ fontWeight:700, fontSize:15, color:THEME.textMain }}>Backup & Recovery</span>

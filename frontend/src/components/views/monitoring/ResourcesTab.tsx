@@ -93,15 +93,16 @@ const ResStyles = () => (
         .res-tile {
             background: linear-gradient(180deg, ${THEME.surface} 0%, ${THEME.surface}f8 100%);
             border: 1px solid ${THEME.glassBorder};
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: ${THEME.shadowSm};
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
             transition: all 0.25s ease;
+            backdrop-filter: blur(12px);
         }
         .res-tile:hover {
-            box-shadow: ${THEME.shadowMd};
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         .res-tile::after {
@@ -133,7 +134,7 @@ const Panel = ({ title, icon: TIcon, rightNode, noPad, children, style = {}, ref
     <div style={{
         background: THEME.surface,
         border: `1px solid ${refreshing ? `${THEME.primary}40` : THEME.glassBorder}`,
-        borderRadius: 12,
+        borderRadius: 16,
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
         transition: 'border-color 0.3s',
@@ -372,7 +373,7 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
         { key: 'perf',  label: 'No errors or lock timeouts were reported during execution' },
     ];
     return (
-        <div style={{ background: THEME.surface, borderRadius: 12, border: `1px solid ${THEME.glassBorder}`, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: THEME.surface, borderRadius: 16, border: `1px solid ${THEME.glassBorder}`, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <div style={{ padding: '11px 16px', borderBottom: `1px solid ${THEME.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ width: 24, height: 24, borderRadius: 6, background: `${THEME.warning}15`, border: `1px solid ${THEME.warning}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -394,7 +395,7 @@ const ConfirmOptimizationPanel = ({ tableName, bloatPct, onConfirm, onCancel }) 
                         const checked = checks[key];
                         return (
                             <div key={key} onClick={() => toggle(key)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 11px', borderRadius: 7, cursor: 'pointer', background: checked ? `${THEME.success}08` : THEME.surface, border: `1px solid ${checked ? `${THEME.success}25` : `${THEME.grid}40`}`, transition: 'all 0.15s' }}>
-                                <div style={{ width: 16, height: 16, borderRadius: 12, flexShrink: 0, marginTop: 1, border: `2px solid ${checked ? THEME.success : THEME.grid}`, background: checked ? THEME.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                                <div style={{ width: 16, height: 16, borderRadius: 16, flexShrink: 0, marginTop: 1, border: `2px solid ${checked ? THEME.success : THEME.grid}`, background: checked ? THEME.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
                                     {checked && <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke={THEME.textMain} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                 </div>
                                 <span style={{ fontSize: 11, color: checked ? THEME.textMain : THEME.textMuted, lineHeight: 1.5, transition: 'color 0.15s' }}>{label}</span>
@@ -496,7 +497,7 @@ const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
         <Panel title="Tablespace I/O Breakdown" icon={Layers} refreshing={refreshing}
                rightNode={<span style={{ fontSize: 10, color: THEME.textDim }}>{tablespaceData.length} tablespaces</span>}
         >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {tablespaceData.map((ts, i) => {
                     const total = ts.readsMB + ts.writesMB;
                     const readPct = (ts.readsMB / maxIO) * 100;
@@ -510,7 +511,7 @@ const TablespaceIOPanel = ({ tablespaceData, refreshing }) => {
                                     <span style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>{ts.name}</span>
                                     <span style={{ fontSize: 9.5, padding: '2px 6px', borderRadius: 14, background: `${THEME.primary}0a`, color: THEME.textDim, border: `1px solid ${THEME.grid}30` }}>{ts.tables} tables · {ts.sizePct}% capacity</span>
                                 </div>
-                                <div style={{ display: 'flex', gap: 14, fontSize: 11 }}>
+                                <div style={{ display: 'flex', gap: 20, fontSize: 11 }}>
                                     <span style={{ color: THEME.primary, fontVariantNumeric: 'tabular-nums' }}>↑ {ts.readsMB} MB/s</span>
                                     <span style={{ color: THEME.success, fontVariantNumeric: 'tabular-nums' }}>↓ {ts.writesMB} MB/s</span>
                                 </div>
@@ -830,7 +831,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
                     const AIcon = actionIcon(p.action);
                     const ac = actionColor(p.action);
                     return (
-                        <div key={p.id} className="res-policy-row" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderRadius: 10, background: p.enabled ? `${THEME.surface}` : `${THEME.grid}10`, border: `1px solid ${p.enabled ? `${THEME.grid}50` : `${THEME.grid}25`}`, opacity: p.enabled ? 1 : 0.65, transition: 'all 0.15s' }}>
+                        <div key={p.id} className="res-policy-row" style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '11px 14px', borderRadius: 10, background: p.enabled ? `${THEME.surface}` : `${THEME.grid}10`, border: `1px solid ${p.enabled ? `${THEME.grid}50` : `${THEME.grid}25`}`, opacity: p.enabled ? 1 : 0.65, transition: 'all 0.15s' }}>
 
                             {/* Toggle */}
                             <div onClick={() => toggleEnabled(p.id)} style={{ width: 34, height: 18, borderRadius: 9, flexShrink: 0, cursor: 'pointer', background: p.enabled ? THEME.success : `${THEME.grid}60`, display: 'flex', alignItems: 'center', padding: '0 2px', transition: 'background 0.2s', justifyContent: p.enabled ? 'flex-end' : 'flex-start' }}>
@@ -848,7 +849,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
                                     <span style={{ fontSize: 12.5, fontWeight: 700, color: THEME.textMain, fontFamily: 'monospace' }}>{p.table}</span>
                                     <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 14, background: `${ac}10`, color: ac, border: `1px solid ${ac}18`, fontWeight: 700 }}>{p.action.toUpperCase()}</span>
                                 </div>
-                                <div style={{ fontSize: 10.5, color: THEME.textDim, display: 'flex', gap: 14 }}>
+                                <div style={{ fontSize: 10.5, color: THEME.textDim, display: 'flex', gap: 20 }}>
                                     <span><Clock size={9} style={{ display: 'inline', marginRight: 3 }} />After {p.age_days}d</span>
                                     {p.partition_col && <span style={{ fontFamily: 'monospace' }}>on {p.partition_col}</span>}
                                     <span><Clock size={9} style={{ display: 'inline', marginRight: 3 }} />Last: {p.last_run}</span>
@@ -868,7 +869,7 @@ const RetentionPolicyManager = ({ refreshing }) => {
             </div>
 
             {/* Footer */}
-            <div style={{ paddingTop: 12, marginTop: 4, borderTop: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 16, fontSize: 10.5, color: THEME.textDim }}>
+            <div style={{ paddingTop: 12, marginTop: 4, borderTop: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 20, fontSize: 10.5, color: THEME.textDim }}>
                 <span><strong style={{ color: THEME.success }}>{policies.filter(p => p.enabled).length}</strong> active</span>
                 <span><strong style={{ color: THEME.textMuted }}>{policies.filter(p => !p.enabled).length}</strong> disabled</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -1126,14 +1127,14 @@ const ResourcesTab = () => {
     /* ────────────────────── LOADING ────────────────────── */
     if (loading) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '0 18px 32px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 18px 32px' }}>
                 <ResStyles />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
                     {[0, 1, 2, 3].map(i => (
                         <div key={i} style={{ height: 96, borderRadius: 14, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.4, animation: 'resPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.12}s` }} />
                     ))}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 20 }}>
                     {[0, 1].map(i => (
                         <div key={i} style={{ height: 340, borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, opacity: 0.25, animation: 'resPulse 1.5s ease-in-out infinite', animationDelay: `${0.5 + i * 0.15}s` }} />
                     ))}
@@ -1154,7 +1155,7 @@ const ResourcesTab = () => {
        RENDER
        ═══════════════════════════════════════════════════════════════ */
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '0 18px 32px 18px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '0 18px 32px 18px' }}>
             <ResStyles />
 
             {/* ── Refresh status bar ── */}
@@ -1175,10 +1176,10 @@ const ResourcesTab = () => {
             </div>
 
             {/* ── Quick metric strip ── */}
-            <div className="res-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+            <div className="res-stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
                 {metricCards.map((m, i) => (
-                    <div key={i} style={{ padding: '12px', borderRadius: 12, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                        <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
+                    <div key={i} style={{ padding: '12px', borderRadius: 16, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                        <div style={{ width: 42, height: 42, borderRadius: 16, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
                             <m.icon size={18} color={m.color} />
                         </div>
                         <div style={{ minWidth: 0, flex: 1 }}>
@@ -1196,7 +1197,7 @@ const ResourcesTab = () => {
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'inventory' && (
                 <div className="res-stagger" style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 20, alignItems: 'start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                         {/* Table inventory — with TOAST/Index ratio column */}
                         <Panel title="Table Inventory" icon={Database} noPad refreshing={refreshingPanels.has('inventory')}
@@ -1267,7 +1268,7 @@ const ResourcesTab = () => {
                                 </div>
                             )}
                             {/* ── NEW: Legend for composition column ── */}
-                            <div style={{ display: 'flex', gap: 14, padding: '8px 16px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 9.5, color: THEME.textDim }}>
+                            <div style={{ display: 'flex', gap: 20, padding: '8px 16px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 9.5, color: THEME.textDim }}>
                                 {[{ l: 'Data', c: THEME.primary }, { l: 'Indexes', c: THEME.secondary }, { l: 'TOAST', c: THEME.warning }].map(x => (
                                     <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                         <span style={{ width: 8, height: 4, borderRadius: 1, background: x.c }} /> {x.l}
@@ -1330,7 +1331,7 @@ const ResourcesTab = () => {
                                                 )}
                                                 {resolved && <div style={{ fontSize: 10, color: THEME.textDim, marginTop: 4 }}>{resolved.note} — pending DB confirmation on next refresh</div>}
                                                 {!resolved && (v.last_autovacuum || v.dead_tuples != null) && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 7, fontSize: 10, color: THEME.textDim }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 7, fontSize: 10, color: THEME.textDim }}>
                                                         {v.last_autovacuum && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}><Clock size={9} /> {v.last_autovacuum}</span>}
                                                         {v.dead_tuples != null && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}><AlertTriangle size={9} color={THEME.warning} /> {fmtNum(v.dead_tuples)} dead</span>}
                                                     </div>
@@ -1404,7 +1405,7 @@ const ResourcesTab = () => {
                             </>
                         ) : (
                             <Panel style={{ minHeight: 500 }}>
-                                <div style={{ height: '100%', minHeight: 460, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 40 }}>
+                                <div style={{ height: '100%', minHeight: 460, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: 40 }}>
                                     <div style={{ width: 64, height: 64, borderRadius: 18, background: `${THEME.primary}08`, border: `1px solid ${THEME.primary}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <Search size={28} color={THEME.primary} style={{ opacity: 0.5 }} />
                                     </div>
@@ -1431,14 +1432,14 @@ const ResourcesTab = () => {
                 ANALYTICS VIEW — NEW TAB
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'analytics' && (
-                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                     {/* Table growth rate chart */}
                     {tableGrowthRate && (
                         <TableGrowthRateChart growthRateData={tableGrowthRate} refreshing={refreshingPanels.has('analytics')} />
                     )}
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                         {/* Partition tree */}
                         <PartitionTreePanel partitions={partitions} refreshing={refreshingPanels.has('inventory')} />
 
@@ -1494,9 +1495,9 @@ const ResourcesTab = () => {
                 STORAGE & I/O VIEW
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'storage' && (
-                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 20 }}>
                         {/* Storage Donut */}
                         <Panel title="Storage Breakdown" icon={PieIcon} refreshing={refreshingPanels.has('storage')}
                                rightNode={<span style={{ fontSize: 11, color: THEME.textDim, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{totalStorageGB.toFixed(0)} GB</span>}
@@ -1527,7 +1528,7 @@ const ResourcesTab = () => {
                         {/* Growth Trend */}
                         <Panel title="Growth Trend (6 months)" icon={TrendingUp} refreshing={refreshingPanels.has('resources')}
                                rightNode={
-                                   <div style={{ display: 'flex', gap: 14, fontSize: 10, color: THEME.textDim }}>
+                                   <div style={{ display: 'flex', gap: 20, fontSize: 10, color: THEME.textDim }}>
                                        {[{ l: 'Tables', c: THEME.primary }, { l: 'Indexes', c: THEME.secondary }, { l: 'TOAST', c: THEME.warning }].map(x => (
                                            <span key={x.l} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                                <span style={{ width: 10, height: 3, borderRadius: 2, background: x.c }} /> {x.l}
@@ -1560,11 +1561,11 @@ const ResourcesTab = () => {
                     {/* NEW: Tablespace I/O */}
                     <TablespaceIOPanel tablespaceData={tablespaceIO} refreshing={refreshingPanels.has('io')} />
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 20 }}>
                         {/* Disk I/O */}
                         <Panel title="Disk I/O Throughput" icon={Activity} refreshing={refreshingPanels.has('io')}
                                rightNode={
-                                   <div style={{ display: 'flex', gap: 14, fontSize: 10, color: THEME.textDim }}>
+                                   <div style={{ display: 'flex', gap: 20, fontSize: 10, color: THEME.textDim }}>
                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span style={{ width: 10, height: 3, borderRadius: 2, background: THEME.primary }} /> Reads</span>
                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span style={{ width: 10, height: 3, borderRadius: 2, background: THEME.success }} /> Writes</span>
                                    </div>
@@ -1586,13 +1587,13 @@ const ResourcesTab = () => {
 
                         {/* System Resources */}
                         <Panel title="System Resources" icon={Cpu} refreshing={refreshingPanels.has('resources')}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                                 {[
                                     { label: 'CPU',    value: 45, color: THEME.primary,   detail: '4 cores • 2.1 load avg',  icon: Cpu },
                                     { label: 'Memory', value: 72, color: THEME.secondary, detail: '12 GB / 16 GB allocated',  icon: Server },
                                     { label: 'Disk',   value: 54, color: THEME.warning,   detail: '108 GB / 200 GB SSD vol', icon: HardDrive },
                                 ].map((r, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                                         <RingGauge value={r.value} color={r.color} size={48} strokeWidth={4.5} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
@@ -1617,7 +1618,7 @@ const ResourcesTab = () => {
                                 const idxPct = (Number(t.index_size_gb || 0) / Math.max(Number(t.total_size_gb), 0.01)) * 100;
                                 const toastPct = (Number(t.toast_size_gb || 0) / Math.max(Number(t.total_size_gb), 0.01)) * 100;
                                 return (
-                                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 70px', alignItems: 'center', gap: 16, padding: '9px 20px', borderBottom: i < 7 ? `1px solid ${THEME.grid}20` : 'none' }}>
+                                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 70px', alignItems: 'center', gap: 20, padding: '9px 20px', borderBottom: i < 7 ? `1px solid ${THEME.grid}20` : 'none' }}>
                                         <div style={{ fontSize: 11.5, fontWeight: 600, color: THEME.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.table_name}</div>
                                         <div style={{ display: 'flex', height: 8, borderRadius: 14, overflow: 'hidden', background: `${THEME.grid}40` }}>
                                             <div className="res-bar-animate" style={{ width: `${pct * (100 - idxPct - toastPct) / 100}%`, background: THEME.primary,   height: '100%', animationDelay: `${i * 0.05}s` }} />
@@ -1629,7 +1630,7 @@ const ResourcesTab = () => {
                                 );
                             })}
                         </div>
-                        <div style={{ display: 'flex', gap: 14, padding: '8px 16px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim }}>
+                        <div style={{ display: 'flex', gap: 20, padding: '8px 16px', borderTop: `1px solid ${THEME.glassBorder}`, fontSize: 10, color: THEME.textDim }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.primary }} /> Data</span>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.secondary }} /> Indexes</span>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 10, height: 5, borderRadius: 2, background: THEME.warning }} /> TOAST</span>
@@ -1643,17 +1644,17 @@ const ResourcesTab = () => {
                 DEAD CODE VIEW — NEW TAB
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'deadcode' && (
-                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                     {/* Summary banner */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
                         {[
                             { label: 'Unused Tables',     value: deadCode.tables.length, sub: 'zero reads in 90+ days', color: THEME.danger,   icon: Trash2 },
                             { label: 'Unused Columns',    value: deadCode.columns.length, sub: 'potential dead fields',  color: THEME.warning,  icon: Eye },
                             { label: 'Space Reclaimable', value: fmtSize(deadCode.tables.reduce((s, t) => s + t.size_gb, 0)), sub: 'if all unused tables dropped', color: THEME.success, icon: HardDrive },
                         ].map((m, i) => (
-                            <div key={i} style={{ padding: '12px', borderRadius: 10, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-                                <div style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
+                            <div key={i} style={{ padding: '12px', borderRadius: 10, background: THEME.surface, border: `1px solid ${THEME.glassBorder}`, display: 'flex', gap: 18, alignItems: 'flex-start', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                                <div style={{ width: 42, height: 42, borderRadius: 16, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}10`, border: `1px solid ${m.color}18` }}>
                                     <m.icon size={18} color={m.color} />
                                 </div>
                                 <div>
@@ -1682,7 +1683,7 @@ const ResourcesTab = () => {
                 RETENTION POLICY VIEW — NEW TAB
                ════════════════════════════════════════════════════════════ */}
             {activeTab === 'retention' && (
-                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="res-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                     <RetentionPolicyManager refreshing={refreshingPanels.has('logs')} />
 
@@ -1696,7 +1697,7 @@ const ResourcesTab = () => {
                                     .filter(c => c.status === 'detach_ready')
                                     .map(c => ({ ...c, parent: p.parent, strategy: p.strategy }))
                             ).map((c, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 10, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}18` }}>
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '12px 14px', borderRadius: 10, background: `${THEME.warning}06`, border: `1px solid ${THEME.warning}18` }}>
                                     <div style={{ width: 32, height: 32, borderRadius: 8, background: `${THEME.warning}12`, border: `1px solid ${THEME.warning}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                         <HardDrive size={14} color={THEME.warning} />
                                     </div>
