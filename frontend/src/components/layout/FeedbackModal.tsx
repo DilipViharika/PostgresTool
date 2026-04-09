@@ -17,7 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { DS } from '../../config/designTokens';
 import { THEME } from '../../utils/theme';
 import { postData } from '../../utils/api';
-import { TAB_CONFIG } from '../../config/tabConfig';
+import { buildTabConfig } from '../../config/tabConfig';
 
 const FEEDBACK_RATE_LIMIT_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -36,18 +36,22 @@ const FB_PRIORITY = [
 
 const STAR_LABELS = ['Terrible', 'Poor', 'Okay', 'Good', 'Excellent'];
 
-/* All screens grouped — mirrors TAB_CONFIG exactly */
-const FB_GROUPS = (() => {
-    const groups = [];
-    let cur = null;
-    for (const item of TAB_CONFIG) {
-        if (item.section) {
+/* All screens grouped — mirrors buildTabConfig() exactly */
+function getFbGroups() {
+    const config = buildTabConfig();
+    const groups: { group: string; accent: string; tabs: { id: string; label: string }[] }[] = [];
+    let cur: (typeof groups)[number] | null = null;
+    for (const item of config) {
+        if ('section' in item) {
             cur = { group: item.section, accent: item.accent, tabs: [] };
             groups.push(cur);
-        } else if (cur) cur.tabs.push({ id: item.id, label: item.label });
+        } else if (cur && 'id' in item) {
+            cur.tabs.push({ id: item.id, label: item.label });
+        }
     }
     return groups;
-})();
+}
+const FB_GROUPS = getFbGroups();
 const FB_ALL_TABS = FB_GROUPS.flatMap((g) => g.tabs);
 const emptyRow = () => ({ rating: 0, comment: '', remarks: '' });
 
