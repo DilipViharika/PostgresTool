@@ -113,8 +113,8 @@ const SchemaVisualizerTab = () => {
             name: t.name,
             schema: t.schema,
             rowCount: t.rowCount,
-            x: 0 * 600 - 300,
-            y: 0 * 600 - 300,
+            x: Math.random() * 600 - 300,
+            y: Math.random() * 600 - 300,
             vx: 0,
             vy: 0,
             fixed: false,
@@ -132,20 +132,24 @@ const SchemaVisualizerTab = () => {
         // Run simulation for 100 iterations
         const nodeMap = new Map(nodes.map(n => [n.id, n]));
 
-        for (let iter = 0; iter < 100; iter++) {
-            // Repulsion
+        for (let iter = 0; iter < 200; iter++) {
+            const alpha = 1 - iter / 200; // cooling schedule
+
+            // Repulsion — strong enough to separate clusters
             for (let i = 0; i < nodes.length; i++) {
                 for (let j = i + 1; j < nodes.length; j++) {
                     const a = nodes[i];
                     const b = nodes[j];
                     const dx = b.x - a.x;
                     const dy = b.y - a.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
-                    const force = 100 / (dist * dist);
-                    a.vx -= (force * dx) / dist;
-                    a.vy -= (force * dy) / dist;
-                    b.vx += (force * dx) / dist;
-                    b.vy += (force * dy) / dist;
+                    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const force = (800 * alpha) / (dist * dist);
+                    const fx = (force * dx) / dist;
+                    const fy = (force * dy) / dist;
+                    a.vx -= fx;
+                    a.vy -= fy;
+                    b.vx += fx;
+                    b.vy += fy;
                 }
             }
 
@@ -156,25 +160,25 @@ const SchemaVisualizerTab = () => {
                 if (!a || !b) continue;
                 const dx = b.x - a.x;
                 const dy = b.y - a.y;
-                const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
-                const force = (dist - 80) * 0.02;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                const force = (dist - 120) * 0.03 * alpha;
                 a.vx += (force * dx) / dist;
                 a.vy += (force * dy) / dist;
                 b.vx -= (force * dx) / dist;
                 b.vy -= (force * dy) / dist;
             }
 
-            // Center force
+            // Center force — pull nodes toward origin
             for (const n of nodes) {
-                n.vx -= n.x * 0.01;
-                n.vy -= n.y * 0.01;
+                n.vx -= n.x * 0.008 * alpha;
+                n.vy -= n.y * 0.008 * alpha;
             }
 
             // Damping and update position
             for (const n of nodes) {
                 if (!n.fixed) {
-                    n.vx *= 0.98;
-                    n.vy *= 0.98;
+                    n.vx *= 0.85;
+                    n.vy *= 0.85;
                     n.x += n.vx;
                     n.y += n.vy;
                 }
@@ -195,11 +199,9 @@ const SchemaVisualizerTab = () => {
         const width = svg.clientWidth || 800;
         const height = svg.clientHeight || 600;
 
-        // Group for zoom/pan
+        // Group for zoom/pan — use SVG transform attribute for cross-browser compat
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        g.style.transform = `scale(${zoom}) translate(${width / 2}, ${height / 2})`;
-        g.style.transformOrigin = `0 0`;
-        g.style.transformBox = 'fill-box';
+        g.setAttribute('transform', `translate(${width / 2}, ${height / 2}) scale(${zoom})`);
 
         // Draw links
         for (const link of linksRef.current) {
@@ -283,8 +285,8 @@ const SchemaVisualizerTab = () => {
         const handleMouseMove = (e) => {
             if (draggedNodeRef.current) {
                 const rect = svg.getBoundingClientRect();
-                const x = (e.clientX - rect.left) / zoom - svg.clientWidth / 2 / zoom;
-                const y = (e.clientY - rect.top) / zoom - svg.clientHeight / 2 / zoom;
+                const x = (e.clientX - rect.left - rect.width / 2) / zoom;
+                const y = (e.clientY - rect.top - rect.height / 2) / zoom;
                 draggedNodeRef.current.x = x;
                 draggedNodeRef.current.y = y;
                 draggedNodeRef.current.vx = 0;
