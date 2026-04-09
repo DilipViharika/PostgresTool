@@ -14,6 +14,14 @@ import {
     ArrowRight,
     Shield,
     CheckCircle,
+    Database,
+    Activity,
+    Zap,
+    Search,
+    Bell,
+    BarChart3,
+    RefreshCw,
+    TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { THEME, useAdaptiveTheme } from '../../utils/theme';
@@ -22,7 +30,7 @@ import { useTheme } from '../../context/ThemeContext';
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  STYLES — VaultDB Light Theme
+//  STYLES
 // ─────────────────────────────────────────────────────────────────────────────
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
@@ -31,11 +39,11 @@ const STYLES = `
   html, body { height: 100%; }
 
   @keyframes containerIn {
-    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    from { opacity: 0; transform: translateY(24px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   @keyframes textIn {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   @keyframes shake {
@@ -46,11 +54,20 @@ const STYLES = `
     80%     { transform: translateX(2px); }
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes shapeDrift {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    25%      { transform: translate(20px, -15px) scale(1.04); }
-    50%      { transform: translate(-10px, 20px) scale(0.98); }
-    75%      { transform: translate(15px, 10px) scale(1.02); }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33%      { transform: translateY(-8px) rotate(1deg); }
+    66%      { transform: translateY(4px) rotate(-1deg); }
+  }
+  @keyframes shimmerSlide {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+    25%      { transform: translate(30px, -20px) scale(1.05); opacity: 0.8; }
+    50%      { transform: translate(-15px, 25px) scale(0.97); opacity: 0.5; }
+    75%      { transform: translate(20px, 15px) scale(1.03); opacity: 0.7; }
   }
   @keyframes ringRotate { to { transform: rotate(360deg); } }
   @keyframes pulseDot {
@@ -67,43 +84,68 @@ const STYLES = `
   @keyframes progressFill {
     to { width: 100%; }
   }
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(99,102,241,0.15), 0 0 40px rgba(99,102,241,0.05); }
+    50%      { box-shadow: 0 0 30px rgba(99,102,241,0.25), 0 0 60px rgba(99,102,241,0.10); }
+  }
+  @keyframes borderGlow {
+    0%, 100% { border-color: rgba(99,102,241,0.15); }
+    50%      { border-color: rgba(99,102,241,0.30); }
+  }
 
   .vdb-input:focus {
     outline: none;
     border-color: ${THEME.primary} !important;
-    box-shadow: 0 0 0 4px ${THEME.primary}0a, 0 1px 3px rgba(0,0,0,0.04) !important;
-    background: ${THEME.surfaceRaised} !important;
+    box-shadow: 0 0 0 4px ${THEME.primary}12, 0 4px 12px rgba(0,0,0,0.08) !important;
+    background: ${THEME.surface} !important;
   }
   .vdb-input::placeholder { color: ${THEME.textDim}; font-weight: 400; }
   .vdb-input { color: ${THEME.textMain}; background: ${THEME.surfaceHover}; }
   .vdb-input:-webkit-autofill,
   .vdb-input:-webkit-autofill:hover,
   .vdb-input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px ${THEME.surfaceRaised} inset !important;
+    -webkit-box-shadow: 0 0 0 1000px ${THEME.surface} inset !important;
     -webkit-text-fill-color: ${THEME.textMain} !important;
     caret-color: ${THEME.textMain};
     transition: background-color 5000s ease-in-out 0s;
   }
 
   .vdb-submit:not(:disabled):hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 28px ${THEME.primary}40, 0 4px 16px ${THEME.primary}26 !important;
+    transform: translateY(-3px) scale(1.01) !important;
+    box-shadow: 0 12px 36px ${THEME.primary}50, 0 4px 16px ${THEME.primary}30 !important;
   }
-  .vdb-submit:not(:disabled):active { transform: translateY(0) !important; }
+  .vdb-submit:not(:disabled):active {
+    transform: translateY(-1px) scale(0.99) !important;
+  }
   .vdb-forgot:hover { color: ${THEME.primary} !important; }
   .vdb-toggle:hover {
     background: ${THEME.surfaceHover} !important;
     transform: scale(1.1) rotate(15deg) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
   }
 
-  @media (max-width: 860px) {
+  .vdb-feature-item {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 14px;
+    padding: 10px 14px;
+    margin: -10px -14px;
+  }
+  .vdb-feature-item:hover {
+    background: rgba(99,102,241,0.06);
+    transform: translateX(4px);
+  }
+
+  .vdb-form-card {
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+
+  @media (max-width: 960px) {
     .vdb-container { flex-direction: column !important; }
     .vdb-brand { display: none !important; }
-    .vdb-form { padding: 32px 28px !important; }
+    .vdb-form { padding: 40px 32px !important; }
   }
   @media (max-width: 480px) {
-    .vdb-form { padding: 28px 20px !important; }
-    .vdb-sso-row { grid-template-columns: 1fr !important; }
+    .vdb-form { padding: 32px 20px !important; }
   }
 `;
 
@@ -112,54 +154,53 @@ const STYLES = `
 // ─────────────────────────────────────────────────────────────────────────────
 const ServerStatus = ({ status }: { status: { status: string; latency?: number } }) => {
     const isOnline = status.status === 'online';
-    const color = isOnline ? THEME.primary : status.status === 'offline' ? THEME.danger : THEME.warning;
+    const color = isOnline ? '#2EE89C' : status.status === 'offline' ? THEME.danger : THEME.warning;
     const label = isOnline ? 'ONLINE' : status.status === 'offline' ? 'OFFLINE' : 'CHECKING';
 
     return (
         <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '5px 14px', borderRadius: 100,
-            background: `${color}0a`, border: `1px solid ${color}20`,
-            fontSize: 9, fontWeight: 600, color, letterSpacing: '.12em',
+            padding: '7px 18px', borderRadius: 100,
+            background: `${color}10`, border: `1px solid ${color}25`,
+            fontSize: 10, fontWeight: 700, color, letterSpacing: '.1em',
             fontFamily: "'JetBrains Mono', monospace",
+            backdropFilter: 'blur(8px)',
         }}>
             {status.status === 'checking' ? (
-                <Loader size={10} style={{ animation: 'spin 1s linear infinite' }} />
+                <Loader size={11} style={{ animation: 'spin 1s linear infinite' }} />
             ) : (
                 <div style={{
-                    width: 5, height: 5, borderRadius: '50%', background: color,
-                    boxShadow: `0 0 10px ${color}80`,
+                    width: 6, height: 6, borderRadius: '50%', background: color,
+                    boxShadow: `0 0 12px ${color}80, 0 0 4px ${color}`,
                     animation: isOnline ? 'pulseDot 2s ease-in-out infinite' : 'none',
                 }} />
             )}
             {label}
-            {status.latency && <span style={{ opacity: 0.5 }}>{status.latency}ms</span>}
+            {status.latency && <span style={{ opacity: 0.5, fontWeight: 500 }}>{status.latency}ms</span>}
         </div>
     );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  DECORATIVE RINGS (brand panel bottom-right)
+//  FLOATING ORBS (background)
 // ─────────────────────────────────────────────────────────────────────────────
-const DecoRings = () => (
-    <div style={{ position: 'absolute', bottom: -60, right: -60, width: 280, height: 280, zIndex: 0 }}>
+const FloatingOrbs = () => (
+    <>
         {[
-            { inset: 0, dur: '30s', dir: 'normal', borderColor: `${THEME.primaryLight}14`, dotColor: THEME.primaryLight, dotPos: { top: 0, left: '50%', transform: 'translate(-50%,-50%)' } },
-            { inset: 30, dur: '24s', dir: 'reverse', borderColor: `${THEME.info}12`, dotColor: THEME.info, dotPos: { bottom: 10, right: 10 } },
-            { inset: 60, dur: '18s', dir: 'normal', borderColor: `${THEME.primaryLight}10`, dotColor: THEME.primaryLight, dotPos: { top: '50%', left: 0, transform: 'translate(-50%,-50%)' } },
-        ].map((r, i) => (
+            { w: 500, top: '-10%', left: '-5%', bg: 'rgba(99,102,241,0.12)', dur: '16s', delay: '0s' },
+            { w: 400, bottom: '-10%', right: '-8%', bg: 'rgba(59,130,246,0.10)', dur: '20s', delay: '-5s' },
+            { w: 300, top: '35%', right: '15%', bg: 'rgba(139,92,246,0.08)', dur: '18s', delay: '-10s' },
+            { w: 200, bottom: '20%', left: '30%', bg: 'rgba(99,102,241,0.06)', dur: '14s', delay: '-3s' },
+        ].map((s, i) => (
             <div key={i} style={{
-                position: 'absolute', inset: r.inset, border: `1px solid ${r.borderColor}`,
-                borderRadius: '50%', animation: `ringRotate ${r.dur} linear infinite`,
-                animationDirection: r.dir as any,
-            }}>
-                <div style={{
-                    position: 'absolute', width: 6, height: 6, background: r.dotColor,
-                    borderRadius: '50%', boxShadow: `0 0 12px ${r.dotColor}80`, ...r.dotPos as any,
-                }} />
-            </div>
+                position: 'absolute', width: s.w, height: s.w, borderRadius: '50%',
+                filter: 'blur(80px)', background: s.bg, pointerEvents: 'none',
+                animation: `orbFloat ${s.dur} ease-in-out infinite`,
+                animationDelay: s.delay,
+                ...(s as any),
+            }} />
         ))}
-    </div>
+    </>
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -249,117 +290,122 @@ const LoginPage = () => {
     }, [resetEmail]);
 
     const canSubmit = username.trim().length > 0 && password.trim().length > 0 && !authLoading;
-
-    // ─── Shared values (from THEME tokens) ─────────────
     const accent = THEME.primary;
     const accentHover = THEME.primaryDark;
     const fontDisplay = THEME.fontDisplay;
     const fontMono = THEME.fontMono;
 
+    const features = [
+        { icon: Zap, title: 'Real-time Monitoring', desc: 'Live metrics, active sessions, and query performance', color: '#818cf8' },
+        { icon: Search, title: 'Query Analysis', desc: 'Slow queries, execution plans, and optimization', color: '#60a5fa' },
+        { icon: Bell, title: 'Health & Alerts', desc: 'Health checks, deadlock detection, threshold alerts', color: '#2EE89C' },
+        { icon: BarChart3, title: 'Resource Insights', desc: 'Bloat, index usage, disk I/O, and vacuum stats', color: '#f59e0b' },
+        { icon: RefreshCw, title: 'Checkpoint Tracking', desc: 'WAL activity, buffer writes, and archive status', color: '#f472b6' },
+        { icon: TrendingUp, title: 'Performance Trends', desc: 'Query trends, cache ratios, and throughput', color: '#34d399' },
+    ];
+
     return (
         <div style={{ height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative', fontFamily: fontDisplay }}>
             <style>{STYLES}</style>
 
-            {/* ═══ BACKGROUND LAYER ═══ */}
+            {/* ═══ BACKGROUND ═══ */}
             <div style={{
                 position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden',
-                background: `
-                    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,102,241,0.06), transparent 50%),
-                    radial-gradient(ellipse 70% 50% at 80% 90%, rgba(59,139,219,0.05), transparent 50%),
-                    radial-gradient(ellipse 60% 40% at 60% 30%, rgba(124,92,196,0.035), transparent 50%),
-                    #eceef4`,
+                background: isDark
+                    ? `radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,102,241,0.08), transparent 50%),
+                       radial-gradient(ellipse 70% 50% at 80% 90%, rgba(59,130,246,0.06), transparent 50%),
+                       ${THEME.bg}`
+                    : `radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,102,241,0.07), transparent 50%),
+                       radial-gradient(ellipse 70% 50% at 80% 90%, rgba(59,130,246,0.05), transparent 50%),
+                       linear-gradient(135deg, #f0f1f8 0%, #e8eaf6 50%, #f5f5fa 100%)`,
             }}>
-                {/* Dot grid */}
+                {/* Grid pattern */}
                 <div style={{
-                    position: 'absolute', inset: 0,
-                    backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.045) 1px, transparent 1px)',
-                    backgroundSize: '32px 32px',
+                    position: 'absolute', inset: 0, opacity: isDark ? 0.15 : 0.25,
+                    backgroundImage: `linear-gradient(${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'} 1px, transparent 1px),
+                                      linear-gradient(90deg, ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'} 1px, transparent 1px)`,
+                    backgroundSize: '40px 40px',
                 }} />
-                {/* Floating shapes */}
-                {[
-                    { w: 400, top: -100, left: -50, bg: 'rgba(99,102,241,0.1)', dur: '14s', delay: '0s' },
-                    { w: 350, bottom: -80, right: -60, bg: 'rgba(59,139,219,0.08)', dur: '18s', delay: '-4s' },
-                    { w: 250, top: '40%', right: '20%', bg: 'rgba(124,92,196,0.06)', dur: '16s', delay: '-8s' },
-                ].map((s, i) => (
-                    <div key={i} style={{
-                        position: 'absolute', width: s.w, height: s.w, borderRadius: '50%',
-                        filter: 'blur(80px)', opacity: 0.5, background: s.bg,
-                        animation: `shapeDrift ${s.dur} ease-in-out infinite`,
-                        animationDelay: s.delay,
-                        ...(s.top !== undefined ? { top: s.top } : {}),
-                        ...(s.bottom !== undefined ? { bottom: s.bottom } : {}),
-                        ...(s.left !== undefined ? { left: s.left } : {}),
-                        ...(s.right !== undefined ? { right: s.right } : {}),
-                    } as any} />
-                ))}
+                <FloatingOrbs />
             </div>
 
-            {/* ═══ PAGE ═══ */}
-            <div className="vdb-page" style={{
+            {/* ═══ MAIN LAYOUT ═══ */}
+            <div style={{
                 position: 'relative', zIndex: 1, display: 'flex', height: '100%',
-                alignItems: 'stretch', justifyContent: 'stretch', padding: 0,
+                alignItems: 'center', justifyContent: 'center', padding: 24,
             }}>
                 <div className="vdb-container" style={{
-                    display: 'flex', width: '100%', height: '100%',
-                    background: THEME.surfaceRaised,
+                    display: 'flex', width: '100%', maxWidth: 1100, height: '90vh', maxHeight: 720,
+                    borderRadius: 24,
                     overflow: 'hidden',
-                    animation: 'containerIn 0.8s cubic-bezier(0.16,1,0.3,1) both',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                    boxShadow: isDark
+                        ? '0 24px 80px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)'
+                        : '0 24px 80px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)',
+                    animation: 'containerIn 0.9s cubic-bezier(0.16,1,0.3,1) both',
+                    backdropFilter: 'blur(20px)',
                 }}>
 
                     {/* ═══ LEFT — BRAND PANEL ═══ */}
                     <div className="vdb-brand" style={{
-                        flex: 1, position: 'relative',
+                        flex: '0 0 48%', position: 'relative',
                         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                        padding: '36px 36px', overflow: 'hidden', color: THEME.textMain,
-                        background: `linear-gradient(145deg, ${THEME.bg} 0%, ${THEME.surface} 40%, ${THEME.bgAlt} 100%)`,
+                        padding: '40px 36px', overflow: 'hidden', color: THEME.textMain,
+                        background: isDark
+                            ? `linear-gradient(160deg, ${THEME.bg} 0%, #0c1628 40%, #111d33 100%)`
+                            : `linear-gradient(160deg, #1e1b4b 0%, #312e81 40%, #3730a3 100%)`,
                     }}>
-                        {/* Glow overlays */}
+                        {/* Gradient overlays */}
                         <div style={{
                             position: 'absolute', inset: 0, pointerEvents: 'none',
                             background: `
-                                radial-gradient(ellipse 60% 50% at 20% 20%, ${THEME.primary}20, transparent 60%),
-                                radial-gradient(ellipse 50% 40% at 80% 80%, ${THEME.info}14, transparent 60%)`,
+                                radial-gradient(ellipse 60% 50% at 20% 20%, rgba(99,102,241,0.25), transparent 60%),
+                                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(59,130,246,0.18), transparent 60%)`,
+                        }} />
+                        {/* Noise texture */}
+                        <div style={{
+                            position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.03,
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
                         }} />
 
                         {/* Top content */}
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             {/* Logo */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 36 }}>
                                 <div style={{
-                                    width: 42, height: 42, borderRadius: THEME.radiusMd,
-                                    background: `linear-gradient(135deg, ${THEME.primaryLight}, ${THEME.primary})`,
+                                    width: 48, height: 48, borderRadius: 14,
+                                    background: 'linear-gradient(135deg, rgba(129,140,248,0.9), rgba(99,102,241,0.9))',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    boxShadow: `0 8px 32px ${THEME.primary}4d`, position: 'relative',
+                                    boxShadow: '0 8px 32px rgba(99,102,241,0.4), 0 0 0 1px rgba(255,255,255,0.1)',
+                                    position: 'relative',
                                 }}>
-                                    <Server size={20} color={THEME.textMain} strokeWidth={1.5} style={{ position: 'relative', zIndex: 1 }} />
+                                    <Database size={22} color="#fff" strokeWidth={1.8} style={{ position: 'relative', zIndex: 1 }} />
                                     <div style={{
-                                        position: 'absolute', inset: 0, borderRadius: THEME.radiusMd,
-                                        background: `linear-gradient(135deg, transparent 40%, ${THEME.textMain}38)`,
+                                        position: 'absolute', inset: 0, borderRadius: 14,
+                                        background: 'linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.2))',
                                     }} />
                                 </div>
                                 <span style={{
-                                    fontWeight: 800, fontSize: '1.3rem', letterSpacing: 3,
-                                    background: `linear-gradient(135deg, ${THEME.primaryLight}, ${THEME.info})`,
-                                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                                    fontWeight: 800, fontSize: '1.4rem', letterSpacing: 4, color: '#fff',
                                 }}>VIGIL</span>
                             </div>
 
                             {/* Headline */}
                             <h1 style={{
-                                fontSize: '1.75rem', fontWeight: 800, lineHeight: 1.2,
-                                letterSpacing: -0.5, marginBottom: 12, color: THEME.textMain,
-                                whiteSpace: 'nowrap',
+                                fontSize: '2rem', fontWeight: 800, lineHeight: 1.15,
+                                letterSpacing: -0.5, marginBottom: 14, color: '#fff',
                                 animation: 'textIn 0.8s ease-out 0.3s both',
                             }}>
-                                Your databases, <span style={{
-                                    background: `linear-gradient(135deg, ${THEME.primaryLight}, ${THEME.primary}99)`,
+                                Your databases,{' '}
+                                <span style={{
+                                    background: 'linear-gradient(135deg, #a5b4fc, #60a5fa)',
                                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                 }}>under control.</span>
                             </h1>
 
                             <p style={{
-                                fontSize: '0.82rem', color: THEME.textMuted,
-                                lineHeight: 1.6, maxWidth: 420,
+                                fontSize: '0.88rem', color: 'rgba(255,255,255,0.6)',
+                                lineHeight: 1.7, maxWidth: 380,
                                 animation: 'textIn 0.8s ease-out 0.45s both',
                             }}>
                                 Monitor performance, track queries, and manage your entire PostgreSQL infrastructure from a single command center.
@@ -367,49 +413,43 @@ const LoginPage = () => {
 
                             {/* Feature list */}
                             <div style={{
-                                marginTop: 28, display: 'flex', flexDirection: 'column', gap: 14,
+                                marginTop: 32, display: 'flex', flexDirection: 'column', gap: 6,
                                 animation: 'textIn 0.8s ease-out 0.55s both',
                             }}>
-                                {[
-                                    { icon: '⚡', title: 'Real-time Monitoring', desc: 'Live metrics, active sessions, and query performance at a glance' },
-                                    { icon: '🔍', title: 'Query Analysis', desc: 'Identify slow queries, execution plans, and optimization opportunities' },
-                                    { icon: '🛡️', title: 'Health & Alerts', desc: 'Automated health checks, deadlock detection, and threshold alerts' },
-                                    { icon: '📊', title: 'Resource Insights', desc: 'Table bloat, index usage, disk I/O, and vacuum monitoring' },
-                                    { icon: '🔄', title: 'Checkpoint Tracking', desc: 'WAL activity, checkpoint frequency, buffer writes, and archive status' },
-                                    { icon: '📈', title: 'Performance Trends', desc: 'Historical query trends, cache hit ratios, and transaction throughput' },
-                                ].map((f, i) => (
-                                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                {features.map((f, i) => (
+                                    <div key={i} className="vdb-feature-item" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                                         <div style={{
-                                            width: 32, height: 32, borderRadius: THEME.radiusSm, flexShrink: 0,
-                                            background: `${THEME.primary}14`, border: `1px solid ${THEME.primary}20`,
+                                            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                                            background: `${f.color}18`,
+                                            border: `1px solid ${f.color}25`,
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontSize: '0.85rem',
-                                        }}>{f.icon}</div>
+                                        }}>
+                                            <f.icon size={16} color={f.color} strokeWidth={2} />
+                                        </div>
                                         <div>
-                                            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: THEME.textMain, marginBottom: 2 }}>{f.title}</div>
-                                            <div style={{ fontSize: '0.72rem', color: THEME.textMuted, lineHeight: 1.4 }}>{f.desc}</div>
+                                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff', marginBottom: 1 }}>{f.title}</div>
+                                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.3 }}>{f.desc}</div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Decorative rings */}
-                        <DecoRings />
-
                         {/* Bottom stats */}
                         <div style={{
-                            position: 'relative', zIndex: 1, display: 'flex', gap: 30,
+                            position: 'relative', zIndex: 1, display: 'flex', gap: 36,
                             animation: 'textIn 0.8s ease-out 0.6s both',
+                            paddingTop: 20,
+                            borderTop: '1px solid rgba(255,255,255,0.08)',
                         }}>
                             {[
-                                { value: '99.99%', label: 'Uptime SLA' },
-                                { value: '4.2ms', label: 'Avg Latency' },
-                                { value: '12K+', label: 'Databases' },
+                                { value: '99.99%', label: 'Uptime SLA', color: '#2EE89C' },
+                                { value: '4.2ms', label: 'Avg Latency', color: '#818cf8' },
+                                { value: '12K+', label: 'Databases', color: '#60a5fa' },
                             ].map(s => (
                                 <div key={s.label}>
-                                    <div style={{ fontFamily: fontMono, fontWeight: 700, fontSize: '1.15rem', color: THEME.primary }}>{s.value}</div>
-                                    <div style={{ fontSize: '0.68rem', color: THEME.textMuted, marginTop: 1 }}>{s.label}</div>
+                                    <div style={{ fontFamily: fontMono, fontWeight: 700, fontSize: '1.3rem', color: s.color }}>{s.value}</div>
+                                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', marginTop: 2, fontWeight: 500 }}>{s.label}</div>
                                 </div>
                             ))}
                         </div>
@@ -418,176 +458,239 @@ const LoginPage = () => {
                     {/* ═══ RIGHT — FORM PANEL ═══ */}
                     <div className="vdb-form" style={{
                         flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                        padding: '32px 44px', position: 'relative', background: THEME.surfaceRaised, overflowY: 'auto',
+                        padding: '40px 52px', position: 'relative',
+                        background: isDark ? THEME.surface : '#fff',
+                        overflowY: 'auto',
                     }}>
-                        {/* Title */}
-                        <h2 style={{
-                            fontSize: '1.45rem', fontWeight: 800, color: THEME.textMain,
-                            marginBottom: 4, letterSpacing: -0.3, textAlign: 'center',
-                            animation: 'textIn 0.6s ease-out 0.2s both',
-                        }}>Welcome back</h2>
-                        <p style={{
-                            color: THEME.textMuted, fontSize: '0.85rem', marginBottom: 20, textAlign: 'center',
-                            animation: 'textIn 0.6s ease-out 0.3s both',
-                        }}>
-                            Sign in to your command center
-                        </p>
-
-                        {/* Server status */}
-                        <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center', animation: 'textIn 0.6s ease-out 0.32s both' }}>
-                            <ServerStatus status={serverStatus} />
-                        </div>
-
-                        {/* Error */}
-                        {(error || rateLimitError) && (
-                            <div style={{
-                                marginBottom: 16, padding: '11px 14px', borderRadius: THEME.radiusMd,
-                                background: `${THEME.danger}0f`, border: `1px solid ${THEME.danger}20`,
-                                display: 'flex', alignItems: 'center', gap: 10,
-                                animation: shake ? 'shake .5s ease' : 'none',
-                            }}>
-                                <AlertCircle size={14} color={THEME.danger} style={{ flexShrink: 0 }} />
-                                <span style={{ color: THEME.danger, fontSize: 12, fontWeight: 500 }}>{error || rateLimitError}</span>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                            {/* Username */}
-                            <div style={{ marginBottom: 14, animation: 'textIn 0.6s ease-out 0.42s both' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: THEME.textMuted, letterSpacing: 0.2 }}>Username</label>
-                                </div>
-                                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                    <User size={18} color={THEME.textDim} strokeWidth={1.5} style={{ position: 'absolute', left: 15, pointerEvents: 'none', transition: 'color 0.3s' }} />
-                                    <input ref={userRef} className="vdb-input" type="text" value={username}
-                                        onChange={e => setUsername(e.target.value)} placeholder="Enter username"
-                                        autoComplete="username" disabled={authLoading}
-                                        style={{
-                                            width: '100%', padding: '11px 16px 11px 44px',
-                                            background: THEME.surfaceHover, border: `1.5px solid ${THEME.glassBorder}`,
-                                            borderRadius: THEME.radiusMd, color: THEME.textMain, fontFamily: fontDisplay,
-                                            fontSize: '0.88rem', outline: 'none',
-                                            transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
-                                            boxShadow: THEME.shadowSm,
-                                            opacity: authLoading ? 0.5 : 1,
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Password */}
-                            <div style={{ marginBottom: 14, animation: 'textIn 0.6s ease-out 0.48s both' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: THEME.textMuted, letterSpacing: 0.2 }}>Password</label>
-                                    <button type="button" className="vdb-forgot" onClick={() => setShowForgotPassword(true)}
-                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textMuted, padding: 0, fontSize: '0.72rem', fontFamily: fontMono, transition: 'color 0.3s' }}>
-                                        Forgot password?
-                                    </button>
-                                </div>
-                                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                    <KeyRound size={18} color={THEME.textDim} strokeWidth={1.5} style={{ position: 'absolute', left: 15, pointerEvents: 'none', transition: 'color 0.3s' }} />
-                                    <input ref={pwdRef} className="vdb-input" type={showPwd ? 'text' : 'password'} value={password}
-                                        onChange={e => setPassword(e.target.value)} placeholder="Enter your password"
-                                        autoComplete="current-password" disabled={authLoading}
-                                        style={{
-                                            width: '100%', padding: '11px 44px 11px 44px',
-                                            background: THEME.surfaceHover, border: `1.5px solid ${THEME.glassBorder}`,
-                                            borderRadius: THEME.radiusMd, color: THEME.textMain, fontFamily: fontDisplay,
-                                            fontSize: '0.88rem', outline: 'none',
-                                            transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
-                                            boxShadow: THEME.shadowSm,
-                                            opacity: authLoading ? 0.5 : 1,
-                                        }}
-                                    />
-                                    <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1}
-                                        style={{
-                                            position: 'absolute', right: 14, background: 'none', border: 'none',
-                                            cursor: 'pointer', color: THEME.textDim, padding: 4, display: 'flex',
-                                            transition: 'color 0.3s',
-                                        }}
-                                        onMouseEnter={e => { e.currentTarget.style.color = accent; }}
-                                        onMouseLeave={e => { e.currentTarget.style.color = THEME.textDim; }}>
-                                        {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Remember me */}
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: 10,
-                                marginBottom: 18, animation: 'textIn 0.6s ease-out 0.52s both',
-                            }}>
-                                <div onClick={() => setRememberMe(r => !r)} style={{
-                                    width: 20, height: 20, borderRadius: THEME.radiusSm, flexShrink: 0, cursor: 'pointer',
-                                    border: `1.5px solid ${rememberMe ? accent : THEME.glassBorder}`,
-                                    background: rememberMe ? accent : THEME.surfaceHover,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
-                                    boxShadow: rememberMe ? `0 2px 8px ${accent}26` : THEME.shadowSm,
-                                }}>
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={THEME.textMain} strokeWidth="3"
-                                        style={{ opacity: rememberMe ? 1 : 0, transform: rememberMe ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s ease' }}>
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                </div>
-                                <span onClick={() => setRememberMe(r => !r)} style={{ fontSize: '0.84rem', color: THEME.textMuted, cursor: 'pointer' }}>
-                                    Remember this device for 30 days
-                                </span>
-                            </div>
-
-                            {/* Submit */}
-                            <button type="submit" className="vdb-submit" disabled={!canSubmit} style={{
-                                width: '100%', padding: 12, border: 'none', borderRadius: THEME.radiusMd,
-                                background: canSubmit ? `linear-gradient(135deg, ${accent}, ${accentHover})` : THEME.surfaceHover,
-                                color: canSubmit ? THEME.textMain : THEME.textDim,
-                                fontFamily: fontDisplay, fontWeight: 700, fontSize: '0.95rem',
-                                letterSpacing: 0.3, cursor: canSubmit ? 'pointer' : 'not-allowed',
-                                transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)', position: 'relative', overflow: 'hidden',
-                                boxShadow: canSubmit ? `0 4px 16px ${accent}26, 0 1px 3px rgba(0,0,0,0.04)` : 'none',
-                                animation: 'textIn 0.6s ease-out 0.56s both',
-                            }}>
-                                {authLoading ? (
-                                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                                        <Loader size={16} style={{ animation: 'spin 0.6s linear infinite' }} /> Authenticating...
-                                    </span>
-                                ) : (
-                                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                                        Sign in to VIGIL <ArrowRight size={16} strokeWidth={2} />
-                                    </span>
-                                )}
-                            </button>
-                        </form>
-
-                        {/* Footer */}
+                        {/* Subtle gradient overlay */}
                         <div style={{
-                            textAlign: 'center', marginTop: 18, display: 'flex',
-                            alignItems: 'center', justifyContent: 'center', gap: 6,
-                            fontSize: '0.72rem', color: THEME.textDim, fontFamily: fontMono,
-                            animation: 'textIn 0.6s ease-out 0.65s both',
-                        }}>
-                            <Shield size={13} color={accent} />
-                            Protected by 256-bit TLS encryption
+                            position: 'absolute', inset: 0, pointerEvents: 'none',
+                            background: isDark
+                                ? `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.04), transparent)`
+                                : `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.03), transparent)`,
+                        }} />
+
+                        <div style={{ position: 'relative', zIndex: 1, maxWidth: 380, width: '100%', margin: '0 auto' }}>
+                            {/* Title */}
+                            <h2 style={{
+                                fontSize: '1.65rem', fontWeight: 800, color: THEME.textMain,
+                                marginBottom: 6, letterSpacing: -0.5, textAlign: 'center',
+                                animation: 'textIn 0.6s ease-out 0.2s both',
+                            }}>Welcome back</h2>
+                            <p style={{
+                                color: THEME.textMuted, fontSize: '0.88rem', marginBottom: 24, textAlign: 'center',
+                                animation: 'textIn 0.6s ease-out 0.3s both',
+                            }}>
+                                Sign in to your command center
+                            </p>
+
+                            {/* Server status */}
+                            <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'center', animation: 'textIn 0.6s ease-out 0.32s both' }}>
+                                <ServerStatus status={serverStatus} />
+                            </div>
+
+                            {/* Error */}
+                            {(error || rateLimitError) && (
+                                <div style={{
+                                    marginBottom: 20, padding: '12px 16px', borderRadius: 14,
+                                    background: `${THEME.danger}0c`, border: `1px solid ${THEME.danger}20`,
+                                    display: 'flex', alignItems: 'center', gap: 10,
+                                    animation: shake ? 'shake .5s ease' : 'none',
+                                    backdropFilter: 'blur(8px)',
+                                }}>
+                                    <AlertCircle size={15} color={THEME.danger} style={{ flexShrink: 0 }} />
+                                    <span style={{ color: THEME.danger, fontSize: 13, fontWeight: 600 }}>{error || rateLimitError}</span>
+                                </div>
+                            )}
+
+                            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                                {/* Username */}
+                                <div style={{ marginBottom: 18, animation: 'textIn 0.6s ease-out 0.42s both' }}>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: THEME.textMuted, letterSpacing: 0.3, marginBottom: 8 }}>Username</label>
+                                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                        <User size={18} color={THEME.textDim} strokeWidth={1.8} style={{ position: 'absolute', left: 16, pointerEvents: 'none', transition: 'color 0.3s' }} />
+                                        <input ref={userRef} className="vdb-input" type="text" value={username}
+                                            onChange={e => setUsername(e.target.value)} placeholder="Enter username"
+                                            autoComplete="username" disabled={authLoading}
+                                            style={{
+                                                width: '100%', padding: '14px 18px 14px 48px',
+                                                background: isDark ? THEME.surfaceHover : '#f8f9fc',
+                                                border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                                                borderRadius: 14, color: THEME.textMain, fontFamily: fontDisplay,
+                                                fontSize: '0.92rem', outline: 'none',
+                                                transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                                                boxShadow: isDark ? 'inset 0 1px 3px rgba(0,0,0,0.2)' : 'inset 0 1px 3px rgba(0,0,0,0.04)',
+                                                opacity: authLoading ? 0.5 : 1,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Password */}
+                                <div style={{ marginBottom: 18, animation: 'textIn 0.6s ease-out 0.48s both' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 700, color: THEME.textMuted, letterSpacing: 0.3 }}>Password</label>
+                                        <button type="button" className="vdb-forgot" onClick={() => setShowForgotPassword(true)}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 0, fontSize: '0.75rem', fontFamily: fontMono, transition: 'color 0.3s', fontWeight: 500 }}>
+                                            Forgot password?
+                                        </button>
+                                    </div>
+                                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                        <KeyRound size={18} color={THEME.textDim} strokeWidth={1.8} style={{ position: 'absolute', left: 16, pointerEvents: 'none', transition: 'color 0.3s' }} />
+                                        <input ref={pwdRef} className="vdb-input" type={showPwd ? 'text' : 'password'} value={password}
+                                            onChange={e => setPassword(e.target.value)} placeholder="Enter your password"
+                                            autoComplete="current-password" disabled={authLoading}
+                                            style={{
+                                                width: '100%', padding: '14px 48px 14px 48px',
+                                                background: isDark ? THEME.surfaceHover : '#f8f9fc',
+                                                border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                                                borderRadius: 14, color: THEME.textMain, fontFamily: fontDisplay,
+                                                fontSize: '0.92rem', outline: 'none',
+                                                transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                                                boxShadow: isDark ? 'inset 0 1px 3px rgba(0,0,0,0.2)' : 'inset 0 1px 3px rgba(0,0,0,0.04)',
+                                                opacity: authLoading ? 0.5 : 1,
+                                            }}
+                                        />
+                                        <button type="button" onClick={() => setShowPwd(s => !s)} tabIndex={-1}
+                                            style={{
+                                                position: 'absolute', right: 14, background: 'none', border: 'none',
+                                                cursor: 'pointer', color: THEME.textDim, padding: 4, display: 'flex',
+                                                transition: 'color 0.3s',
+                                            }}
+                                            onMouseEnter={e => { e.currentTarget.style.color = accent; }}
+                                            onMouseLeave={e => { e.currentTarget.style.color = THEME.textDim; }}>
+                                            {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Remember me */}
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', gap: 10,
+                                    marginBottom: 24, animation: 'textIn 0.6s ease-out 0.52s both',
+                                }}>
+                                    <div onClick={() => setRememberMe(r => !r)} style={{
+                                        width: 22, height: 22, borderRadius: 7, flexShrink: 0, cursor: 'pointer',
+                                        border: `1.5px solid ${rememberMe ? accent : isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
+                                        background: rememberMe ? `linear-gradient(135deg, ${accent}, ${accentHover})` : 'transparent',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                                        boxShadow: rememberMe ? `0 4px 12px ${accent}35` : 'none',
+                                    }}>
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"
+                                            style={{ opacity: rememberMe ? 1 : 0, transform: rememberMe ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s ease' }}>
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                    </div>
+                                    <span onClick={() => setRememberMe(r => !r)} style={{ fontSize: '0.84rem', color: THEME.textMuted, cursor: 'pointer', fontWeight: 500 }}>
+                                        Remember this device for 30 days
+                                    </span>
+                                </div>
+
+                                {/* Submit */}
+                                <button type="submit" className="vdb-submit" disabled={!canSubmit} style={{
+                                    width: '100%', padding: '15px 20px', border: 'none', borderRadius: 14,
+                                    background: canSubmit
+                                        ? `linear-gradient(135deg, ${accent}, ${accentHover})`
+                                        : isDark ? THEME.surfaceHover : '#e5e7eb',
+                                    color: canSubmit ? '#fff' : THEME.textDim,
+                                    fontFamily: fontDisplay, fontWeight: 700, fontSize: '0.95rem',
+                                    letterSpacing: 0.3, cursor: canSubmit ? 'pointer' : 'not-allowed',
+                                    transition: 'all 0.35s cubic-bezier(0.34,1.56,0.64,1)', position: 'relative', overflow: 'hidden',
+                                    boxShadow: canSubmit ? `0 8px 28px ${accent}40, 0 2px 8px ${accent}20` : 'none',
+                                    animation: 'textIn 0.6s ease-out 0.56s both',
+                                }}>
+                                    {/* Shimmer effect */}
+                                    {canSubmit && (
+                                        <div style={{
+                                            position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 14,
+                                        }}>
+                                            <div style={{
+                                                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)',
+                                                animation: 'shimmerSlide 3s ease-in-out infinite',
+                                            }} />
+                                        </div>
+                                    )}
+                                    <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                                        {authLoading ? (
+                                            <><Loader size={17} style={{ animation: 'spin 0.6s linear infinite' }} /> Authenticating...</>
+                                        ) : (
+                                            <>Sign in to VIGIL <ArrowRight size={17} strokeWidth={2.5} /></>
+                                        )}
+                                    </span>
+                                </button>
+                            </form>
+
+                            {/* Divider */}
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: 16, margin: '24px 0 20px',
+                                animation: 'textIn 0.6s ease-out 0.6s both',
+                            }}>
+                                <div style={{ flex: 1, height: 1, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
+                                <span style={{ fontSize: '0.72rem', color: THEME.textDim, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>or</span>
+                                <div style={{ flex: 1, height: 1, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
+                            </div>
+
+                            {/* SSO Button */}
+                            <button onClick={() => loginWithSSO?.('saml')} style={{
+                                width: '100%', padding: '13px 20px', borderRadius: 14,
+                                border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                                background: 'transparent',
+                                color: THEME.textMuted, fontFamily: fontDisplay, fontWeight: 600, fontSize: '0.88rem',
+                                cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                                animation: 'textIn 0.6s ease-out 0.62s both',
+                            }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.borderColor = `${accent}40`;
+                                    e.currentTarget.style.background = `${accent}06`;
+                                    e.currentTarget.style.color = THEME.textMain;
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+                                    e.currentTarget.style.background = 'transparent';
+                                    e.currentTarget.style.color = THEME.textMuted;
+                                }}>
+                                <Fingerprint size={18} strokeWidth={1.8} />
+                                Continue with SSO
+                            </button>
+
+                            {/* Footer */}
+                            <div style={{
+                                textAlign: 'center', marginTop: 24, display: 'flex',
+                                alignItems: 'center', justifyContent: 'center', gap: 8,
+                                fontSize: '0.73rem', color: THEME.textDim, fontFamily: fontMono,
+                                animation: 'textIn 0.6s ease-out 0.68s both', fontWeight: 500,
+                            }}>
+                                <Shield size={13} color={accent} strokeWidth={2} />
+                                Protected by 256-bit TLS encryption
+                            </div>
                         </div>
 
                         {/* Success overlay */}
                         {loginSuccess && (
                             <div style={{
-                                position: 'absolute', inset: 0, background: `${THEME.surfaceRaised}f5`,
+                                position: 'absolute', inset: 0,
+                                background: isDark ? `${THEME.surface}f8` : 'rgba(255,255,255,0.97)',
+                                display: 'flex', flexDirection: 'column',
                                 alignItems: 'center', justifyContent: 'center', zIndex: 10,
-                                borderRadius: '0 22px 22px 0',
+                                backdropFilter: 'blur(12px)',
                             }}>
                                 <div style={{
-                                    width: 76, height: 76, borderRadius: '50%',
-                                    background: `${accent}14`, border: `2px solid ${accent}26`,
+                                    width: 80, height: 80, borderRadius: '50%',
+                                    background: `linear-gradient(135deg, ${accent}20, ${accent}08)`,
+                                    border: `2px solid ${accent}30`,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    marginBottom: 20, animation: 'successPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
+                                    marginBottom: 24, animation: 'successPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
+                                    boxShadow: `0 8px 32px ${accent}25`,
                                 }}>
-                                    <CheckCircle size={34} color={accent} strokeWidth={2} />
+                                    <CheckCircle size={36} color={accent} strokeWidth={2} />
                                 </div>
-                                <div style={{ fontWeight: 800, fontSize: '1.35rem', color: THEME.textMain, marginBottom: 6, animation: 'textIn 0.5s ease 0.5s both' }}>Welcome back!</div>
-                                <div style={{ color: THEME.textMuted, fontSize: '0.88rem', animation: 'textIn 0.5s ease 0.6s both' }}>Redirecting to your dashboard...</div>
-                                <div style={{ width: 180, height: 3, background: THEME.surfaceHover, borderRadius: THEME.radiusSm, marginTop: 20, overflow: 'hidden', animation: 'textIn 0.5s ease 0.7s both' }}>
-                                    <div style={{ height: '100%', background: accent, borderRadius: THEME.radiusSm, width: '0%', animation: 'progressFill 2s ease 0.8s forwards' }} />
+                                <div style={{ fontWeight: 800, fontSize: '1.4rem', color: THEME.textMain, marginBottom: 8, animation: 'textIn 0.5s ease 0.5s both' }}>Welcome back!</div>
+                                <div style={{ color: THEME.textMuted, fontSize: '0.9rem', animation: 'textIn 0.5s ease 0.6s both' }}>Redirecting to your dashboard...</div>
+                                <div style={{ width: 200, height: 4, background: isDark ? THEME.surfaceHover : '#e5e7eb', borderRadius: 99, marginTop: 24, overflow: 'hidden', animation: 'textIn 0.5s ease 0.7s both' }}>
+                                    <div style={{ height: '100%', background: `linear-gradient(90deg, ${accent}, ${accentHover})`, borderRadius: 99, width: '0%', animation: 'progressFill 2s ease 0.8s forwards' }} />
                                 </div>
                             </div>
                         )}
@@ -598,49 +701,59 @@ const LoginPage = () => {
             {/* ═══ FORGOT PASSWORD MODAL ═══ */}
             {showForgotPassword && (
                 <div style={{
-                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-                    zIndex: 1000, animation: 'textIn .3s ease',
+                    position: 'fixed', inset: 0,
+                    background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.3)',
+                    backdropFilter: 'blur(8px)',
+                    zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    animation: 'textIn .3s ease',
                 }} onClick={() => setShowForgotPassword(false)}>
                     <div style={{
-                        background: THEME.surfaceRaised, borderRadius: THEME.radiusLg, padding: 32, maxWidth: 400, width: '90%',
-                        border: `1px solid ${THEME.glassBorder}`,
-                        boxShadow: THEME.shadowLg,
+                        background: isDark ? THEME.surface : '#fff',
+                        borderRadius: 20, padding: 36, maxWidth: 420, width: '90%',
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                        boxShadow: isDark
+                            ? '0 24px 64px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.3)'
+                            : '0 24px 64px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.05)',
                     }} onClick={e => e.stopPropagation()}>
-                        <h3 style={{ fontSize: 18, fontWeight: 800, color: THEME.textMain, marginBottom: 8 }}>Reset Password</h3>
-                        <p style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 20 }}>Enter your email and we'll send you a reset link.</p>
-                        <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <h3 style={{ fontSize: 20, fontWeight: 800, color: THEME.textMain, marginBottom: 8 }}>Reset Password</h3>
+                        <p style={{ fontSize: 14, color: THEME.textMuted, marginBottom: 24, lineHeight: 1.5 }}>Enter your email and we'll send you a reset link.</p>
+                        <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                             <input className="vdb-input" type="email" placeholder="Enter your email" value={resetEmail}
                                 onChange={e => setResetEmail(e.target.value)} disabled={resetLoading}
                                 style={{
-                                    padding: '12px 14px', borderRadius: THEME.radiusMd,
-                                    border: `1.5px solid ${THEME.glassBorder}`, background: THEME.surfaceHover,
-                                    color: THEME.textMain, fontSize: 13, fontFamily: fontDisplay, outline: 'none',
+                                    padding: '14px 16px', borderRadius: 14,
+                                    border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                                    background: isDark ? THEME.surfaceHover : '#f8f9fc',
+                                    color: THEME.textMain, fontSize: 14, fontFamily: fontDisplay, outline: 'none',
                                     transition: 'all 0.3s',
                                 }}
                             />
                             {resetMessage && (
                                 <div style={{
-                                    padding: '10px 12px', borderRadius: THEME.radiusMd,
-                                    background: resetMessage.includes('failed') || resetMessage.includes('Unable') ? `${THEME.danger}0f` : `${accent}0f`,
-                                    color: resetMessage.includes('failed') || resetMessage.includes('Unable') ? THEME.danger : accent, fontSize: 12,
+                                    padding: '12px 14px', borderRadius: 12,
+                                    background: resetMessage.includes('failed') || resetMessage.includes('Unable') ? `${THEME.danger}0c` : `${accent}0c`,
+                                    color: resetMessage.includes('failed') || resetMessage.includes('Unable') ? THEME.danger : accent,
+                                    fontSize: 13, fontWeight: 600,
                                 }}>
                                     {resetMessage}
                                 </div>
                             )}
-                            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                                 <button type="submit" disabled={!resetEmail.trim() || resetLoading} style={{
-                                    flex: 1, padding: '12px 16px', borderRadius: THEME.radiusMd, border: 'none',
-                                    background: resetEmail.trim() && !resetLoading ? `linear-gradient(135deg, ${accent}, ${accentHover})` : THEME.surfaceHover,
-                                    color: resetEmail.trim() && !resetLoading ? THEME.textMain : THEME.textDim,
-                                    fontSize: 13, fontWeight: 600, cursor: resetEmail.trim() && !resetLoading ? 'pointer' : 'not-allowed',
+                                    flex: 1, padding: '13px 18px', borderRadius: 14, border: 'none',
+                                    background: resetEmail.trim() && !resetLoading ? `linear-gradient(135deg, ${accent}, ${accentHover})` : isDark ? THEME.surfaceHover : '#e5e7eb',
+                                    color: resetEmail.trim() && !resetLoading ? '#fff' : THEME.textDim,
+                                    fontSize: 14, fontWeight: 700, cursor: resetEmail.trim() && !resetLoading ? 'pointer' : 'not-allowed',
                                     fontFamily: fontDisplay, transition: 'all 0.3s',
+                                    boxShadow: resetEmail.trim() && !resetLoading ? `0 4px 14px ${accent}30` : 'none',
                                 }}>
                                     {resetLoading ? 'Sending...' : 'Send Reset Link'}
                                 </button>
                                 <button type="button" onClick={() => setShowForgotPassword(false)} style={{
-                                    flex: 1, padding: '12px 16px', borderRadius: THEME.radiusMd,
-                                    border: `1.5px solid ${THEME.glassBorder}`, background: 'transparent',
-                                    color: THEME.textMuted, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                    flex: 1, padding: '13px 18px', borderRadius: 14,
+                                    border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                                    background: 'transparent',
+                                    color: THEME.textMuted, fontSize: 14, fontWeight: 700, cursor: 'pointer',
                                     fontFamily: fontDisplay, transition: 'all 0.3s',
                                 }}>
                                     Cancel
@@ -655,11 +768,15 @@ const LoginPage = () => {
             <button className="vdb-toggle" onClick={toggleTheme} title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
                 style={{
                     position: 'fixed', bottom: 24, left: 24, zIndex: 100,
-                    width: 40, height: 40, borderRadius: '50%',
-                    background: THEME.surfaceHover, border: `1px solid ${THEME.glassBorder}`,
+                    width: 44, height: 44, borderRadius: '50%',
+                    background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
                     cursor: 'pointer', color: THEME.textDim, transition: 'all .3s', outline: 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    backdropFilter: 'blur(8px)',
+                    boxShadow: isDark ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.06)',
                 }}>
-                {isDark ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}
+                {isDark ? <Sun size={17} strokeWidth={1.8} /> : <Moon size={17} strokeWidth={1.8} />}
             </button>
         </div>
     );
