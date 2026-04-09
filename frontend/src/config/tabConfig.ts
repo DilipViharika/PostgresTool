@@ -45,7 +45,6 @@ import {
     GitMerge,
     Eye,
     FileText,
-    TreePine,
     BarChart3,
     AlertOctagon,
     Droplets,
@@ -166,24 +165,10 @@ export function buildTabConfig() {
         //    Schema browsing, visualization, migrations, and charting
         { section: 'Schema & Data', accent: DS.amber },
         {
-            id: 'schema-tree',
-            icon: TreePine,
-            label: 'Schema Browser',
-            component: _components.SchemaTreeBrowser,
-            badge: null,
-        },
-        {
             id: 'schema',
             icon: FolderGit2,
             label: 'Schema & Migrations',
             component: _components.SchemaVersioningTab,
-            badge: null,
-        },
-        {
-            id: 'schema-visualizer',
-            icon: Blocks,
-            label: 'Schema Visualizer',
-            component: _components.SchemaVisualizerTab,
             badge: null,
         },
         {

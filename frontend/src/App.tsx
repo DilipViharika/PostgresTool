@@ -69,7 +69,6 @@ const TableAnalytics = lazyRetry(() => import('./components/views/database/Table
 const QueryOptimizerTab = lazyRetry(() => import('./components/views/database/QueryOptimizerTab'));
 const QueryPlanRegressionTab = lazyRetry(() => import('./components/views/database/QueryPlanRegressionTab'));
 const SchemaVersioningTab = lazyRetry(() => import('./components/views/database/SchemaVersioningTab'));
-const SchemaVisualizerTab = lazyRetry(() => import('./components/views/database/SchemaVisualizerTab'));
 const TableDependencyMindMap = lazyRetry(() => import('./components/views/database/TableDependencyMindMap'));
 
 // Operations features
@@ -134,7 +133,6 @@ const ConnectionWizard = lazyRetry(() => import('./components/views/onboarding/C
 const FleetOverviewTab = lazyRetry(() => import('./components/views/monitoring/FleetOverviewTab'));
 
 // Phase 3 — Visualization Layer
-const SchemaTreeBrowser = lazyRetry(() => import('./components/views/database/SchemaTreeBrowser'));
 const QueryPlanViewer = lazyRetry(() => import('./components/views/database/QueryPlanViewer'));
 const ChartBuilder = lazyRetry(() => import('./components/views/database/ChartBuilder'));
 
@@ -228,7 +226,6 @@ registerComponents({
     CapacityPlanningTab,
     BackupRecoveryTab,
     SchemaVersioningTab,
-    SchemaVisualizerTab,
     TableDependencyMindMap,
     SecurityComplianceTab,
     CloudWatchTab,
@@ -267,7 +264,6 @@ registerComponents({
     // Phase 1–4 new components
     FleetOverviewTab,
     ConnectionWizard,
-    SchemaTreeBrowser,
     QueryPlanViewer,
     ChartBuilder,
     AlertRuleEditor,

@@ -33,7 +33,6 @@ const DEMO_USER = {
         'capacity',
         'backup',
         'schema',
-        'schema-visualizer',
         'security',
         'cloudwatch',
         'log-patterns',

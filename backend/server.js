@@ -1034,10 +1034,8 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
                 'table-indexes', 'table-sizes',
                 'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring',
                 'retention', 'terraform', 'custom-dashboard',
-                'schema-visualizer',
                 'mongo-overview', 'mongo-performance', 'mongo-storage',
                 'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
-                'demo-data', 'fleet-overview', 'alert-rules', 'schema-tree',
                 'query-plan', 'chart-builder', 'pool-metrics',
             ];
             const demoPayload = {
@@ -1093,7 +1091,6 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             'table-indexes', 'table-sizes',
             'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring',
             'retention', 'terraform', 'custom-dashboard',
-            'schema-visualizer',
             'mongo-overview', 'mongo-performance', 'mongo-storage',
             'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
             'demo-data',
@@ -1107,7 +1104,6 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             'demo-mysql-log-patterns', 'demo-mysql-alert-correlation', 'demo-mysql-opentelemetry', 'demo-mysql-kubernetes', 'demo-mysql-status-page', 'demo-mysql-ai-monitoring', 'demo-mysql-sql', 'demo-mysql-api',
             'demo-mysql-repository', 'demo-mysql-ai-advisor', 'demo-mysql-tasks', 'demo-mysql-users', 'demo-mysql-admin-panel', 'demo-mysql-retention', 'demo-mysql-terraform', 'demo-mysql-custom-dashboard',
             'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-replication', 'demo-mongo-sharding', 'demo-mongo-data-tools',
-            'fleet-overview', 'alert-rules', 'schema-tree', 'query-plan', 'chart-builder', 'pool-metrics',
         ];
         const baseScreens    = user.allowed_screens ?? [];
         const allowedScreens = [...new Set([...baseScreens, ...NEW_SCREENS])];
@@ -1195,7 +1191,6 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
             location:    null,
         });
 
-        const NEW_SCREENS = ['backup', 'checkpoint', 'maintenance', 'replication', 'bloat', 'regression', 'cloudwatch', 'tasks', 'log-patterns', 'alert-correlation', 'Table', 'table-indexes', 'table-sizes', 'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring', 'retention', 'terraform', 'custom-dashboard', 'schema-visualizer', 'mongo-overview', 'mongo-performance', 'mongo-storage', 'mongo-replication', 'mongo-data-tools', 'mongo-sharding', 'demo-data', 'demo-pg-overview', 'demo-pg-performance', 'demo-pg-resources', 'demo-pg-reliability', 'demo-pg-alerts', 'demo-pg-optimizer', 'demo-pg-indexes', 'demo-pg-regression', 'demo-pg-bloat', 'demo-pg-table', 'demo-pg-pool', 'demo-pg-replication', 'demo-pg-checkpoint', 'demo-pg-maintenance', 'demo-pg-capacity', 'demo-pg-backup', 'demo-pg-schema', 'demo-pg-schema-viz', 'demo-pg-security', 'demo-pg-cloudwatch', 'demo-pg-log-patterns', 'demo-pg-alert-correlation', 'demo-pg-opentelemetry', 'demo-pg-kubernetes', 'demo-pg-status-page', 'demo-pg-ai-monitoring', 'demo-pg-sql', 'demo-pg-api', 'demo-pg-repository', 'demo-pg-ai-advisor', 'demo-pg-tasks', 'demo-pg-users', 'demo-pg-admin-panel', 'demo-pg-retention', 'demo-pg-terraform', 'demo-pg-custom-dashboard', 'demo-mysql-overview', 'demo-mysql-performance', 'demo-mysql-resources', 'demo-mysql-reliability', 'demo-mysql-alerts', 'demo-mysql-optimizer', 'demo-mysql-indexes', 'demo-mysql-regression', 'demo-mysql-bloat', 'demo-mysql-table', 'demo-mysql-pool', 'demo-mysql-replication', 'demo-mysql-checkpoint', 'demo-mysql-maintenance', 'demo-mysql-capacity', 'demo-mysql-backup', 'demo-mysql-schema', 'demo-mysql-schema-viz', 'demo-mysql-security', 'demo-mysql-cloudwatch', 'demo-mysql-log-patterns', 'demo-mysql-alert-correlation', 'demo-mysql-opentelemetry', 'demo-mysql-kubernetes', 'demo-mysql-status-page', 'demo-mysql-ai-monitoring', 'demo-mysql-sql', 'demo-mysql-api', 'demo-mysql-repository', 'demo-mysql-ai-advisor', 'demo-mysql-tasks', 'demo-mysql-users', 'demo-mysql-admin-panel', 'demo-mysql-retention', 'demo-mysql-terraform', 'demo-mysql-custom-dashboard', 'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-replication', 'demo-mongo-sharding', 'demo-mongo-data-tools', 'fleet-overview', 'alert-rules', 'schema-tree', 'query-plan', 'chart-builder', 'pool-metrics'];
         const allowedScreens = [...new Set([...(user.allowed_screens ?? []), ...NEW_SCREENS])];
 
         const payload = {

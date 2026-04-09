@@ -53,7 +53,6 @@ const SCREEN_CATEGORIES = [
     color: '#FFB520',
     screens: [
       { id: 'schema',            label: 'Schema & Migrations', icon: '🗂️' },
-      { id: 'schema-visualizer', label: 'Schema Visualizer',   icon: '🔀' },
       { id: 'capacity',          label: 'Capacity Planning',   icon: '📈' },
       { id: 'repository',        label: 'Repository',          icon: '🗄️' },
     ],
