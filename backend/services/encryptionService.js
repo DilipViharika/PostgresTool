@@ -29,22 +29,17 @@ function getDeterministicSalt() {
 }
 const SALT = getDeterministicSalt();
 
-// ── RSA key pair (generated once per process; rotated on restart) ─────────────
-let _rsaKeyPair = null;
-const RSA_KEY_TTL_MS = 30 * 60 * 1000; // 30 minutes
-let _rsaCreatedAt = 0;
-
+// ── RSA key pair ────────────────────────────────────────────────────────────
+// NOTE: The RSA layer is DISABLED on serverless deployments because in-memory
+// keypairs are not shared across cold-start containers — the handshake and the
+// POST handler can land on different instances, producing undecryptable payloads.
+// Passwords are still protected in transit by HTTPS and at rest by AES-256-GCM
+// using ENCRYPTION_KEY, so disabling the RSA defense-in-depth layer is a net-safe
+// tradeoff for this deployment. The frontend has a documented fallback at
+// cryptoUtils.ts:fetchPublicKey — when the handshake endpoint errors, it sends
+// the password as plaintext over HTTPS.
 function getRsaKeyPair() {
-    const now = Date.now();
-    if (!_rsaKeyPair || (now - _rsaCreatedAt) > RSA_KEY_TTL_MS) {
-        _rsaKeyPair = crypto.generateKeyPairSync('rsa', {
-            modulusLength: 2048,
-            publicKeyEncoding:  { type: 'spki',  format: 'pem' },
-            privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
-        });
-        _rsaCreatedAt = now;
-    }
-    return _rsaKeyPair;
+    throw new Error('RSA key exchange disabled — frontend will fall back to plaintext over HTTPS.');
 }
 
 // ── AES helpers ──────────────────────────────────────────────────────────────
@@ -189,11 +184,8 @@ export function rsaDecrypt(rsaCiphertext) {
  * Otherwise return as-is (plaintext — for backward compatibility).
  */
 export function unwrapField(value) {
-    if (!value) return value;
-    // RSA-2048 produces ~344 base64 chars for any input < 214 bytes
-    if (typeof value === 'string' && value.length >= 200 && /^[A-Za-z0-9+/=]+$/.test(value)) {
-        try { return rsaDecrypt(value); } catch { /* fall through to plaintext */ }
-    }
+    // RSA client-side encryption is disabled (see getRsaKeyPair above). All
+    // sensitive fields now arrive as plaintext over HTTPS. Return as-is.
     return value;
 }
 
