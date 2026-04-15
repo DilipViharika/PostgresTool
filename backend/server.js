@@ -2436,7 +2436,7 @@ app.get('/api/connections', authenticate, ensureConnections, async (req, res) =>
     } catch (e) { res.json([]); }
 });
 
-app.get('/api/connections/:id', authenticate, async (req, res, next) => {
+app.get('/api/connections/:id', authenticate, ensureConnections, async (req, res, next) => {
     // Skip non-numeric IDs so named routes (/active, /health, /count) can match
     if (!/^\d+$/.test(req.params.id)) return next();
     try {
@@ -2448,7 +2448,7 @@ app.get('/api/connections/:id', authenticate, async (req, res, next) => {
     } catch (e) { res.json({}); }
 });
 
-app.post('/api/connections', authenticate, async (req, res) => {
+app.post('/api/connections', authenticate, ensureConnections, async (req, res) => {
     try {
         // Unwrap RSA-encrypted sensitive fields from the frontend
         const body = unwrapSensitiveFields(req.body);
@@ -2541,12 +2541,12 @@ app.post('/api/connections', authenticate, async (req, res) => {
         res.status(201).json({ success: true, ...sanitizeConn(newConn), connectionId: newConn.id, testResult });
     } catch (e) {
         if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
-        log('ERROR', 'Create connection error', { error: e.message });
-        res.status(500).json({ error: 'Internal server error' });
+        log('ERROR', 'Create connection error', { error: e.message, stack: e.stack });
+        res.status(500).json({ error: 'Internal server error', details: e.message, code: e.code });
     }
 });
 
-app.put('/api/connections/:id', authenticate, async (req, res) => {
+app.put('/api/connections/:id', authenticate, ensureConnections, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
@@ -2585,12 +2585,12 @@ app.put('/api/connections/:id', authenticate, async (req, res) => {
         res.json(sanitizeConn(updated));
     } catch (e) {
         if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
-        log('ERROR', 'Update connection error', { error: e.message });
-        res.status(500).json({ error: 'Internal server error' });
+        log('ERROR', 'Update connection error', { error: e.message, stack: e.stack });
+        res.status(500).json({ error: 'Internal server error', details: e.message, code: e.code });
     }
 });
 
-app.delete('/api/connections/:id', authenticate, async (req, res) => {
+app.delete('/api/connections/:id', authenticate, ensureConnections, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
@@ -2618,12 +2618,12 @@ app.delete('/api/connections/:id', authenticate, async (req, res) => {
         await syncConnectionsCache();
         res.json({ success: true });
     } catch (e) {
-        log('ERROR', 'Delete connection error', { error: e.message });
-        res.status(500).json({ error: 'Internal server error' });
+        log('ERROR', 'Delete connection error', { error: e.message, stack: e.stack });
+        res.status(500).json({ error: 'Internal server error', details: e.message, code: e.code });
     }
 });
 
-app.post('/api/connections/:id/default', authenticate, async (req, res) => {
+app.post('/api/connections/:id/default', authenticate, ensureConnections, async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
@@ -2632,8 +2632,8 @@ app.post('/api/connections/:id/default', authenticate, async (req, res) => {
         await syncConnectionsCache();
         res.json({ success: true });
     } catch (e) {
-        log('ERROR', 'Set default connection error', { error: e.message });
-        res.status(500).json({ error: 'Internal server error' });
+        log('ERROR', 'Set default connection error', { error: e.message, stack: e.stack });
+        res.status(500).json({ error: 'Internal server error', details: e.message, code: e.code });
     }
 });
 
@@ -2701,7 +2701,7 @@ app.post('/api/connections/test', authenticate, async (req, res) => {
     }
 });
 
-app.post('/api/connections/:id/test', authenticate, async (req, res) => {
+app.post('/api/connections/:id/test', authenticate, ensureConnections, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
