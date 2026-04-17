@@ -10,7 +10,7 @@
  * Usage:
  *   const { activeConnectionId, setActiveConnectionId, connections, activeConnection } = useConnection();
  */
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchData, postData, setActiveConnectionId as persistConnectionId } from '../utils/api';
 
 const ConnectionContext = createContext(null);
@@ -130,16 +130,19 @@ export function ConnectionProvider({ children }) {
         }
     }, [activeConnection?.dbType]);
 
+    // Memoize context value to prevent unnecessary re-renders of all consumers
+    const value = useMemo(() => ({
+        connections,
+        activeConnectionId,
+        activeConnection,
+        loading,
+        switchConnection,
+        refreshConnections,
+        setActiveConnectionId: setActiveConnectionIdState,
+    }), [connections, activeConnectionId, activeConnection, loading, switchConnection, refreshConnections, setActiveConnectionIdState]);
+
     return (
-        <ConnectionContext.Provider value={{
-            connections,
-            activeConnectionId,
-            activeConnection,
-            loading,
-            switchConnection,
-            refreshConnections,
-            setActiveConnectionId: setActiveConnectionIdState,
-        }}>
+        <ConnectionContext.Provider value={value}>
             {children}
         </ConnectionContext.Provider>
     );

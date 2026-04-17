@@ -824,7 +824,7 @@ const DemoStyles = () => (
     `}</style>
 );
 
-export default DemoLayout;
+export default React.memo(DemoLayout);
 
 /* ── Re-usable sub-components (shared across demo tabs) ── */
 

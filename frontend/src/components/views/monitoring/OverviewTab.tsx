@@ -30,7 +30,7 @@ import {
    MICRO-COMPONENTS (MiniSparkline stays inline since it's not extracted)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const MiniSparkline = ({ data = [], color = THEME.primary, width = 64, height = 20, filled = true }) => {
+const MiniSparkline = React.memo(({ data = [], color = THEME.primary, width = 64, height = 20, filled = true }) => {
     if (!data || data.length < 2) return <div style={{ width, height }} />;
     const min = Math.min(...data), max = Math.max(...data), range = max - min || 1;
     const pts = data
@@ -56,7 +56,8 @@ const MiniSparkline = ({ data = [], color = THEME.primary, width = 64, height = 
             />
         </svg>
     );
-};
+});
+MiniSparkline.displayName = 'MiniSparkline';
 
 /* ─ Helpers ─ */
 const ENVIRONMENTS = [];
@@ -153,7 +154,7 @@ const EnvSwitcher = ({ currentEnv, onChange }) => {
 const SEVERITY_COLOR = { critical: '#ef4444', warning: '#f59e0b', info: '#6366f1' };
 const SEVERITY_ICON = { critical: AlertCircle, warning: AlertTriangle, info: Info };
 
-const NotificationBell = () => {
+const NotificationBell = React.memo(() => {
     const [open, setOpen] = useState(false);
     const [alerts, setAlerts] = useState([]);
     const [bellAnim, setBellAnim] = useState(false);
@@ -289,7 +290,8 @@ const NotificationBell = () => {
             )}
         </div>
     );
-};
+});
+NotificationBell.displayName = 'NotificationBell';
 
 const REFRESH_OPTIONS = [
     { label: '5s', value: 5000 },

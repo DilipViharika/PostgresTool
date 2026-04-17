@@ -300,9 +300,8 @@ const FEEDBACK_RATE_LIMIT_MS = 5 * 60 * 1000; // 5 minutes
 /* ─────────────────────────────────────────────────────────────────
    GLOBAL STYLES
    ───────────────────────────────────────────────────────────────── */
-const AppStyles = () => (
+const AppStyles = React.memo(() => (
     <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; }
 
@@ -322,6 +321,14 @@ const AppStyles = () => (
         @keyframes badgePop        { 0% { transform: scale(0); } 70% { transform: scale(1.3); } 100% { transform: scale(1); } }
         @keyframes waveFlow        { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes dotBlink        { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
 
         /* ═══ VIGIL — Clean & Refined ═══ */
 
@@ -671,16 +678,9 @@ const AppStyles = () => (
             }
         }
 
-        /* ── Accessibility: Reduced motion ── */
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
     `}</style>
-);
+));
+AppStyles.displayName = 'AppStyles';
 
 /* ─────────────────────────────────────────────────────────────────
    AMBIENT BACKGROUND ORBS (decorative, pointer-events: none)

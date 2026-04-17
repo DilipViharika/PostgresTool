@@ -4,6 +4,34 @@ const API_BASE = import.meta.env.VITE_API_URL || (() => { console.warn('VITE_API
 // Prevents duplicate GET requests to the same URL while one is in-flight.
 const inflightRequests = new Map();
 
+// ── Response cache (short TTL to reduce redundant fetches on tab switches) ──
+// Caches GET responses for 5 seconds to avoid re-fetching when navigating between tabs
+const responseCache = new Map<string, { data: any; expiry: number }>();
+const CACHE_TTL_MS = 5_000; // 5-second cache
+
+function getCachedResponse(url: string) {
+    const entry = responseCache.get(url);
+    if (entry && Date.now() < entry.expiry) return entry.data;
+    if (entry) responseCache.delete(url);
+    return null;
+}
+
+function setCachedResponse(url: string, data: any) {
+    responseCache.set(url, { data, expiry: Date.now() + CACHE_TTL_MS });
+    // Prevent unbounded cache growth
+    if (responseCache.size > 100) {
+        const oldest = responseCache.keys().next().value;
+        responseCache.delete(oldest);
+    }
+}
+
+// Invalidate cache entries matching a path prefix after mutations
+function invalidateCacheFor(path: string) {
+    for (const key of responseCache.keys()) {
+        if (key.includes(path)) responseCache.delete(key);
+    }
+}
+
 // ── Default request timeout (30 seconds) ───────────────────────────────────
 const DEFAULT_TIMEOUT_MS = 30_000;
 
@@ -77,6 +105,17 @@ async function request(path, options = {}) {
     const resolvedPath = appendConnectionId(path);
     const url = resolvedPath.startsWith('http') ? resolvedPath : `${API_BASE}${resolvedPath}`;
 
+    // ── Check response cache for GET requests ────────────────────────────
+    if (isGet) {
+        const cached = getCachedResponse(url);
+        if (cached) return cached;
+    }
+
+    // ── Invalidate cache for state-changing requests ──────────────────────
+    if (isStateChanging) {
+        invalidateCacheFor(path);
+    }
+
     // ── Deduplicate identical in-flight GET requests ─────────────────────
     if (isGet && inflightRequests.has(url)) {
         return inflightRequests.get(url).catch(err => { inflightRequests.delete(url); throw err; });
@@ -120,7 +159,12 @@ async function request(path, options = {}) {
                 throw new Error(data.error || `Request failed (${res.status})`);
             }
 
-            return res.json();
+            const jsonData = await res.json();
+            // Cache successful GET responses
+            if (isGet) {
+                setCachedResponse(url, jsonData);
+            }
+            return jsonData;
         } catch (err) {
             if (err.name === 'AbortError') {
                 throw new Error(`Request to ${path} timed out after ${timeoutMs}ms`);
@@ -216,7 +260,13 @@ export function connectWS(onMessage, intervalMs = 10000) {
         if (document.hidden) {
             clearInterval(pollInterval);
             pollInterval = null;
+            // Clear any pending reconnect timers when tab becomes hidden
+            if (reconnectTimer) {
+                clearTimeout(reconnectTimer);
+                reconnectTimer = null;
+            }
         } else if (!pollInterval) {
+            // Do immediate poll before restarting interval when tab becomes visible
             poll();
             pollInterval = setInterval(poll, intervalMs);
         }
@@ -230,6 +280,19 @@ export function connectWS(onMessage, intervalMs = 10000) {
         if (reconnectTimer) clearTimeout(reconnectTimer);
         document.removeEventListener('visibilitychange', visHandler);
     };
+}
+
+/**
+ * Manually invalidate the response cache.
+ * If pathPrefix is provided, only invalidate entries matching that path.
+ * Otherwise, clear the entire cache.
+ */
+export function invalidateCache(pathPrefix?: string) {
+    if (pathPrefix) {
+        invalidateCacheFor(pathPrefix);
+    } else {
+        responseCache.clear();
+    }
 }
 
 export async function fetchData(path) {
@@ -264,4 +327,4 @@ export function setActiveConnectionId(id) {
 }
 
 export { API_BASE };
-export default { fetchData, postData, putData, patchData, deleteData, connectWS, API_BASE, setActiveConnectionId };
+export default { fetchData, postData, putData, patchData, deleteData, connectWS, API_BASE, setActiveConnectionId, invalidateCache };

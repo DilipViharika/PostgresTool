@@ -9655,4 +9655,4 @@ function DemoPostgresTab({ tabId }) {
     );
 }
 
-export default DemoPostgresTab;
+export default React.memo(DemoPostgresTab);

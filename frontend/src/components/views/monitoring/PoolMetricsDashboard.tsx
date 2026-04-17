@@ -66,7 +66,7 @@ const fmtMs = (ms) => {
 };
 
 /* ── Metric Card ──────────────────────────────────────────────────────────── */
-const MetricCard = ({ icon: Icon, label, value, unit = '', sub, color = THEME.primary, warn }) => (
+const MetricCard = React.memo(({ icon: Icon, label, value, unit = '', sub, color = THEME.primary, warn }) => (
     <div
         className="pmd-metric"
         style={{
@@ -100,7 +100,7 @@ const MetricCard = ({ icon: Icon, label, value, unit = '', sub, color = THEME.pr
             {sub && <div style={{ fontSize: '11px', color: warn ? THEME.warning : THEME.textDim, marginTop: 2 }}>{sub}</div>}
         </div>
     </div>
-);
+));
 
 /* ── Custom Chart Tooltip ─────────────────────────────────────────────────── */
 const ChartTip = ({ active, payload, label }) => {

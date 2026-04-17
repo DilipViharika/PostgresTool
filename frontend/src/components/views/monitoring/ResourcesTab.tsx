@@ -285,7 +285,7 @@ const CountdownBar = ({ intervalSec, lastRefreshed }) => {
             setProgress(Math.max(0, 100 - (elapsed / intervalSec) * 100));
         };
         tick();
-        const id = setInterval(tick, 250);
+        const id = setInterval(tick, 1000);
         return () => clearInterval(id);
     }, [intervalSec, lastRefreshed]);
     if (!intervalSec) return null;

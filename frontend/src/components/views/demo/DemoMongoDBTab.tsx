@@ -5217,4 +5217,4 @@ function DemoMongoDBTab({ tabId }) {
     );
 }
 
-export default DemoMongoDBTab;
+export default React.memo(DemoMongoDBTab);

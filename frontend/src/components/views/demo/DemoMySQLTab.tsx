@@ -4357,4 +4357,4 @@ function DemoMySQLTab({ tabId }) {
     );
 }
 
-export default DemoMySQLTab;
+export default React.memo(DemoMySQLTab);
