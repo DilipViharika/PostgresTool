@@ -928,7 +928,7 @@ function DemoMongoDBTab({ tabId }) {
             <div
                 style={{
                     fontSize: '11px',
-                    uppercase: true,
+                    textTransform: 'uppercase',
                     letterSpacing: '0.02em',
                     color: THEME.textDim,
                     marginBottom: 4,

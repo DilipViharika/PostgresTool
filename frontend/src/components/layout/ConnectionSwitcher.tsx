@@ -453,6 +453,7 @@ const styles = {
         flexDirection: 'column',
         gap: '2px',
         overflow: 'hidden',
+        minWidth: 0,
     },
     itemName: {
         fontSize: '12px',

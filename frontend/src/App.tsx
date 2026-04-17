@@ -2581,6 +2581,9 @@ const NotificationCenter = ({ notifications, onDismiss, onClearAll }) => {
                                             padding: '2px 7px',
                                             borderRadius: 20,
                                             fontFamily: DS.fontMono,
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
                                         }}
                                     >
                                         {notifications.length}
@@ -3521,6 +3524,10 @@ const ConnectionSelector = () => {
                                     padding: '2px 6px',
                                     flexShrink: 0,
                                     letterSpacing: '0.02em',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    lineHeight: 1,
                                 }}
                                 title={`Database type: ${activeConnection.dbType || 'unknown'}`}
                             >

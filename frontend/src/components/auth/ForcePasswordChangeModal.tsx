@@ -277,6 +277,7 @@ const ForcePasswordChangeModal: React.FC<ForcePasswordChangeModalProps> = ({ onS
                     <div style={{
                         display: 'grid', gridTemplateColumns: '1fr 1fr',
                         gap: '4px 16px', padding: '4px 0',
+                        alignItems: 'center',
                     }}>
                         <span style={checkStyle(hasMinLength)}>
                             {hasMinLength ? '✓' : '○'} Min 8 characters

@@ -169,7 +169,7 @@ export const ProfileModal = ({ user, onClose, onSave }) => {
                         >
                             {initials}
                         </div>
-                        <div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
                             <div style={{ fontSize: 16, fontWeight: 700, color: DS.textPrimary }}>{user?.name}</div>
                             <div
                                 style={{
@@ -266,7 +266,7 @@ export const ProfileModal = ({ user, onClose, onSave }) => {
                             ['Role', user?.role || '—'],
                             ['Access', user?.accessLevel || '—'],
                         ].map(([lbl, val]) => (
-                            <div key={lbl}>
+                            <div key={lbl} style={{ display: 'flex', flexDirection: 'column' }}>
                                 <label
                                     style={{
                                         display: 'block',
@@ -289,6 +289,8 @@ export const ProfileModal = ({ user, onClose, onSave }) => {
                                         fontSize: 13,
                                         fontFamily: DS.fontMono,
                                         letterSpacing: '0.04em',
+                                        display: 'flex',
+                                        alignItems: 'center',
                                     }}
                                 >
                                     {val}

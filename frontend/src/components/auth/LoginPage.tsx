@@ -557,7 +557,7 @@ const LoginPage = () => {
                                             <polyline points="20 6 9 17 4 12" />
                                         </svg>
                                     </div>
-                                    <span onClick={() => setRememberMe(r => !r)} style={{ fontSize: '0.84rem', color: THEME.textMuted, cursor: 'pointer', fontWeight: 500 }}>
+                                    <span onClick={() => setRememberMe(r => !r)} style={{ fontSize: '0.84rem', color: THEME.textMuted, cursor: 'pointer', fontWeight: 500, flex: 1, minWidth: 0 }}>
                                         Remember this device for 30 days
                                     </span>
                                 </div>

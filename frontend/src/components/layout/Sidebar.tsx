@@ -301,6 +301,7 @@ export const Sidebar = ({
                                                 borderRadius: 8, background: 'rgba(251,113,133,0.15)',
                                                 color: DS.rose, border: '1px solid rgba(251,113,133,0.25)',
                                                 fontFamily: DS.fontMono, lineHeight: '14px', flexShrink: 0,
+                                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                                             }}>
                                                 {tab.badge}
                                             </span>
@@ -515,7 +516,7 @@ export const Sidebar = ({
                     /* Expanded: compact button rows */
                     <>
                         {/* Nav buttons: User Management (super_admin only) & Demo */}
-                        <div style={{ display: 'flex', gap: 4, marginBottom: 2 }}>
+                        <div style={{ display: 'flex', gap: 4, marginBottom: 2, alignItems: 'center' }}>
                             {[
                                 currentUser?.role === 'super_admin' && { icon: Users, label: 'Users', action: () => onTabChange('UserManagement'),
                                   active: activeTab === 'UserManagement' || activeTab === 'user-audit' },
@@ -552,7 +553,7 @@ export const Sidebar = ({
                             ))}
                         </div>
                         {/* Utility buttons: Feedback & Sign Out */}
-                        <div style={{ display: 'flex', gap: 4 }}>
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                             <button
                                 onClick={onOpenFeedback}
                                 style={{

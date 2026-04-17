@@ -141,6 +141,7 @@ class SectionErrorBoundary extends React.Component {
                             background: `${THEME.danger}15`,
                             borderRadius: '10px',
                             border: `1px solid ${THEME.danger}40`,
+                            marginBottom: 16,
                         }}
                     >
                         <ErrorIcon size={28} color={THEME.danger} />
@@ -205,6 +206,7 @@ class SectionErrorBoundary extends React.Component {
                             display: 'flex',
                             gap: '10px',
                             justifyContent: 'center',
+                            alignItems: 'center',
                         }}
                     >
                         <button

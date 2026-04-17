@@ -286,7 +286,7 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'overview' && itemKey === 'fleet-overview') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
                         <StatusBadge label="Operational" color={THEME.success} pulse />
                         <StatusBadge label="4 Instances" color={THEME.primary} />
                         <StatusBadge label="PostgreSQL 16.2" color={THEME.textMuted} />
@@ -297,7 +297,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                         className="dpg-stagger"
                     >
@@ -491,7 +491,7 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'overview' && itemKey === 'database-overview') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
                         <StatusBadge label="Operational" color={THEME.success} pulse />
                         <StatusBadge label="Production" color={THEME.danger} />
                         <StatusBadge label="PostgreSQL 16.2" color={THEME.primary} />
@@ -502,7 +502,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                         className="dpg-stagger"
                     >
@@ -624,7 +624,7 @@ function DemoPostgresTab({ tabId }) {
                                     }}
                                 >
                                     <div style={{ fontWeight: 700, marginBottom: 4 }}>PID 54188</div>
-                                    <div style={{ display: 'flex', gap: 4 }}>
+                                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                                         <StatusBadge label="Wait:Lock" color={THEME.warning} />
                                         <StatusBadge label="Idle in Txn" color={THEME.textMuted} />
                                     </div>
@@ -724,6 +724,7 @@ function DemoPostgresTab({ tabId }) {
                                                 justifyContent: 'space-between',
                                                 fontSize: 10,
                                                 marginBottom: 4,
+                                                alignItems: 'center',
                                             }}
                                         >
                                             <span style={{ color: THEME.textMain, fontWeight: 600 }}>{t.name}</span>
@@ -2004,7 +2005,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard
@@ -2158,7 +2159,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                                 className="dpg-stagger"
                             >
@@ -2313,7 +2314,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard icon={Database} label="Unused Tables" value="3" color={THEME.warning} />
@@ -2418,7 +2419,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                         className="dpg-stagger"
                     >
@@ -2886,7 +2887,6 @@ function DemoPostgresTab({ tabId }) {
                                     />
                                     <div
                                         style={{
-                                            paddingLeft: 30,
                                             padding: '7px 10px 7px 30px',
                                             background: THEME.surface,
                                             border: `1px solid ${THEME.glassBorder}`,
@@ -3613,7 +3613,7 @@ function DemoPostgresTab({ tabId }) {
                             style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                                gap: '12px',
+                                gap: 16,
                             }}
                         >
                             {['CPU Threshold', 'Memory Alert', 'Latency Check', 'Error Rate'].map((t, i) => (
@@ -3653,7 +3653,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -3868,7 +3868,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard
@@ -4146,7 +4146,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard icon={CheckCircle} label="Applied" value="28" color={THEME.success} />
@@ -4203,7 +4203,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -4377,7 +4377,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard icon={AlertTriangle} label="Regressions" value="3" color={THEME.danger} />
@@ -4473,7 +4473,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -4647,7 +4647,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard
@@ -4752,7 +4752,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard icon={Layers} label="Bloated Indexes" value="4" color={THEME.warning} />
@@ -4933,7 +4933,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard
@@ -5118,7 +5118,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard icon={Layers} label="Schemas" value="4" color={THEME.ai} />
@@ -5305,7 +5305,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -5464,7 +5464,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard icon={Database} label="Total Tables" value="45" color={THEME.primary} />
@@ -5622,7 +5622,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard icon={LayoutDashboard} label="Saved Charts" value="12" color={THEME.primary} />
@@ -5794,7 +5794,7 @@ function DemoPostgresTab({ tabId }) {
                             style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(2, 1fr)',
-                                gap: '12px',
+                                gap: 16,
                                 padding: '16px',
                             }}
                         >
@@ -5835,7 +5835,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <RingGauge value={65} max={100} label="Pool Usage" color={THEME.ai} />
@@ -5846,7 +5846,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -5971,7 +5971,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -6107,7 +6107,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard icon={Server} label="Primary" value="prod-db-01" color={THEME.success} />
@@ -6194,7 +6194,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -6289,7 +6289,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -6506,7 +6506,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -6667,7 +6667,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -6834,7 +6834,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -6995,7 +6995,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -7035,7 +7035,7 @@ function DemoPostgresTab({ tabId }) {
                             style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                                gap: '12px',
+                                gap: 16,
                             }}
                         >
                             {[
@@ -7134,7 +7134,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -7247,7 +7247,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard
@@ -7364,7 +7364,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard
@@ -7532,7 +7532,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -7615,7 +7615,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -7692,7 +7692,7 @@ function DemoPostgresTab({ tabId }) {
                             style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                                gap: '12px',
+                                gap: 16,
                             }}
                         >
                             {['postgres-0', 'postgres-1', 'postgres-2'].map((pod, i) => (
@@ -7737,7 +7737,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -7874,7 +7874,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -7980,7 +7980,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -8120,7 +8120,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard
@@ -8375,7 +8375,7 @@ function DemoPostgresTab({ tabId }) {
                                 style={{
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                                    gap: '12px',
+                                    gap: 16,
                                 }}
                             >
                                 <MetricCard
@@ -8534,7 +8534,7 @@ function DemoPostgresTab({ tabId }) {
                         style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                            gap: '12px',
+                            gap: 16,
                         }}
                     >
                         <MetricCard

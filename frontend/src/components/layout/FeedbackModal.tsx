@@ -803,11 +803,11 @@ export const FeedbackModal = ({ onClose, initialSection }) => {
                         borderBottom: `1px solid ${DS.border}`,
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'flex-start',
+                        alignItems: 'center',
                         flexShrink: 0,
                     }}
                 >
-                    <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <h3
                             style={{
                                 margin: 0,
@@ -986,13 +986,13 @@ export const FeedbackModal = ({ onClose, initialSection }) => {
                                 fontSize: 12,
                                 lineHeight: 1.5,
                                 display: 'flex',
-                                alignItems: 'flex-start',
+                                alignItems: 'center',
                                 justifyContent: 'space-between',
                                 gap: 8,
                             }}
                         >
-                            <span style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                                <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <AlertTriangle size={14} style={{ flexShrink: 0 }} />
                                 {error}
                             </span>
                             <button
