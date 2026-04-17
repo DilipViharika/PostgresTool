@@ -151,6 +151,13 @@ import CommandPalette from './components/shared/CommandPalette';
 const LicenseManagement = lazyRetry(() => import('./enterprise/views/LicenseManagement'));
 const OrgManagement = lazyRetry(() => import('./enterprise/views/OrgManagement'));
 
+// Enterprise admin surfaces (notifiers, Redis/ES, anomaly detectors, trace detail)
+const NotifierSettings = lazyRetry(() => import('./enterprise/views/NotifierSettings'));
+const RedisOverview = lazyRetry(() => import('./enterprise/views/RedisOverview'));
+const ElasticsearchOverview = lazyRetry(() => import('./enterprise/views/ElasticsearchOverview'));
+const DetectorPicker = lazyRetry(() => import('./enterprise/views/DetectorPicker'));
+const TraceDetail = lazyRetry(() => import('./enterprise/views/TraceDetail'));
+
 import {
     Activity,
     Zap,
@@ -268,6 +275,12 @@ registerComponents({
     ChartBuilder,
     AlertRuleEditor,
     PoolMetricsDashboard,
+    // Enterprise admin surfaces
+    NotifierSettings,
+    RedisOverview,
+    ElasticsearchOverview,
+    DetectorPicker,
+    TraceDetail,
     // Enterprise (uncomment when ready): LicenseManagement, OrgManagement,
 });
 

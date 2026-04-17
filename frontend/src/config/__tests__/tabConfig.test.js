@@ -65,6 +65,21 @@ describe('tabConfig', () => {
         ReportBuilderTab: () => 'ReportBuilderTab',
         TerraformExportTab: () => 'TerraformExportTab',
         CustomDashboardTab: () => 'CustomDashboardTab',
+        // Enterprise views (G3/UI-3)
+        NotifierSettings: () => 'NotifierSettings',
+        RedisOverview: () => 'RedisOverview',
+        ElasticsearchOverview: () => 'ElasticsearchOverview',
+        DetectorPicker: () => 'DetectorPicker',
+        TraceDetail: () => 'TraceDetail',
+        // Additional components referenced by tabConfig.ts
+        SDKDashboardTab: () => 'SDKDashboardTab',
+        MySQLOverviewTab: () => 'MySQLOverviewTab',
+        MySQLPerformanceTab: () => 'MySQLPerformanceTab',
+        MySQLReplicationTab: () => 'MySQLReplicationTab',
+        AuditAndSecurityTab: () => 'AuditAndSecurityTab',
+        DemoPostgresTab: () => 'DemoPostgresTab',
+        DemoMySQLTab: () => 'DemoMySQLTab',
+        DemoMongoDBTab: () => 'DemoMongoDBTab',
     };
 
     beforeEach(() => {

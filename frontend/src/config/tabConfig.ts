@@ -56,6 +56,9 @@ import {
     ListTree,
     DatabaseZap,
     Blocks,
+    Activity as ActivityIcon,
+    Search,
+    Link as LinkIcon,
 } from 'lucide-react';
 
 import { getDS } from './designTokens';
@@ -254,6 +257,34 @@ export function buildTabConfig() {
         },
         { id: 'cloudwatch', icon: Cloud, label: 'CloudWatch', component: _components.CloudWatchTab, badge: null },
         {
+            id: 'redis-overview',
+            icon: Droplets,
+            label: 'Redis Overview',
+            component: _components.RedisOverview,
+            badge: 'ENT',
+        },
+        {
+            id: 'elasticsearch-overview',
+            icon: Search,
+            label: 'Elasticsearch Overview',
+            component: _components.ElasticsearchOverview,
+            badge: 'ENT',
+        },
+        {
+            id: 'anomaly-detectors',
+            icon: ActivityIcon,
+            label: 'Anomaly Detectors',
+            component: _components.DetectorPicker,
+            badge: 'ENT',
+        },
+        {
+            id: 'trace-detail',
+            icon: LinkIcon,
+            label: 'Trace Detail',
+            component: _components.TraceDetail,
+            badge: 'ENT',
+        },
+        {
             id: 'log-patterns',
             icon: FileSearch,
             label: 'Log Pattern Analysis',
@@ -370,6 +401,13 @@ export function buildTabConfig() {
             badge: null,
         },
         { id: 'admin', icon: Shield, label: 'Admin Panel', component: _components.AdminTab, badge: null },
+        {
+            id: 'notifier-settings',
+            icon: Bell,
+            label: 'Notifier Settings',
+            component: _components.NotifierSettings,
+            badge: 'ENT',
+        },
         {
             id: 'retention',
             icon: Clock,

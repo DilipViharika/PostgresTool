@@ -1,0 +1,60 @@
+# .gitleaks.toml
+# ───────────────
+# Repository-specific tuning for gitleaks. The default ruleset is kept via
+# `extend.useDefault = true`; this file adds VIGIL-specific patterns and
+# silences known false positives.
+
+title = "VIGIL gitleaks config"
+
+[extend]
+useDefault = true
+
+# ── VIGIL-specific rules ─────────────────────────────────────────────────
+[[rules]]
+id = "vigil-scim-token"
+description = "VIGIL SCIM bearer token"
+# Shape: vigil_scim_<base64url 43 chars> — defined in scim/scimAuth.js.
+regex = '''vigil_scim_[A-Za-z0-9_-]{40,}'''
+tags  = ["vigil", "scim", "secret"]
+
+[[rules]]
+id = "vigil-api-key"
+description = "VIGIL internal API key"
+# Shape: vigil_api_<hex 32+>; emitted by admin API-key rotation script.
+regex = '''vigil_api_[a-f0-9]{32,}'''
+tags  = ["vigil", "api-key", "secret"]
+
+[[rules]]
+id = "vigil-webhook-hmac"
+description = "VIGIL webhook HMAC signing secret"
+# Webhook secrets are ≥ 32 hex chars; emit a distinct id for clarity in alerts.
+regex = '''(?i)webhook[_-]?(secret|signing[_-]?key)\s*[:=]\s*["']?[a-f0-9]{32,}'''
+tags  = ["vigil", "webhook", "secret"]
+
+# ── Allowlist: known safe patterns ───────────────────────────────────────
+[allowlist]
+description = "Paths and patterns exempt from scanning"
+
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)dist/''',
+  '''(^|/)build/''',
+  '''(^|/)frontend/dist/''',
+  '''(^|/)coverage/''',
+  # SOC 2 and sample docs reference placeholder tokens; never real ones.
+  '''VIGIL_SOC2_Controls_Checklist\.md$''',
+  '''docs/runbooks/okta-scim\.md$''',
+  '''docs/runbooks/entra-scim\.md$''',
+  # Fixtures used by unit tests — seeded with deterministic fake values.
+  '''tests/fixtures/''',
+]
+
+# Specific literal strings that look like secrets but aren't.
+regexes = [
+  # Documentation placeholder for SCIM token in runbooks.
+  '''vigil_scim_REPLACE_WITH_REAL_TOKEN''',
+  # Genesis hash in audit chain — 64 zeros, not a secret.
+  '''0{64}''',
+  # Example hex string used in unit test fixtures.
+  '''deadbeef(cafe)?([0-9a-f]+)?''',
+]

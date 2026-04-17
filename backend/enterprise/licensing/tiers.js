@@ -10,7 +10,10 @@ export const TIERS = {
     name: 'Community',
     features: [
       'overview', 'performance', 'resources', 'indexes',
-      'sql_console', 'alerts_basic', 'vacuum_maintenance'
+      'sql_console', 'alerts_basic', 'vacuum_maintenance',
+      // ── Roadmap §7.4: Community gets Redis + one notifier ─────────────
+      'adapter_redis',
+      'notifiers_webhook',
     ],
     maxConnections: 2,
     maxUsers: 5,
@@ -25,7 +28,12 @@ export const TIERS = {
       'query_optimizer', 'bloat_analysis', 'replication_wal',
       'backup_recovery', 'checkpoint_monitor', 'capacity_planning',
       'schema_versioning', 'api_queries', 'repository',
-      'alerts_advanced', 'cloudwatch', 'log_pattern_analysis'
+      'alerts_advanced', 'cloudwatch', 'log_pattern_analysis',
+      // ── Roadmap §7.4: Pro adds Teams + ES + anomaly detection ─────────
+      'adapter_redis', 'adapter_elasticsearch',
+      'notifiers_webhook', 'notifiers_teams', 'notifiers_pagerduty',
+      'anomaly_detection_suggest',
+      'trace_correlation',
     ],
     maxConnections: 10,
     maxUsers: 25,
@@ -45,7 +53,14 @@ export const TIERS = {
       'multi_tenancy', 'alert_correlation', 'dba_task_scheduler',
       'security_compliance', 'table_analytics', 'connection_pool',
       'query_plan_regression', 'custom_dashboards', 'advanced_analysis',
-      'user_management_advanced', 'api_keys_unlimited'
+      'user_management_advanced', 'api_keys_unlimited',
+      // ── Roadmap §7.4: Enterprise unlocks everything ───────────────────
+      'adapter_redis', 'adapter_elasticsearch',
+      'notifiers_webhook', 'notifiers_teams', 'notifiers_pagerduty', 'notifiers_opsgenie',
+      'anomaly_detection_suggest', 'anomaly_detection_page',
+      'trace_correlation',
+      'scim_provisioning',
+      'audit_log_tamper_evident',
     ],
     maxConnections: -1, // unlimited
     maxUsers: -1, // unlimited

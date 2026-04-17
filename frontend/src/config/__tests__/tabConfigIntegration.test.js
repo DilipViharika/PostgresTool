@@ -60,6 +60,21 @@ describe('tabConfigIntegration', () => {
             'ReportBuilderTab',
             'TerraformExportTab',
             'CustomDashboardTab',
+            // Enterprise views (G3/UI-3)
+            'NotifierSettings',
+            'RedisOverview',
+            'ElasticsearchOverview',
+            'DetectorPicker',
+            'TraceDetail',
+            // Additional components referenced by tabConfig.ts
+            'SDKDashboardTab',
+            'MySQLOverviewTab',
+            'MySQLPerformanceTab',
+            'MySQLReplicationTab',
+            'AuditAndSecurityTab',
+            'DemoPostgresTab',
+            'DemoMySQLTab',
+            'DemoMongoDBTab',
         ];
         componentNames.forEach((name) => {
             mockComponents[name] = () => name;

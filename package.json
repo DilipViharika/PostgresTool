@@ -29,7 +29,8 @@
         },
         "@esbuild-kit/esm-loader": {
             "esbuild": "^0.25.0"
-        }
+        },
+        "eventemitter3": "^5.0.1"
     },
     "lint-staged": {
         "frontend/**/*.{js,jsx}": [
