@@ -38,8 +38,11 @@ export function ipWhitelistMiddleware(pool: Pool) {
       next();
     } catch (err) {
       console.error('[ipWhitelist] Error:', (err as Error).message);
-      // Fail open — don't block users if whitelist check fails
-      next();
+      // SEC-014: Fail closed — block access if whitelist check fails
+      res.status(503).json({
+        error: 'IP whitelist service temporarily unavailable. Access denied for safety.',
+      });
+      return;
     }
   };
 }

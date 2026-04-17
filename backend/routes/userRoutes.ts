@@ -36,10 +36,30 @@ function validateUserInput(userData: Record<string, any>): { valid: boolean; err
         }
     }
 
-    // Password validation - minimum 8 characters
+    // Password validation — SEC-016: enforce strong password policy
     if (password) {
-        if (password.length < 8) {
-            return { valid: false, error: 'Password must be at least 8 characters' };
+        if (password.length < 12) {
+            return { valid: false, error: 'Password must be at least 12 characters' };
+        }
+        if (password.length > 128) {
+            return { valid: false, error: 'Password must not exceed 128 characters' };
+        }
+        if (!/[a-z]/.test(password)) {
+            return { valid: false, error: 'Password must contain at least one lowercase letter' };
+        }
+        if (!/[A-Z]/.test(password)) {
+            return { valid: false, error: 'Password must contain at least one uppercase letter' };
+        }
+        if (!/\d/.test(password)) {
+            return { valid: false, error: 'Password must contain at least one digit' };
+        }
+        if (!/[^a-zA-Z0-9]/.test(password)) {
+            return { valid: false, error: 'Password must contain at least one special character' };
+        }
+        // Check against common weak passwords
+        const commonPasswords = ['password123', 'admin1234', 'letmein123', 'welcome123', 'changeme123', 'qwerty1234'];
+        if (commonPasswords.includes(password.toLowerCase())) {
+            return { valid: false, error: 'This password is too common. Please choose a stronger password.' };
         }
     }
 
@@ -70,7 +90,7 @@ export default function userRoutes(pool: Pool, authenticate: any, requireScreen:
             res.json([]);
         } catch (err: any) {
             log('ERROR', 'Failed to list users', { error: err.message });
-            res.status(500).json({ error: err.message });
+            res.status(500).json({ error: 'Internal server error' });
         }
     });
 

@@ -32,10 +32,15 @@ interface PoolConfigWithParams {
 type PoolConfig = PoolConfigWithUrl | PoolConfigWithParams;
 
 // Resolve SSL config from environment.
-// Set DB_SSL=true to enable SSL with self-signed cert support (rejectUnauthorized: false).
+// Set DB_SSL=true to enable SSL.
 // Leave unset (or set to false) for plain-text connections (e.g. localhost dev).
 function resolveSsl(): boolean | { rejectUnauthorized: boolean } {
-  return process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false;
+  if (process.env.DB_SSL !== 'true') return false;
+  // SEC-009: Only disable certificate validation in development
+  const rejectUnauthorized = process.env.NODE_ENV === 'production'
+    ? (process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false')  // default true in prod
+    : false;  // allow self-signed in dev
+  return { rejectUnauthorized };
 }
 
 // Build a connection config that works whether DATABASE_URL is set or not.

@@ -24,6 +24,10 @@ const SSOCallback = () => {
                 const userParam = searchParams.get('user');
                 const errorParam = searchParams.get('error');
 
+                // SEC-007: Immediately clean sensitive data from URL to prevent leakage
+                // via browser history, referrer headers, and server logs
+                window.history.replaceState({}, document.title, window.location.pathname);
+
                 // Handle SSO provider errors (e.g., user denied access)
                 if (errorParam) {
                     throw new Error(decodeURIComponent(errorParam));

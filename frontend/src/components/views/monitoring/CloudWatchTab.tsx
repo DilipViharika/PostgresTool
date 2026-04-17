@@ -298,6 +298,11 @@ const ConnectModal = ({ T, onAdd, onClose, existing }) => {
             setErrors(e);
             return;
         }
+        // SEC-003: Validate AWS credential format and warn about security
+        if (!/^AK[A-Z0-9]{18,}$/.test(form.accessKey.trim())) {
+            setErrors({ accessKey: 'Invalid AWS Access Key format (should start with AK)' });
+            return;
+        }
         onAdd({
             id: form.dbId.trim(),
             dbId: form.dbId.trim(),

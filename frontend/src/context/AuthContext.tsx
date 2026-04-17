@@ -17,6 +17,24 @@ const API_BASE = import.meta.env.VITE_API_URL || (() => { console.warn('VITE_API
 const STORAGE_KEYS = { TOKEN: 'vigil_token', USER: 'vigil_user' };
 
 // ═══════════════════════════════════════════════════════════════════════════
+//  SEC-002: Secure storage wrapper with try-catch and future migration path
+//  TODO: Migrate to httpOnly cookies when backend supports Set-Cookie auth flow
+// ═══════════════════════════════════════════════════════════════════════════
+const secureStorage = {
+    getItem(key) {
+        try { return localStorage.getItem(key); } catch { return null; }
+    },
+    setItem(key, value) {
+        try { localStorage.setItem(key, value); } catch (e) {
+            console.warn('[Auth] Storage write failed:', e?.message);
+        }
+    },
+    removeItem(key) {
+        try { localStorage.removeItem(key); } catch {}
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 //  JWT HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -51,24 +69,24 @@ export const AuthProvider = ({ children }) => {
     const [authLoading, setAuthLoading] = useState(false); // login in progress
     const [error, setError] = useState(null);
     const [mustChangePassword, setMustChangePassword] = useState(
-        () => localStorage.getItem('vigil_must_change_password') === 'true'
+        () => secureStorage.getItem('vigil_must_change_password') === 'true'
     );
 
     // ── Restore session from localStorage on mount (sync — no fetch) ───────
     useEffect(() => {
         try {
-            const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
-            const stored = localStorage.getItem(STORAGE_KEYS.USER);
+            const token = secureStorage.getItem(STORAGE_KEYS.TOKEN);
+            const stored = secureStorage.getItem(STORAGE_KEYS.USER);
 
             if (token && stored && !isTokenExpired(token)) {
                 setCurrentUser(JSON.parse(stored));
             } else {
-                localStorage.removeItem(STORAGE_KEYS.TOKEN);
-                localStorage.removeItem(STORAGE_KEYS.USER);
+                secureStorage.removeItem(STORAGE_KEYS.TOKEN);
+                secureStorage.removeItem(STORAGE_KEYS.USER);
             }
         } catch {
-            localStorage.removeItem(STORAGE_KEYS.TOKEN);
-            localStorage.removeItem(STORAGE_KEYS.USER);
+            secureStorage.removeItem(STORAGE_KEYS.TOKEN);
+            secureStorage.removeItem(STORAGE_KEYS.USER);
         }
         setLoading(false);
     }, []);
@@ -76,8 +94,8 @@ export const AuthProvider = ({ children }) => {
     // ── Listen for forced logout (401 from api.js) ─────────────────────────
     useEffect(() => {
         const onLogout = () => {
-            localStorage.removeItem(STORAGE_KEYS.TOKEN);
-            localStorage.removeItem(STORAGE_KEYS.USER);
+            secureStorage.removeItem(STORAGE_KEYS.TOKEN);
+            secureStorage.removeItem(STORAGE_KEYS.USER);
             setCurrentUser(null);
             setError('Session expired. Please sign in again.');
         };
@@ -89,10 +107,10 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         if (!currentUser) return;
         const interval = setInterval(() => {
-            const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+            const token = secureStorage.getItem(STORAGE_KEYS.TOKEN);
             if (!token || isTokenExpired(token)) {
-                localStorage.removeItem(STORAGE_KEYS.TOKEN);
-                localStorage.removeItem(STORAGE_KEYS.USER);
+                secureStorage.removeItem(STORAGE_KEYS.TOKEN);
+                secureStorage.removeItem(STORAGE_KEYS.USER);
                 setCurrentUser(null);
                 setError('Session expired. Please sign in again.');
             }
@@ -122,25 +140,25 @@ export const AuthProvider = ({ children }) => {
 
             // Clear previous user's cached data before setting new session
             // This prevents stale data from a different user leaking into the new session
-            const prevUser = localStorage.getItem(STORAGE_KEYS.USER);
+            const prevUser = secureStorage.getItem(STORAGE_KEYS.USER);
             const prevParsed = prevUser ? JSON.parse(prevUser) : null;
             if (!prevParsed || prevParsed.username !== data.user.username) {
-                localStorage.removeItem('pg_monitor_active_tab');
-                localStorage.removeItem('vigil_active_connection_id');
-                localStorage.removeItem('vigil_custom_dashboards');
-                localStorage.removeItem('vigil_active_dashboard');
-                localStorage.removeItem('vigil_repos_v10');
-                localStorage.removeItem('vigil_recent_tabs');
-                localStorage.removeItem('vigil_last_feedback');
+                secureStorage.removeItem('pg_monitor_active_tab');
+                secureStorage.removeItem('vigil_active_connection_id');
+                secureStorage.removeItem('vigil_custom_dashboards');
+                secureStorage.removeItem('vigil_active_dashboard');
+                secureStorage.removeItem('vigil_repos_v10');
+                secureStorage.removeItem('vigil_recent_tabs');
+                secureStorage.removeItem('vigil_last_feedback');
             }
 
-            localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
-            localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+            secureStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+            secureStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
             if (data.mustChangePassword) {
-                localStorage.setItem('vigil_must_change_password', 'true');
+                secureStorage.setItem('vigil_must_change_password', 'true');
                 setMustChangePassword(true);
             } else {
-                localStorage.removeItem('vigil_must_change_password');
+                secureStorage.removeItem('vigil_must_change_password');
                 setMustChangePassword(false);
             }
             setCurrentUser(data.user);
@@ -163,7 +181,7 @@ export const AuthProvider = ({ children }) => {
     // ── SSO Callback Handler ───────────────────────────────────────────────
     const handleSSOCallback = useCallback((token, user) => {
         // Clear previous user's cached data before setting new SSO session
-        const prevUser = localStorage.getItem(STORAGE_KEYS.USER);
+        const prevUser = secureStorage.getItem(STORAGE_KEYS.USER);
         const prevParsed = prevUser
             ? (() => {
                   try {
@@ -174,29 +192,29 @@ export const AuthProvider = ({ children }) => {
               })()
             : null;
         if (!prevParsed || prevParsed.username !== user.username) {
-            localStorage.removeItem('pg_monitor_active_tab');
-            localStorage.removeItem('vigil_active_connection_id');
-            localStorage.removeItem('vigil_custom_dashboards');
-            localStorage.removeItem('vigil_active_dashboard');
-            localStorage.removeItem('vigil_repos_v10');
-            localStorage.removeItem('vigil_recent_tabs');
-            localStorage.removeItem('vigil_last_feedback');
+            secureStorage.removeItem('pg_monitor_active_tab');
+            secureStorage.removeItem('vigil_active_connection_id');
+            secureStorage.removeItem('vigil_custom_dashboards');
+            secureStorage.removeItem('vigil_active_dashboard');
+            secureStorage.removeItem('vigil_repos_v10');
+            secureStorage.removeItem('vigil_recent_tabs');
+            secureStorage.removeItem('vigil_last_feedback');
         }
-        localStorage.setItem(STORAGE_KEYS.TOKEN, token);
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+        secureStorage.setItem(STORAGE_KEYS.TOKEN, token);
+        secureStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
         setCurrentUser(user);
     }, []);
 
     // ── Logout ─────────────────────────────────────────────────────────────
     const logout = useCallback(() => {
-        localStorage.removeItem(STORAGE_KEYS.TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.USER);
+        secureStorage.removeItem(STORAGE_KEYS.TOKEN);
+        secureStorage.removeItem(STORAGE_KEYS.USER);
         // Clear persisted active tab so the next login always opens Overview
-        localStorage.removeItem('pg_monitor_active_tab');
+        secureStorage.removeItem('pg_monitor_active_tab');
         // Clear active connection so next login starts fresh
-        localStorage.removeItem('vigil_active_connection_id');
+        secureStorage.removeItem('vigil_active_connection_id');
         // Clear password-change flag so it's re-evaluated on next login
-        localStorage.removeItem('vigil_must_change_password');
+        secureStorage.removeItem('vigil_must_change_password');
         setMustChangePassword(false);
         setCurrentUser(null);
         setError(null);
@@ -212,7 +230,7 @@ export const AuthProvider = ({ children }) => {
     const isAdmin = useMemo(() => currentUser?.role === 'super_admin', [currentUser]);
 
     // ── Token accessors ────────────────────────────────────────────────────
-    const getToken = useCallback(() => localStorage.getItem(STORAGE_KEYS.TOKEN), []);
+    const getToken = useCallback(() => secureStorage.getItem(STORAGE_KEYS.TOKEN), []);
 
     // Returns the base WS URL (no token in URL — client sends auth as first message)
     const getWSUrl = useCallback(() => {
@@ -223,7 +241,7 @@ export const AuthProvider = ({ children }) => {
 
     // ── Session info ───────────────────────────────────────────────────────
     const sessionInfo = useMemo(() => {
-        const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+        const token = secureStorage.getItem(STORAGE_KEYS.TOKEN);
         if (!token) return null;
         const remaining = tokenExpiresIn(token);
         return {
@@ -235,7 +253,7 @@ export const AuthProvider = ({ children }) => {
     // ── Context value ──────────────────────────────────────────────────────
     // Allow external code (e.g. ForcePasswordChangeModal) to clear the flag
     const clearMustChangePassword = useCallback(() => {
-        localStorage.removeItem('vigil_must_change_password');
+        secureStorage.removeItem('vigil_must_change_password');
         setMustChangePassword(false);
     }, []);
 

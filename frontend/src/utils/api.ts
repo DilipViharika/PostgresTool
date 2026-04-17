@@ -7,6 +7,24 @@ const inflightRequests = new Map();
 // ── Default request timeout (30 seconds) ───────────────────────────────────
 const DEFAULT_TIMEOUT_MS = 30_000;
 
+// ── SEC-015: CSRF Token Management ─────────────────────────────────────────
+// Fetch and include CSRF token for state-changing requests
+let _csrfToken = null;
+async function getCsrfToken() {
+    if (_csrfToken) return _csrfToken;
+    try {
+        const res = await fetch(`${API_BASE}/api/csrf-token`, {
+            headers: getAuthHeaders(),
+        });
+        if (res.ok) {
+            const data = await res.json();
+            _csrfToken = data.csrfToken;
+            return _csrfToken;
+        }
+    } catch {}
+    return null;
+}
+
 export const fetchMetrics = async () => {
     const res = await fetch(`${API_BASE}/api/metrics`, {
         headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -56,6 +74,7 @@ function appendConnectionId(path) {
 
 async function request(path, options = {}) {
     const isGet = options.method === 'GET' || !options.method;
+    const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method);
     // Always append connectionId to every request type so the backend knows
     // which user-scoped connection to use (prevents cross-user data leakage)
     const resolvedPath = appendConnectionId(path);
@@ -73,12 +92,22 @@ async function request(path, options = {}) {
 
     const promise = (async () => {
         try {
+            // SEC-015: Fetch CSRF token for state-changing requests
+            let csrfHeaders = {};
+            if (isStateChanging) {
+                const csrfToken = await getCsrfToken();
+                if (csrfToken) {
+                    csrfHeaders['X-CSRF-Token'] = csrfToken;
+                }
+            }
+
             const res = await fetch(url, {
                 ...options,
                 signal: options.signal || controller.signal,
                 headers: {
                     'Content-Type': 'application/json',
                     ...getAuthHeaders(),
+                    ...csrfHeaders,
                     ...options.headers,
                 },
             });

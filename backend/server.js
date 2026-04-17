@@ -66,15 +66,13 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 const CONFIG = Object.freeze({
     PORT:           Number(process.env.PORT) || 5000,
     FRONTEND_URL:   process.env.FRONTEND_URL || 'http://localhost:5173',
-    JWT_SECRET:     process.env.JWT_SECRET  || (IS_PROD ? null : 'vigil-change-me-in-production'),
+    JWT_SECRET:     process.env.JWT_SECRET  || null,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '8h',
     CORS_ORIGINS: [
-        'http://localhost:5173',
-        'http://localhost:3000',
+        ...(IS_PROD ? [] : ['http://localhost:5173', 'http://localhost:3000']),
         'https://postgres-tool.vercel.app',
         process.env.FRONTEND_URL,
         process.env.CORS_ORIGIN,
-        // Vercel provides VERCEL_URL (e.g. "my-app-abc123.vercel.app") for preview deploys
         process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
     ].filter(Boolean),
     SLOW_QUERY_MIN:  Number(process.env.SLOW_QUERY_MINUTES) || 5,
@@ -615,9 +613,11 @@ function validateConsoleQuery(sql, role) {
     if (sql.length > 50_000) return 'Query too long (max 50,000 characters)';
 
     const stripped = sanitizeSqlForValidation(sql);
+    // Also check with all whitespace collapsed to catch obfuscation attempts like DROP/***/DATABASE
+    const collapsed = stripped.replace(/\s+/g, ' ');
 
     // Check critical blocks for ALL users (including super_admin)
-    if (CRITICAL_BLOCKED.test(stripped)) {
+    if (CRITICAL_BLOCKED.test(stripped) || CRITICAL_BLOCKED.test(collapsed)) {
         log('ERROR', 'Critical SQL blocked for user', { role, queryLength: sql.length });
         return 'This statement is blocked - it poses a critical security risk and cannot be executed.';
     }
@@ -1078,7 +1078,8 @@ app.use((req, res, next) => {
     res.setHeader('X-Request-Id', req.id);
     next();
 });
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '100kb' }));
+app.use(express.text({ limit: '100kb' }));
 app.use(rateLimiter);
 
 if (process.env.NODE_ENV !== 'production') {
@@ -2542,7 +2543,7 @@ app.post('/api/connections', authenticate, ensureConnections, async (req, res) =
     } catch (e) {
         if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
         log('ERROR', 'Create connection error', { error: e.message, stack: e.stack });
-        res.status(500).json({ error: 'Internal server error', details: e.message, code: e.code });
+        res.status(500).json({ error: 'Internal server error', ...(IS_PROD ? {} : { details: e.message }), code: e.code });
     }
 });
 
@@ -2586,7 +2587,7 @@ app.put('/api/connections/:id', authenticate, ensureConnections, async (req, res
     } catch (e) {
         if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
         log('ERROR', 'Update connection error', { error: e.message, stack: e.stack });
-        res.status(500).json({ error: 'Internal server error', details: e.message, code: e.code });
+        res.status(500).json({ error: 'Internal server error', ...(IS_PROD ? {} : { details: e.message }), code: e.code });
     }
 });
 
@@ -2619,7 +2620,7 @@ app.delete('/api/connections/:id', authenticate, ensureConnections, async (req, 
         res.json({ success: true });
     } catch (e) {
         log('ERROR', 'Delete connection error', { error: e.message, stack: e.stack });
-        res.status(500).json({ error: 'Internal server error', details: e.message, code: e.code });
+        res.status(500).json({ error: 'Internal server error', ...(IS_PROD ? {} : { details: e.message }), code: e.code });
     }
 });
 
@@ -2633,7 +2634,7 @@ app.post('/api/connections/:id/default', authenticate, ensureConnections, async 
         res.json({ success: true });
     } catch (e) {
         log('ERROR', 'Set default connection error', { error: e.message, stack: e.stack });
-        res.status(500).json({ error: 'Internal server error', details: e.message, code: e.code });
+        res.status(500).json({ error: 'Internal server error', ...(IS_PROD ? {} : { details: e.message }), code: e.code });
     }
 });
 
@@ -2642,6 +2643,27 @@ app.post('/api/connections/test', authenticate, async (req, res) => {
     try {
         const { type, host, port, username, password, database, ssl } = req.body;
         if (!host) return res.status(400).json({ success: false, error: 'Host is required' });
+
+        // SEC-021: SSRF protection — block connections to private/internal networks
+        if (host) {
+            const blockedPatterns = [
+                /^127\./,                         // Loopback
+                /^10\./,                          // Class A private
+                /^172\.(1[6-9]|2\d|3[01])\./,    // Class B private
+                /^192\.168\./,                    // Class C private
+                /^0\./,                           // Current network
+                /^169\.254\./,                    // Link-local
+                /^::1$/,                          // IPv6 loopback
+                /^fc00:/i,                        // IPv6 unique local
+                /^fe80:/i,                        // IPv6 link-local
+                /^localhost$/i,                   // localhost hostname
+                /^.*\.local$/i,                   // .local domains
+                /^metadata\.google\.internal$/i,  // GCP metadata
+            ];
+            if (blockedPatterns.some(p => p.test(host))) {
+                return res.status(400).json({ success: false, error: 'Connections to private/internal networks are not allowed' });
+            }
+        }
         const dbType = (type || 'postgresql').toLowerCase();
 
         try {

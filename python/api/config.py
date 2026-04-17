@@ -1,5 +1,6 @@
 """Configuration settings for the VIGIL FastAPI backend."""
 
+import os
 from pydantic_settings import BaseSettings
 
 
@@ -11,7 +12,12 @@ class Settings(BaseSettings):
     NODE_BACKEND_URL: str = "http://localhost:3000"
     PORT: int = 8000
     DEBUG: bool = False
-    CORS_ORIGINS: list[str] = ["*"]
+    # SEC-010: Restrict CORS to specific origins — never use wildcard in production
+    CORS_ORIGINS: list[str] = (
+        ["http://localhost:5173", "http://localhost:3000"]
+        if os.getenv("NODE_ENV") != "production"
+        else [o for o in [os.getenv("FRONTEND_URL"), os.getenv("CORS_ORIGIN")] if o]
+    ) or ["http://localhost:5173"]
 
     model_config = {
         "env_file": ".env",

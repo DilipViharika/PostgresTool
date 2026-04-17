@@ -60,18 +60,22 @@ function deriveKey(secret: string): Buffer {
 function getEncryptionSecret(): string {
   let key = process.env.ENCRYPTION_KEY;
   if (!key) {
+    // SEC-004: Only allow JWT_SECRET fallback in development
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'ENCRYPTION_KEY environment variable is REQUIRED in production. ' +
+        'JWT_SECRET fallback is not allowed in production. ' +
+        "Generate one with: node -e \"console.log(require('crypto').randomBytes(48).toString('base64'))\""
+      );
+    }
     key = process.env.JWT_SECRET;
     if (key) {
-      // SECURITY RISK: JWT_SECRET is designed for token signing, not encryption.
-      // It may be shorter than ideal for cryptographic key derivation and could be
-      // shared or rotated independently of the encryption key. Always set a dedicated
-      // ENCRYPTION_KEY environment variable in production.
       console.warn('[Encryption] WARNING: Using JWT_SECRET as fallback for encryption key. Set ENCRYPTION_KEY environment variable for production security.');
     }
   }
   if (!key) {
     throw new Error(
-      'ENCRYPTION_KEY (or JWT_SECRET) environment variable is required. ' +
+      'ENCRYPTION_KEY (or JWT_SECRET in development) environment variable is required. ' +
         "Generate one with: node -e \"console.log(require('crypto').randomBytes(48).toString('base64'))\""
     );
   }

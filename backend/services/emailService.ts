@@ -309,9 +309,22 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
     }
 
     try {
+      // SEC-017: Validate email addresses to prevent header injection
+      const EMAIL_REGEX = /^[^\s@<>()[\]\\,;:]+@[^\s@<>()[\]\\,;:]+\.[^\s@<>()[\]\\,;:]+$/;
+      const sanitizedRecipients = to.filter(addr => {
+        const trimmed = addr.trim();
+        if (!EMAIL_REGEX.test(trimmed) || /[\r\n]/.test(trimmed)) {
+          log('WARN', 'Invalid email address filtered out', { address: trimmed.substring(0, 20) });
+          return false;
+        }
+        return true;
+      });
+      if (!sanitizedRecipients.length) {
+        return { success: false, reason: 'no_valid_recipients' };
+      }
       const info = await this.transporter.sendMail({
         from: this.config.from,
-        to: to.join(', '),
+        to: sanitizedRecipients,  // Use array directly — nodemailer handles it safely
         subject: `${this.getSeverityEmoji(alert.severity)} [${alert.severity.toUpperCase()}] VIGIL Alert — ${alert.message.substring(0, 60)}${alert.message.length > 60 ? '…' : ''}`,
         text: this.generatePlainTextEmail(alert),
         html: this.generateHTMLEmail(alert),
