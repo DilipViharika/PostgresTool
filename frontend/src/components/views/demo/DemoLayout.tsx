@@ -43,6 +43,7 @@ const LT = {
     borderLight: '#f1f5f9',
     borderAccent: 'rgba(139,92,246,0.15)',
     text: THEME.bg,
+    textMain: '#1e293b',
     textMuted: '#475569',
     textDim: THEME.textMuted,
     primary: THEME.primary,
@@ -64,10 +65,14 @@ const LT = {
     liveBg: 'rgba(22,163,74,0.08)',
     liveBorder: 'rgba(22,163,74,0.2)',
     liveColor: '#16a34a',
+    glassBorder: '#e2e8f0',
     buttonBg: '#f1f5f9',
     buttonHoverBg: THEME.textMain,
     accentGradient: 'linear-gradient(135deg, #6366f1, #10b981)',
 };
+
+// Alias used throughout the layout and exported sub-components
+const LTHEME = LT;
 
 const DemoLayout = ({
     sections = [],
