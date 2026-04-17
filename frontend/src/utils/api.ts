@@ -8,18 +8,15 @@ const inflightRequests = new Map();
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 // ── SEC-015: CSRF Token Management ─────────────────────────────────────────
-// Fetch and include CSRF token for state-changing requests
-let _csrfToken = null;
+// Fetch a fresh CSRF token for each state-changing request (backend invalidates after use)
 async function getCsrfToken() {
-    if (_csrfToken) return _csrfToken;
     try {
         const res = await fetch(`${API_BASE}/api/csrf-token`, {
             headers: getAuthHeaders(),
         });
         if (res.ok) {
             const data = await res.json();
-            _csrfToken = data.csrfToken;
-            return _csrfToken;
+            return data.csrfToken;
         }
     } catch {}
     return null;
@@ -92,9 +89,9 @@ async function request(path, options = {}) {
 
     const promise = (async () => {
         try {
-            // SEC-015: Fetch CSRF token for state-changing requests
+            // SEC-015: Fetch CSRF token for state-changing requests (skip for auth endpoints)
             let csrfHeaders = {};
-            if (isStateChanging) {
+            if (isStateChanging && !path.startsWith('/api/auth')) {
                 const csrfToken = await getCsrfToken();
                 if (csrfToken) {
                     csrfHeaders['X-CSRF-Token'] = csrfToken;
