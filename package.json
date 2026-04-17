@@ -22,6 +22,15 @@
         "lint-staged": "^15.3.0",
         "prettier": "^3.4.0"
     },
+    "overrides": {
+        "esbuild": "^0.25.0",
+        "@esbuild-kit/core-utils": {
+            "esbuild": "^0.25.0"
+        },
+        "@esbuild-kit/esm-loader": {
+            "esbuild": "^0.25.0"
+        }
+    },
     "lint-staged": {
         "frontend/**/*.{js,jsx}": [
             "prettier --write"
