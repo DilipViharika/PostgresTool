@@ -26,13 +26,23 @@ import React, {
     useState,
 } from 'react';
 import {
+    Activity,
+    AlertOctagon,
     AlertTriangle,
+    CheckCircle2,
+    Clock,
     Copy,
     Database,
+    Download,
+    FileCode2,
+    GitBranch,
     Info,
     Lightbulb,
+    Link2,
     RefreshCcw,
+    Shield,
     Sparkles,
+    Terminal,
     TrendingUp,
     X,
     Zap,
@@ -50,6 +60,8 @@ import {
     type IndexKind,
     type Severity,
     type Insight,
+    type AdvancedAnalysis,
+    type RiskLevel,
     synthesizeRow,
     parseNLQuery,
     applyQuery,
@@ -57,6 +69,8 @@ import {
     fmtBytes,
     kindMeta,
     sevRank,
+    analyzeRow,
+    buildApplyPlanSQL,
 } from './_indexesV3Helpers';
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -220,6 +234,7 @@ const MetricCell: React.FC<{
 
 type GroupKey = 'severity' | 'kind' | 'table' | 'none';
 type SortKey = 'score' | 'size' | 'confidence' | 'kind';
+type PanelTab = 'analysis' | 'script';
 
 const IndexesTabV3: React.FC = () => {
     useAdaptiveTheme();
@@ -232,7 +247,39 @@ const IndexesTabV3: React.FC = () => {
     const [onlyActionable, setOnlyActionable] = useState(false);
     const [focusRow, setFocusRow] = useState<IndexRow | null>(null);
     const [focusIdx, setFocusIdx] = useState(0);
+    const [panelTab, setPanelTab] = useState<PanelTab>('analysis');
+    const [applied, setApplied] = useState<Set<string>>(() => new Set());
+    const [selected, setSelected] = useState<Set<string>>(() => new Set());
+    const [toast, setToast] = useState<string | null>(null);
     const searchRef = useRef<HTMLInputElement>(null);
+
+    const openPanel = useCallback((row: IndexRow, tab: PanelTab = 'analysis') => {
+        setFocusRow(row);
+        setPanelTab(tab);
+    }, []);
+
+    const showToast = useCallback((msg: string) => {
+        setToast(msg);
+        window.setTimeout(() => setToast((t) => (t === msg ? null : t)), 2600);
+    }, []);
+
+    const handleApply = useCallback((row: IndexRow) => {
+        setApplied((prev) => {
+            const next = new Set(prev);
+            next.add(row.id);
+            return next;
+        });
+        if (row.suggestion) navigator.clipboard?.writeText(row.suggestion).catch(() => {});
+        showToast(`Marked "${row.indexName ?? row.tableLabel}" applied · SQL copied to clipboard`);
+    }, [showToast]);
+
+    const handleToggleSelect = useCallback((row: IndexRow) => {
+        setSelected((prev) => {
+            const next = new Set(prev);
+            if (next.has(row.id)) next.delete(row.id); else next.add(row.id);
+            return next;
+        });
+    }, []);
 
     // Keyboard shortcuts: ⌘/Ctrl-K focuses search, j/k/Enter navigate.
     useEffect(() => {
@@ -360,6 +407,31 @@ const IndexesTabV3: React.FC = () => {
                     live • {data.lastLoadedAt?.toLocaleTimeString() ?? '—'}
                 </div>
 
+                <ApplyPlanWidget
+                    selectedCount={selected.size}
+                    appliedCount={applied.size}
+                    onDownload={() => {
+                        const chosen = data.rows.filter((r) => selected.has(r.id));
+                        const rows = chosen.length ? chosen : data.rows.filter((r) => r.score >= 0.6);
+                        if (!rows.length) {
+                            showToast('No rows selected — select findings or enable "Only actionable".');
+                            return;
+                        }
+                        const sql = buildApplyPlanSQL(rows);
+                        const blob = new Blob([sql], { type: 'text/plain;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `index-fix-plan-${new Date().toISOString().slice(0, 10)}.sql`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        URL.revokeObjectURL(url);
+                        showToast(`Downloaded ${rows.length}-fix plan.`);
+                    }}
+                    onClearSelection={() => setSelected(new Set())}
+                />
+
                 <button
                     type="button"
                     onClick={reload}
@@ -376,6 +448,21 @@ const IndexesTabV3: React.FC = () => {
                     <RefreshCcw size={13} className={refreshing ? 'ov-spin' : undefined} />
                 </button>
             </header>
+
+            {toast && (
+                <div style={{
+                    position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+                    padding: '8px 14px', borderRadius: 8, zIndex: 30,
+                    background: THEME.surfaceRaised ?? THEME.surface,
+                    border: `1px solid ${THEME.success}50`,
+                    color: THEME.textMain, fontSize: 12, fontWeight: 600,
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.24)',
+                }}>
+                    <CheckCircle2 size={13} color={THEME.success} />
+                    {toast}
+                </div>
+            )}
 
             {error && (
                 <div style={{
@@ -448,7 +535,8 @@ const IndexesTabV3: React.FC = () => {
             {/* AI Insights banner */}
             <InsightsBanner
                 insights={insights}
-                onShowWhy={(ins) => setFocusRow(ins.row)}
+                onShowWhy={(ins) => openPanel(ins.row, 'analysis')}
+                onShowScript={(ins) => openPanel(ins.row, 'script')}
             />
 
             {/* Filter bar */}
@@ -513,7 +601,11 @@ const IndexesTabV3: React.FC = () => {
                                     key={row.id}
                                     row={row}
                                     active={flatList[safeFocus]?.id === row.id}
-                                    onOpen={() => setFocusRow(row)}
+                                    selected={selected.has(row.id)}
+                                    applied={applied.has(row.id)}
+                                    onOpen={() => openPanel(row, 'analysis')}
+                                    onOpenScript={() => openPanel(row, 'script')}
+                                    onToggleSelect={() => handleToggleSelect(row)}
                                 />
                             ))}
                         </Group>
@@ -523,7 +615,19 @@ const IndexesTabV3: React.FC = () => {
 
             {/* Why? side panel */}
             {focusRow && (
-                <WhyPanel row={focusRow} onClose={() => setFocusRow(null)} />
+                <WhyPanel
+                    row={focusRow}
+                    allRows={data.rows}
+                    tab={panelTab}
+                    onTabChange={setPanelTab}
+                    applied={applied.has(focusRow.id)}
+                    onApply={() => handleApply(focusRow)}
+                    onJumpTo={(id) => {
+                        const r = data.rows.find((x) => x.id === id);
+                        if (r) openPanel(r, 'analysis');
+                    }}
+                    onClose={() => setFocusRow(null)}
+                />
             )}
 
             {/* Footer */}
@@ -608,10 +712,12 @@ const Segmented: React.FC<SegmentedProps> = ({ label, value, onChange, options }
     </div>
 );
 
+const ROW_GRID = '6px 22px 90px minmax(220px, 2fr) 90px 60px 100px 70px 156px';
+
 const TableHeader: React.FC = () => (
     <div style={{
         display: 'grid',
-        gridTemplateColumns: '6px 96px minmax(220px, 2fr) 90px 60px 100px 70px 120px',
+        gridTemplateColumns: ROW_GRID,
         padding: '8px 12px',
         fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase',
         letterSpacing: '0.06em', color: THEME.textDim,
@@ -620,6 +726,7 @@ const TableHeader: React.FC = () => (
         gap: 10,
     }}>
         <span />
+        <span title="Select for apply plan"><input type="checkbox" disabled aria-hidden style={{ opacity: 0.4 }} /></span>
         <span>Type</span>
         <span>Target</span>
         <span>Size</span>
@@ -663,10 +770,17 @@ const Group: React.FC<GroupProps> = ({ title, count, tone, children }) => (
 interface RowProps {
     row: IndexRow;
     active: boolean;
+    selected: boolean;
+    applied: boolean;
     onOpen: () => void;
+    onOpenScript: () => void;
+    onToggleSelect: () => void;
 }
 
-const Row: React.FC<RowProps> = ({ row, active, onOpen }) => {
+const Row: React.FC<RowProps> = ({
+    row, active, selected, applied,
+    onOpen, onOpenScript, onToggleSelect,
+}) => {
     const kColor = kindColor(row.kind);
     const sColor = sevColor(row.severity);
     return (
@@ -675,17 +789,32 @@ const Row: React.FC<RowProps> = ({ row, active, onOpen }) => {
             onClick={onOpen}
             style={{
                 display: 'grid',
-                gridTemplateColumns: '6px 96px minmax(220px, 2fr) 90px 60px 100px 70px 120px',
+                gridTemplateColumns: ROW_GRID,
                 padding: '8px 12px',
                 gap: 10,
                 fontSize: 12,
                 alignItems: 'center',
                 borderBottom: `1px solid ${THEME.glassBorder}`,
-                background: active ? `${THEME.primary}14` : 'transparent',
+                background: applied
+                    ? `${THEME.success}10`
+                    : active
+                        ? `${THEME.primary}14`
+                        : 'transparent',
+                opacity: applied ? 0.72 : 1,
                 cursor: 'pointer',
             }}
         >
             <span style={{ width: 4, height: 22, borderRadius: 2, background: sColor }} aria-hidden />
+            <span onClick={(e) => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={onToggleSelect}
+                    disabled={applied}
+                    title={applied ? 'Already marked applied' : 'Include in apply plan'}
+                    style={{ cursor: applied ? 'default' : 'pointer' }}
+                />
+            </span>
             <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4,
                 padding: '2px 6px', borderRadius: 4,
@@ -700,8 +829,11 @@ const Row: React.FC<RowProps> = ({ row, active, onOpen }) => {
                 <span style={{
                     color: THEME.textMain, fontWeight: 600,
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    textDecoration: applied ? 'line-through' : 'none',
                 }}>
                     {row.indexName ?? row.tableLabel}
+                    {applied && <CheckCircle2 size={11} color={THEME.success} />}
                 </span>
                 <span style={{
                     color: THEME.textDim, fontSize: 10.5,
@@ -730,6 +862,14 @@ const Row: React.FC<RowProps> = ({ row, active, onOpen }) => {
                     style={rowBtn(kColor)}
                 >
                     Why?
+                </button>
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onOpenScript(); }}
+                    title="View fix script"
+                    style={rowBtn(THEME.primary)}
+                >
+                    <FileCode2 size={11} /> SQL
                 </button>
                 {row.suggestion && (
                     <button
@@ -783,9 +923,10 @@ const ConfidenceRing: React.FC<{ pct: number }> = ({ pct }) => {
 interface InsightsBannerProps {
     insights: Insight[];
     onShowWhy: (ins: Insight) => void;
+    onShowScript: (ins: Insight) => void;
 }
 
-const InsightsBanner: React.FC<InsightsBannerProps> = ({ insights, onShowWhy }) => {
+const InsightsBanner: React.FC<InsightsBannerProps> = ({ insights, onShowWhy, onShowScript }) => {
     const [expanded, setExpanded] = useState(false);
     if (insights.length === 0) return null;
     const shown = expanded ? insights : insights.slice(0, 3);
@@ -811,7 +952,13 @@ const InsightsBanner: React.FC<InsightsBannerProps> = ({ insights, onShowWhy }) 
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {shown.map((ins, i) => (
-                    <InsightRow key={ins.id} insight={ins} rank={i + 1} onShowWhy={() => onShowWhy(ins)} />
+                    <InsightRow
+                        key={ins.id}
+                        insight={ins}
+                        rank={i + 1}
+                        onShowWhy={() => onShowWhy(ins)}
+                        onShowScript={() => onShowScript(ins)}
+                    />
                 ))}
             </div>
             {insights.length > 3 && (
@@ -832,7 +979,12 @@ const InsightsBanner: React.FC<InsightsBannerProps> = ({ insights, onShowWhy }) 
     );
 };
 
-const InsightRow: React.FC<{ insight: Insight; rank: number; onShowWhy: () => void }> = ({ insight, rank, onShowWhy }) => {
+const InsightRow: React.FC<{
+    insight: Insight;
+    rank: number;
+    onShowWhy: () => void;
+    onShowScript: () => void;
+}> = ({ insight, rank, onShowWhy, onShowScript }) => {
     const c = kindColor(insight.row.kind);
     return (
         <div style={{
@@ -874,11 +1026,7 @@ const InsightRow: React.FC<{ insight: Insight; rank: number; onShowWhy: () => vo
                 <button type="button" onClick={onShowWhy} style={rowBtn(c)}>
                     <Lightbulb size={10} /> Why?
                 </button>
-                <button
-                    type="button"
-                    onClick={() => insight.row.suggestion && navigator.clipboard?.writeText(insight.row.suggestion).catch(() => {})}
-                    style={rowBtn(THEME.primary)}
-                >
+                <button type="button" onClick={onShowScript} style={rowBtn(THEME.primary)}>
                     <Zap size={10} /> {insight.actionLabel}
                 </button>
             </div>
@@ -886,29 +1034,79 @@ const InsightRow: React.FC<{ insight: Insight; rank: number; onShowWhy: () => vo
     );
 };
 
-const WhyPanel: React.FC<{ row: IndexRow; onClose: () => void }> = ({ row, onClose }) => {
+interface WhyPanelProps {
+    row: IndexRow;
+    allRows: IndexRow[];
+    tab: PanelTab;
+    onTabChange: (t: PanelTab) => void;
+    applied: boolean;
+    onApply: () => void;
+    onJumpTo: (id: string) => void;
+    onClose: () => void;
+}
+
+const WhyPanel: React.FC<WhyPanelProps> = ({
+    row, allRows, tab, onTabChange, applied, onApply, onJumpTo, onClose,
+}) => {
     const c = kindColor(row.kind);
+    const analysis = useMemo(() => analyzeRow(row, allRows), [row, allRows]);
+    const relatedRows = useMemo(
+        () => analysis.correlation.relatedIds
+            .map((id) => allRows.find((r) => r.id === id))
+            .filter((x): x is IndexRow => !!x),
+        [analysis.correlation.relatedIds, allRows],
+    );
+    const applyAfterRows = useMemo(
+        () => analysis.dependencies.applyAfter
+            .map((id) => allRows.find((r) => r.id === id))
+            .filter((x): x is IndexRow => !!x),
+        [analysis.dependencies.applyAfter, allRows],
+    );
+    const conflictRows = useMemo(
+        () => analysis.dependencies.conflictsWith
+            .map((id) => allRows.find((r) => r.id === id))
+            .filter((x): x is IndexRow => !!x),
+        [analysis.dependencies.conflictsWith, allRows],
+    );
+    const batchRows = useMemo(
+        () => analysis.dependencies.batchWith
+            .map((id) => allRows.find((r) => r.id === id))
+            .filter((x): x is IndexRow => !!x),
+        [analysis.dependencies.batchWith, allRows],
+    );
+
     return (
         <div
             role="dialog"
-            aria-label="Reasoning"
+            aria-label="AI analysis"
             style={{
-                position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(440px, 100vw)',
+                position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(520px, 100vw)',
                 background: THEME.surface, borderLeft: `1px solid ${THEME.glassBorder}`,
                 boxShadow: '-8px 0 24px rgba(0,0,0,0.20)',
                 display: 'flex', flexDirection: 'column',
                 zIndex: 20,
             }}
         >
+            {/* Header */}
             <div style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '12px 16px',
                 borderBottom: `1px solid ${THEME.glassBorder}`,
             }}>
-                <Lightbulb size={15} color={c} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>
-                    Why this was flagged
-                </span>
+                <Sparkles size={15} color={c} />
+                <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>
+                        AI analysis
+                    </span>
+                    <span style={{
+                        fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono,
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        maxWidth: 340,
+                    }}>
+                        {row.indexName ?? row.tableLabel}
+                    </span>
+                </div>
+                <PriorityBadge score={analysis.priorityScore} />
                 <button
                     type="button"
                     onClick={onClose}
@@ -921,73 +1119,581 @@ const WhyPanel: React.FC<{ row: IndexRow; onClose: () => void }> = ({ row, onClo
                     <X size={13} />
                 </button>
             </div>
+
+            {/* Tabs */}
+            <div style={{
+                display: 'flex', alignItems: 'stretch', gap: 0,
+                padding: '0 12px',
+                borderBottom: `1px solid ${THEME.glassBorder}`,
+                background: THEME.surfaceRaised ?? THEME.surface,
+            }}>
+                <PanelTabBtn
+                    active={tab === 'analysis'}
+                    onClick={() => onTabChange('analysis')}
+                    icon={<Activity size={12} />}
+                    label="Analysis"
+                />
+                <PanelTabBtn
+                    active={tab === 'script'}
+                    onClick={() => onTabChange('script')}
+                    icon={<Terminal size={12} />}
+                    label="Fix script"
+                />
+                <span style={{
+                    marginLeft: 'auto', alignSelf: 'center',
+                    fontSize: 10.5, color: THEME.textDim,
+                    fontFamily: THEME.fontMono,
+                }}>
+                    ETA: {analysis.fixScript.estimatedDuration}
+                </span>
+            </div>
+
+            {/* Body */}
             <div style={{ padding: '14px 16px', overflowY: 'auto', flex: 1 }}>
-                <div style={{ fontSize: 12, color: THEME.textMuted, marginBottom: 8 }}>
-                    <code style={{ fontFamily: THEME.fontMono }}>{row.indexName ?? row.tableLabel}</code>
-                    {' '}· <span style={{ color: c, fontWeight: 600 }}>{kindMeta[row.kind].label}</span>
-                </div>
-                <p style={{
-                    fontSize: 13, lineHeight: 1.55, color: THEME.textMain,
-                    margin: '0 0 14px',
-                }}>
-                    {row.detail}
-                </p>
-                <div style={{
-                    fontSize: 11, fontWeight: 700, color: THEME.textDim,
-                    textTransform: 'uppercase', letterSpacing: '0.06em',
-                    marginBottom: 6,
-                }}>
-                    Signals
-                </div>
-                <table style={{ width: '100%', fontSize: 11.5, fontFamily: THEME.fontMono, marginBottom: 14 }}>
-                    <tbody>
-                        <SignalRow label="Confidence"  value={`${Math.round(row.confidence * 100)}%`} />
-                        <SignalRow label="Impact"      value={`${Math.round(row.impact * 100)}%`} />
-                        <SignalRow label="Effort"      value={`${Math.round(row.effort * 100)}%`} />
-                        <SignalRow label="Score"       value={`${row.score.toFixed(2)}`} />
-                        <SignalRow label="Size"        value={row.size ?? fmtBytes(row.sizeBytes)} />
-                        {row.kind === 'missing'   && <SignalRow label="Seq scans"   value={fmtNum(row.seqScan)} />}
-                        {row.kind === 'unused'    && <SignalRow label="Idx scans"   value={fmtNum(row.scans)} />}
-                        {row.kind === 'duplicate' && <SignalRow label="Shadowed by" value={row.shadowedBy ?? '—'} />}
-                        {row.kind === 'bloat'     && <SignalRow label="Bloat %"     value={`${row.bloatPct.toFixed(1)}%`} />}
-                    </tbody>
-                </table>
-                {row.suggestion && (
-                    <>
-                        <div style={{
-                            fontSize: 11, fontWeight: 700, color: THEME.textDim,
-                            textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6,
-                        }}>
-                            Suggested SQL
-                        </div>
-                        <pre style={{
-                            margin: 0, padding: 10, borderRadius: 6,
-                            background: THEME.surfaceRaised ?? THEME.surface,
-                            border: `1px solid ${THEME.glassBorder}`,
-                            fontSize: 11.5, fontFamily: THEME.fontMono,
-                            color: THEME.textMain, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                        }}>
-                            {row.suggestion}
-                        </pre>
-                        <button
-                            type="button"
-                            onClick={() => navigator.clipboard?.writeText(row.suggestion!).catch(() => {})}
-                            style={{
-                                marginTop: 8, padding: '6px 12px', borderRadius: 6,
-                                border: `1px solid ${c}40`,
-                                background: `${c}15`, color: c,
-                                fontSize: 11.5, fontWeight: 600, cursor: 'pointer',
-                                display: 'inline-flex', alignItems: 'center', gap: 6,
-                            }}
-                        >
-                            <Copy size={12} /> Copy SQL
-                        </button>
-                    </>
+                {tab === 'analysis' ? (
+                    <AnalysisBody
+                        row={row}
+                        analysis={analysis}
+                        relatedRows={relatedRows}
+                        onJumpTo={onJumpTo}
+                    />
+                ) : (
+                    <ScriptBody
+                        row={row}
+                        analysis={analysis}
+                        applied={applied}
+                        onApply={onApply}
+                        applyAfterRows={applyAfterRows}
+                        conflictRows={conflictRows}
+                        batchRows={batchRows}
+                        onJumpTo={onJumpTo}
+                    />
                 )}
             </div>
         </div>
     );
 };
+
+/* ── Panel sub-components ─────────────────────────────────────────────── */
+
+const PanelTabBtn: React.FC<{
+    active: boolean; onClick: () => void; icon: React.ReactNode; label: string;
+}> = ({ active, onClick, icon, label }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        style={{
+            padding: '10px 12px', border: 'none', cursor: 'pointer',
+            background: 'transparent',
+            color: active ? THEME.primary : THEME.textMuted,
+            fontSize: 12, fontWeight: 700,
+            borderBottom: `2px solid ${active ? THEME.primary : 'transparent'}`,
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            marginBottom: -1,
+        }}
+    >
+        {icon} {label}
+    </button>
+);
+
+const PriorityBadge: React.FC<{ score: number }> = ({ score }) => {
+    const color = score >= 70 ? THEME.danger : score >= 45 ? THEME.warning : THEME.success;
+    const label = score >= 70 ? 'High priority' : score >= 45 ? 'Medium' : 'Low';
+    return (
+        <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '3px 8px', borderRadius: 10,
+            background: `${color}15`, color, border: `1px solid ${color}40`,
+            fontSize: 10.5, fontWeight: 700, fontFamily: THEME.fontMono,
+        }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: color }} />
+            {score}/100 · {label}
+        </span>
+    );
+};
+
+const SectionHeader: React.FC<{ icon: React.ReactNode; label: string }> = ({ icon, label }) => (
+    <div style={{
+        fontSize: 10.5, fontWeight: 700, color: THEME.textDim,
+        textTransform: 'uppercase', letterSpacing: '0.06em',
+        marginBottom: 8, marginTop: 16,
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+    }}>
+        {icon} {label}
+    </div>
+);
+
+const AnalysisBody: React.FC<{
+    row: IndexRow;
+    analysis: AdvancedAnalysis;
+    relatedRows: IndexRow[];
+    onJumpTo: (id: string) => void;
+}> = ({ row, analysis, relatedRows, onJumpTo }) => {
+    const c = kindColor(row.kind);
+    return (
+        <>
+            <div style={{ fontSize: 12, color: THEME.textMuted, marginBottom: 10 }}>
+                <span style={{ color: c, fontWeight: 700 }}>{kindMeta[row.kind].label}</span>
+                {' · '}<span style={{ color: sevColor(row.severity), fontWeight: 600 }}>{row.severity} severity</span>
+                {' · '}<span style={{ fontFamily: THEME.fontMono }}>{row.size ?? fmtBytes(row.sizeBytes)}</span>
+            </div>
+
+            <SectionHeader icon={<Lightbulb size={11} />} label="Root cause" />
+            <p style={{
+                fontSize: 13, lineHeight: 1.55, color: THEME.textMain,
+                margin: 0,
+            }}>
+                {analysis.rootCause}
+            </p>
+
+            <SectionHeader icon={<Link2 size={11} />} label="Correlation" />
+            <p style={{ fontSize: 12, color: THEME.textMuted, margin: '0 0 8px' }}>
+                {analysis.correlation.note}
+            </p>
+            {relatedRows.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {relatedRows.slice(0, 6).map((rr) => (
+                        <button
+                            key={rr.id}
+                            type="button"
+                            onClick={() => onJumpTo(rr.id)}
+                            style={{
+                                padding: '6px 8px', borderRadius: 6,
+                                border: `1px solid ${THEME.glassBorder}`,
+                                background: THEME.surfaceRaised ?? THEME.surface,
+                                color: THEME.textMain, cursor: 'pointer',
+                                fontSize: 11.5, display: 'flex', alignItems: 'center', gap: 6,
+                                textAlign: 'left',
+                            }}
+                        >
+                            <span style={{
+                                padding: '1px 5px', borderRadius: 3,
+                                background: `${kindColor(rr.kind)}18`,
+                                color: kindColor(rr.kind),
+                                fontSize: 9.5, fontWeight: 700, fontFamily: THEME.fontMono,
+                            }}>
+                                {kindMeta[rr.kind].short}
+                            </span>
+                            <span style={{
+                                fontFamily: THEME.fontMono,
+                                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                            }}>
+                                {rr.indexName ?? rr.tableLabel}
+                            </span>
+                            <span style={{ marginLeft: 'auto', color: THEME.textDim, fontSize: 10.5 }}>
+                                {rr.size ?? fmtBytes(rr.sizeBytes)}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            <SectionHeader icon={<TrendingUp size={11} />} label="Cost / benefit" />
+            <div style={{
+                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8,
+            }}>
+                <CbCell
+                    label="Latency saved"
+                    value={`${analysis.costBenefit.msSavedPerQuery.toFixed(1)} ms`}
+                    sub="per query (p50 est)"
+                    color={THEME.success}
+                />
+                <CbCell
+                    label="QPS headroom"
+                    value={`+${analysis.costBenefit.qpsHeadroomPct.toFixed(0)}%`}
+                    sub="on this table"
+                    color={THEME.info}
+                />
+                <CbCell
+                    label={analysis.costBenefit.gbReclaimed >= 0 ? 'Disk reclaimed' : 'Disk needed'}
+                    value={`${analysis.costBenefit.gbReclaimed.toFixed(2)} GB`}
+                    sub={analysis.costBenefit.gbReclaimed >= 0 ? 'after fix' : 'for new index'}
+                    color={analysis.costBenefit.gbReclaimed >= 0 ? THEME.success : THEME.warning}
+                />
+                <CbCell
+                    label="Monthly savings"
+                    value={`$${analysis.costBenefit.monthlyUsdSaved.toFixed(2)}`}
+                    sub={`${analysis.costBenefit.writesPerSecSpared.toFixed(1)} writes/s spared`}
+                    color={THEME.primary}
+                />
+            </div>
+
+            <SectionHeader icon={<Shield size={11} />} label="Risk & safety" />
+            <RiskBlock analysis={analysis} />
+
+            <SectionHeader icon={<Info size={11} />} label="Signals" />
+            <table style={{ width: '100%', fontSize: 11.5, fontFamily: THEME.fontMono }}>
+                <tbody>
+                    <SignalRow label="Confidence"  value={`${Math.round(row.confidence * 100)}%`} />
+                    <SignalRow label="Impact"      value={`${Math.round(row.impact * 100)}%`} />
+                    <SignalRow label="Effort"      value={`${Math.round(row.effort * 100)}%`} />
+                    <SignalRow label="Score"       value={`${row.score.toFixed(2)}`} />
+                    {row.kind === 'missing'   && <SignalRow label="Seq scans"   value={fmtNum(row.seqScan)} />}
+                    {row.kind === 'unused'    && <SignalRow label="Idx scans"   value={fmtNum(row.scans)} />}
+                    {row.kind === 'duplicate' && <SignalRow label="Shadowed by" value={row.shadowedBy ?? '—'} />}
+                    {row.kind === 'bloat'     && <SignalRow label="Bloat %"     value={`${row.bloatPct.toFixed(1)}%`} />}
+                </tbody>
+            </table>
+        </>
+    );
+};
+
+const CbCell: React.FC<{ label: string; value: string; sub: string; color: string }> = ({
+    label, value, sub, color,
+}) => (
+    <div style={{
+        padding: '10px 12px', borderRadius: 8,
+        background: `${color}0C`, border: `1px solid ${color}30`,
+    }}>
+        <div style={{
+            fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em',
+            color: THEME.textDim, fontWeight: 700,
+        }}>
+            {label}
+        </div>
+        <div style={{
+            fontSize: 17, fontFamily: THEME.fontMono, fontWeight: 700,
+            color, marginTop: 2,
+        }}>
+            {value}
+        </div>
+        <div style={{ fontSize: 10.5, color: THEME.textMuted }}>{sub}</div>
+    </div>
+);
+
+const RiskBlock: React.FC<{ analysis: AdvancedAnalysis }> = ({ analysis }) => {
+    const { risk } = analysis;
+    const color = riskColor(risk.level);
+    return (
+        <div style={{
+            padding: 12, borderRadius: 8,
+            background: `${color}0C`,
+            border: `1px solid ${color}30`,
+        }}>
+            <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                marginBottom: 8,
+            }}>
+                <span style={{
+                    padding: '2px 8px', borderRadius: 10,
+                    background: color, color: '#fff',
+                    fontSize: 10.5, fontWeight: 700, fontFamily: THEME.fontMono,
+                    textTransform: 'uppercase', letterSpacing: '0.05em',
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                }}>
+                    {risk.level === 'risky' ? <AlertOctagon size={10} /> :
+                     risk.level === 'review' ? <AlertTriangle size={10} /> :
+                     <Shield size={10} />}
+                    {risk.level}
+                </span>
+                {risk.offHoursOnly && (
+                    <span style={{
+                        fontSize: 10.5, color: THEME.warning, fontWeight: 600,
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                    }}>
+                        <Clock size={10} /> off-hours recommended
+                    </span>
+                )}
+            </div>
+            <div style={{ display: 'grid', gap: 4, fontSize: 12, color: THEME.textMain }}>
+                <RiskLine label="Lock impact"     value={risk.lockImpact} />
+                <RiskLine label="Replication"     value={risk.replicationRisk} />
+                <RiskLine label="Rollback"        value={risk.rollbackPlan} />
+            </div>
+            {risk.safetyChecks.length > 0 && (
+                <>
+                    <div style={{
+                        fontSize: 10.5, fontWeight: 700, color: THEME.textDim,
+                        textTransform: 'uppercase', letterSpacing: '0.06em',
+                        marginTop: 10, marginBottom: 4,
+                    }}>
+                        Safety checks
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: THEME.textMain }}>
+                        {risk.safetyChecks.map((s, i) => (
+                            <li key={i} style={{ marginBottom: 2 }}>{s}</li>
+                        ))}
+                    </ul>
+                </>
+            )}
+        </div>
+    );
+};
+
+const RiskLine: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+        <span style={{
+            fontSize: 10.5, fontWeight: 700, color: THEME.textDim,
+            textTransform: 'uppercase', letterSpacing: '0.05em',
+            minWidth: 88,
+        }}>
+            {label}
+        </span>
+        <span style={{ flex: 1 }}>{value}</span>
+    </div>
+);
+
+const ScriptBody: React.FC<{
+    row: IndexRow;
+    analysis: AdvancedAnalysis;
+    applied: boolean;
+    onApply: () => void;
+    applyAfterRows: IndexRow[];
+    conflictRows: IndexRow[];
+    batchRows: IndexRow[];
+    onJumpTo: (id: string) => void;
+}> = ({ row, analysis, applied, onApply, applyAfterRows, conflictRows, batchRows, onJumpTo }) => {
+    const copy = (s: string, label: string) => () => {
+        navigator.clipboard?.writeText(s).catch(() => {});
+        // non-disruptive: no toast here; parent handles apply toast.
+        // eslint-disable-next-line no-console
+        console.log(`Copied ${label}`);
+    };
+
+    const hasDeps = applyAfterRows.length + conflictRows.length + batchRows.length > 0;
+
+    return (
+        <>
+            <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontSize: 11.5, color: THEME.textMuted, marginBottom: 10,
+                flexWrap: 'wrap',
+            }}>
+                <span>
+                    <code style={{ fontFamily: THEME.fontMono, color: THEME.textMain }}>
+                        {row.indexName ?? row.tableLabel}
+                    </code>
+                </span>
+                <span>·</span>
+                <span>{kindMeta[row.kind].label}</span>
+                <span>·</span>
+                <span>ETA {analysis.fixScript.estimatedDuration}</span>
+            </div>
+
+            {hasDeps && (
+                <>
+                    <SectionHeader icon={<GitBranch size={11} />} label="Dependencies & order" />
+                    {analysis.dependencies.note && (
+                        <p style={{ fontSize: 12, color: THEME.textMuted, margin: '0 0 8px' }}>
+                            {analysis.dependencies.note}
+                        </p>
+                    )}
+                    {applyAfterRows.length > 0 && (
+                        <DepList
+                            label="Apply after"
+                            tone={THEME.warning}
+                            rows={applyAfterRows}
+                            onJumpTo={onJumpTo}
+                        />
+                    )}
+                    {conflictRows.length > 0 && (
+                        <DepList
+                            label="Conflicts with"
+                            tone={THEME.danger}
+                            rows={conflictRows}
+                            onJumpTo={onJumpTo}
+                        />
+                    )}
+                    {batchRows.length > 0 && (
+                        <DepList
+                            label="Batch with"
+                            tone={THEME.info}
+                            rows={batchRows}
+                            onJumpTo={onJumpTo}
+                        />
+                    )}
+                </>
+            )}
+
+            <SectionHeader icon={<Shield size={11} />} label="Pre-flight checks" />
+            <CodeBlock
+                code={analysis.fixScript.preFlight}
+                onCopy={copy(analysis.fixScript.preFlight, 'pre-flight')}
+                tone={THEME.info}
+            />
+
+            <SectionHeader icon={<Zap size={11} />} label="Apply" />
+            <CodeBlock
+                code={analysis.fixScript.sql}
+                onCopy={copy(analysis.fixScript.sql, 'apply')}
+                tone={THEME.primary}
+            />
+
+            <SectionHeader icon={<RefreshCcw size={11} />} label="Rollback" />
+            <CodeBlock
+                code={analysis.fixScript.rollback}
+                onCopy={copy(analysis.fixScript.rollback, 'rollback')}
+                tone={THEME.warning}
+            />
+
+            <div style={{
+                marginTop: 16, padding: 12, borderRadius: 8,
+                background: applied ? `${THEME.success}10` : THEME.surfaceRaised ?? THEME.surface,
+                border: `1px solid ${applied ? THEME.success : THEME.glassBorder}60`,
+                display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+            }}>
+                {applied ? (
+                    <>
+                        <CheckCircle2 size={16} color={THEME.success} />
+                        <span style={{ fontSize: 12, color: THEME.textMain, fontWeight: 600 }}>
+                            Marked applied. Execute the copied SQL in your own console.
+                        </span>
+                    </>
+                ) : (
+                    <>
+                        <span style={{ fontSize: 12, color: THEME.textMain, flex: 1, minWidth: 200 }}>
+                            Simulated apply: copies Apply SQL and marks this finding as done.
+                            Nothing is executed on your database.
+                        </span>
+                        <button
+                            type="button"
+                            onClick={onApply}
+                            style={{
+                                padding: '8px 14px', borderRadius: 6,
+                                border: `1px solid ${THEME.primary}`,
+                                background: THEME.primary, color: '#fff',
+                                fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                                display: 'inline-flex', alignItems: 'center', gap: 6,
+                            }}
+                        >
+                            <Zap size={12} /> Simulated apply
+                        </button>
+                    </>
+                )}
+            </div>
+        </>
+    );
+};
+
+const DepList: React.FC<{
+    label: string;
+    tone: string;
+    rows: IndexRow[];
+    onJumpTo: (id: string) => void;
+}> = ({ label, tone, rows, onJumpTo }) => (
+    <div style={{ marginBottom: 8 }}>
+        <div style={{
+            fontSize: 10.5, fontWeight: 700, color: tone,
+            textTransform: 'uppercase', letterSpacing: '0.06em',
+            marginBottom: 4,
+        }}>
+            {label}
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {rows.map((rr) => (
+                <button
+                    key={rr.id}
+                    type="button"
+                    onClick={() => onJumpTo(rr.id)}
+                    style={{
+                        padding: '3px 8px', borderRadius: 10,
+                        border: `1px solid ${tone}40`,
+                        background: `${tone}10`, color: tone,
+                        fontSize: 10.5, fontFamily: THEME.fontMono, fontWeight: 600,
+                        cursor: 'pointer',
+                    }}
+                >
+                    {kindMeta[rr.kind].short} · {rr.indexName ?? rr.tableLabel}
+                </button>
+            ))}
+        </div>
+    </div>
+);
+
+const CodeBlock: React.FC<{ code: string; onCopy: () => void; tone: string }> = ({
+    code, onCopy, tone,
+}) => (
+    <div style={{ position: 'relative' }}>
+        <pre style={{
+            margin: 0, padding: '10px 12px', borderRadius: 6,
+            background: THEME.surfaceRaised ?? THEME.surface,
+            border: `1px solid ${THEME.glassBorder}`,
+            borderLeft: `3px solid ${tone}`,
+            fontSize: 11.5, fontFamily: THEME.fontMono,
+            color: THEME.textMain, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+            overflowX: 'auto',
+        }}>
+            {code}
+        </pre>
+        <button
+            type="button"
+            onClick={onCopy}
+            title="Copy"
+            style={{
+                position: 'absolute', top: 6, right: 6,
+                padding: '3px 8px', borderRadius: 4,
+                border: `1px solid ${tone}40`,
+                background: `${tone}15`, color: tone,
+                fontSize: 10.5, fontWeight: 700, cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: 3,
+                fontFamily: THEME.fontMono,
+            }}
+        >
+            <Copy size={10} /> copy
+        </button>
+    </div>
+);
+
+const ApplyPlanWidget: React.FC<{
+    selectedCount: number;
+    appliedCount: number;
+    onDownload: () => void;
+    onClearSelection: () => void;
+}> = ({ selectedCount, appliedCount, onDownload, onClearSelection }) => {
+    const active = selectedCount > 0;
+    return (
+        <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '4px 8px', borderRadius: 8,
+            border: `1px solid ${active ? THEME.primary : THEME.glassBorder}`,
+            background: active ? `${THEME.primary}10` : THEME.surface,
+            fontSize: 11, fontFamily: THEME.fontMono,
+            color: active ? THEME.primary : THEME.textMuted,
+        }}>
+            <span style={{ fontWeight: 700 }}>
+                {active ? `${selectedCount} selected` : 'Apply plan'}
+            </span>
+            {appliedCount > 0 && (
+                <span style={{ color: THEME.success }}>
+                    · {appliedCount} applied
+                </span>
+            )}
+            {active && (
+                <button
+                    type="button"
+                    onClick={onClearSelection}
+                    title="Clear selection"
+                    style={{
+                        padding: '2px 5px', borderRadius: 4,
+                        border: `1px solid ${THEME.glassBorder}`,
+                        background: 'transparent', color: THEME.textMuted,
+                        cursor: 'pointer', fontSize: 10,
+                    }}
+                >
+                    <X size={10} />
+                </button>
+            )}
+            <button
+                type="button"
+                onClick={onDownload}
+                title={active ? 'Download selected as .sql' : 'Download actionable findings as .sql'}
+                style={{
+                    padding: '4px 10px', borderRadius: 6, border: 'none',
+                    background: THEME.primary, color: '#fff',
+                    fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                }}
+            >
+                <Download size={11} /> .sql
+            </button>
+        </div>
+    );
+};
+
+const riskColor = (level: RiskLevel): string =>
+    level === 'risky' ? THEME.danger :
+    level === 'review' ? THEME.warning :
+    THEME.success;
 
 const SignalRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
     <tr>
