@@ -62,7 +62,7 @@ const AlertsComponent = lazyRetry(() => import('./components/views/security/Aler
 const AlertCorrelationTab = lazyRetry(() => import('./components/views/security/AlertCorrelationTab'));
 
 // Database features
-const IndexesTab = lazyRetry(() => import('./components/views/database/IndexesTabV3'));
+const IndexesTab = lazyRetry(() => import('./components/views/database/IndexesTab'));
 const SqlConsoleTab = lazyRetry(() => import('./components/views/database/SqlConsoleTab'));
 const BloatAnalysisTab = lazyRetry(() => import('./components/views/database/BloatAnalysisTab'));
 const TableAnalytics = lazyRetry(() => import('./components/views/database/TableAnalytics'));
