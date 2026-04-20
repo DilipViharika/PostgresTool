@@ -101,8 +101,14 @@ function useIndexData() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // Guard against overlapping loads (strict-mode double-invoke,
+    // global-refresh during an in-flight load, etc.).
+    const inflightRef = useRef(false);
+    const mountedRef = useRef(false);
 
     const load = useCallback(async (manual = false) => {
+        if (inflightRef.current) return;
+        inflightRef.current = true;
         if (manual) setRefreshing(true);
         setError(null);
         try {
@@ -142,12 +148,25 @@ function useIndexData() {
         } finally {
             setLoading(false);
             setRefreshing(false);
+            inflightRef.current = false;
         }
     }, []);
 
-    useEffect(() => { load(); }, [load]);
+    // Stable reload reference so downstream useEffects (global-refresh
+    // listener, child prop identity) don't thrash every render.
+    const reload = useCallback(() => { load(true); }, [load]);
 
-    return { data, loading, refreshing, error, reload: () => load(true) };
+    // Fire the initial load exactly once per mount. Using an empty dep
+    // array + mountedRef guard avoids any accidental re-runs if `load`
+    // ever becomes referentially unstable.
+    useEffect(() => {
+        if (mountedRef.current) return;
+        mountedRef.current = true;
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    return { data, loading, refreshing, error, reload };
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -204,7 +223,10 @@ type AutonomyLevel = 'L0' | 'L1' | 'L2' | 'L3';
 const IndexesTabV3: React.FC = () => {
     useAdaptiveTheme();
     const { data, loading, refreshing, error, reload } = useIndexData();
-    useGlobalRefresh(useCallback(() => reload(), [reload]));
+    // `reload` is now stable (memoised inside useIndexData) so we can pass
+    // it directly — no inline wrapper, no thrashing of the global-refresh
+    // listener on every render.
+    useGlobalRefresh(reload);
 
     const [search, setSearch] = useState('');
     const [groupBy, setGroupBy] = useState<GroupKey>('severity');
