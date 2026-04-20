@@ -50,7 +50,7 @@ const SSOCallback = lazyRetry(() => import('./components/auth/SSOCallback'));
 
 /* ── Lazy-loaded tab components for faster initial load ── */
 // Monitoring features
-const OverviewTab = lazyRetry(() => import('./components/views/monitoring/OverviewTab'));
+const OverviewTab = lazyRetry(() => import('./components/views/monitoring/OverviewTabV2'));
 const PerformanceTab = lazyRetry(() => import('./components/views/monitoring/PerformanceTab'));
 const ResourcesTab = lazyRetry(() => import('./components/views/monitoring/ResourcesTab'));
 const CloudWatchTab = lazyRetry(() => import('./components/views/monitoring/CloudWatchTab'));
@@ -62,7 +62,7 @@ const AlertsComponent = lazyRetry(() => import('./components/views/security/Aler
 const AlertCorrelationTab = lazyRetry(() => import('./components/views/security/AlertCorrelationTab'));
 
 // Database features
-const IndexesTab = lazyRetry(() => import('./components/views/database/IndexesTab'));
+const IndexesTab = lazyRetry(() => import('./components/views/database/IndexesTabV2'));
 const SqlConsoleTab = lazyRetry(() => import('./components/views/database/SqlConsoleTab'));
 const BloatAnalysisTab = lazyRetry(() => import('./components/views/database/BloatAnalysisTab'));
 const TableAnalytics = lazyRetry(() => import('./components/views/database/TableAnalytics'));
@@ -79,7 +79,7 @@ const ReplicationWALTab = lazyRetry(() => import('./components/views/operations/
 const ConnectionPoolTab = lazyRetry(() => import('./components/views/operations/ConnectionPoolTab'));
 
 // Analytics features
-const CapacityPlanningTab = lazyRetry(() => import('./components/views/analytics/CapacityPlanningTab'));
+const CapacityPlanningTab = lazyRetry(() => import('./components/views/analytics/CapacityPlanningTabV2'));
 const LogPatternAnalysisTab = lazyRetry(() => import('./components/views/analytics/LogPatternAnalysisTab'));
 const CustomDashboardTab = lazyRetry(() => import('./components/views/analytics/CustomDashboardTab'));
 /* Demo data components removed — production metrics now served via metricsRegistry.js */
