@@ -819,6 +819,16 @@ const PolicyRule: React.FC<{ icon: React.ReactNode; code: string; tag: string; t
     </div>
 );
 
+// NOTE: `Mono` is declared here (not further down in the file) because
+// TIMELINE_ENTRIES's array literal references it directly in JSX. A
+// forward reference would throw `ReferenceError: Cannot access 'Mono'
+// before initialization` at module-evaluation time, which `lazyRetry`
+// mistakes for a chunk-load failure and turns into an infinite
+// window.location.reload() loop. Keep this component above its first use.
+const Mono: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <span style={{ fontFamily: THEME.fontMono, color: THEME.primary, fontSize: 11 }}>{children}</span>
+);
+
 type TLEntry = {
     time: string;
     tone: 'primary' | 'good' | 'info' | 'bad' | 'warn';
@@ -992,10 +1002,6 @@ const ConsoleCard: React.FC<{
         </div>
         {children}
     </div>
-);
-
-const Mono: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <span style={{ fontFamily: THEME.fontMono, color: THEME.primary, fontSize: 11 }}>{children}</span>
 );
 
 /* ═════════════════════════════════════════════════════════════════════════
