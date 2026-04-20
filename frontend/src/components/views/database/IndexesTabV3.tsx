@@ -413,15 +413,8 @@ const IndexesTabV3: React.FC = () => {
                 </div>
             )}
 
-            {/* ═════════════ AUTONOMY CONSOLE ═════════════ */}
-            <section style={{
-                display: 'grid', gap: 14,
-                gridTemplateColumns: 'minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr)',
-            }}>
-                <AutonomyCard value={autonomy} onChange={setAutonomy} />
-                <AgentTimelineCard />
-                <IntegrationsCard />
-            </section>
+            {/* ═════════════ INTEGRATIONS ═════════════ */}
+            <IntegrationsCard />
 
             {/* ═════════════ SLO STRIP ═════════════ */}
             <SloStrip health={data.health} counts={counts} />
@@ -712,223 +705,9 @@ const AgentBar: React.FC<AgentBarProps> = ({
 );
 
 /* ═════════════════════════════════════════════════════════════════════════
- * AUTONOMY CARD · AGENT TIMELINE · INTEGRATIONS
+ * INTEGRATIONS
  * ══════════════════════════════════════════════════════════════════════ */
 
-const AutonomyCard: React.FC<{ value: AutonomyLevel; onChange: (l: AutonomyLevel) => void }> = ({
-    value, onChange,
-}) => {
-    const levels: Array<{ k: AutonomyLevel; t: string; d: string }> = [
-        { k: 'L0', t: 'Read-only',    d: 'AI observes, never writes.' },
-        { k: 'L1', t: 'Supervised',   d: 'AI proposes, you click apply.' },
-        { k: 'L2', t: 'Guarded auto', d: 'Auto-apply within policy rails.' },
-        { k: 'L3', t: 'Autonomous',   d: 'Full ownership, post-hoc review.' },
-    ];
-    return (
-        <ConsoleCard
-            icon={<BrainCircuit size={12} />}
-            title="Autonomy & policy"
-            sub="3 policies · 12 guardrails active"
-        >
-            <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12,
-            }}>
-                {levels.map((lv) => {
-                    const on = lv.k === value;
-                    return (
-                        <button
-                            key={lv.k}
-                            type="button"
-                            onClick={() => onChange(lv.k)}
-                            style={{
-                                textAlign: 'left',
-                                padding: 10, borderRadius: 10,
-                                background: on ? `${THEME.primary}14` : THEME.surfaceRaised ?? THEME.surface,
-                                border: `1px solid ${on ? THEME.primary : THEME.glassBorder}`,
-                                boxShadow: on ? `0 0 0 1px ${THEME.primary}40, 0 0 18px ${THEME.primary}22` : 'none',
-                                cursor: 'pointer', position: 'relative',
-                            }}
-                        >
-                            <span style={{
-                                position: 'absolute', top: 8, right: 8, width: 6, height: 6,
-                                borderRadius: '50%',
-                                background: on ? THEME.primary : THEME.glassBorder,
-                                boxShadow: on ? `0 0 10px ${THEME.primary}` : 'none',
-                            }} />
-                            <div style={{
-                                fontSize: 10, color: on ? THEME.primary : THEME.textDim,
-                                fontWeight: 800, letterSpacing: '0.06em',
-                            }}>
-                                {lv.k}
-                            </div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginTop: 4 }}>
-                                {lv.t}
-                            </div>
-                            <div style={{ fontSize: 10.5, color: THEME.textMuted, marginTop: 2, lineHeight: 1.35 }}>
-                                {lv.d}
-                            </div>
-                        </button>
-                    );
-                })}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <PolicyRule
-                    icon={<Shield size={12} color={THEME.success} />}
-                    code="if size > 10 GB → require-approval"
-                    tag="ACTIVE"
-                    tagTone={THEME.success}
-                />
-                <PolicyRule
-                    icon={<Clock size={12} color={THEME.success} />}
-                    code="maintenance_window = 02:00–04:00 UTC"
-                    tag="ACTIVE"
-                    tagTone={THEME.success}
-                />
-                <PolicyRule
-                    icon={<AlertTriangle size={12} color={THEME.warning} />}
-                    code="error_budget_burn > 2× → pause-agent"
-                    tag="WATCH"
-                    tagTone={THEME.warning}
-                />
-            </div>
-        </ConsoleCard>
-    );
-};
-
-const PolicyRule: React.FC<{ icon: React.ReactNode; code: string; tag: string; tagTone: string }> = ({
-    icon, code, tag, tagTone,
-}) => (
-    <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '8px 10px', borderRadius: 8,
-        background: THEME.surfaceRaised ?? THEME.surface,
-        border: `1px solid ${THEME.glassBorder}`,
-        fontSize: 11.5,
-    }}>
-        {icon}
-        <span style={{ color: THEME.textMain, fontFamily: THEME.fontMono, fontSize: 11 }}>
-            {code}
-        </span>
-        <span style={{
-            marginLeft: 'auto', padding: '2px 6px', borderRadius: 4,
-            background: `${tagTone}18`, color: tagTone,
-            fontSize: 10, fontWeight: 800, letterSpacing: '0.04em',
-        }}>
-            {tag}
-        </span>
-    </div>
-);
-
-// NOTE: `Mono` is declared here (not further down in the file) because
-// TIMELINE_ENTRIES's array literal references it directly in JSX. A
-// forward reference would throw `ReferenceError: Cannot access 'Mono'
-// before initialization` at module-evaluation time, which `lazyRetry`
-// mistakes for a chunk-load failure and turns into an infinite
-// window.location.reload() loop. Keep this component above its first use.
-const Mono: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <span style={{ fontFamily: THEME.fontMono, color: THEME.primary, fontSize: 11 }}>{children}</span>
-);
-
-type TLEntry = {
-    time: string;
-    tone: 'primary' | 'good' | 'info' | 'bad' | 'warn';
-    summary: React.ReactNode;
-    meta: string;
-    action?: { label: string; tone: 'apply' | 'block' };
-};
-
-const TIMELINE_ENTRIES: TLEntry[] = [
-    {
-        time: '10:42', tone: 'primary',
-        summary: <>Proposed index on <Mono>subscription_plan(plan_id, tier)</Mono></>,
-        meta: 'Triggered by 4 548× seq-scan ratio · confidence 96% · awaiting review',
-        action: { label: 'Apply', tone: 'apply' },
-    },
-    {
-        time: '09:13', tone: 'good',
-        summary: <>Applied <Mono>REINDEX idx_orders_created</Mono></>,
-        meta: 'Bloat 73% → 6% · duration 2m 41s · no SLO burn',
-    },
-    {
-        time: '06:02', tone: 'info',
-        summary: <>Detected workload shift on <Mono>api.plans</Mono></>,
-        meta: 'p95 +180% vs 7d baseline · opened investigation',
-    },
-    {
-        time: '04:55', tone: 'bad',
-        summary: <>Blocked drop of <Mono>idx_users_email_old</Mono></>,
-        meta: 'Policy: last_scan < 72h · deferred to human',
-        action: { label: 'Blocked', tone: 'block' },
-    },
-    {
-        time: '02:10', tone: 'good',
-        summary: <>Vacuumed <Mono>orders</Mono> after write spike</>,
-        meta: 'Reclaimed 412 MB · dead-tup ratio 18% → 2%',
-    },
-];
-
-const AgentTimelineCard: React.FC = () => {
-    const color = (t: TLEntry['tone']) => ({
-        primary: THEME.primary, good: THEME.success, info: THEME.info,
-        bad: THEME.danger, warn: THEME.warning,
-    } as const)[t];
-    return (
-        <ConsoleCard
-            icon={<Workflow size={12} />}
-            title="Agent activity · last 24h"
-            sub="14 actions · 2 awaiting review"
-        >
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {TIMELINE_ENTRIES.map((e, i) => (
-                    <div
-                        key={i}
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: '56px 18px 1fr',
-                            gap: 8, padding: '6px 0', alignItems: 'start',
-                        }}
-                    >
-                        <div style={{
-                            fontSize: 10.5, color: THEME.textDim,
-                            fontFamily: THEME.fontMono, paddingTop: 2,
-                        }}>
-                            {e.time}
-                        </div>
-                        <div style={{ position: 'relative' }}>
-                            <div style={{
-                                width: 10, height: 10, borderRadius: '50%',
-                                background: color(e.tone), margin: '4px auto',
-                                position: 'relative', zIndex: 2,
-                            }} />
-                            {i < TIMELINE_ENTRIES.length - 1 && (
-                                <div style={{
-                                    position: 'absolute', top: 14, bottom: -6,
-                                    left: '50%', width: 1, background: THEME.glassBorder,
-                                }} />
-                            )}
-                        </div>
-                        <div style={{ fontSize: 12, color: THEME.textMain }}>
-                            {e.summary}
-                            <div style={{ fontSize: 10.5, color: THEME.textMuted, marginTop: 2 }}>
-                                {e.meta}
-                            </div>
-                            {e.action && (
-                                <span style={{
-                                    display: 'inline-block', marginTop: 6, padding: '2px 6px',
-                                    borderRadius: 4, fontSize: 10.5,
-                                    background: e.action.tone === 'apply' ? `${THEME.success}15` : `${THEME.danger}15`,
-                                    color: e.action.tone === 'apply' ? THEME.success : THEME.danger,
-                                }}>
-                                    {e.action.label}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </ConsoleCard>
-    );
-};
 
 const IntegrationsCard: React.FC = () => {
     const rows = [
@@ -1018,7 +797,7 @@ const SloStrip: React.FC<{
     return (
         <section style={{
             display: 'grid', gap: 10,
-            gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+            gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
         }}>
             <SloCell
                 icon={<Zap size={11} />}
@@ -1040,17 +819,6 @@ const SloStrip: React.FC<{
                 budgetPct={Math.min(100, seqRate * 10)}
                 budgetColor={seqRate > 5 ? THEME.warning : THEME.success}
                 detail={seqRate > 5 ? 'Threshold 5% · trending to breach' : 'Below threshold'}
-            />
-            <SloCell
-                icon={<TrendingUp size={11} />}
-                label="Storage $"
-                value="$1,284"
-                unit="/mo"
-                delta="▼ $412 projected"
-                deltaTone="down"
-                budgetPct={61}
-                budgetColor={THEME.primary}
-                detail="Apply-plan would reclaim 12.8 GB"
             />
             <SloCell
                 icon={<AlertOctagon size={11} />}
