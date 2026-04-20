@@ -940,63 +940,8 @@ const HealthPanel = ({data}) => {
     </>;
 };
 
-const AIPanel = ({view}) => {
-    const insights={
-        missing:{title:'Sequential scan storm detected',items:[
-                {icon:'⚡',head:'Top priority',body:`orders.customer_id + status — 14× speedup on 892K daily seq scans.`},
-                {icon:'📐',head:'Size tip',body:`audit_logs partial index saves ~60% (450 MB → 180 MB) via time filter.`},
-                {icon:'⚠',head:'Write risk',body:`events at 5,400 writes/min — benchmark covering index before deploy.`},
-                {icon:'🧬',head:'Pattern',body:`3 of 6 missing indexes follow (FK, status) — standardize index naming.`},
-            ],action:`Deploy orders index first. Est. 847 CPU-hours/month saved.`},
-        bloat:{title:'1.4 GB reclaim available now',items:[
-                {icon:'🔥',head:'Critical',body:`idx_logs_meta at 65% bloat, 28d since vacuum. REINDEX within 48h.`},
-                {icon:'⏱',head:'Vacuum lag',body:`5,200 writes/min with 28d gap — autovacuum_scale_factor too high.`},
-                {icon:'📅',head:'Schedule',body:`Optimal window: 02:00–04:00 UTC. ~12–18 min per index.`},
-                {icon:'⚙',head:'Config fix',body:`Lower autovacuum_vacuum_scale_factor 0.2 → 0.05 for busy tables.`},
-            ],action:`2.6 GB total reclaim. Run sequentially with 5-min cooldowns.`},
-        duplicates:{title:'214 MB zero-risk recovery',items:[
-                {icon:'✅',head:'Safe to drop',body:`All 4 are strict subsets of covering indexes. Planner auto-reroutes.`},
-                {icon:'💾',head:'Write savings',body:`Dropping saves ~1,640 write ops/min across 4 tables.`},
-                {icon:'⚠',head:'Code check',body:`Search for USE INDEX (idx_orders_cust) hints before dropping.`},
-                {icon:'🔒',head:'Constraint',body:`Confirm idx_users_email_uniq replacement has UNIQUE constraint.`},
-            ],action:`Safe to drop all 4 in one maintenance window.`},
-        unused:{title:'748 MB of dead indexes',items:[
-                {icon:'🗑',head:'idx_temp_fix_2023',body:`Zero scans ever. Likely a 2023 workaround — verify and drop.`},
-                {icon:'👻',head:'Batch job risk',body:`Check nightly ETL — batch jobs invisible to pg_stat_user_indexes.`},
-                {icon:'📊',head:'Write waste',body:`760 writes/min wasted. ~15% INSERT overhead on orders.`},
-                {icon:'🕐',head:'Confidence',body:`Use 90-day pg_stat baseline. Monitor 48h post-drop.`},
-            ],action:`Drop in next sprint after 90-day stats confirmation.`},
-    };
-    const a=insights[view]||insights.missing;
-    const [exp,setExp]=useState(false);
-    return <Card>
-        <CH title="AI analysis" right={<Lbl color={C.textDim}>{view}</Lbl>}/>
-        <div style={{padding:'14px 18px',display:'flex',flexDirection:'column',gap: 22}}>
-            <div style={{padding:'10px 12px',background:C.accentBg,border:`1px solid ${C.accent}20`,borderRadius: 16}}>
-                <div style={{fontSize:12,fontWeight:600,color:C.accent,fontFamily:THEME.fontBody,lineHeight:1.4}}>{a.title}</div>
-            </div>
-            {(exp?a.items:a.items.slice(0,2)).map((it,i)=><div key={i} style={{display:'flex',gap: 22,
-                padding:'10px 12px',background:C.surfaceHi,borderRadius: 16}}>
-                <span style={{fontSize:15,flexShrink:0,marginTop:1}}>{it.icon}</span>
-                <div>
-                    <div style={{fontSize:11,fontWeight:600,color:C.textPrimary,fontFamily:THEME.fontBody,marginBottom:2}}>{it.head}</div>
-                    <div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody,lineHeight:1.6}}>{it.body}</div>
-                </div>
-            </div>)}
-            <button onClick={()=>setExp(e=>!e)} className="btn" style={{padding:'7px',background:C.surface,
-                border:`1px solid ${C.border}`,borderRadius: 16,color:C.textSub,fontSize:11,fontFamily:THEME.fontBody}}>
-                {exp?'Show less ↑':'Show all insights ↓'}
-            </button>
-            <div style={{padding:'10px 12px',background:C.okBg,border:`1px solid ${C.ok}18`,borderRadius: 16}}>
-                <Lbl color={C.ok} style={{display:'block',marginBottom:4}}>Recommendation</Lbl>
-                <div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody,lineHeight:1.6}}>{a.action}</div>
-            </div>
-        </div>
-    </Card>;
-};
-
 /* ─────────────────────────────────────────────────────────────────────────
-   DEEP AI ANALYSIS — root cause, predicted impact, risk matrix, playbook
+   AI ANALYSIS — root cause, predicted impact, risk matrix, playbook
 ───────────────────────────────────────────────────────────────────────── */
 const DeepAIPanel = ({view, data, rows}) => {
     const [section, setSection] = useState('overview');
@@ -1182,7 +1127,7 @@ const DeepAIPanel = ({view, data, rows}) => {
                         display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:'#fff',
                         boxShadow:`0 3px 10px ${cfg.color}40`}}>{cfg.icon}</div>
                     <div>
-                        <Lbl>AI Deep Analysis</Lbl>
+                        <Lbl>AI analysis</Lbl>
                         <div style={{fontSize:12.5,fontWeight:600,color:C.textPrimary,fontFamily:THEME.fontBody,marginTop:2,lineHeight:1.3}}>{cfg.title}</div>
                     </div>
                 </div>
@@ -1517,7 +1462,7 @@ export default function IndexIntelligence() {
     ];
 
     const RTABS=[
-        {id:'deep',label:'Deep AI'},{id:'ai',label:'AI'},{id:'health',label:'Health'},{id:'trend',label:'Trend'},
+        {id:'deep',label:'AI'},{id:'health',label:'Health'},{id:'trend',label:'Trend'},
         {id:'pgvector',label:'pgvector'},{id:'rowdiv',label:'Row est.'},{id:'fk',label:'FK gaps'},{id:'history',label:'Log'},
     ];
 
@@ -1681,7 +1626,6 @@ export default function IndexIntelligence() {
                             </button>)}
                         </div>
                         {rTab==='deep'     &&<DeepAIPanel view={view} data={data} rows={rows}/>}
-                        {rTab==='ai'       &&<AIPanel view={view}/>}
                         {rTab==='health'   &&<HealthPanel data={data.health}/>}
                         {rTab==='trend'    &&<TrendPanel rows={rows} view={view}/>}
                         {rTab==='pgvector' &&<PgVectorPanel pgvector={data.pgvector}/>}
