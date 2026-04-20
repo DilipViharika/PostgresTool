@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Monitoring Overview — Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:            #0b1524;
+    --surface:       #122339;
+    --surface-2:     #1a2e47;
+    --chip:          #1e3350;
+    --hairline:      rgba(255,255,255,0.07);
+    --hairline-2:    rgba(255,255,255,0.12);
+
+    --text-strong:   #f1f5ff;
+    --text:          #c8d4e3;
+    --muted:         #8094ad;
+    --subtle:        #5f748e;
+
+    --accent:        #00c48c;
+    --accent-soft:   rgba(0,196,140,0.14);
+    --accent-ring:   rgba(0,196,140,0.35);
+
+    --blue:          #4a9eff;
+    --blue-soft:     rgba(74,158,255,0.14);
+    --amber:         #fbbf24;
+    --amber-soft:    rgba(251,191,36,0.14);
+    --red:           #f87171;
+    --red-soft:      rgba(248,113,113,0.14);
+    --purple:        #a78bfa;
+    --purple-soft:   rgba(167,139,250,0.14);
+
+    --radius:        14px;
+    --radius-sm:     10px;
+    --ease:          cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background:
+      radial-gradient(900px 500px at 90% -10%, var(--blue-soft), transparent 60%),
+      radial-gradient(800px 420px at 0% 110%, var(--accent-soft), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px clamp(20px, 3vw, 48px);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* ─── Page header ─── */
+  .page-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 20px; flex-wrap: wrap; margin-bottom: 28px;
+  }
+  h1 {
+    font-size: clamp(22px, 2.2vw, 28px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-strong);
+  }
+  .sub {
+    font-size: 14px; color: var(--muted);
+    margin-top: 6px;
+    display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-radius: 10px;
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px; font-weight: 600;
+    transition: background .15s var(--ease), transform .15s var(--ease);
+  }
+  .btn:hover { background: var(--surface-2); transform: translateY(-1px); }
+  .btn-primary { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-ring); }
+  .btn-primary:hover { background: rgba(0,196,140,0.22); }
+  .btn .icon { width: 16px; height: 16px; }
+
+  .range {
+    display: inline-flex; padding: 4px; gap: 2px;
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 10px;
+  }
+  .range button {
+    padding: 6px 11px; border-radius: 7px; border: 0;
+    background: transparent; color: var(--muted);
+    font-size: 12px; font-weight: 600;
+  }
+  .range button.active { background: var(--surface-2); color: var(--text-strong); }
+
+  /* ─── Grid layout ─── */
+  .row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .row.kpi  { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .row.two  { grid-template-columns: 2fr 1fr; }
+  .row.split { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 960px) {
+    .row.two, .row.split { grid-template-columns: 1fr; }
+  }
+
+  /* ─── Card ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.28); }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .card-title .q { color: var(--subtle); margin-left: 6px; cursor: help; }
+  .card-meta  { font-size: 11px; color: var(--subtle); }
+
+  .icon-box {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .i-accent { background: var(--accent-soft); color: var(--accent); }
+  .i-blue   { background: var(--blue-soft);   color: var(--blue); }
+  .i-amber  { background: var(--amber-soft);  color: var(--amber); }
+  .i-red    { background: var(--red-soft);    color: var(--red); }
+  .i-purple { background: var(--purple-soft); color: var(--purple); }
+
+  .kpi-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .kpi-label { font-size: 13px; font-weight: 600; color: var(--muted); line-height: 1.3; }
+  .kpi-hint  { font-size: 12px; color: var(--subtle); margin-top: 2px; }
+  .kpi-value { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-strong);
+    font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .kpi-unit  { font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 4px; }
+  .kpi-trend {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600;
+    padding: 3px 8px; border-radius: 999px;
+    margin-top: 10px;
+  }
+  .up   { color: var(--accent); background: var(--accent-soft); }
+  .down { color: var(--red); background: var(--red-soft); }
+
+  .spark { height: 42px; width: 100%; margin-top: 8px; }
+  .spark svg { width: 100%; height: 100%; display: block; }
+
+  /* Chart area */
+  .chart {
+    position: relative;
+    height: 260px;
+    background: linear-gradient(180deg, rgba(74,158,255,0.05), transparent 70%);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .gridline { stroke: rgba(255,255,255,0.05); stroke-width: 1; }
+  .axis-label { font-size: 10px; fill: var(--subtle); }
+
+  .legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+  .lg-item { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .lg-dot { width: 10px; height: 3px; border-radius: 2px; }
+
+  /* Status list */
+  .db-list { display: flex; flex-direction: column; gap: 10px; }
+  .db-row {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    align-items: center; gap: 14px;
+    padding: 12px; border-radius: 10px;
+    background: var(--surface-2);
+  }
+  .db-row .name { font-size: 14px; font-weight: 600; color: var(--text-strong); }
+  .db-row .host { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+  }
+  .pill-ok   { color: var(--accent); background: var(--accent-soft); }
+  .pill-warn { color: var(--amber);  background: var(--amber-soft); }
+  .pill-err  { color: var(--red);    background: var(--red-soft); }
+  .pill .bullet { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  /* Alerts */
+  .alert {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    gap: 12px; align-items: flex-start;
+    padding: 12px 14px; border-radius: 10px;
+    background: var(--surface-2);
+    border-left: 3px solid var(--amber);
+  }
+  .alert.low { border-left-color: var(--blue); }
+  .alert.hi  { border-left-color: var(--red); }
+  .alert h4 { font-size: 13.5px; font-weight: 700; color: var(--text-strong); margin-bottom: 2px; }
+  .alert p  { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .alert time { font-size: 11px; color: var(--subtle); white-space: nowrap; }
+
+  /* Section title */
+  .section-title {
+    font-size: 11.5px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.12em;
+    display: flex; align-items: center; gap: 10px;
+    margin: 8px 0 14px;
+  }
+  .section-title::after { content: ""; flex: 1; height: 1px; background: var(--hairline); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── Page header ─── -->
+<header class="page-head">
+  <div>
+    <h1>Monitoring overview</h1>
+    <div class="sub">
+      <span class="dot" aria-hidden="true"></span>
+      <span>All systems healthy</span>
+      <span style="opacity:0.4">•</span>
+      <span>Updated just now</span>
+      <span style="opacity:0.4">•</span>
+      <span>6 databases across 3 regions</span>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="range" role="tablist" aria-label="Time range">
+      <button>1h</button>
+      <button>6h</button>
+      <button class="active">24h</button>
+      <button>7d</button>
+    </div>
+    <button class="btn" title="Refresh">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1015.5-6.3L21 8"/><path d="M21 3v5h-5"/></svg>
+      Refresh
+    </button>
+    <button class="btn btn-primary">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      Add monitor
+    </button>
+  </div>
+</header>
+
+<!-- ─── KPI cards ─── -->
+<div class="row kpi">
+  <!-- Card 1: Active connections -->
+  <div class="card">
+    <div class="kpi-head">
+      <div>
+        <div class="kpi-label">Active connections</div>
+        <div class="kpi-hint">Live sessions using the database</div>
+      </div>
+      <div class="icon-box i-blue" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+    </div>
+    <div><span class="kpi-value">247</span><span class="kpi-unit">/ 400</span></div>
+    <span class="kpi-trend up">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+      +12% vs yesterday
+    </span>
+    <div class="spark" aria-hidden="true">
+      <svg viewBox="0 0 120 40" preserveAspectRatio="none">
+        <defs><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a9eff" stop-opacity="0.5"/><stop offset="100%" stop-color="#4a9eff" stop-opacity="0"/></linearGradient></defs>
+        <path d="M0,30 L15,24 L30,27 L45,18 L60,22 L75,14 L90,18 L105,10 L120,12" fill="none" stroke="#4a9eff" stroke-width="2" stroke-linecap="round"/>
+        <path d="M0,30 L15,24 L30,27 L45,18 L60,22 L75,14 L90,18 L105,10 L120,12 L120,40 L0,40Z" fill="url(#gb)"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Card 2: Avg query time -->
+  <div class="card">
+    <div class="kpi-head">
+      <div>
+        <div class="kpi-label">Avg query time</div>
+        <div class="kpi-hint">How fast queries run on average</div>
+      </div>
+      <div class="icon-box i-accent" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+    </div>
+    <div><span class="kpi-value">4.2</span><span class="kpi-unit">ms</span></div>
+    <span class="kpi-trend up">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      8% faster than last week
+    </span>
+    <div class="spark" aria-hidden="true">
+      <svg viewBox="0 0 120 40" preserveAspectRatio="none">
+        <defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00c48c" stop-opacity="0.5"/><stop offset="100%" stop-color="#00c48c" stop-opacity="0"/></linearGradient></defs>
+        <path d="M0,20 L15,18 L30,22 L45,15 L60,12 L75,14 L90,10 L105,8 L120,6" fill="none" stroke="#00c48c" stroke-width="2" stroke-linecap="round"/>
+        <path d="M0,20 L15,18 L30,22 L45,15 L60,12 L75,14 L90,10 L105,8 L120,6 L120,40 L0,40Z" fill="url(#gg)"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Card 3: CPU usage -->
+  <div class="card">
+    <div class="kpi-head">
+      <div>
+        <div class="kpi-label">CPU usage</div>
+        <div class="kpi-hint">Across all monitored servers</div>
+      </div>
+      <div class="icon-box i-amber" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+      </div>
+    </div>
+    <div><span class="kpi-value">62</span><span class="kpi-unit">%</span></div>
+    <span class="kpi-trend down">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+      Trending up
+    </span>
+    <div class="spark" aria-hidden="true">
+      <svg viewBox="0 0 120 40" preserveAspectRatio="none">
+        <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fbbf24" stop-opacity="0.5"/><stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/></linearGradient></defs>
+        <path d="M0,32 L15,26 L30,28 L45,20 L60,22 L75,18 L90,12 L105,10 L120,8" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+        <path d="M0,32 L15,26 L30,28 L45,20 L60,22 L75,18 L90,12 L105,10 L120,8 L120,40 L0,40Z" fill="url(#ga)"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Card 4: Uptime -->
+  <div class="card">
+    <div class="kpi-head">
+      <div>
+        <div class="kpi-label">Uptime</div>
+        <div class="kpi-hint">Last 30 days, all databases</div>
+      </div>
+      <div class="icon-box i-purple" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+    </div>
+    <div><span class="kpi-value">99.98</span><span class="kpi-unit">%</span></div>
+    <span class="kpi-trend up">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Within SLA
+    </span>
+    <div class="spark" aria-hidden="true">
+      <svg viewBox="0 0 120 40" preserveAspectRatio="none">
+        <defs><linearGradient id="gp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa" stop-opacity="0.5"/><stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/></linearGradient></defs>
+        <path d="M0,10 L15,8 L30,9 L45,8 L60,9 L75,8 L90,9 L105,8 L120,8" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+        <path d="M0,10 L15,8 L30,9 L45,8 L60,9 L75,8 L90,9 L105,8 L120,8 L120,40 L0,40Z" fill="url(#gp)"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Main chart + sidebar ─── -->
+<div class="row two">
+  <!-- Query volume chart -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Queries per second <span class="q" title="The number of database requests handled each second">ⓘ</span></div>
+        <div class="card-meta">Across all databases · 24 hours</div>
+      </div>
+      <div class="range">
+        <button class="active">All</button>
+        <button>Reads</button>
+        <button>Writes</button>
+      </div>
+    </div>
+
+    <div class="chart" aria-hidden="true">
+      <svg viewBox="0 0 600 240" preserveAspectRatio="none" style="width:100%;height:100%;">
+        <!-- grid -->
+        <line class="gridline" x1="0" y1="60"  x2="600" y2="60"/>
+        <line class="gridline" x1="0" y1="120" x2="600" y2="120"/>
+        <line class="gridline" x1="0" y1="180" x2="600" y2="180"/>
+
+        <!-- reads (blue) -->
+        <defs>
+          <linearGradient id="chart-blue" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4a9eff" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#4a9eff" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="chart-green" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00c48c" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#00c48c" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <path d="M0,150 C60,130 90,160 140,140 C200,115 250,135 310,110 C370,85 420,95 470,80 C520,65 560,75 600,60 L600,240 L0,240 Z" fill="url(#chart-blue)"/>
+        <path d="M0,150 C60,130 90,160 140,140 C200,115 250,135 310,110 C370,85 420,95 470,80 C520,65 560,75 600,60"
+              fill="none" stroke="#4a9eff" stroke-width="2.2" stroke-linecap="round"/>
+
+        <path d="M0,195 C60,190 120,200 180,185 C240,175 300,180 360,170 C420,155 480,160 540,150 C570,145 585,143 600,145 L600,240 L0,240 Z" fill="url(#chart-green)"/>
+        <path d="M0,195 C60,190 120,200 180,185 C240,175 300,180 360,170 C420,155 480,160 540,150 C570,145 585,143 600,145"
+              fill="none" stroke="#00c48c" stroke-width="2.2" stroke-linecap="round"/>
+
+        <!-- x axis labels -->
+        <text class="axis-label" x="4"   y="232">00:00</text>
+        <text class="axis-label" x="150" y="232">06:00</text>
+        <text class="axis-label" x="290" y="232">12:00</text>
+        <text class="axis-label" x="430" y="232">18:00</text>
+        <text class="axis-label" x="560" y="232">now</text>
+
+        <!-- y axis labels -->
+        <text class="axis-label" x="4"  y="65">1,200</text>
+        <text class="axis-label" x="4"  y="125">800</text>
+        <text class="axis-label" x="4"  y="185">400</text>
+      </svg>
+    </div>
+
+    <div class="legend">
+      <span class="lg-item"><span class="lg-dot" style="background:#4a9eff;"></span>Read queries</span>
+      <span class="lg-item"><span class="lg-dot" style="background:#00c48c;"></span>Write queries</span>
+    </div>
+  </div>
+
+  <!-- Database status side panel -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Database status</div>
+        <div class="card-meta">6 of 6 reachable</div>
+      </div>
+    </div>
+
+    <div class="db-list">
+      <div class="db-row">
+        <div class="icon-box i-blue" aria-hidden="true"><span style="font-size:18px">🐘</span></div>
+        <div>
+          <div class="name">Production DB</div>
+          <div class="host">db.prod.example.com · 5432</div>
+        </div>
+        <span class="pill pill-ok"><span class="bullet"></span>Healthy</span>
+      </div>
+      <div class="db-row">
+        <div class="icon-box i-blue" aria-hidden="true"><span style="font-size:18px">🐘</span></div>
+        <div>
+          <div class="name">Staging DB</div>
+          <div class="host">staging.example.com · 5432</div>
+        </div>
+        <span class="pill pill-ok"><span class="bullet"></span>Healthy</span>
+      </div>
+      <div class="db-row">
+        <div class="icon-box i-amber" aria-hidden="true"><span style="font-size:18px">🐬</span></div>
+        <div>
+          <div class="name">Analytics MySQL</div>
+          <div class="host">analytics.example.com · 3306</div>
+        </div>
+        <span class="pill pill-warn"><span class="bullet"></span>Slow</span>
+      </div>
+      <div class="db-row">
+        <div class="icon-box i-accent" aria-hidden="true"><span style="font-size:18px">🍃</span></div>
+        <div>
+          <div class="name">Search Mongo</div>
+          <div class="host">mongo-search.example.com · 27017</div>
+        </div>
+        <span class="pill pill-ok"><span class="bullet"></span>Healthy</span>
+      </div>
+      <div class="db-row">
+        <div class="icon-box i-red" aria-hidden="true"><span style="font-size:18px">🐬</span></div>
+        <div>
+          <div class="name">Legacy orders</div>
+          <div class="host">legacy.example.com · 3306</div>
+        </div>
+        <span class="pill pill-err"><span class="bullet"></span>Offline</span>
+      </div>
+      <div class="db-row">
+        <div class="icon-box i-blue" aria-hidden="true"><span style="font-size:18px">🐘</span></div>
+        <div>
+          <div class="name">Reports read-only</div>
+          <div class="host">reports.example.com · 5432</div>
+        </div>
+        <span class="pill pill-ok"><span class="bullet"></span>Healthy</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Alerts + Resource usage ─── -->
+<div class="section-title">Recent activity</div>
+
+<div class="row split">
+  <!-- Alerts -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Alerts</div>
+        <div class="card-meta">Things you might want to look at</div>
+      </div>
+      <button class="btn" style="padding:6px 10px; font-size:12px;">View all</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="alert hi">
+        <div class="icon-box i-red" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <h4>Legacy orders is unreachable</h4>
+          <p>We haven't been able to connect for 6 minutes. Check network and credentials.</p>
+        </div>
+        <time>6m ago</time>
+      </div>
+
+      <div class="alert">
+        <div class="icon-box i-amber" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div>
+          <h4>Analytics MySQL is slower than usual</h4>
+          <p>Average query time is 34 ms — normally closer to 8 ms. No queries failed.</p>
+        </div>
+        <time>28m ago</time>
+      </div>
+
+      <div class="alert low">
+        <div class="icon-box i-blue" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        </div>
+        <div>
+          <h4>New index created on production</h4>
+          <p>Queries filtering by <code style="font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--chip);padding:1px 5px;border-radius:4px;">user_id</code> should be faster now.</p>
+        </div>
+        <time>2h ago</time>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resource usage -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Resource usage</div>
+        <div class="card-meta">Across monitored instances</div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:18px;">
+      <!-- CPU -->
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="color:var(--text-strong); font-size:13px; font-weight:600;">CPU</span>
+          <span style="font-family:'JetBrains Mono',monospace; color:var(--amber); font-size:13px; font-weight:600;">62%</span>
+        </div>
+        <div style="height:8px; border-radius:6px; background:rgba(255,255,255,0.05); overflow:hidden;">
+          <div style="height:100%; width:62%; background:linear-gradient(90deg, #fbbf24, #f59e0b); border-radius:6px;"></div>
+        </div>
+        <div style="margin-top:4px; font-size:11.5px; color:var(--muted);">Warning threshold at 75%</div>
+      </div>
+
+      <!-- Memory -->
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="color:var(--text-strong); font-size:13px; font-weight:600;">Memory</span>
+          <span style="font-family:'JetBrains Mono',monospace; color:var(--accent); font-size:13px; font-weight:600;">6.2 / 16 GB</span>
+        </div>
+        <div style="height:8px; border-radius:6px; background:rgba(255,255,255,0.05); overflow:hidden;">
+          <div style="height:100%; width:39%; background:linear-gradient(90deg, #00c48c, #00ed64); border-radius:6px;"></div>
+        </div>
+        <div style="margin-top:4px; font-size:11.5px; color:var(--muted);">Healthy range</div>
+      </div>
+
+      <!-- Disk -->
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="color:var(--text-strong); font-size:13px; font-weight:600;">Disk</span>
+          <span style="font-family:'JetBrains Mono',monospace; color:var(--blue); font-size:13px; font-weight:600;">180 / 500 GB</span>
+        </div>
+        <div style="height:8px; border-radius:6px; background:rgba(255,255,255,0.05); overflow:hidden;">
+          <div style="height:100%; width:36%; background:linear-gradient(90deg, #4a9eff, #3b82f6); border-radius:6px;"></div>
+        </div>
+        <div style="margin-top:4px; font-size:11.5px; color:var(--muted);">Plenty of headroom</div>
+      </div>
+
+      <!-- Network -->
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="color:var(--text-strong); font-size:13px; font-weight:600;">Network</span>
+          <span style="font-family:'JetBrains Mono',monospace; color:var(--purple); font-size:13px; font-weight:600;">142 Mbps</span>
+        </div>
+        <div style="height:8px; border-radius:6px; background:rgba(255,255,255,0.05); overflow:hidden;">
+          <div style="height:100%; width:14%; background:linear-gradient(90deg, #a78bfa, #8b5cf6); border-radius:6px;"></div>
+        </div>
+        <div style="margin-top:4px; font-size:11.5px; color:var(--muted);">Light traffic</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

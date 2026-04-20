@@ -1,0 +1,25 @@
+From 9c245f057ae6bc23db63fedbb1d5fadd7c34cae8 Mon Sep 17 00:00:00 2001
+From: Dilip <patildilip1164@gmail.com>
+Date: Fri, 17 Apr 2026 16:00:06 +0530
+Subject: [PATCH] ci(vercel): wrap root installCommand to dump npm debug log on
+ failure
+
+---
+ vercel.json | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/vercel.json b/vercel.json
+index 12d56ed..223dcfd 100644
+--- a/vercel.json
++++ b/vercel.json
+@@ -1,6 +1,6 @@
+ {
+     "version": 2,
+-    "installCommand": "npm install --include=dev",
++    "installCommand": "npm install --include=dev --loglevel=verbose || (echo === NPM DEBUG LOG === ; tail -n 2000 /vercel/.npm/_logs/*-debug-*.log ; exit 1)",
+     "buildCommand": "npm run build --workspace=frontend",
+     "outputDirectory": "frontend/dist",
+     "functions": {
+-- 
+2.34.1
+
