@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<title>Indexes · Autonomous DBA Copilot · v3 preview</title>
+<style>
+/* ---------- Design tokens ---------- */
+:root[data-theme="dark"] {
+  --bg: #07090d;
+  --bg-soft: #0c1017;
+  --surface: #10151f;
+  --surface-2: #161d2b;
+  --surface-3: #1c2436;
+  --border: #22293a;
+  --border-soft: #1a2030;
+  --text: #e6e9f2;
+  --text-muted: #8a93a8;
+  --text-dim: #5b6478;
+  --accent: #8b5cf6;
+  --accent-soft: rgba(139,92,246,0.14);
+  --good: #10b981;
+  --good-soft: rgba(16,185,129,0.14);
+  --warn: #f59e0b;
+  --warn-soft: rgba(245,158,11,0.14);
+  --bad: #ef4444;
+  --bad-soft: rgba(239,68,68,0.14);
+  --info: #38bdf8;
+  --info-soft: rgba(56,189,248,0.14);
+  --mag: #ec4899;
+  --mag-soft: rgba(236,72,153,0.14);
+  --glass: rgba(255,255,255,0.04);
+  --ring: 0 0 0 1px rgba(139,92,246,0.4), 0 0 24px rgba(139,92,246,0.18);
+  --shadow-lg: 0 30px 80px rgba(0,0,0,0.5);
+  --grid: repeating-linear-gradient(90deg, transparent 0 31px, rgba(255,255,255,0.02) 31px 32px);
+}
+:root[data-theme="light"] {
+  --bg: #f6f7fb;
+  --bg-soft: #eef0f7;
+  --surface: #ffffff;
+  --surface-2: #f9fafb;
+  --surface-3: #eef0f6;
+  --border: #e3e6ef;
+  --border-soft: #eceff6;
+  --text: #0f172a;
+  --text-muted: #5b6478;
+  --text-dim: #94a3b8;
+  --accent: #6d28d9;
+  --accent-soft: rgba(109,40,217,0.10);
+  --good: #059669;
+  --good-soft: rgba(5,150,105,0.10);
+  --warn: #b45309;
+  --warn-soft: rgba(180,83,9,0.10);
+  --bad: #b91c1c;
+  --bad-soft: rgba(185,28,28,0.10);
+  --info: #0284c7;
+  --info-soft: rgba(2,132,199,0.10);
+  --mag: #be185d;
+  --mag-soft: rgba(190,24,93,0.10);
+  --glass: rgba(15,23,42,0.03);
+  --ring: 0 0 0 1px rgba(109,40,217,0.35), 0 0 18px rgba(109,40,217,0.12);
+  --shadow-lg: 0 24px 60px rgba(15,23,42,0.12);
+  --grid: repeating-linear-gradient(90deg, transparent 0 31px, rgba(15,23,42,0.04) 31px 32px);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Text', Roboto, sans-serif;
+  font-size: 13px; line-height: 1.5; }
+body { min-height: 100vh; overflow-x: hidden; }
+
+/* ---------- Ambient background ---------- */
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(1100px 500px at 15% -10%, rgba(139,92,246,0.12), transparent 70%),
+    radial-gradient(900px 400px at 100% 10%, rgba(56,189,248,0.08), transparent 70%),
+    radial-gradient(700px 300px at 50% 110%, rgba(236,72,153,0.06), transparent 70%);
+}
+.app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ---------- Icons ---------- */
+svg.i { width: 14px; height: 14px; vertical-align: -2px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+svg.i-sm { width: 12px; height: 12px; }
+svg.i-lg { width: 16px; height: 16px; }
+svg.i-xl { width: 20px; height: 20px; }
+
+/* ---------- Top agent bar ---------- */
+.agent-bar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px;
+  background: linear-gradient(180deg, var(--bg) 0%, rgba(0,0,0,0) 100%);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-soft);
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-dot {
+  width: 26px; height: 26px; border-radius: 8px;
+  background: conic-gradient(from 180deg at 50% 50%, var(--accent), var(--info), var(--mag), var(--accent));
+  position: relative; box-shadow: var(--ring);
+}
+.brand-dot::after {
+  content: ""; position: absolute; inset: 3px; border-radius: 6px;
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-dot::before {
+  content: "D"; position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: var(--text); font-size: 13px;
+}
+.brand-title { font-weight: 700; letter-spacing: -0.01em; font-size: 14px; }
+.brand-title .kbd { font-weight: 500; color: var(--text-dim); font-size: 11px; margin-left: 6px; }
+
+.agent-mode {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent);
+  border: 1px solid rgba(139,92,246,0.35);
+  font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em;
+}
+.agent-mode .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 0 0 rgba(139,92,246,0.7); animation: pulse 2s infinite; }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(139,92,246,0.55); }
+  70% { box-shadow: 0 0 0 10px rgba(139,92,246,0); }
+  100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); }
+}
+
+.palette {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  min-width: 0;
+}
+.palette .pal-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 8px; border-radius: 6px; background: var(--surface-3);
+  font-size: 11px; color: var(--text-muted); border: 1px solid var(--border-soft);
+  cursor: pointer; white-space: nowrap;
+}
+.palette .pal-chip:hover { color: var(--text); border-color: var(--accent); }
+.palette input {
+  flex: 1; background: transparent; border: 0; outline: 0; color: var(--text);
+  font-family: inherit; font-size: 13px; min-width: 100px;
+}
+.palette input::placeholder { color: var(--text-dim); }
+.palette .kbd-hint { font-size: 11px; color: var(--text-dim); border: 1px solid var(--border); padding: 2px 6px; border-radius: 5px; background: var(--bg-soft); }
+
+.agent-bar .right { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-muted); cursor: pointer;
+}
+.icon-btn:hover { color: var(--text); border-color: var(--accent); }
+.avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #38bdf8);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 11px;
+}
+
+/* ---------- Autonomy console ---------- */
+.autonomy {
+  display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 14px;
+  margin: 14px 20px 0;
+}
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px; position: relative; overflow: hidden;
+}
+.card::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 30%);
+}
+.card-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.card-h .t { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--text); text-transform: uppercase; opacity: 0.85; }
+.card-h .s { font-size: 11.5px; color: var(--text-muted); }
+.card .sub { font-size: 11px; color: var(--text-dim); }
+
+/* Autonomy slider */
+.autonomy-levels {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  margin-bottom: 12px;
+}
+.al {
+  padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface-2); cursor: pointer; position: relative;
+}
+.al.on { border-color: var(--accent); background: var(--accent-soft); box-shadow: var(--ring); }
+.al .al-n { font-size: 10px; color: var(--text-dim); font-weight: 700; letter-spacing: 0.06em; }
+.al .al-t { font-weight: 700; margin-top: 4px; font-size: 12px; }
+.al .al-d { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.35; }
+.al.on .al-n { color: var(--accent); }
+.al .al-dot { position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+.al.on .al-dot { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+
+/* Policy rules */
+.rules { display: flex; flex-direction: column; gap: 6px; }
+.rule {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 8px; background: var(--surface-2);
+  border: 1px solid var(--border-soft); font-size: 11.5px;
+}
+.rule .mono { color: var(--text); font-family: ui-monospace, SFMono-Regular, monospace; font-size: 11px; }
+.rule .tag { margin-left: auto; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }
+.tag.pass { background: var(--good-soft); color: var(--good); }
+.tag.fail { background: var(--bad-soft); color: var(--bad); }
+.tag.skip { background: var(--warn-soft); color: var(--warn); }
+
+/* Agent timeline */
+.timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+.tl-row { display: grid; grid-template-columns: 78px 18px 1fr; gap: 8px; padding: 6px 0; align-items: start; }
+.tl-time { font-size: 10.5px; color: var(--text-dim); font-family: ui-monospace, monospace; padding-top: 2px; }
+.tl-dot-col { position: relative; }
+.tl-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+  margin: 4px auto; position: relative; z-index: 2;
+}
+.tl-dot.good { background: var(--good); }
+.tl-dot.warn { background: var(--warn); }
+.tl-dot.bad { background: var(--bad); }
+.tl-dot.info { background: var(--info); }
+.tl-line {
+  position: absolute; top: 14px; bottom: -6px; left: 50%;
+  width: 1px; background: var(--border);
+}
+.tl-row:last-child .tl-line { display: none; }
+.tl-body { font-size: 12px; color: var(--text); }
+.tl-body .tl-meta { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+.tl-body .mono { font-family: ui-monospace, monospace; font-size: 11px; color: var(--accent); }
+.tl-body .tl-act { display: inline-block; margin-top: 6px; padding: 2px 6px; border-radius: 4px; font-size: 10.5px; }
+.tl-body .tl-act.apply { background: var(--good-soft); color: var(--good); }
+.tl-body .tl-act.block { background: var(--bad-soft); color: var(--bad); }
+
+/* ---------- SLO health strip ---------- */
+.slo-strip {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;
+  margin: 14px 20px 0;
+}
+.slo {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px; position: relative; overflow: hidden;
+}
+.slo .h {
+  display: flex; align-items: center; gap: 6px; font-size: 10.5px;
+  color: var(--text-muted); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.slo .v { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px; }
+.slo .d { font-size: 10.5px; color: var(--text-dim); margin-top: 2px; }
+.slo .budget { margin-top: 8px; height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; position: relative; }
+.slo .budget > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
+.slo .spark { position: absolute; right: 10px; top: 10px; opacity: 0.7; }
+.slo .delta { font-size: 10.5px; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; font-weight: 600; }
+.slo .delta.up { background: var(--bad-soft); color: var(--bad); }
+.slo .delta.down { background: var(--good-soft); color: var(--good); }
+.slo .delta.flat { background: var(--surface-3); color: var(--text-muted); }
+
+/* ---------- Scenario modeler ---------- */
+.scenario {
+  margin: 14px 20px 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px;
+}
+.scenario-title { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.scenario-title h3 { margin: 0; font-size: 14px; }
+.scenario-title .pill {
+  padding: 2px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em;
+  background: var(--info-soft); color: var(--info); border: 1px solid rgba(56,189,248,0.3);
+}
+.scenario-desc { color: var(--text-muted); font-size: 11.5px; margin-bottom: 12px; }
+.slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.slider-row .lbl { width: 140px; font-size: 11.5px; color: var(--text); font-weight: 500; }
+.slider-row .val { width: 76px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); font-size: 12px; }
+.slider {
+  flex: 1; height: 26px; position: relative;
+}
+.slider .track {
+  position: absolute; left: 0; right: 0; top: 11px; height: 4px;
+  background: var(--surface-3); border-radius: 2px;
+}
+.slider .fill {
+  position: absolute; left: 0; top: 11px; height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--info)); border-radius: 2px;
+}
+.slider .thumb {
+  position: absolute; top: 4px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--accent); cursor: grab; box-shadow: var(--ring);
+}
+.slider .ticks { position: absolute; left: 0; right: 0; top: 19px; display: flex; justify-content: space-between; }
+.slider .ticks span { width: 1px; height: 4px; background: var(--border); }
+
+.scenario-out {
+  background: var(--bg-soft); border: 1px solid var(--border-soft); border-radius: 12px;
+  padding: 14px;
+}
+.scenario-out h4 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.scenario-out .outrows { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.outrow { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border-soft); }
+.outrow .l { color: var(--text-muted); font-size: 11.5px; }
+.outrow .r { font-weight: 700; font-variant-numeric: tabular-nums; }
+.outrow .r .delta { font-size: 11px; color: var(--good); margin-left: 8px; }
+.outrow .r .delta.bad { color: var(--bad); }
+.confidence-bar { margin-top: 10px; height: 8px; border-radius: 4px; overflow: hidden; background: var(--surface-3); position: relative; }
+.confidence-bar .p50 { position: absolute; top: 0; bottom: 0; background: var(--good); border-radius: 4px; opacity: 0.8; }
+.confidence-bar .p95 { position: absolute; top: 0; bottom: 0; background: var(--good-soft); border-left: 1px dashed var(--good); border-right: 1px dashed var(--good); }
+.confidence-legend { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-muted); margin-top: 4px; }
+
+/* ---------- Main workbench ---------- */
+.workbench {
+  display: grid; grid-template-columns: 1.45fr 1fr; gap: 14px;
+  margin: 14px 20px 20px;
+}
+.wb-col { display: flex; flex-direction: column; gap: 14px; }
+
+/* --- Index table cards --- */
+.idx-card-h {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.idx-card-h h3 { margin: 0; font-size: 14px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text-muted);
+}
+.chip.active { background: var(--accent-soft); color: var(--accent); border-color: rgba(139,92,246,0.3); }
+.chip.miss { background: var(--bad-soft); color: var(--bad); border-color: rgba(239,68,68,0.3); }
+.chip.bloat { background: var(--warn-soft); color: var(--warn); border-color: rgba(245,158,11,0.3); }
+.chip.unused { background: var(--info-soft); color: var(--info); border-color: rgba(56,189,248,0.3); }
+.chip.dup { background: var(--mag-soft); color: var(--mag); border-color: rgba(236,72,153,0.3); }
+.chip.ok { background: var(--good-soft); color: var(--good); border-color: rgba(16,185,129,0.3); }
+
+.idx-table { font-size: 12px; }
+.idx-row {
+  display: grid; grid-template-columns: 18px 80px minmax(200px, 1.8fr) 90px 64px 88px 68px 110px;
+  column-gap: 10px; align-items: center;
+  padding: 10px; border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer; transition: background 0.12s, border 0.12s;
+}
+.idx-row:hover { background: var(--surface-2); border-color: var(--border); }
+.idx-row.on { background: var(--accent-soft); border-color: rgba(139,92,246,0.32); box-shadow: var(--ring); }
+.idx-row.applied { opacity: 0.6; }
+.idx-row.applied .idx-name { text-decoration: line-through; text-decoration-color: var(--good); text-decoration-thickness: 1.5px; }
+
+.idx-row.head { color: var(--text-dim); font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding-top: 4px; padding-bottom: 4px; cursor: default; }
+.idx-row.head:hover { background: transparent; border-color: transparent; }
+
+.cb { appearance: none; width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; position: relative; }
+.cb:checked { background: var(--accent); border-color: var(--accent); }
+.cb:checked::after { content: ""; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border-right: 2px solid white; border-bottom: 2px solid white; transform: rotate(45deg); }
+
+.idx-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.idx-name .n {
+  font-family: ui-monospace, monospace; font-size: 12px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;
+}
+.idx-name .sub { color: var(--text-dim); font-size: 10.5px; }
+
+.idx-cell-mono { font-family: ui-monospace, monospace; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.idx-hit {
+  position: relative; height: 16px; border-radius: 4px; background: var(--surface-3);
+  overflow: hidden; border: 1px solid var(--border-soft);
+}
+.idx-hit > span {
+  position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--accent), var(--info));
+  border-radius: 4px;
+}
+.idx-hit .pct {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: var(--text); mix-blend-mode: luminosity;
+}
+
+.idx-risk { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; }
+.idx-risk .d { width: 6px; height: 6px; border-radius: 50%; }
+.idx-risk.low .d { background: var(--good); }
+.idx-risk.med .d { background: var(--warn); }
+.idx-risk.high .d { background: var(--bad); }
+.idx-risk.low { color: var(--good); }
+.idx-risk.med { color: var(--warn); }
+.idx-risk.high { color: var(--bad); }
+
+.idx-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: 7px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); font-size: 11.5px; font-weight: 500; cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn.primary:hover { background: #7c3aed; color: white; }
+.btn.ghost { background: transparent; }
+.btn.good { background: var(--good); color: white; border-color: var(--good); }
+.btn.bad { background: var(--bad); color: white; border-color: var(--bad); }
+
+.sparkline { width: 80px; height: 20px; }
+
+/* Radial risk dial */
+.risk-dial {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: conic-gradient(var(--bad) 0deg 20deg, var(--surface-3) 20deg 360deg);
+  position: relative;
+}
+.risk-dial::before { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--surface); }
+.risk-dial .val { position: relative; font-size: 9px; font-weight: 800; }
+
+/* ---------- Query evidence (right rail) ---------- */
+.rail-tabs {
+  display: flex; gap: 4px; padding: 4px; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 14px;
+}
+.rail-tab {
+  flex: 1; padding: 7px 10px; border-radius: 8px; text-align: center; cursor: pointer;
+  font-size: 11.5px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.01em;
+}
+.rail-tab.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+
+.idx-ctx-h {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.idx-ctx-h .name {
+  font-family: ui-monospace, monospace; font-size: 13px; font-weight: 700;
+}
+.idx-ctx-h .pills { margin-left: auto; display: flex; gap: 6px; }
+
+/* EXPLAIN tree diff */
+.explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.explain-box {
+  background: var(--bg-soft); border: 1px solid var(--border-soft); border-radius: 10px; padding: 10px;
+}
+.explain-box h5 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.node {
+  border-left: 2px solid var(--border); padding: 4px 8px; margin: 2px 0;
+  font-family: ui-monospace, monospace; font-size: 11px;
+}
+.node.red { border-left-color: var(--bad); background: rgba(239,68,68,0.05); }
+.node.green { border-left-color: var(--good); background: rgba(16,185,129,0.05); }
+.node.info { border-left-color: var(--info); }
+.node .t { color: var(--text); font-weight: 700; }
+.node .m { color: var(--text-muted); font-size: 10.5px; }
+.explain-verdict {
+  margin-top: 8px; padding: 8px 10px; border-radius: 8px;
+  background: linear-gradient(90deg, var(--good-soft), transparent);
+  font-size: 11.5px; display: flex; gap: 8px; align-items: center;
+}
+.explain-verdict b { color: var(--good); }
+
+/* Waterfall cost attribution */
+.waterfall { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.wf-row { display: grid; grid-template-columns: 140px 1fr 80px; gap: 8px; align-items: center; font-size: 11.5px; }
+.wf-lbl { color: var(--text-muted); }
+.wf-bar { position: relative; height: 18px; background: var(--surface-3); border-radius: 4px; overflow: hidden; }
+.wf-bar > span { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+.wf-val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; font-family: ui-monospace, monospace; font-size: 11px; }
+
+/* Sankey flow */
+.sankey-wrap { position: relative; height: 160px; margin-top: 4px; }
+
+/* Heatmap */
+.heatmap {
+  display: grid; grid-template-columns: 44px repeat(24, 1fr); gap: 2px;
+  font-size: 9.5px;
+}
+.heatmap .hm-h { color: var(--text-dim); padding-top: 4px; }
+.heatmap .hm-col { color: var(--text-dim); text-align: center; padding-bottom: 2px; font-size: 8.5px; }
+.heatmap .cell { height: 14px; border-radius: 2px; background: var(--surface-3); position: relative; }
+.heatmap .cell.hot { box-shadow: 0 0 0 1px var(--bad); }
+
+/* Chat thread */
+.chat-thread { display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto; padding-right: 4px; }
+.bubble { max-width: 90%; padding: 8px 12px; border-radius: 10px; font-size: 12px; line-height: 1.45; }
+.bubble.me { align-self: flex-end; background: var(--accent-soft); color: var(--text); border: 1px solid rgba(139,92,246,0.2); }
+.bubble.ai { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border-soft); position: relative; padding-left: 32px; }
+.bubble.ai::before {
+  content: ""; position: absolute; left: 10px; top: 10px; width: 14px; height: 14px; border-radius: 50%;
+  background: conic-gradient(from 180deg, var(--accent), var(--info), var(--mag), var(--accent));
+}
+.bubble.ai .think { color: var(--text-muted); font-size: 10.5px; font-style: italic; margin-top: 6px; border-top: 1px solid var(--border-soft); padding-top: 6px; }
+.bubble code { background: var(--bg-soft); color: var(--accent); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+
+.chat-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.chat-input-row { display: flex; gap: 6px; margin-top: 10px; }
+.chat-input {
+  flex: 1; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2);
+  color: var(--text); outline: none; font: inherit; font-size: 12px;
+}
+.chat-input:focus { border-color: var(--accent); box-shadow: var(--ring); }
+
+/* Playbook stepper */
+.playbook { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+.pb-step { background: var(--bg-soft); border: 1px solid var(--border-soft); border-radius: 10px; padding: 10px; position: relative; }
+.pb-step.done { border-color: rgba(16,185,129,0.3); background: var(--good-soft); }
+.pb-step.active { border-color: var(--accent); box-shadow: var(--ring); }
+.pb-num {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--surface-3); color: var(--text-muted);
+  display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px;
+}
+.pb-step.done .pb-num { background: var(--good); color: white; }
+.pb-step.active .pb-num { background: var(--accent); color: white; }
+.pb-t { margin-top: 8px; font-weight: 700; font-size: 12px; }
+.pb-s { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+.pb-time { font-size: 10px; color: var(--text-dim); margin-top: 4px; font-family: ui-monospace, monospace; }
+.pb-active-bar { position: absolute; left: 10px; right: 10px; bottom: 6px; height: 3px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
+.pb-active-bar > span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); animation: pbMove 2s linear infinite; width: 40%; border-radius: 2px; }
+@keyframes pbMove { 0% { left: -40%; } 100% { left: 100%; } }
+
+/* GitOps PR preview */
+.gitops {
+  background: var(--bg-soft); border: 1px solid var(--border-soft); border-radius: 10px; padding: 12px; margin-top: 8px;
+}
+.gitops-h { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 8px; }
+.pr-branch { font-family: ui-monospace, monospace; color: var(--accent); font-size: 11px; background: var(--accent-soft); padding: 2px 6px; border-radius: 4px; }
+.diff {
+  background: var(--bg); border: 1px solid var(--border-soft); border-radius: 6px;
+  padding: 8px; font-family: ui-monospace, monospace; font-size: 11px; line-height: 1.5;
+  white-space: pre; overflow-x: auto;
+}
+.diff .add { background: rgba(16,185,129,0.08); color: var(--good); display: block; }
+.diff .rem { background: rgba(239,68,68,0.08); color: var(--bad); display: block; }
+.diff .ctx { color: var(--text-muted); display: block; }
+.pr-meta { display: flex; gap: 10px; font-size: 10.5px; color: var(--text-muted); margin-top: 6px; }
+.pr-meta .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; background: var(--surface); border: 1px solid var(--border-soft); }
+
+/* Observability integration */
+.intg-row { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border-soft); }
+.intg-logo { width: 24px; height: 24px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; color: white; font-size: 10px; }
+
+/* Drawer overlay */
+.divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+/* ---------- Voice/AI feedback overlay ---------- */
+.voice-fab {
+  position: fixed; right: 22px; bottom: 22px; width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--mag));
+  box-shadow: 0 10px 30px rgba(139,92,246,0.4);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 60; color: white;
+}
+.voice-fab::before {
+  content: ""; position: absolute; inset: -6px; border-radius: 50%;
+  border: 2px solid var(--accent); opacity: 0.5; animation: ring 2.2s infinite;
+}
+@keyframes ring {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+/* Responsive */
+@media (max-width: 1280px) {
+  .workbench { grid-template-columns: 1fr; }
+  .autonomy { grid-template-columns: 1fr; }
+  .slo-strip { grid-template-columns: repeat(3, 1fr); }
+  .explain-grid { grid-template-columns: 1fr; }
+  .scenario { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- inline icon symbols -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.9 4.8L18.5 10l-4.6 2.2L12 17l-1.9-4.8L5.5 10l4.6-2.2L12 3z"/><path d="M19 14l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/><path d="M5 3l.6 1.4L7 5l-1.4.6L5 7l-.6-1.4L3 5l1.4-.6z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 9.5-8 10-4.5-.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A3.5 3.5 0 0012 18a7 7 0 006-10 .6.6 0 00-1-.4 7.5 7.5 0 01-2 1.9C15 7 12 2 12 2a11 11 0 01-1 5.5 7 7 0 01-1 1.8C7 12 8.5 14.5 8.5 14.5z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></symbol>
+  <symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="12" r="2.5"/><path d="M6 9v6M8.5 12h7"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 3a4 4 0 00-4 4v3a3 3 0 00-2 3 3 3 0 003 3v2a4 4 0 004 4h1V3H9zM15 3h-1v19h1a4 4 0 004-4v-2a3 3 0 003-3 3 3 0 00-2-3V7a4 4 0 00-4-4z"/></symbol>
+  <symbol id="i-voice" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0014 0v-2M12 19v3"/></symbol>
+  <symbol id="i-cost" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9a3 3 0 100 6h6a3 3 0 110 6H7"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 2L2 20h20L12 2z"/><path d="M12 9v5M12 18v.01"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></symbol>
+  <symbol id="i-slack" viewBox="0 0 24 24"><rect x="2" y="10" width="4" height="8" rx="2"/><rect x="10" y="2" width="8" height="4" rx="2"/><rect x="14" y="6" width="4" height="8" rx="2"/><rect x="6" y="18" width="8" height="4" rx="2"/></symbol>
+  <symbol id="i-pd" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="12" rx="2"/><path d="M8 21h8M12 15v6"/></symbol>
+  <symbol id="i-graf" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M3 3v18h18"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-flow" viewBox="0 0 24 24"><rect x="2" y="4" width="6" height="6" rx="1"/><rect x="2" y="14" width="6" height="6" rx="1"/><rect x="16" y="9" width="6" height="6" rx="1"/><path d="M8 7h4a2 2 0 012 2v6a2 2 0 01-2 2H8"/></symbol>
+</svg>
+
+<div class="app">
+
+<!-- ========================= AGENT BAR ========================= -->
+<div class="agent-bar">
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <div class="brand-title">Postgres · Autonomous DBA <span class="kbd">v3 · preview</span></div>
+  </div>
+
+  <div class="agent-mode"><span class="pulse"></span> SUPERVISED · prod-us-east</div>
+
+  <div class="palette">
+    <span class="pal-chip"><svg class="i i-sm"><use href="#i-sparkles"/></svg> /explain</span>
+    <span class="pal-chip">/fix-all</span>
+    <span class="pal-chip">/what-if</span>
+    <span class="pal-chip">/rollback</span>
+    <span class="pal-chip">/why</span>
+    <input placeholder='Ask or command — e.g. "why is subscription_plan slow yesterday 2–4pm?"' />
+    <span class="kbd-hint">⌘K</span>
+  </div>
+
+  <div class="right">
+    <button class="icon-btn" title="Alerts"><svg class="i"><use href="#i-bell"/></svg></button>
+    <button class="icon-btn" title="Theme" onclick="toggleTheme()"><svg class="i"><use href="#i-moon"/></svg></button>
+    <span class="avatar">DP</span>
+  </div>
+</div>
+
+<!-- ========================= AUTONOMY CONSOLE ========================= -->
+<div class="autonomy">
+  <!-- Autonomy level + policy -->
+  <div class="card">
+    <div class="card-h">
+      <div class="t"><svg class="i"><use href="#i-brain"/></svg> Autonomy & Policy</div>
+      <div class="s">3 policies · 12 guardrails active</div>
+    </div>
+    <div class="autonomy-levels">
+      <div class="al"><div class="al-dot"></div><div class="al-n">L0</div><div class="al-t">Read-only</div><div class="al-d">AI observes, never writes.</div></div>
+      <div class="al on"><div class="al-dot"></div><div class="al-n">L1</div><div class="al-t">Supervised</div><div class="al-d">AI proposes, you click apply.</div></div>
+      <div class="al"><div class="al-dot"></div><div class="al-n">L2</div><div class="al-t">Guarded auto</div><div class="al-d">Auto-apply within policy rails.</div></div>
+      <div class="al"><div class="al-dot"></div><div class="al-n">L3</div><div class="al-t">Autonomous</div><div class="al-d">Full ownership, post-hoc review.</div></div>
+    </div>
+    <div class="rules">
+      <div class="rule"><svg class="i i-sm" style="color:var(--good)"><use href="#i-shield"/></svg>
+        <span class="mono">if size &gt; 10 GB → require-approval</span>
+        <span class="tag pass">ACTIVE</span></div>
+      <div class="rule"><svg class="i i-sm" style="color:var(--good)"><use href="#i-clock"/></svg>
+        <span class="mono">maintenance_window = 02:00–04:00 UTC</span>
+        <span class="tag pass">ACTIVE</span></div>
+      <div class="rule"><svg class="i i-sm" style="color:var(--warn)"><use href="#i-alert"/></svg>
+        <span class="mono">error_budget_burn &gt; 2× → pause-agent</span>
+        <span class="tag skip">WATCH</span></div>
+    </div>
+  </div>
+
+  <!-- Agent timeline -->
+  <div class="card">
+    <div class="card-h">
+      <div class="t"><svg class="i"><use href="#i-flow"/></svg> Agent activity · last 24h</div>
+      <div class="s">14 actions · 2 awaiting review</div>
+    </div>
+    <div class="timeline">
+      <div class="tl-row"><div class="tl-time">10:42</div><div class="tl-dot-col"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-body">
+        Proposed index on <span class="mono">subscription_plan(plan_id, tier)</span>
+        <div class="tl-meta">Triggered by 4 548× seq-scan ratio · confidence 96% · awaiting review</div>
+        <span class="tl-act apply">Apply</span>
+      </div></div>
+      <div class="tl-row"><div class="tl-time">09:13</div><div class="tl-dot-col"><div class="tl-dot good"></div><div class="tl-line"></div></div><div class="tl-body">
+        Applied <span class="mono">REINDEX idx_orders_created</span>
+        <div class="tl-meta">Bloat 73% → 6% · duration 2m 41s · no SLO burn</div>
+      </div></div>
+      <div class="tl-row"><div class="tl-time">06:02</div><div class="tl-dot-col"><div class="tl-dot info"></div><div class="tl-line"></div></div><div class="tl-body">
+        Detected workload shift on <span class="mono">api.plans</span>
+        <div class="tl-meta">p95 +180% vs 7d baseline · opened investigation</div>
+      </div></div>
+      <div class="tl-row"><div class="tl-time">04:55</div><div class="tl-dot-col"><div class="tl-dot bad"></div><div class="tl-line"></div></div><div class="tl-body">
+        Blocked drop of <span class="mono">idx_users_email_old</span>
+        <div class="tl-meta">Policy: last_scan &lt; 72h · deferred to human</div>
+        <span class="tl-act block">Blocked</span>
+      </div></div>
+      <div class="tl-row"><div class="tl-time">02:10</div><div class="tl-dot-col"><div class="tl-dot good"></div></div><div class="tl-body">
+        Vacuumed <span class="mono">orders</span> after write spike
+        <div class="tl-meta">Reclaimed 412 MB · dead-tup ratio 18% → 2%</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- Observability integrations -->
+  <div class="card">
+    <div class="card-h">
+      <div class="t"><svg class="i"><use href="#i-git"/></svg> Integrations & Fleet</div>
+      <div class="s">healthy · 4 routes live</div>
+    </div>
+    <div class="rules" style="gap:8px;">
+      <div class="intg-row"><div class="intg-logo" style="background:#4A154B">SL</div>
+        <div style="flex:1;font-size:11.5px;">Slack · <b>#db-copilot</b><div class="sub" style="color:var(--text-muted);font-size:10.5px;">Alerts & PR previews · 2 msgs today</div></div>
+        <span class="tag pass">ON</span></div>
+      <div class="intg-row"><div class="intg-logo" style="background:#06AC38">PD</div>
+        <div style="flex:1;font-size:11.5px;">PagerDuty · <b>DB-High</b><div class="sub" style="color:var(--text-muted);font-size:10.5px;">Wake on SLO breach · 0 pages 7d</div></div>
+        <span class="tag pass">ON</span></div>
+      <div class="intg-row"><div class="intg-logo" style="background:#F05A28">GR</div>
+        <div style="flex:1;font-size:11.5px;">Grafana · dashboard <b>db-fleet-01</b><div class="sub" style="color:var(--text-muted);font-size:10.5px;">Panels embedded in this view</div></div>
+        <span class="tag pass">ON</span></div>
+      <div class="intg-row"><div class="intg-logo" style="background:#24292E">GH</div>
+        <div style="flex:1;font-size:11.5px;">GitHub · <b>infra/pg-migrations</b><div class="sub" style="color:var(--text-muted);font-size:10.5px;">GitOps · auto-PR on apply</div></div>
+        <span class="tag pass">ON</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= SLO STRIP ========================= -->
+<div class="slo-strip">
+  <div class="slo">
+    <div class="h"><svg class="i i-sm"><use href="#i-bolt"/></svg> p95 latency</div>
+    <div class="v">142 <span style="font-size:12px;color:var(--text-muted);">ms</span></div>
+    <div class="delta down">▼ 38% vs 7d</div>
+    <div class="budget"><span style="width:22%; background: var(--good);"></span></div>
+    <div class="d">22% of error budget burned · 78% remaining</div>
+  </div>
+  <div class="slo">
+    <div class="h"><svg class="i i-sm"><use href="#i-flame"/></svg> Seq-scan ratio</div>
+    <div class="v">4.2%</div>
+    <div class="delta up">▲ 2.1 pts</div>
+    <div class="budget"><span style="width:42%; background: var(--warn);"></span></div>
+    <div class="d">Threshold 5% · trending to breach in 14h</div>
+  </div>
+  <div class="slo">
+    <div class="h"><svg class="i i-sm"><use href="#i-cost"/></svg> Storage $</div>
+    <div class="v">$1,284 <span style="font-size:12px;color:var(--text-muted);">/mo</span></div>
+    <div class="delta down">▼ $412 projected</div>
+    <div class="budget"><span style="width:61%; background: var(--accent);"></span></div>
+    <div class="d">Apply-plan would reclaim 12.8 GB</div>
+  </div>
+  <div class="slo">
+    <div class="h"><svg class="i i-sm"><use href="#i-alert"/></svg> Open findings</div>
+    <div class="v">8</div>
+    <div class="delta flat">↔ stable</div>
+    <div class="budget"><span style="width:38%; background: var(--info);"></span></div>
+    <div class="d">3 high · 4 medium · 1 low</div>
+  </div>
+  <div class="slo">
+    <div class="h"><svg class="i i-sm"><use href="#i-users"/></svg> Peer percentile</div>
+    <div class="v">p71 <span style="font-size:12px;color:var(--text-muted);">/100</span></div>
+    <div class="delta down">▼ better than 71%</div>
+    <div class="budget"><span style="width:71%; background: var(--mag);"></span></div>
+    <div class="d">vs 1,284 PG16 clusters of similar size</div>
+  </div>
+  <div class="slo">
+    <div class="h"><svg class="i i-sm"><use href="#i-clock"/></svg> Time to next auto-apply</div>
+    <div class="v">2h 18m</div>
+    <div class="delta flat">window 02:00 UTC</div>
+    <div class="budget"><span style="width:8%; background: var(--info);"></span></div>
+    <div class="d">5 actions queued · 2 need review</div>
+  </div>
+</div>
+
+<!-- ========================= SCENARIO MODELER ========================= -->
+<div class="scenario">
+  <div>
+    <div class="scenario-title">
+      <h3>What-if simulator</h3>
+      <span class="pill"><svg class="i i-sm"><use href="#i-sparkles"/></svg> AI projection</span>
+    </div>
+    <div class="scenario-desc">Drag the sliders to simulate workload or policy changes. The right panel re-computes impact on latency, cost, and storage using a workload replay model trained on your last 30 days.</div>
+    <div class="slider-row">
+      <div class="lbl">Write QPS</div>
+      <div class="slider"><div class="track"></div><div class="fill" style="width:62%"></div><div class="thumb" style="left:60%"></div><div class="ticks"><span></span><span></span><span></span><span></span><span></span></div></div>
+      <div class="val">1,240 <small style="color:var(--text-muted);font-weight:500">/s</small></div>
+    </div>
+    <div class="slider-row">
+      <div class="lbl">Read:write ratio</div>
+      <div class="slider"><div class="track"></div><div class="fill" style="width:38%"></div><div class="thumb" style="left:36%"></div><div class="ticks"><span></span><span></span><span></span><span></span><span></span></div></div>
+      <div class="val">3.2 : 1</div>
+    </div>
+    <div class="slider-row">
+      <div class="lbl">Apply fix #1 (plan_id)</div>
+      <div class="slider"><div class="track"></div><div class="fill" style="width:100%"></div><div class="thumb" style="left:calc(100% - 18px)"></div><div class="ticks"><span></span><span></span><span></span><span></span><span></span></div></div>
+      <div class="val">YES</div>
+    </div>
+    <div class="slider-row">
+      <div class="lbl">Drop unused (5)</div>
+      <div class="slider"><div class="track"></div><div class="fill" style="width:80%"></div><div class="thumb" style="left:78%"></div><div class="ticks"><span></span><span></span><span></span><span></span><span></span></div></div>
+      <div class="val">4 of 5</div>
+    </div>
+    <div class="slider-row">
+      <div class="lbl">Table growth (30d)</div>
+      <div class="slider"><div class="track"></div><div class="fill" style="width:25%"></div><div class="thumb" style="left:22%"></div><div class="ticks"><span></span><span></span><span></span><span></span><span></span></div></div>
+      <div class="val">+18%</div>
+    </div>
+  </div>
+  <div class="scenario-out">
+    <h4>Projected impact · next 30 days</h4>
+    <div class="outrows">
+      <div class="outrow"><div class="l">p95 latency</div><div class="r">67 ms <span class="delta">−53%</span></div></div>
+      <div class="outrow"><div class="l">Seq-scan ratio</div><div class="r">0.9% <span class="delta">−79%</span></div></div>
+      <div class="outrow"><div class="l">Storage</div><div class="r">−12.8 GB <span class="delta">−$154/mo</span></div></div>
+      <div class="outrow"><div class="l">Write amplification</div><div class="r">2.1× <span class="delta bad">+4%</span></div></div>
+      <div class="outrow"><div class="l">Cold cache warm-up</div><div class="r">~6 min <span class="delta bad">one-time</span></div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+        <span>Confidence interval · p50 → p95</span><span>based on 30d replay</span>
+      </div>
+      <div class="confidence-bar">
+        <div class="p95" style="left:18%; right:12%;"></div>
+        <div class="p50" style="left:34%; width:32%;"></div>
+      </div>
+      <div class="confidence-legend"><span>−78%</span><span>−53% (median)</span><span>−24%</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= WORKBENCH ========================= -->
+<div class="workbench">
+  <!-- LEFT: findings / index table -->
+  <div class="wb-col">
+    <div class="card">
+      <div class="idx-card-h">
+        <h3>Findings</h3>
+        <span class="chip miss">3 MISS</span>
+        <span class="chip bloat">2 BLOAT</span>
+        <span class="chip unused">2 UNUSED</span>
+        <span class="chip dup">1 DUP</span>
+        <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
+          <button class="btn ghost"><svg class="i i-sm"><use href="#i-down"/></svg> Export plan</button>
+          <button class="btn primary"><svg class="i i-sm"><use href="#i-bolt"/></svg> Apply selected (3)</button>
+        </div>
+      </div>
+
+      <div class="idx-table">
+        <div class="idx-row head">
+          <div></div>
+          <div>Kind</div>
+          <div>Target</div>
+          <div>Hit rate</div>
+          <div>Size</div>
+          <div>Trend (7d)</div>
+          <div>Risk</div>
+          <div style="text-align:right;">Action</div>
+        </div>
+
+        <div class="idx-row on" onclick="focusRow(this)">
+          <input type="checkbox" class="cb" checked />
+          <div><span class="chip miss">MISS</span></div>
+          <div class="idx-name">
+            <div class="n">subscription_plan (plan_id, tier)</div>
+            <div class="sub">95% of reads seq-scan · 4,548× cheaper with btree</div>
+          </div>
+          <div class="idx-hit"><span style="width:3%"></span><div class="pct">3%</div></div>
+          <div class="idx-cell-mono">— <small style="color:var(--text-muted)">(new)</small></div>
+          <div>
+            <svg class="sparkline" viewBox="0 0 80 20"><polyline points="0,14 10,13 20,11 30,12 40,9 50,7 60,5 70,3 80,2" stroke="var(--bad)" fill="none" stroke-width="1.5"/><circle cx="80" cy="2" r="2" fill="var(--bad)"/></svg>
+          </div>
+          <div class="idx-risk low"><span class="d"></span>Low</div>
+          <div class="idx-actions"><button class="btn primary">Create</button></div>
+        </div>
+
+        <div class="idx-row" onclick="focusRow(this)">
+          <input type="checkbox" class="cb" checked />
+          <div><span class="chip bloat">BLOAT</span></div>
+          <div class="idx-name">
+            <div class="n">idx_orders_created_at</div>
+            <div class="sub">73% bloat · reclaim 412 MB · REINDEX CONCURRENTLY</div>
+          </div>
+          <div class="idx-hit"><span style="width:88%"></span><div class="pct">88%</div></div>
+          <div class="idx-cell-mono">612 MB</div>
+          <div>
+            <svg class="sparkline" viewBox="0 0 80 20"><polyline points="0,16 10,15 20,13 30,11 40,9 50,8 60,6 70,5 80,4" stroke="var(--warn)" fill="none" stroke-width="1.5"/></svg>
+          </div>
+          <div class="idx-risk low"><span class="d"></span>Low</div>
+          <div class="idx-actions"><button class="btn">Reindex</button></div>
+        </div>
+
+        <div class="idx-row" onclick="focusRow(this)">
+          <input type="checkbox" class="cb" checked />
+          <div><span class="chip unused">UNUSED</span></div>
+          <div class="idx-name">
+            <div class="n">idx_users_email_old</div>
+            <div class="sub">0 scans in 60d · 182 MB · superseded by idx_users_email</div>
+          </div>
+          <div class="idx-hit"><span style="width:0%"></span><div class="pct">0%</div></div>
+          <div class="idx-cell-mono">182 MB</div>
+          <div>
+            <svg class="sparkline" viewBox="0 0 80 20"><polyline points="0,10 10,10 20,10 30,10 40,10 50,10 60,10 70,10 80,10" stroke="var(--text-dim)" fill="none" stroke-width="1.5"/></svg>
+          </div>
+          <div class="idx-risk med"><span class="d"></span>Med</div>
+          <div class="idx-actions"><button class="btn">Drop</button></div>
+        </div>
+
+        <div class="idx-row" onclick="focusRow(this)">
+          <input type="checkbox" class="cb" />
+          <div><span class="chip dup">DUP</span></div>
+          <div class="idx-name">
+            <div class="n">idx_sessions_user_id_created_v2</div>
+            <div class="sub">covered by idx_sessions_user_id_created · 308 MB savings</div>
+          </div>
+          <div class="idx-hit"><span style="width:14%"></span><div class="pct">14%</div></div>
+          <div class="idx-cell-mono">308 MB</div>
+          <div>
+            <svg class="sparkline" viewBox="0 0 80 20"><polyline points="0,9 10,9 20,10 30,10 40,11 50,11 60,12 70,12 80,13" stroke="var(--mag)" fill="none" stroke-width="1.5"/></svg>
+          </div>
+          <div class="idx-risk low"><span class="d"></span>Low</div>
+          <div class="idx-actions"><button class="btn">Drop</button></div>
+        </div>
+
+        <div class="idx-row applied" onclick="focusRow(this)">
+          <input type="checkbox" class="cb" disabled />
+          <div><span class="chip ok">APPLIED</span></div>
+          <div class="idx-name">
+            <div class="n">idx_orders_status_partial</div>
+            <div class="sub">Applied 09:13 UTC · status_pending WHERE · saved 1.9 GB · rollback ready</div>
+          </div>
+          <div class="idx-hit"><span style="width:97%; background: linear-gradient(90deg, var(--good), var(--info));"></span><div class="pct">97%</div></div>
+          <div class="idx-cell-mono">48 MB</div>
+          <div>
+            <svg class="sparkline" viewBox="0 0 80 20"><polyline points="0,18 10,16 20,12 30,10 40,8 50,6 60,5 70,4 80,3" stroke="var(--good)" fill="none" stroke-width="1.5"/><circle cx="80" cy="3" r="2" fill="var(--good)"/></svg>
+          </div>
+          <div class="idx-risk low"><span class="d"></span>Low</div>
+          <div class="idx-actions"><button class="btn ghost">View PR</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Heatmap -->
+    <div class="card">
+      <div class="card-h">
+        <div class="t"><svg class="i"><use href="#i-flame"/></svg> Seq-scan heatmap · subscription_plan · 7d × 24h</div>
+        <div class="s">peak: Tue 14:00 UTC · 41k scans</div>
+      </div>
+      <div id="heatmap" class="heatmap"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10.5px;color:var(--text-muted);">
+        <span>low</span>
+        <span>cells · hourly seq-scan count, normalized</span>
+        <span>high</span>
+      </div>
+    </div>
+
+    <!-- Cost waterfall -->
+    <div class="card">
+      <div class="card-h">
+        <div class="t"><svg class="i"><use href="#i-cost"/></svg> Cost attribution · this month</div>
+        <div class="s">$1,284 total · index-related $612 (47%)</div>
+      </div>
+      <div class="waterfall">
+        <div class="wf-row"><div class="wf-lbl">Base storage</div><div class="wf-bar"><span style="width:48%;background:var(--accent);"></span></div><div class="wf-val">$612</div></div>
+        <div class="wf-row"><div class="wf-lbl">Bloat overhead</div><div class="wf-bar"><span style="width:18%;background:var(--warn); left: 48%;"></span></div><div class="wf-val">+$228</div></div>
+        <div class="wf-row"><div class="wf-lbl">Unused indexes</div><div class="wf-bar"><span style="width:10%;background:var(--info); left: 66%;"></span></div><div class="wf-val">+$128</div></div>
+        <div class="wf-row"><div class="wf-lbl">Duplicates</div><div class="wf-bar"><span style="width:5%;background:var(--mag); left: 76%;"></span></div><div class="wf-val">+$62</div></div>
+        <div class="wf-row"><div class="wf-lbl">Workload IO</div><div class="wf-bar"><span style="width:19%;background:var(--good); left: 81%;"></span></div><div class="wf-val">+$254</div></div>
+        <div class="wf-row" style="margin-top:4px; border-top: 1px dashed var(--border); padding-top:8px;">
+          <div class="wf-lbl" style="color:var(--text);font-weight:700;">After apply-plan</div>
+          <div class="wf-bar"><span style="width:52%;background:linear-gradient(90deg,var(--good),var(--accent));"></span></div>
+          <div class="wf-val" style="color:var(--good);">$872 <small style="color:var(--good); font-weight:500;">−32%</small></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: detail rail -->
+  <div class="wb-col">
+    <div class="card">
+      <div class="idx-ctx-h">
+        <div class="risk-dial"><span class="val">96</span></div>
+        <div>
+          <div class="name">subscription_plan(plan_id, tier)</div>
+          <div style="color:var(--text-muted); font-size:11px;">priority 96/100 · root-cause certainty 94%</div>
+        </div>
+        <div class="pills">
+          <span class="chip miss">MISS</span>
+          <span class="chip"><svg class="i i-sm"><use href="#i-flame"/></svg> SPIKE</span>
+        </div>
+      </div>
+
+      <div class="rail-tabs">
+        <div class="rail-tab on">Analysis</div>
+        <div class="rail-tab">Evidence</div>
+        <div class="rail-tab">Fix script</div>
+        <div class="rail-tab">GitOps</div>
+        <div class="rail-tab">Chat</div>
+      </div>
+
+      <!-- EXPLAIN diff -->
+      <div style="margin-bottom:14px;">
+        <div class="card-h" style="margin-bottom:6px;">
+          <div class="t"><svg class="i"><use href="#i-flow"/></svg> EXPLAIN · before → after</div>
+          <div class="s">plan replayed from pg_stat_statements</div>
+        </div>
+        <div class="explain-grid">
+          <div class="explain-box">
+            <h5>Current · seq-scan path</h5>
+            <div class="node red">
+              <div class="t">Seq Scan on subscription_plan</div>
+              <div class="m">cost=0.00..38,421.00 · rows=942k · actual 412.8ms</div>
+            </div>
+            <div class="node red" style="margin-left:14px;">
+              <div class="t">Filter: (plan_id = $1 AND tier = $2)</div>
+              <div class="m">rows removed by filter: 940,218</div>
+            </div>
+          </div>
+          <div class="explain-box">
+            <h5>Proposed · with new index</h5>
+            <div class="node green">
+              <div class="t">Index Scan using ix_sub_plan_tier</div>
+              <div class="m">cost=0.42..8.45 · rows=3 · projected 0.9ms</div>
+            </div>
+            <div class="node info" style="margin-left:14px;">
+              <div class="t">Index Cond: (plan_id = $1 AND tier = $2)</div>
+              <div class="m">estimate based on pg_statistic histogram</div>
+            </div>
+          </div>
+        </div>
+        <div class="explain-verdict">
+          <svg class="i" style="color:var(--good)"><use href="#i-check"/></svg>
+          <b>4 548× cheaper</b> · p50 412 ms → 0.9 ms · write penalty ≈ 0.8% · no plan regression in 30d replay
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Sankey-style lifecycle -->
+      <div>
+        <div class="card-h" style="margin-bottom:6px;">
+          <div class="t"><svg class="i"><use href="#i-flow"/></svg> Index lifecycle · last 30d</div>
+          <div class="s">proposed → apply → saved</div>
+        </div>
+        <div class="sankey-wrap">
+          <svg viewBox="0 0 520 160" width="100%" height="160" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sg1" x1="0" x2="1"><stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.5"/><stop offset="100%" stop-color="#10b981" stop-opacity="0.5"/></linearGradient>
+              <linearGradient id="sg2" x1="0" x2="1"><stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.35"/><stop offset="100%" stop-color="#ef4444" stop-opacity="0.35"/></linearGradient>
+              <linearGradient id="sg3" x1="0" x2="1"><stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.35"/><stop offset="100%" stop-color="#f59e0b" stop-opacity="0.35"/></linearGradient>
+            </defs>
+            <!-- nodes -->
+            <rect x="10" y="20" width="110" height="120" rx="6" fill="#1c2436" stroke="#22293a"/>
+            <text x="65" y="44" text-anchor="middle" fill="#8a93a8" font-size="10">PROPOSED</text>
+            <text x="65" y="88" text-anchor="middle" fill="#e6e9f2" font-size="22" font-weight="700">24</text>
+            <text x="65" y="108" text-anchor="middle" fill="#8a93a8" font-size="10">findings</text>
+
+            <rect x="200" y="10" width="110" height="40" rx="6" fill="#0a4a2b" stroke="#10b981"/>
+            <text x="255" y="34" text-anchor="middle" fill="#10b981" font-size="11" font-weight="700">APPLIED · 16</text>
+            <rect x="200" y="60" width="110" height="40" rx="6" fill="#4a1a1a" stroke="#ef4444"/>
+            <text x="255" y="84" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">ROLLED BACK · 2</text>
+            <rect x="200" y="110" width="110" height="40" rx="6" fill="#3d2a10" stroke="#f59e0b"/>
+            <text x="255" y="134" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700">DEFERRED · 6</text>
+
+            <rect x="380" y="10" width="130" height="40" rx="6" fill="#0a4a2b" stroke="#10b981"/>
+            <text x="445" y="34" text-anchor="middle" fill="#10b981" font-size="11" font-weight="700">SAVINGS · $412/mo</text>
+            <rect x="380" y="60" width="130" height="40" rx="6" fill="#4a1a1a" stroke="#ef4444"/>
+            <text x="445" y="84" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">WRITE COST · +0.4%</text>
+            <rect x="380" y="110" width="130" height="40" rx="6" fill="#0c2a45" stroke="#38bdf8"/>
+            <text x="445" y="134" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="700">QUEUE · awaits review</text>
+
+            <!-- flows -->
+            <path d="M120 30 C160 30, 160 30, 200 30" stroke="url(#sg1)" stroke-width="44" fill="none"/>
+            <path d="M120 80 C160 80, 160 80, 200 80" stroke="url(#sg2)" stroke-width="10" fill="none"/>
+            <path d="M120 120 C160 120, 160 120, 200 130" stroke="url(#sg3)" stroke-width="18" fill="none"/>
+
+            <path d="M310 30 C340 30, 340 30, 380 30" stroke="url(#sg1)" stroke-width="36" fill="none"/>
+            <path d="M310 80 C340 80, 340 80, 380 80" stroke="url(#sg2)" stroke-width="8" fill="none"/>
+            <path d="M310 130 C340 130, 340 130, 380 130" stroke="url(#sg3)" stroke-width="14" fill="none"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Playbook -->
+      <div>
+        <div class="card-h" style="margin-bottom:6px;">
+          <div class="t"><svg class="i"><use href="#i-play"/></svg> Apply playbook</div>
+          <div class="s">supervised · requires approval at step 4</div>
+        </div>
+        <div class="playbook">
+          <div class="pb-step done">
+            <span class="pb-num"><svg class="i i-sm"><use href="#i-check"/></svg></span>
+            <div class="pb-t">Preflight</div>
+            <div class="pb-s">Locks · bloat · disk</div>
+            <div class="pb-time">2s · OK</div>
+          </div>
+          <div class="pb-step active">
+            <span class="pb-num">2</span>
+            <div class="pb-t">Build index</div>
+            <div class="pb-s">CONCURRENTLY · 1m 12s</div>
+            <div class="pb-time">est. 2m 05s</div>
+            <div class="pb-active-bar"><span></span></div>
+          </div>
+          <div class="pb-step">
+            <span class="pb-num">3</span>
+            <div class="pb-t">Analyze</div>
+            <div class="pb-s">ANALYZE · plan diff</div>
+            <div class="pb-time">—</div>
+          </div>
+          <div class="pb-step">
+            <span class="pb-num">4</span>
+            <div class="pb-t">Verify & PR</div>
+            <div class="pb-s">Watch SLO · open PR</div>
+            <div class="pb-time">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- GitOps PR -->
+      <div class="gitops">
+        <div class="gitops-h">
+          <svg class="i" style="color:var(--accent)"><use href="#i-git"/></svg>
+          <b>GitOps PR preview</b>
+          <span class="pr-branch">copilot/ix-sub-plan-tier-20260420</span>
+          <span style="margin-left:auto;" class="chip ok">CI ✓</span>
+        </div>
+        <div class="diff">
+<span class="ctx">-- migrations/20260420_add_ix_sub_plan_tier.sql</span>
+<span class="ctx">BEGIN;</span>
+<span class="add">+ CREATE INDEX CONCURRENTLY ix_sub_plan_tier</span>
+<span class="add">+   ON subscription_plan (plan_id, tier)</span>
+<span class="add">+   WHERE active = true;</span>
+<span class="add">+ ANALYZE subscription_plan;</span>
+<span class="rem">- -- previously: planner fallback to seq-scan</span>
+<span class="ctx">COMMIT;</span>
+        </div>
+        <div class="pr-meta">
+          <span class="badge"><svg class="i i-sm"><use href="#i-check"/></svg> migrations-lint</span>
+          <span class="badge"><svg class="i i-sm"><use href="#i-check"/></svg> replay-test · 30d</span>
+          <span class="badge"><svg class="i i-sm"><use href="#i-check"/></svg> size-check · 48 MB</span>
+          <span class="badge"><svg class="i i-sm"><use href="#i-shield"/></svg> policy · supervised</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Chat thread -->
+      <div>
+        <div class="card-h" style="margin-bottom:6px;">
+          <div class="t"><svg class="i"><use href="#i-chat"/></svg> Ask the agent</div>
+          <div class="s">grounded on this finding</div>
+        </div>
+        <div class="chat-thread">
+          <div class="bubble me">why 95% seq-scans on subscription_plan all the time?</div>
+          <div class="bubble ai">
+            The hot query path is <code>SELECT * FROM subscription_plan WHERE plan_id = $1 AND tier = $2</code>, called 12.4k/min by <code>api.plans</code>. There is <b>no composite index on (plan_id, tier)</b>, so Postgres falls back to a seq-scan returning 940k rows and filtering down to 3.
+            <div class="think">↳ evidence: pg_stat_statements · plan_hash 0x8a21 · 97% of subscription_plan reads · matches replay pattern 7d running</div>
+          </div>
+          <div class="bubble me">will this hurt writes?</div>
+          <div class="bubble ai">
+            Write amplification rises by <b>~0.8%</b> (estimated from 30d write profile · 142 inserts/min · partial WHERE active=true covers 61% of writes). Below the 2% guardrail, so this is <b>auto-eligible at L2</b>.
+            <div class="think">↳ policy: write_penalty ≤ 2% → allow auto-apply · confidence 92%</div>
+          </div>
+        </div>
+        <div class="chat-chips">
+          <span class="chip">Show me callers</span>
+          <span class="chip">Compare to peer p50</span>
+          <span class="chip">Simulate +50% growth</span>
+          <span class="chip">What does rollback cost?</span>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" placeholder="Ask a follow-up… (shift+enter for newline)" />
+          <button class="btn primary"><svg class="i i-sm"><use href="#i-send"/></svg></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div> <!-- /app -->
+
+<!-- voice fab -->
+<div class="voice-fab" title="Hold to talk to agent">
+  <svg class="i i-xl" fill="none" stroke="white" stroke-width="2"><use href="#i-voice"/></svg>
+</div>
+
+<script>
+// Theme toggle
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+// Row focus
+function focusRow(el) {
+  document.querySelectorAll('.idx-row').forEach(r => r.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// Heatmap cells
+(function() {
+  const heat = document.getElementById('heatmap');
+  if (!heat) return;
+  const days = ['', '00', '03', '06', '09', '12', '15', '18', '21'];
+  // header row
+  const hours = ['', ...Array.from({length:24},(_,i)=>String(i).padStart(2,'0'))];
+  // simpler: build a single compact 7 x 24 heatmap
+  heat.style.gridTemplateColumns = '44px repeat(24, 1fr)';
+  const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  // column header
+  heat.appendChild(divEl('hm-h', ''));
+  for (let h = 0; h < 24; h++) heat.appendChild(divEl('hm-col', h % 3 === 0 ? String(h).padStart(2,'0') : ''));
+  // rows
+  const seed = (a,b) => {
+    const x = Math.sin(a*9301 + b*49297) * 233280;
+    return x - Math.floor(x);
+  };
+  labels.forEach((lbl, d) => {
+    heat.appendChild(divEl('hm-h', lbl));
+    for (let h = 0; h < 24; h++) {
+      let v = seed(d+1, h+1);
+      // biz hours boost
+      if (h >= 9 && h <= 18) v = Math.min(1, v + 0.35);
+      // weekend dip
+      if (d >= 5) v *= 0.4;
+      // big spike
+      if (d === 1 && h === 14) v = 1;
+      if (d === 2 && h === 14) v = 0.9;
+      const r = 22 + Math.round(v * 210);
+      const g = 36 + Math.round(v * 50);
+      const b = 120 - Math.round(v * 80);
+      const a = 0.25 + v * 0.75;
+      const cell = divEl('cell', '');
+      cell.style.background = `rgba(${r},${g},${b},${a})`;
+      if (v > 0.88) cell.classList.add('hot');
+      cell.title = `${lbl} ${String(h).padStart(2,'0')}:00 · ${(v*41).toFixed(1)}k scans`;
+      heat.appendChild(cell);
+    }
+  });
+  function divEl(cls, txt){ const d=document.createElement('div'); d.className=cls; d.textContent=txt; return d; }
+})();
+
+// Tabs
+document.querySelectorAll('.rail-tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.rail-tab').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+}));
+
+// Autonomy levels
+document.querySelectorAll('.al').forEach(a => a.addEventListener('click', () => {
+  document.querySelectorAll('.al').forEach(x => x.classList.remove('on'));
+  a.classList.add('on');
+}));
+</script>
+</body>
+</html>

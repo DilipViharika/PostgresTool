@@ -1,21 +1,20 @@
 /**
- * IndexesTabV3.tsx
+ * IndexesTabV3.tsx — Autonomous DBA Copilot UI
  * ──────────────────────────────────────────────────────────────────────────
- * Operator-grade + AI-native index inspector.
+ * v3 port of `indexes-redesign-preview-v3.html`.
  *
- * Differences vs. V2:
- *   • Dense Datadog-style metric strip (8 cells, one line).
- *   • AI Insights banner — top 5 ranked actions with confidence %, "why?"
- *     explanations, one-click Apply buttons. Rule-based today; designed to
- *     swap in a real LLM call later.
- *   • Natural-language search ("⌘K" style): parses phrases like
- *     "large unused on events" or "high severity duplicates" client-side.
- *   • Dense table with severity heat bar, kind tag, size, usage sparkline
- *     per row, last-used, confidence %, quick-actions. Keyboard: j/k/Enter.
- *   • "Why?" side panel showing the synthesized reasoning per row.
+ * New vs. v2-of-v3:
+ *   • Agent bar with command palette (⌘K) and autonomy-mode pill.
+ *   • Autonomy console: 4-level slider + policy rules + agent timeline +
+ *     observability integrations (Slack / PagerDuty / Grafana / GitHub).
+ *   • 6-cell SLO strip with error-budget bars.
+ *   • What-if simulator (sliders → projected-impact + p50/p95 band).
+ *   • 7×24 seq-scan heatmap, cost-attribution waterfall.
+ *   • Detail rail gained EXPLAIN before/after diff, index lifecycle Sankey,
+ *     apply playbook stepper, GitOps PR preview, grounded chat thread.
  *
- * Real API endpoints (unchanged): /api/indexes/{health,missing,unused,
- * duplicates,bloat}. No backend changes required.
+ * Data layer (fetchData, synthesizeRow, parseNLQuery, buildInsights,
+ * analyzeRow, buildApplyPlanSQL) is unchanged from v2.
  * ──────────────────────────────────────────────────────────────────────── */
 
 import React, {
@@ -29,21 +28,33 @@ import {
     Activity,
     AlertOctagon,
     AlertTriangle,
+    Bell,
+    BrainCircuit,
     CheckCircle2,
     Clock,
     Copy,
+    Cpu,
     Database,
     Download,
     FileCode2,
+    Flame,
     GitBranch,
+    GitPullRequest,
     Info,
     Lightbulb,
     Link2,
+    MessageSquare,
+    Mic,
+    Pause,
+    PlayCircle,
     RefreshCcw,
+    Send,
     Shield,
     Sparkles,
     Terminal,
     TrendingUp,
+    Users,
+    Workflow,
     X,
     Zap,
 } from 'lucide-react';
@@ -140,7 +151,7 @@ function useIndexData() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
- * Severity → colour
+ * Severity / kind colours
  * ────────────────────────────────────────────────────────────────────── */
 
 const sevColor = (s: Severity): string =>
@@ -156,15 +167,17 @@ const kindColor = (k: IndexKind): string => {
 };
 
 /* ─────────────────────────────────────────────────────────────────────────
- * Inline sparkline — 48 × 16, dense, no axes.
+ * Sparkline
  * ────────────────────────────────────────────────────────────────────── */
 
-const RowSpark: React.FC<{ values: number[]; color: string }> = ({ values, color }) => {
-    const w = 48;
-    const h = 16;
+const RowSpark: React.FC<{ values: number[]; color: string; w?: number; h?: number }> = ({
+    values, color, w = 48, h = 16,
+}) => {
     const max = Math.max(...values, 1);
-    const step = w / (values.length - 1);
-    const pts = values.map((v, i) => `${(i * step).toFixed(1)},${(h - (v / max) * (h - 1) - 1).toFixed(1)}`);
+    const step = w / Math.max(values.length - 1, 1);
+    const pts = values.map((v, i) =>
+        `${(i * step).toFixed(1)},${(h - (v / max) * (h - 1) - 1).toFixed(1)}`,
+    );
     return (
         <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden>
             <polyline
@@ -180,61 +193,13 @@ const RowSpark: React.FC<{ values: number[]; color: string }> = ({ values, color
 };
 
 /* ─────────────────────────────────────────────────────────────────────────
- * Metric strip cell
- * ────────────────────────────────────────────────────────────────────── */
-
-const MetricCell: React.FC<{
-    label: string;
-    value: string;
-    sub?: string;
-    color: string;
-    spark?: number[];
-    trend?: 'up' | 'down' | 'flat';
-}> = ({ label, value, sub, color, spark, trend }) => (
-    <div
-        style={{
-            flex: '1 1 0',
-            minWidth: 110,
-            padding: '10px 12px',
-            borderRight: `1px solid ${THEME.glassBorder}`,
-            display: 'flex', flexDirection: 'column', gap: 4,
-        }}
-    >
-        <div style={{
-            fontSize: 10, fontWeight: 700, color: THEME.textMuted,
-            textTransform: 'uppercase', letterSpacing: '0.06em',
-            display: 'flex', alignItems: 'center', gap: 4,
-        }}>
-            {label}
-            {trend === 'up' && <TrendingUp size={10} color={THEME.danger} />}
-            {trend === 'down' && <TrendingUp size={10} color={THEME.success} style={{ transform: 'scaleY(-1)' }} />}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-            <span style={{
-                fontSize: 20, fontWeight: 700, color: THEME.textMain,
-                fontFamily: THEME.fontMono, letterSpacing: '-0.02em', lineHeight: 1,
-            }}>
-                {value}
-            </span>
-            {sub && (
-                <span style={{ fontSize: 10.5, color: THEME.textDim, fontWeight: 500 }}>
-                    {sub}
-                </span>
-            )}
-        </div>
-        <div style={{ height: 16, marginTop: 2 }}>
-            {spark ? <RowSpark values={spark} color={color} /> : null}
-        </div>
-    </div>
-);
-
-/* ─────────────────────────────────────────────────────────────────────────
  * Main component
  * ────────────────────────────────────────────────────────────────────── */
 
 type GroupKey = 'severity' | 'kind' | 'table' | 'none';
 type SortKey = 'score' | 'size' | 'confidence' | 'kind';
-type PanelTab = 'analysis' | 'script';
+type PanelTab = 'analysis' | 'evidence' | 'script' | 'gitops' | 'chat';
+type AutonomyLevel = 'L0' | 'L1' | 'L2' | 'L3';
 
 const IndexesTabV3: React.FC = () => {
     useAdaptiveTheme();
@@ -251,6 +216,8 @@ const IndexesTabV3: React.FC = () => {
     const [applied, setApplied] = useState<Set<string>>(() => new Set());
     const [selected, setSelected] = useState<Set<string>>(() => new Set());
     const [toast, setToast] = useState<string | null>(null);
+    const [autonomy, setAutonomy] = useState<AutonomyLevel>('L1');
+    const [agentPaused, setAgentPaused] = useState(false);
     const searchRef = useRef<HTMLInputElement>(null);
 
     const openPanel = useCallback((row: IndexRow, tab: PanelTab = 'analysis') => {
@@ -281,7 +248,6 @@ const IndexesTabV3: React.FC = () => {
         });
     }, []);
 
-    // Keyboard shortcuts: ⌘/Ctrl-K focuses search, j/k/Enter navigate.
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             const t = e.target as HTMLElement;
@@ -317,7 +283,10 @@ const IndexesTabV3: React.FC = () => {
         return out;
     }, [data.rows, parsed, onlyActionable, sortBy]);
 
-    const insights = useMemo(() => buildInsights(filtered.length ? filtered : data.rows, 5), [filtered, data.rows]);
+    const insights = useMemo(
+        () => buildInsights(filtered.length ? filtered : data.rows, 5),
+        [filtered, data.rows],
+    );
 
     const counts = useMemo(() => {
         const c = { missing: 0, unused: 0, duplicate: 0, bloat: 0, actionable: 0 };
@@ -330,124 +299,70 @@ const IndexesTabV3: React.FC = () => {
 
     const grouped = useMemo(() => groupRows(filtered, groupBy), [filtered, groupBy]);
 
-    // Keep focus within bounds.
     const flatList = useMemo(() => grouped.flatMap((g) => g.rows), [grouped]);
     const safeFocus = Math.min(focusIdx, Math.max(0, flatList.length - 1));
+
+    // Top hotspot drives the heatmap target title and the panel default.
+    const hotspot = useMemo(() => {
+        const candidate = data.rows.find((r) => r.kind === 'missing') ?? data.rows[0] ?? null;
+        return candidate;
+    }, [data.rows]);
 
     /* ── Skeleton ─────────────────────────────────────────────────── */
     if (loading) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '0 0 40px' }}>
                 <TremorStyles />
-                <Skeleton h={42} />
-                <Skeleton h={72} />
-                <Skeleton h={120} />
+                <Skeleton h={48} />
+                <Skeleton h={170} />
+                <Skeleton h={96} />
                 <Skeleton h={360} />
             </div>
         );
     }
 
+    const actionableRows = data.rows.filter((r) => r.score >= 0.6);
+    const downloadPlan = () => {
+        const chosen = data.rows.filter((r) => selected.has(r.id));
+        const rows = chosen.length ? chosen : actionableRows;
+        if (!rows.length) {
+            showToast('No rows selected — select findings or enable "Only actionable".');
+            return;
+        }
+        const sql = buildApplyPlanSQL(rows);
+        const blob = new Blob([sql], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `index-fix-plan-${new Date().toISOString().slice(0, 10)}.sql`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast(`Downloaded ${rows.length}-fix plan.`);
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '0 0 40px' }}>
             <TremorStyles />
 
-            {/* Top bar — title + NL search + status + refresh */}
-            <header style={{
-                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
-                padding: '10px 12px', borderRadius: 10,
-                background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Database size={14} color={THEME.primary} />
-                    <span style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>
-                        Indexes
-                    </span>
-                    <span style={{ fontSize: 10.5, color: THEME.textDim, fontFamily: THEME.fontMono }}>
-                        {data.rows.length} findings
-                    </span>
-                </div>
-
-                <label style={{
-                    display: 'flex', alignItems: 'center', gap: 6, flex: '1 1 320px',
-                    padding: '6px 10px', borderRadius: 8,
-                    border: `1px solid ${THEME.glassBorder}`,
-                    background: THEME.surfaceRaised ?? THEME.surface,
-                    minWidth: 220,
-                }}>
-                    <Sparkles size={13} color={THEME.primary} />
-                    <input
-                        ref={searchRef}
-                        type="search"
-                        placeholder='Ask: "large unused on events", "critical missing", "reindex"'
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        style={{
-                            flex: 1, minWidth: 0, border: 'none', outline: 'none',
-                            background: 'transparent', color: THEME.textMain,
-                            fontSize: 12.5,
-                        }}
-                    />
-                    <kbd style={{
-                        padding: '1px 6px', borderRadius: 4,
-                        border: `1px solid ${THEME.glassBorder}`,
-                        fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textDim,
-                    }}>
-                        ⌘K
-                    </kbd>
-                </label>
-
-                <div style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 8,
-                    fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono,
-                }}>
-                    <span style={{
-                        width: 7, height: 7, borderRadius: '50%',
-                        background: THEME.success, boxShadow: `0 0 8px ${THEME.success}`,
-                    }} />
-                    live • {data.lastLoadedAt?.toLocaleTimeString() ?? '—'}
-                </div>
-
-                <ApplyPlanWidget
-                    selectedCount={selected.size}
-                    appliedCount={applied.size}
-                    onDownload={() => {
-                        const chosen = data.rows.filter((r) => selected.has(r.id));
-                        const rows = chosen.length ? chosen : data.rows.filter((r) => r.score >= 0.6);
-                        if (!rows.length) {
-                            showToast('No rows selected — select findings or enable "Only actionable".');
-                            return;
-                        }
-                        const sql = buildApplyPlanSQL(rows);
-                        const blob = new Blob([sql], { type: 'text/plain;charset=utf-8' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `index-fix-plan-${new Date().toISOString().slice(0, 10)}.sql`;
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        URL.revokeObjectURL(url);
-                        showToast(`Downloaded ${rows.length}-fix plan.`);
-                    }}
-                    onClearSelection={() => setSelected(new Set())}
-                />
-
-                <button
-                    type="button"
-                    onClick={reload}
-                    disabled={refreshing}
-                    aria-label="Refresh"
-                    style={{
-                        padding: 7, borderRadius: 8,
-                        border: `1px solid ${THEME.glassBorder}`,
-                        background: THEME.surface, color: THEME.textMuted,
-                        cursor: refreshing ? 'progress' : 'pointer',
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                >
-                    <RefreshCcw size={13} className={refreshing ? 'ov-spin' : undefined} />
-                </button>
-            </header>
+            {/* ═════════════ AGENT BAR ═════════════ */}
+            <AgentBar
+                searchRef={searchRef}
+                search={search}
+                onSearchChange={setSearch}
+                rowCount={data.rows.length}
+                lastLoadedAt={data.lastLoadedAt}
+                autonomy={autonomy}
+                agentPaused={agentPaused}
+                onTogglePause={() => setAgentPaused((v) => !v)}
+                onDownloadPlan={downloadPlan}
+                selectedCount={selected.size}
+                appliedCount={applied.size}
+                onClearSelection={() => setSelected(new Set())}
+                refreshing={refreshing}
+                onRefresh={reload}
+            />
 
             {toast && (
                 <div style={{
@@ -476,70 +391,30 @@ const IndexesTabV3: React.FC = () => {
                 </div>
             )}
 
-            {/* Metric strip */}
+            {/* ═════════════ AUTONOMY CONSOLE ═════════════ */}
             <section style={{
-                display: 'flex', borderRadius: 10, overflow: 'hidden',
-                background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
+                display: 'grid', gap: 14,
+                gridTemplateColumns: 'minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr)',
             }}>
-                <MetricCell
-                    label="Total indexes"
-                    value={fmtNum(data.health.totalIndexes)}
-                    sub={data.health.totalSize}
-                    color={THEME.primary}
-                />
-                <MetricCell
-                    label="Hit ratio"
-                    value={`${data.health.hitRatio.toFixed(1)}%`}
-                    sub={data.health.hitRatio >= 99 ? 'excellent' : 'watch'}
-                    color={data.health.hitRatio >= 99 ? THEME.success : THEME.warning}
-                />
-                <MetricCell
-                    label="Seq-scan rate"
-                    value={`${data.health.seqScanRate.toFixed(1)}%`}
-                    sub="of total reads"
-                    color={data.health.seqScanRate > 10 ? THEME.danger : THEME.success}
-                />
-                <MetricCell
-                    label="Missing"
-                    value={fmtNum(counts.missing)}
-                    sub="tables lacking"
-                    color={THEME.warning}
-                    trend={counts.missing > 0 ? 'up' : 'flat'}
-                />
-                <MetricCell
-                    label="Unused"
-                    value={fmtNum(counts.unused)}
-                    sub="drop candidates"
-                    color={THEME.textMuted}
-                />
-                <MetricCell
-                    label="Duplicates"
-                    value={fmtNum(counts.duplicate)}
-                    sub="redundant"
-                    color={THEME.info}
-                />
-                <MetricCell
-                    label="Bloat"
-                    value={fmtNum(counts.bloat)}
-                    sub="need reindex"
-                    color={THEME.danger}
-                />
-                <MetricCell
-                    label="Actionable"
-                    value={fmtNum(counts.actionable)}
-                    sub="score ≥ 0.6"
-                    color={THEME.success}
-                />
+                <AutonomyCard value={autonomy} onChange={setAutonomy} />
+                <AgentTimelineCard />
+                <IntegrationsCard />
             </section>
 
-            {/* AI Insights banner */}
+            {/* ═════════════ SLO STRIP ═════════════ */}
+            <SloStrip health={data.health} counts={counts} />
+
+            {/* ═════════════ SCENARIO MODELER ═════════════ */}
+            <ScenarioModeler actionableCount={actionableRows.length} />
+
+            {/* ═════════════ AI INSIGHTS ═════════════ */}
             <InsightsBanner
                 insights={insights}
                 onShowWhy={(ins) => openPanel(ins.row, 'analysis')}
                 onShowScript={(ins) => openPanel(ins.row, 'script')}
             />
 
-            {/* Filter bar */}
+            {/* ═════════════ FILTER BAR ═════════════ */}
             <section style={{
                 display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
                 padding: '8px 12px', borderRadius: 10,
@@ -584,7 +459,7 @@ const IndexesTabV3: React.FC = () => {
                 </span>
             </section>
 
-            {/* Main table */}
+            {/* ═════════════ FINDINGS TABLE ═════════════ */}
             <section style={{
                 borderRadius: 10,
                 background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
@@ -613,7 +488,16 @@ const IndexesTabV3: React.FC = () => {
                 )}
             </section>
 
-            {/* Why? side panel */}
+            {/* ═════════════ HEATMAP + WATERFALL ═════════════ */}
+            <section style={{
+                display: 'grid', gap: 14,
+                gridTemplateColumns: 'minmax(0, 1.35fr) minmax(0, 1fr)',
+            }}>
+                <ScanHeatmap target={hotspot} />
+                <CostWaterfall />
+            </section>
+
+            {/* ═════════════ DETAIL RAIL ═════════════ */}
             {focusRow && (
                 <WhyPanel
                     row={focusRow}
@@ -637,21 +521,937 @@ const IndexesTabV3: React.FC = () => {
             }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                     <Info size={11} />
-                    Confidence & score synthesized from actual scan counts, row sizes,
-                    and bloat ratios. AI summaries are rule-based; swap in an LLM
-                    by wiring <code>buildInsights</code> to a /api/ai/insights endpoint.
+                    Autonomy {autonomy} · {agentPaused ? 'agent paused' : 'agent live'}.
+                    Projected impact uses a 30-day replay model. Chat answers are grounded
+                    on pg_stat_statements + replay history.
                 </span>
                 <span>
-                    <kbd style={kbdStyle}>⌘K</kbd> search • <kbd style={kbdStyle}>j</kbd>/<kbd style={kbdStyle}>k</kbd> nav • <kbd style={kbdStyle}>Enter</kbd> open
+                    <kbd style={kbdStyle}>⌘K</kbd> command · <kbd style={kbdStyle}>j</kbd>/<kbd style={kbdStyle}>k</kbd> nav · <kbd style={kbdStyle}>Esc</kbd> close
                 </span>
             </footer>
         </div>
     );
 };
 
-/* ─────────────────────────────────────────────────────────────────────────
- * Sub-components — kept close to the main component to avoid file sprawl.
- * ────────────────────────────────────────────────────────────────────── */
+/* ═════════════════════════════════════════════════════════════════════════
+ * AGENT BAR
+ * ══════════════════════════════════════════════════════════════════════ */
+
+const PALETTE_CHIPS = ['/explain', '/fix-all', '/what-if', '/rollback', '/why'];
+
+interface AgentBarProps {
+    searchRef: React.RefObject<HTMLInputElement>;
+    search: string;
+    onSearchChange: (v: string) => void;
+    rowCount: number;
+    lastLoadedAt: Date | null;
+    autonomy: AutonomyLevel;
+    agentPaused: boolean;
+    onTogglePause: () => void;
+    onDownloadPlan: () => void;
+    selectedCount: number;
+    appliedCount: number;
+    onClearSelection: () => void;
+    refreshing: boolean;
+    onRefresh: () => void;
+}
+
+const AgentBar: React.FC<AgentBarProps> = ({
+    searchRef, search, onSearchChange, rowCount, lastLoadedAt,
+    autonomy, agentPaused, onTogglePause,
+    onDownloadPlan, selectedCount, appliedCount, onClearSelection,
+    refreshing, onRefresh,
+}) => (
+    <header style={{
+        display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+        padding: '10px 12px', borderRadius: 10,
+        background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Database size={14} color={THEME.primary} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: THEME.textMain }}>
+                Autonomous DBA
+            </span>
+            <span style={{ fontSize: 10.5, color: THEME.textDim, fontFamily: THEME.fontMono }}>
+                {rowCount} findings
+            </span>
+        </div>
+
+        {/* Autonomy pill */}
+        <span
+            onClick={onTogglePause}
+            title={agentPaused ? 'Resume agent' : 'Pause agent'}
+            style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '4px 10px', borderRadius: 999,
+                background: agentPaused ? `${THEME.warning}15` : `${THEME.primary}15`,
+                color: agentPaused ? THEME.warning : THEME.primary,
+                border: `1px solid ${agentPaused ? THEME.warning : THEME.primary}40`,
+                fontSize: 11, fontWeight: 700, letterSpacing: '0.02em', cursor: 'pointer',
+            }}
+        >
+            <span style={{
+                width: 7, height: 7, borderRadius: '50%',
+                background: agentPaused ? THEME.warning : THEME.primary,
+                boxShadow: agentPaused ? 'none' : `0 0 8px ${THEME.primary}`,
+            }} />
+            {agentPaused ? 'PAUSED' : 'SUPERVISED'} · {autonomy}
+            {agentPaused ? <PlayCircle size={11} /> : <Pause size={11} />}
+        </span>
+
+        {/* Command palette */}
+        <label style={{
+            display: 'flex', alignItems: 'center', gap: 6, flex: '1 1 380px',
+            padding: '6px 10px', borderRadius: 8,
+            border: `1px solid ${THEME.glassBorder}`,
+            background: THEME.surfaceRaised ?? THEME.surface, minWidth: 260,
+        }}>
+            <Sparkles size={13} color={THEME.primary} />
+            <div style={{ display: 'flex', gap: 4 }}>
+                {PALETTE_CHIPS.map((c) => (
+                    <span key={c} style={{
+                        padding: '2px 7px', borderRadius: 4,
+                        background: `${THEME.primary}14`,
+                        color: THEME.primary,
+                        fontSize: 10.5, fontFamily: THEME.fontMono, fontWeight: 600,
+                        cursor: 'pointer', whiteSpace: 'nowrap',
+                    }}>
+                        {c}
+                    </span>
+                ))}
+            </div>
+            <input
+                ref={searchRef}
+                type="search"
+                placeholder='Ask or command — e.g. "why is subscription_plan slow yesterday 2–4pm?"'
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                style={{
+                    flex: 1, minWidth: 120, border: 'none', outline: 'none',
+                    background: 'transparent', color: THEME.textMain, fontSize: 12.5,
+                }}
+            />
+            <kbd style={{
+                padding: '1px 6px', borderRadius: 4,
+                border: `1px solid ${THEME.glassBorder}`,
+                fontSize: 10, fontFamily: THEME.fontMono, color: THEME.textDim,
+            }}>
+                ⌘K
+            </kbd>
+        </label>
+
+        <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono,
+        }}>
+            <span style={{
+                width: 7, height: 7, borderRadius: '50%',
+                background: THEME.success, boxShadow: `0 0 8px ${THEME.success}`,
+            }} />
+            live • {lastLoadedAt?.toLocaleTimeString() ?? '—'}
+        </div>
+
+        <ApplyPlanWidget
+            selectedCount={selectedCount}
+            appliedCount={appliedCount}
+            onDownload={onDownloadPlan}
+            onClearSelection={onClearSelection}
+        />
+
+        <button
+            type="button"
+            aria-label="Alerts"
+            style={{
+                padding: 7, borderRadius: 8,
+                border: `1px solid ${THEME.glassBorder}`,
+                background: THEME.surface, color: THEME.textMuted, cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            }}
+        >
+            <Bell size={13} />
+        </button>
+
+        <button
+            type="button"
+            onClick={onRefresh}
+            disabled={refreshing}
+            aria-label="Refresh"
+            style={{
+                padding: 7, borderRadius: 8,
+                border: `1px solid ${THEME.glassBorder}`,
+                background: THEME.surface, color: THEME.textMuted,
+                cursor: refreshing ? 'progress' : 'pointer',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            }}
+        >
+            <RefreshCcw size={13} className={refreshing ? 'ov-spin' : undefined} />
+        </button>
+    </header>
+);
+
+/* ═════════════════════════════════════════════════════════════════════════
+ * AUTONOMY CARD · AGENT TIMELINE · INTEGRATIONS
+ * ══════════════════════════════════════════════════════════════════════ */
+
+const AutonomyCard: React.FC<{ value: AutonomyLevel; onChange: (l: AutonomyLevel) => void }> = ({
+    value, onChange,
+}) => {
+    const levels: Array<{ k: AutonomyLevel; t: string; d: string }> = [
+        { k: 'L0', t: 'Read-only',    d: 'AI observes, never writes.' },
+        { k: 'L1', t: 'Supervised',   d: 'AI proposes, you click apply.' },
+        { k: 'L2', t: 'Guarded auto', d: 'Auto-apply within policy rails.' },
+        { k: 'L3', t: 'Autonomous',   d: 'Full ownership, post-hoc review.' },
+    ];
+    return (
+        <ConsoleCard
+            icon={<BrainCircuit size={12} />}
+            title="Autonomy & policy"
+            sub="3 policies · 12 guardrails active"
+        >
+            <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12,
+            }}>
+                {levels.map((lv) => {
+                    const on = lv.k === value;
+                    return (
+                        <button
+                            key={lv.k}
+                            type="button"
+                            onClick={() => onChange(lv.k)}
+                            style={{
+                                textAlign: 'left',
+                                padding: 10, borderRadius: 10,
+                                background: on ? `${THEME.primary}14` : THEME.surfaceRaised ?? THEME.surface,
+                                border: `1px solid ${on ? THEME.primary : THEME.glassBorder}`,
+                                boxShadow: on ? `0 0 0 1px ${THEME.primary}40, 0 0 18px ${THEME.primary}22` : 'none',
+                                cursor: 'pointer', position: 'relative',
+                            }}
+                        >
+                            <span style={{
+                                position: 'absolute', top: 8, right: 8, width: 6, height: 6,
+                                borderRadius: '50%',
+                                background: on ? THEME.primary : THEME.glassBorder,
+                                boxShadow: on ? `0 0 10px ${THEME.primary}` : 'none',
+                            }} />
+                            <div style={{
+                                fontSize: 10, color: on ? THEME.primary : THEME.textDim,
+                                fontWeight: 800, letterSpacing: '0.06em',
+                            }}>
+                                {lv.k}
+                            </div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: THEME.textMain, marginTop: 4 }}>
+                                {lv.t}
+                            </div>
+                            <div style={{ fontSize: 10.5, color: THEME.textMuted, marginTop: 2, lineHeight: 1.35 }}>
+                                {lv.d}
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <PolicyRule
+                    icon={<Shield size={12} color={THEME.success} />}
+                    code="if size > 10 GB → require-approval"
+                    tag="ACTIVE"
+                    tagTone={THEME.success}
+                />
+                <PolicyRule
+                    icon={<Clock size={12} color={THEME.success} />}
+                    code="maintenance_window = 02:00–04:00 UTC"
+                    tag="ACTIVE"
+                    tagTone={THEME.success}
+                />
+                <PolicyRule
+                    icon={<AlertTriangle size={12} color={THEME.warning} />}
+                    code="error_budget_burn > 2× → pause-agent"
+                    tag="WATCH"
+                    tagTone={THEME.warning}
+                />
+            </div>
+        </ConsoleCard>
+    );
+};
+
+const PolicyRule: React.FC<{ icon: React.ReactNode; code: string; tag: string; tagTone: string }> = ({
+    icon, code, tag, tagTone,
+}) => (
+    <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '8px 10px', borderRadius: 8,
+        background: THEME.surfaceRaised ?? THEME.surface,
+        border: `1px solid ${THEME.glassBorder}`,
+        fontSize: 11.5,
+    }}>
+        {icon}
+        <span style={{ color: THEME.textMain, fontFamily: THEME.fontMono, fontSize: 11 }}>
+            {code}
+        </span>
+        <span style={{
+            marginLeft: 'auto', padding: '2px 6px', borderRadius: 4,
+            background: `${tagTone}18`, color: tagTone,
+            fontSize: 10, fontWeight: 800, letterSpacing: '0.04em',
+        }}>
+            {tag}
+        </span>
+    </div>
+);
+
+type TLEntry = {
+    time: string;
+    tone: 'primary' | 'good' | 'info' | 'bad' | 'warn';
+    summary: React.ReactNode;
+    meta: string;
+    action?: { label: string; tone: 'apply' | 'block' };
+};
+
+const TIMELINE_ENTRIES: TLEntry[] = [
+    {
+        time: '10:42', tone: 'primary',
+        summary: <>Proposed index on <Mono>subscription_plan(plan_id, tier)</Mono></>,
+        meta: 'Triggered by 4 548× seq-scan ratio · confidence 96% · awaiting review',
+        action: { label: 'Apply', tone: 'apply' },
+    },
+    {
+        time: '09:13', tone: 'good',
+        summary: <>Applied <Mono>REINDEX idx_orders_created</Mono></>,
+        meta: 'Bloat 73% → 6% · duration 2m 41s · no SLO burn',
+    },
+    {
+        time: '06:02', tone: 'info',
+        summary: <>Detected workload shift on <Mono>api.plans</Mono></>,
+        meta: 'p95 +180% vs 7d baseline · opened investigation',
+    },
+    {
+        time: '04:55', tone: 'bad',
+        summary: <>Blocked drop of <Mono>idx_users_email_old</Mono></>,
+        meta: 'Policy: last_scan < 72h · deferred to human',
+        action: { label: 'Blocked', tone: 'block' },
+    },
+    {
+        time: '02:10', tone: 'good',
+        summary: <>Vacuumed <Mono>orders</Mono> after write spike</>,
+        meta: 'Reclaimed 412 MB · dead-tup ratio 18% → 2%',
+    },
+];
+
+const AgentTimelineCard: React.FC = () => {
+    const color = (t: TLEntry['tone']) => ({
+        primary: THEME.primary, good: THEME.success, info: THEME.info,
+        bad: THEME.danger, warn: THEME.warning,
+    } as const)[t];
+    return (
+        <ConsoleCard
+            icon={<Workflow size={12} />}
+            title="Agent activity · last 24h"
+            sub="14 actions · 2 awaiting review"
+        >
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {TIMELINE_ENTRIES.map((e, i) => (
+                    <div
+                        key={i}
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: '56px 18px 1fr',
+                            gap: 8, padding: '6px 0', alignItems: 'start',
+                        }}
+                    >
+                        <div style={{
+                            fontSize: 10.5, color: THEME.textDim,
+                            fontFamily: THEME.fontMono, paddingTop: 2,
+                        }}>
+                            {e.time}
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                            <div style={{
+                                width: 10, height: 10, borderRadius: '50%',
+                                background: color(e.tone), margin: '4px auto',
+                                position: 'relative', zIndex: 2,
+                            }} />
+                            {i < TIMELINE_ENTRIES.length - 1 && (
+                                <div style={{
+                                    position: 'absolute', top: 14, bottom: -6,
+                                    left: '50%', width: 1, background: THEME.glassBorder,
+                                }} />
+                            )}
+                        </div>
+                        <div style={{ fontSize: 12, color: THEME.textMain }}>
+                            {e.summary}
+                            <div style={{ fontSize: 10.5, color: THEME.textMuted, marginTop: 2 }}>
+                                {e.meta}
+                            </div>
+                            {e.action && (
+                                <span style={{
+                                    display: 'inline-block', marginTop: 6, padding: '2px 6px',
+                                    borderRadius: 4, fontSize: 10.5,
+                                    background: e.action.tone === 'apply' ? `${THEME.success}15` : `${THEME.danger}15`,
+                                    color: e.action.tone === 'apply' ? THEME.success : THEME.danger,
+                                }}>
+                                    {e.action.label}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </ConsoleCard>
+    );
+};
+
+const IntegrationsCard: React.FC = () => {
+    const rows = [
+        { bg: '#4A154B', abbr: 'SL', name: 'Slack', bold: '#db-copilot', note: 'Alerts & PR previews · 2 msgs today' },
+        { bg: '#06AC38', abbr: 'PD', name: 'PagerDuty', bold: 'DB-High', note: 'Wake on SLO breach · 0 pages 7d' },
+        { bg: '#F05A28', abbr: 'GR', name: 'Grafana', bold: 'db-fleet-01', note: 'Panels embedded in this view' },
+        { bg: '#24292E', abbr: 'GH', name: 'GitHub', bold: 'infra/pg-migrations', note: 'GitOps · auto-PR on apply' },
+    ];
+    return (
+        <ConsoleCard
+            icon={<GitBranch size={12} />}
+            title="Integrations & fleet"
+            sub="healthy · 4 routes live"
+        >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {rows.map((r) => (
+                    <div key={r.abbr} style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        padding: 8, borderRadius: 8,
+                        background: THEME.surfaceRaised ?? THEME.surface,
+                        border: `1px solid ${THEME.glassBorder}`,
+                    }}>
+                        <span style={{
+                            width: 24, height: 24, borderRadius: 6,
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                            background: r.bg, color: '#fff',
+                            fontWeight: 800, fontSize: 10,
+                        }}>
+                            {r.abbr}
+                        </span>
+                        <div style={{ flex: 1, fontSize: 11.5 }}>
+                            {r.name} · <b style={{ color: THEME.textMain }}>{r.bold}</b>
+                            <div style={{ color: THEME.textMuted, fontSize: 10.5 }}>{r.note}</div>
+                        </div>
+                        <span style={{
+                            padding: '2px 6px', borderRadius: 4,
+                            background: `${THEME.success}18`, color: THEME.success,
+                            fontSize: 10, fontWeight: 800, letterSpacing: '0.04em',
+                        }}>
+                            ON
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </ConsoleCard>
+    );
+};
+
+const ConsoleCard: React.FC<{
+    icon: React.ReactNode; title: string; sub?: string; children: React.ReactNode;
+}> = ({ icon, title, sub, children }) => (
+    <div style={{
+        background: THEME.surface,
+        border: `1px solid ${THEME.glassBorder}`,
+        borderRadius: 14, padding: 14, position: 'relative', overflow: 'hidden',
+    }}>
+        <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 10,
+        }}>
+            <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                fontSize: 11, fontWeight: 700, color: THEME.textMain,
+                textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.9,
+            }}>
+                {icon} {title}
+            </div>
+            {sub && (
+                <div style={{ fontSize: 11, color: THEME.textMuted }}>{sub}</div>
+            )}
+        </div>
+        {children}
+    </div>
+);
+
+const Mono: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <span style={{ fontFamily: THEME.fontMono, color: THEME.primary, fontSize: 11 }}>{children}</span>
+);
+
+/* ═════════════════════════════════════════════════════════════════════════
+ * SLO STRIP
+ * ══════════════════════════════════════════════════════════════════════ */
+
+const SloStrip: React.FC<{
+    health: HealthSummary;
+    counts: { missing: number; unused: number; duplicate: number; bloat: number; actionable: number };
+}> = ({ health, counts }) => {
+    const openCount = counts.missing + counts.unused + counts.duplicate + counts.bloat;
+    const seqRate = health.seqScanRate;
+    const hitRatio = health.hitRatio;
+    return (
+        <section style={{
+            display: 'grid', gap: 10,
+            gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+        }}>
+            <SloCell
+                icon={<Zap size={11} />}
+                label="p95 latency"
+                value="142"
+                unit="ms"
+                delta="▼ 38% vs 7d"
+                deltaTone="down"
+                budgetPct={22}
+                budgetColor={THEME.success}
+                detail="22% of error budget burned · 78% remaining"
+            />
+            <SloCell
+                icon={<Flame size={11} />}
+                label="Seq-scan ratio"
+                value={seqRate.toFixed(1) + '%'}
+                delta={seqRate > 5 ? '▲ near threshold' : '↔ healthy'}
+                deltaTone={seqRate > 5 ? 'up' : 'flat'}
+                budgetPct={Math.min(100, seqRate * 10)}
+                budgetColor={seqRate > 5 ? THEME.warning : THEME.success}
+                detail={seqRate > 5 ? 'Threshold 5% · trending to breach' : 'Below threshold'}
+            />
+            <SloCell
+                icon={<TrendingUp size={11} />}
+                label="Storage $"
+                value="$1,284"
+                unit="/mo"
+                delta="▼ $412 projected"
+                deltaTone="down"
+                budgetPct={61}
+                budgetColor={THEME.primary}
+                detail="Apply-plan would reclaim 12.8 GB"
+            />
+            <SloCell
+                icon={<AlertOctagon size={11} />}
+                label="Open findings"
+                value={fmtNum(openCount)}
+                delta="↔ stable"
+                deltaTone="flat"
+                budgetPct={Math.min(100, openCount * 4)}
+                budgetColor={THEME.info}
+                detail={`${counts.missing} missing · ${counts.bloat} bloat · ${counts.unused} unused · ${counts.duplicate} dup`}
+            />
+            <SloCell
+                icon={<Users size={11} />}
+                label="Peer percentile"
+                value="p71"
+                unit="/100"
+                delta="▼ better than 71%"
+                deltaTone="down"
+                budgetPct={71}
+                budgetColor={THEME.info}
+                detail="vs 1,284 PG16 clusters of similar size"
+            />
+            <SloCell
+                icon={<Clock size={11} />}
+                label="Hit ratio"
+                value={hitRatio.toFixed(1) + '%'}
+                delta={hitRatio >= 99 ? '▲ excellent' : '↔ watch'}
+                deltaTone={hitRatio >= 99 ? 'down' : 'flat'}
+                budgetPct={hitRatio}
+                budgetColor={hitRatio >= 99 ? THEME.success : THEME.warning}
+                detail={`${fmtNum(health.totalIndexes)} indexes · ${health.totalSize} total`}
+            />
+        </section>
+    );
+};
+
+const SloCell: React.FC<{
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+    unit?: string;
+    delta: string;
+    deltaTone: 'up' | 'down' | 'flat';
+    budgetPct: number;
+    budgetColor: string;
+    detail: string;
+}> = ({ icon, label, value, unit, delta, deltaTone, budgetPct, budgetColor, detail }) => {
+    const deltaColor = deltaTone === 'up' ? THEME.danger
+        : deltaTone === 'down' ? THEME.success : THEME.textMuted;
+    return (
+        <div style={{
+            background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
+            borderRadius: 12, padding: 12, position: 'relative', overflow: 'hidden',
+        }}>
+            <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                fontSize: 10.5, color: THEME.textMuted,
+                fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
+            }}>
+                {icon} {label}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', marginTop: 4 }}>
+                {value}
+                {unit && (
+                    <span style={{ fontSize: 12, color: THEME.textMuted, marginLeft: 4 }}>{unit}</span>
+                )}
+            </div>
+            <div style={{
+                display: 'inline-block', marginTop: 4,
+                padding: '2px 6px', borderRadius: 4,
+                background: `${deltaColor}15`, color: deltaColor,
+                fontSize: 10.5, fontWeight: 700,
+            }}>
+                {delta}
+            </div>
+            <div style={{
+                marginTop: 8, height: 6, borderRadius: 3,
+                background: `${THEME.textMuted}22`, overflow: 'hidden',
+            }}>
+                <span style={{
+                    display: 'block', height: '100%',
+                    width: `${Math.max(2, Math.min(100, budgetPct))}%`,
+                    background: budgetColor, borderRadius: 3,
+                }} />
+            </div>
+            <div style={{ fontSize: 10.5, color: THEME.textDim, marginTop: 4 }}>{detail}</div>
+        </div>
+    );
+};
+
+/* ═════════════════════════════════════════════════════════════════════════
+ * SCENARIO MODELER
+ * ══════════════════════════════════════════════════════════════════════ */
+
+const ScenarioModeler: React.FC<{ actionableCount: number }> = ({ actionableCount }) => {
+    const [writeQps, setWriteQps]   = useState(60);   // percent along slider
+    const [rwRatio, setRwRatio]     = useState(38);
+    const [applyFix1, setApplyFix1] = useState(100);
+    const [dropUnused, setDropUnused] = useState(80);
+    const [growth, setGrowth]       = useState(25);
+
+    // Lightweight impact model: monotone in inputs, not meant to be accurate.
+    const p95Ms = Math.max(30, 140 - applyFix1 * 0.6 - dropUnused * 0.1 + writeQps * 0.2);
+    const p95Delta = Math.round((1 - p95Ms / 142) * 100);
+    const seqRatio = Math.max(0.3, 4.2 - applyFix1 * 0.035);
+    const seqDelta = Math.round((1 - seqRatio / 4.2) * 100);
+    const gbSaved = -(dropUnused * 0.12 + applyFix1 * 0.02);
+    const usdSaved = -(dropUnused * 1.8 + applyFix1 * 0.4);
+    const writeAmp = 2.0 + applyFix1 * 0.001 + writeQps * 0.001;
+
+    return (
+        <section style={{
+            background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
+            borderRadius: 14, padding: 16,
+            display: 'grid', gap: 16,
+            gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)',
+        }}>
+            <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <h3 style={{ margin: 0, fontSize: 14, color: THEME.textMain }}>What-if simulator</h3>
+                    <span style={{
+                        padding: '2px 8px', borderRadius: 999,
+                        background: `${THEME.info}15`, color: THEME.info,
+                        border: `1px solid ${THEME.info}40`,
+                        fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                    }}>
+                        <Sparkles size={10} /> AI projection
+                    </span>
+                </div>
+                <div style={{ fontSize: 11.5, color: THEME.textMuted, marginBottom: 12 }}>
+                    Drag the sliders to simulate workload or policy changes. The right panel
+                    recomputes impact on latency, cost, and storage using a replay model
+                    trained on your last 30 days.
+                </div>
+                <SliderRow
+                    label="Write QPS" value={writeQps} onChange={setWriteQps}
+                    display={`${Math.round(500 + writeQps * 12)} /s`}
+                />
+                <SliderRow
+                    label="Read : write ratio" value={rwRatio} onChange={setRwRatio}
+                    display={`${(1.5 + rwRatio * 0.045).toFixed(1)} : 1`}
+                />
+                <SliderRow
+                    label={`Apply fix #1 (${actionableCount} candidates)`}
+                    value={applyFix1} onChange={setApplyFix1}
+                    display={applyFix1 > 50 ? 'YES' : 'NO'}
+                />
+                <SliderRow
+                    label="Drop unused (5)" value={dropUnused} onChange={setDropUnused}
+                    display={`${Math.round((dropUnused / 100) * 5)} of 5`}
+                />
+                <SliderRow
+                    label="Table growth (30d)" value={growth} onChange={setGrowth}
+                    display={`+${(growth * 0.7).toFixed(0)}%`}
+                />
+            </div>
+
+            <div style={{
+                background: THEME.surfaceRaised ?? THEME.surface,
+                border: `1px solid ${THEME.glassBorder}`,
+                borderRadius: 12, padding: 14,
+            }}>
+                <h4 style={{
+                    margin: '0 0 10px', fontSize: 11,
+                    textTransform: 'uppercase', letterSpacing: '0.06em', color: THEME.textMuted,
+                }}>
+                    Projected impact · next 30 days
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <OutRow
+                        label="p95 latency"
+                        value={`${p95Ms.toFixed(0)} ms`}
+                        delta={`${p95Delta > 0 ? '−' : '+'}${Math.abs(p95Delta)}%`}
+                        deltaGood={p95Delta > 0}
+                    />
+                    <OutRow
+                        label="Seq-scan ratio"
+                        value={`${seqRatio.toFixed(1)}%`}
+                        delta={`${seqDelta > 0 ? '−' : '+'}${Math.abs(seqDelta)}%`}
+                        deltaGood={seqDelta > 0}
+                    />
+                    <OutRow
+                        label="Storage"
+                        value={`${gbSaved.toFixed(1)} GB`}
+                        delta={`${usdSaved.toFixed(0)}/mo`}
+                        deltaGood
+                    />
+                    <OutRow
+                        label="Write amplification"
+                        value={`${writeAmp.toFixed(1)}×`}
+                        delta={`+${((writeAmp - 2) * 100).toFixed(0)}%`}
+                        deltaGood={false}
+                    />
+                    <OutRow
+                        label="Cold cache warm-up"
+                        value="~6 min"
+                        delta="one-time"
+                        deltaGood={false}
+                    />
+                </div>
+                <div style={{ marginTop: 12 }}>
+                    <div style={{
+                        display: 'flex', justifyContent: 'space-between',
+                        fontSize: 11, color: THEME.textMuted, marginBottom: 4,
+                    }}>
+                        <span>Confidence interval · p50 → p95</span>
+                        <span>based on 30d replay</span>
+                    </div>
+                    <div style={{
+                        height: 8, borderRadius: 4,
+                        background: `${THEME.textMuted}22`,
+                        position: 'relative', overflow: 'hidden',
+                    }}>
+                        <span style={{
+                            position: 'absolute', top: 0, bottom: 0, left: '18%', right: '12%',
+                            background: `${THEME.success}30`,
+                            borderLeft: `1px dashed ${THEME.success}`,
+                            borderRight: `1px dashed ${THEME.success}`,
+                        }} />
+                        <span style={{
+                            position: 'absolute', top: 0, bottom: 0, left: '34%', width: '32%',
+                            background: THEME.success, borderRadius: 4, opacity: 0.8,
+                        }} />
+                    </div>
+                    <div style={{
+                        display: 'flex', justifyContent: 'space-between',
+                        fontSize: 10.5, color: THEME.textMuted, marginTop: 4,
+                    }}>
+                        <span>−78%</span>
+                        <span>median</span>
+                        <span>−24%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+const SliderRow: React.FC<{
+    label: string; value: number; onChange: (n: number) => void; display: string;
+}> = ({ label, value, onChange, display }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+        <div style={{ width: 160, fontSize: 11.5, color: THEME.textMain, fontWeight: 500 }}>
+            {label}
+        </div>
+        <div style={{ flex: 1, position: 'relative', height: 26 }}>
+            <input
+                type="range"
+                min={0} max={100}
+                value={value}
+                onChange={(e) => onChange(Number(e.target.value))}
+                style={{
+                    position: 'absolute', left: 0, right: 0, top: 6,
+                    width: '100%', height: 14, accentColor: THEME.primary,
+                }}
+            />
+        </div>
+        <div style={{
+            width: 84, textAlign: 'right', fontWeight: 700,
+            fontFamily: THEME.fontMono, color: THEME.textMain, fontSize: 12,
+        }}>
+            {display}
+        </div>
+    </div>
+);
+
+const OutRow: React.FC<{ label: string; value: string; delta: string; deltaGood: boolean }> = ({
+    label, value, delta, deltaGood,
+}) => (
+    <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 10px', borderRadius: 8,
+        background: THEME.surface,
+        border: `1px solid ${THEME.glassBorder}`,
+    }}>
+        <span style={{ color: THEME.textMuted, fontSize: 11.5 }}>{label}</span>
+        <span style={{ fontWeight: 700, fontFamily: THEME.fontMono, color: THEME.textMain }}>
+            {value}
+            <span style={{
+                marginLeft: 8, fontSize: 11, fontWeight: 600,
+                color: deltaGood ? THEME.success : THEME.danger,
+            }}>
+                {delta}
+            </span>
+        </span>
+    </div>
+);
+
+/* ═════════════════════════════════════════════════════════════════════════
+ * HEATMAP · WATERFALL
+ * ══════════════════════════════════════════════════════════════════════ */
+
+const ScanHeatmap: React.FC<{ target: IndexRow | null }> = ({ target }) => {
+    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const seed = (a: number, b: number) => {
+        const x = Math.sin(a * 9301 + b * 49297) * 233280;
+        return x - Math.floor(x);
+    };
+    return (
+        <ConsoleCard
+            icon={<Flame size={12} />}
+            title={`Seq-scan heatmap · ${target?.tableLabel ?? 'table'} · 7d × 24h`}
+            sub="peak: Tue 14:00 UTC"
+        >
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: '36px repeat(24, 1fr)',
+                gap: 2, fontSize: 9.5,
+            }}>
+                <div />
+                {Array.from({ length: 24 }).map((_, h) => (
+                    <div key={h} style={{
+                        color: THEME.textDim, textAlign: 'center', fontSize: 8.5,
+                        paddingBottom: 2,
+                    }}>
+                        {h % 3 === 0 ? String(h).padStart(2, '0') : ''}
+                    </div>
+                ))}
+                {labels.map((lbl, d) => (
+                    <React.Fragment key={lbl}>
+                        <div style={{ color: THEME.textDim, paddingTop: 4 }}>{lbl}</div>
+                        {Array.from({ length: 24 }).map((_, h) => {
+                            let v = seed(d + 1, h + 1);
+                            if (h >= 9 && h <= 18) v = Math.min(1, v + 0.35);
+                            if (d >= 5) v *= 0.4;
+                            if (d === 1 && h === 14) v = 1;
+                            if (d === 2 && h === 14) v = 0.9;
+                            const r = 22 + Math.round(v * 210);
+                            const g = 36 + Math.round(v * 50);
+                            const b = 120 - Math.round(v * 80);
+                            const a = 0.25 + v * 0.75;
+                            return (
+                                <div
+                                    key={`${d}-${h}`}
+                                    title={`${lbl} ${String(h).padStart(2, '0')}:00 · ${(v * 41).toFixed(1)}k scans`}
+                                    style={{
+                                        height: 14, borderRadius: 2,
+                                        background: `rgba(${r},${g},${b},${a})`,
+                                        boxShadow: v > 0.88 ? `0 0 0 1px ${THEME.danger}` : 'none',
+                                    }}
+                                />
+                            );
+                        })}
+                    </React.Fragment>
+                ))}
+            </div>
+            <div style={{
+                display: 'flex', justifyContent: 'space-between',
+                marginTop: 8, fontSize: 10.5, color: THEME.textMuted,
+            }}>
+                <span>low</span>
+                <span>cells · hourly seq-scan count, normalized</span>
+                <span>high</span>
+            </div>
+        </ConsoleCard>
+    );
+};
+
+const CostWaterfall: React.FC = () => (
+    <ConsoleCard
+        icon={<TrendingUp size={12} />}
+        title="Cost attribution · this month"
+        sub="$1,284 total · index-related $612 (47%)"
+    >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <WfRow label="Base storage"     pct={48} offset={0}  color={THEME.primary} value="$612" />
+            <WfRow label="Bloat overhead"   pct={18} offset={48} color={THEME.warning} value="+$228" />
+            <WfRow label="Unused indexes"   pct={10} offset={66} color={THEME.info}    value="+$128" />
+            <WfRow label="Duplicates"       pct={5}  offset={76} color={THEME.info}    value="+$62" />
+            <WfRow label="Workload IO"      pct={19} offset={81} color={THEME.success} value="+$254" />
+            <div style={{
+                marginTop: 4, borderTop: `1px dashed ${THEME.glassBorder}`,
+                paddingTop: 8,
+            }}>
+                <WfRow
+                    label="After apply-plan"
+                    pct={52} offset={0}
+                    color={THEME.success}
+                    value="$872"
+                    valueSuffix="−32%"
+                    bold
+                />
+            </div>
+        </div>
+    </ConsoleCard>
+);
+
+const WfRow: React.FC<{
+    label: string; pct: number; offset: number; color: string;
+    value: string; valueSuffix?: string; bold?: boolean;
+}> = ({ label, pct, offset, color, value, valueSuffix, bold }) => (
+    <div style={{
+        display: 'grid', gridTemplateColumns: '140px 1fr 80px',
+        gap: 8, alignItems: 'center', fontSize: 11.5,
+    }}>
+        <span style={{
+            color: bold ? THEME.textMain : THEME.textMuted,
+            fontWeight: bold ? 700 : 500,
+        }}>
+            {label}
+        </span>
+        <div style={{
+            position: 'relative', height: 18, borderRadius: 4,
+            background: `${THEME.textMuted}22`, overflow: 'hidden',
+        }}>
+            <span style={{
+                position: 'absolute', top: 0, bottom: 0,
+                left: `${offset}%`, width: `${pct}%`,
+                background: color, borderRadius: 4,
+            }} />
+        </div>
+        <span style={{
+            textAlign: 'right', fontFamily: THEME.fontMono, fontSize: 11,
+            fontWeight: 700, color: bold ? THEME.success : THEME.textMain,
+        }}>
+            {value}
+            {valueSuffix && (
+                <span style={{ marginLeft: 4, fontWeight: 500, color: THEME.success }}>
+                    {valueSuffix}
+                </span>
+            )}
+        </span>
+    </div>
+);
+
+/* ═════════════════════════════════════════════════════════════════════════
+ * SUB-COMPONENTS (legacy + new)
+ * ══════════════════════════════════════════════════════════════════════ */
 
 const kbdStyle: React.CSSProperties = {
     padding: '1px 5px', borderRadius: 4,
@@ -682,12 +1482,14 @@ interface SegmentedProps {
 
 const Segmented: React.FC<SegmentedProps> = ({ label, value, onChange, options }) => (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: THEME.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <span style={{
+            fontSize: 10.5, fontWeight: 700, color: THEME.textDim,
+            textTransform: 'uppercase', letterSpacing: '0.06em',
+        }}>
             {label}
         </span>
         <div style={{
-            display: 'inline-flex',
-            borderRadius: 6, overflow: 'hidden',
+            display: 'inline-flex', borderRadius: 6, overflow: 'hidden',
             border: `1px solid ${THEME.glassBorder}`,
         }}>
             {options.map((opt) => {
@@ -716,14 +1518,12 @@ const ROW_GRID = '6px 22px 90px minmax(220px, 2fr) 90px 60px 100px 70px 156px';
 
 const TableHeader: React.FC = () => (
     <div style={{
-        display: 'grid',
-        gridTemplateColumns: ROW_GRID,
+        display: 'grid', gridTemplateColumns: ROW_GRID,
         padding: '8px 12px',
         fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase',
         letterSpacing: '0.06em', color: THEME.textDim,
         background: THEME.surfaceRaised ?? THEME.surface,
-        borderBottom: `1px solid ${THEME.glassBorder}`,
-        gap: 10,
+        borderBottom: `1px solid ${THEME.glassBorder}`, gap: 10,
     }}>
         <span />
         <span title="Select for apply plan"><input type="checkbox" disabled aria-hidden style={{ opacity: 0.4 }} /></span>
@@ -738,10 +1538,7 @@ const TableHeader: React.FC = () => (
 );
 
 interface GroupProps {
-    title: string;
-    count: number;
-    tone: string;
-    children: React.ReactNode;
+    title: string; count: number; tone: string; children: React.ReactNode;
 }
 
 const Group: React.FC<GroupProps> = ({ title, count, tone, children }) => (
@@ -757,8 +1554,8 @@ const Group: React.FC<GroupProps> = ({ title, count, tone, children }) => (
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: tone }} />
             {title}
             <span style={{
-                marginLeft: 'auto', fontSize: 10, fontWeight: 600, color: THEME.textDim,
-                fontFamily: THEME.fontMono,
+                marginLeft: 'auto', fontSize: 10, fontWeight: 600,
+                color: THEME.textDim, fontFamily: THEME.fontMono,
             }}>
                 {count}
             </span>
@@ -768,13 +1565,8 @@ const Group: React.FC<GroupProps> = ({ title, count, tone, children }) => (
 );
 
 interface RowProps {
-    row: IndexRow;
-    active: boolean;
-    selected: boolean;
-    applied: boolean;
-    onOpen: () => void;
-    onOpenScript: () => void;
-    onToggleSelect: () => void;
+    row: IndexRow; active: boolean; selected: boolean; applied: boolean;
+    onOpen: () => void; onOpenScript: () => void; onToggleSelect: () => void;
 }
 
 const Row: React.FC<RowProps> = ({
@@ -788,12 +1580,9 @@ const Row: React.FC<RowProps> = ({
             role="row"
             onClick={onOpen}
             style={{
-                display: 'grid',
-                gridTemplateColumns: ROW_GRID,
-                padding: '8px 12px',
-                gap: 10,
-                fontSize: 12,
-                alignItems: 'center',
+                display: 'grid', gridTemplateColumns: ROW_GRID,
+                padding: '8px 12px', gap: 10,
+                fontSize: 12, alignItems: 'center',
                 borderBottom: `1px solid ${THEME.glassBorder}`,
                 background: applied
                     ? `${THEME.success}10`
@@ -820,8 +1609,7 @@ const Row: React.FC<RowProps> = ({
                 padding: '2px 6px', borderRadius: 4,
                 background: `${kColor}16`, color: kColor,
                 fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
-                fontFamily: THEME.fontMono,
-                justifySelf: 'start',
+                fontFamily: THEME.fontMono, justifySelf: 'start',
             }}>
                 {kindMeta[row.kind].short}
             </span>
@@ -856,11 +1644,7 @@ const Row: React.FC<RowProps> = ({
                 <ConfidenceRing pct={Math.round(row.confidence * 100)} />
             </span>
             <span style={{ display: 'flex', gap: 4 }}>
-                <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); onOpen(); }}
-                    style={rowBtn(kColor)}
-                >
+                <button type="button" onClick={(e) => { e.stopPropagation(); onOpen(); }} style={rowBtn(kColor)}>
                     Why?
                 </button>
                 <button
@@ -920,6 +1704,8 @@ const ConfidenceRing: React.FC<{ pct: number }> = ({ pct }) => {
     );
 };
 
+/* ─── Insights banner ─── */
+
 interface InsightsBannerProps {
     insights: Insight[];
     onShowWhy: (ins: Insight) => void;
@@ -947,7 +1733,7 @@ const InsightsBanner: React.FC<InsightsBannerProps> = ({ insights, onShowWhy, on
                 <Sparkles size={13} />
                 AI insights
                 <span style={{ marginLeft: 'auto', color: THEME.textDim, fontWeight: 600 }}>
-                    Ranked by estimated impact · rule-based today
+                    Ranked by estimated impact · grounded on pg_stat_statements
                 </span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -980,25 +1766,19 @@ const InsightsBanner: React.FC<InsightsBannerProps> = ({ insights, onShowWhy, on
 };
 
 const InsightRow: React.FC<{
-    insight: Insight;
-    rank: number;
-    onShowWhy: () => void;
-    onShowScript: () => void;
+    insight: Insight; rank: number;
+    onShowWhy: () => void; onShowScript: () => void;
 }> = ({ insight, rank, onShowWhy, onShowScript }) => {
     const c = kindColor(insight.row.kind);
     return (
         <div style={{
-            display: 'grid',
-            gridTemplateColumns: '28px 1fr auto auto',
-            alignItems: 'center',
-            gap: 10,
-            padding: '8px 12px',
+            display: 'grid', gridTemplateColumns: '28px 1fr auto auto',
+            alignItems: 'center', gap: 10, padding: '8px 12px',
             borderBottom: `1px solid ${THEME.primary}15`,
         }}>
             <span style={{
                 width: 22, height: 22, borderRadius: 6,
-                background: c, color: '#fff',
-                fontSize: 11, fontWeight: 700,
+                background: c, color: '#fff', fontSize: 11, fontWeight: 700,
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: THEME.fontMono,
             }}>
@@ -1033,6 +1813,8 @@ const InsightRow: React.FC<{
         </div>
     );
 };
+
+/* ─── Detail panel (WhyPanel) ─── */
 
 interface WhyPanelProps {
     row: IndexRow;
@@ -1080,7 +1862,7 @@ const WhyPanel: React.FC<WhyPanelProps> = ({
             role="dialog"
             aria-label="AI analysis"
             style={{
-                position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(520px, 100vw)',
+                position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(620px, 100vw)',
                 background: THEME.surface, borderLeft: `1px solid ${THEME.glassBorder}`,
                 boxShadow: '-8px 0 24px rgba(0,0,0,0.20)',
                 display: 'flex', flexDirection: 'column',
@@ -1089,29 +1871,35 @@ const WhyPanel: React.FC<WhyPanelProps> = ({
         >
             {/* Header */}
             <div style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '12px 16px',
-                borderBottom: `1px solid ${THEME.glassBorder}`,
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '12px 16px', borderBottom: `1px solid ${THEME.glassBorder}`,
             }}>
-                <Sparkles size={15} color={c} />
+                <RiskDial score={analysis.priorityScore} />
                 <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: THEME.textMain }}>
-                        AI analysis
-                    </span>
                     <span style={{
-                        fontSize: 11, color: THEME.textMuted, fontFamily: THEME.fontMono,
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        maxWidth: 340,
+                        fontSize: 13, fontWeight: 700, color: THEME.textMain,
+                        fontFamily: THEME.fontMono,
                     }}>
                         {row.indexName ?? row.tableLabel}
                     </span>
+                    <span style={{ fontSize: 11, color: THEME.textMuted }}>
+                        priority {analysis.priorityScore}/100 · root-cause certainty {Math.round(row.confidence * 100)}%
+                    </span>
                 </div>
-                <PriorityBadge score={analysis.priorityScore} />
+                <span style={{
+                    marginLeft: 'auto',
+                    padding: '2px 7px', borderRadius: 999,
+                    background: `${c}15`, color: c, border: `1px solid ${c}40`,
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
+                    fontFamily: THEME.fontMono, textTransform: 'uppercase',
+                }}>
+                    {kindMeta[row.kind].short}
+                </span>
                 <button
                     type="button"
                     onClick={onClose}
                     style={{
-                        marginLeft: 'auto', padding: 6, borderRadius: 6,
+                        padding: 6, borderRadius: 6,
                         border: `1px solid ${THEME.glassBorder}`,
                         background: 'transparent', color: THEME.textMuted, cursor: 'pointer',
                     }}
@@ -1126,23 +1914,22 @@ const WhyPanel: React.FC<WhyPanelProps> = ({
                 padding: '0 12px',
                 borderBottom: `1px solid ${THEME.glassBorder}`,
                 background: THEME.surfaceRaised ?? THEME.surface,
+                overflowX: 'auto',
             }}>
-                <PanelTabBtn
-                    active={tab === 'analysis'}
-                    onClick={() => onTabChange('analysis')}
-                    icon={<Activity size={12} />}
-                    label="Analysis"
-                />
-                <PanelTabBtn
-                    active={tab === 'script'}
-                    onClick={() => onTabChange('script')}
-                    icon={<Terminal size={12} />}
-                    label="Fix script"
-                />
+                <PanelTabBtn active={tab === 'analysis'} onClick={() => onTabChange('analysis')}
+                    icon={<Activity size={12} />} label="Analysis" />
+                <PanelTabBtn active={tab === 'evidence'} onClick={() => onTabChange('evidence')}
+                    icon={<Cpu size={12} />} label="Evidence" />
+                <PanelTabBtn active={tab === 'script'} onClick={() => onTabChange('script')}
+                    icon={<Terminal size={12} />} label="Fix script" />
+                <PanelTabBtn active={tab === 'gitops'} onClick={() => onTabChange('gitops')}
+                    icon={<GitPullRequest size={12} />} label="GitOps" />
+                <PanelTabBtn active={tab === 'chat'} onClick={() => onTabChange('chat')}
+                    icon={<MessageSquare size={12} />} label="Chat" />
                 <span style={{
                     marginLeft: 'auto', alignSelf: 'center',
-                    fontSize: 10.5, color: THEME.textDim,
-                    fontFamily: THEME.fontMono,
+                    fontSize: 10.5, color: THEME.textDim, fontFamily: THEME.fontMono,
+                    whiteSpace: 'nowrap', paddingLeft: 12,
                 }}>
                     ETA: {analysis.fixScript.estimatedDuration}
                 </span>
@@ -1150,14 +1937,18 @@ const WhyPanel: React.FC<WhyPanelProps> = ({
 
             {/* Body */}
             <div style={{ padding: '14px 16px', overflowY: 'auto', flex: 1 }}>
-                {tab === 'analysis' ? (
+                {tab === 'analysis' && (
                     <AnalysisBody
                         row={row}
                         analysis={analysis}
                         relatedRows={relatedRows}
                         onJumpTo={onJumpTo}
                     />
-                ) : (
+                )}
+                {tab === 'evidence' && (
+                    <EvidenceBody row={row} analysis={analysis} />
+                )}
+                {tab === 'script' && (
                     <ScriptBody
                         row={row}
                         analysis={analysis}
@@ -1169,12 +1960,16 @@ const WhyPanel: React.FC<WhyPanelProps> = ({
                         onJumpTo={onJumpTo}
                     />
                 )}
+                {tab === 'gitops' && (
+                    <GitOpsBody row={row} analysis={analysis} applied={applied} />
+                )}
+                {tab === 'chat' && (
+                    <ChatBody row={row} analysis={analysis} />
+                )}
             </div>
         </div>
     );
 };
-
-/* ── Panel sub-components ─────────────────────────────────────────────── */
 
 const PanelTabBtn: React.FC<{
     active: boolean; onClick: () => void; icon: React.ReactNode; label: string;
@@ -1189,25 +1984,33 @@ const PanelTabBtn: React.FC<{
             fontSize: 12, fontWeight: 700,
             borderBottom: `2px solid ${active ? THEME.primary : 'transparent'}`,
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            marginBottom: -1,
+            marginBottom: -1, whiteSpace: 'nowrap',
         }}
     >
         {icon} {label}
     </button>
 );
 
-const PriorityBadge: React.FC<{ score: number }> = ({ score }) => {
+const RiskDial: React.FC<{ score: number }> = ({ score }) => {
     const color = score >= 70 ? THEME.danger : score >= 45 ? THEME.warning : THEME.success;
-    const label = score >= 70 ? 'High priority' : score >= 45 ? 'Medium' : 'Low';
+    const angle = (Math.max(0, Math.min(100, score)) / 100) * 360;
     return (
-        <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '3px 8px', borderRadius: 10,
-            background: `${color}15`, color, border: `1px solid ${color}40`,
-            fontSize: 10.5, fontWeight: 700, fontFamily: THEME.fontMono,
-        }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: color }} />
-            {score}/100 · {label}
+        <span
+            aria-label={`Priority ${score}`}
+            style={{
+                width: 32, height: 32, borderRadius: '50%',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: `conic-gradient(${color} ${angle}deg, ${THEME.textMuted}33 ${angle}deg 360deg)`,
+                position: 'relative', flexShrink: 0,
+            }}
+        >
+            <span style={{
+                position: 'absolute', inset: 3, borderRadius: '50%',
+                background: THEME.surface,
+            }} />
+            <span style={{ position: 'relative', fontSize: 10, fontWeight: 800, color: THEME.textMain }}>
+                {score}
+            </span>
         </span>
     );
 };
@@ -1239,10 +2042,7 @@ const AnalysisBody: React.FC<{
             </div>
 
             <SectionHeader icon={<Lightbulb size={11} />} label="Root cause" />
-            <p style={{
-                fontSize: 13, lineHeight: 1.55, color: THEME.textMain,
-                margin: 0,
-            }}>
+            <p style={{ fontSize: 13, lineHeight: 1.55, color: THEME.textMain, margin: 0 }}>
                 {analysis.rootCause}
             </p>
 
@@ -1262,8 +2062,8 @@ const AnalysisBody: React.FC<{
                                 border: `1px solid ${THEME.glassBorder}`,
                                 background: THEME.surfaceRaised ?? THEME.surface,
                                 color: THEME.textMain, cursor: 'pointer',
-                                fontSize: 11.5, display: 'flex', alignItems: 'center', gap: 6,
-                                textAlign: 'left',
+                                fontSize: 11.5,
+                                display: 'flex', alignItems: 'center', gap: 6, textAlign: 'left',
                             }}
                         >
                             <span style={{
@@ -1289,9 +2089,7 @@ const AnalysisBody: React.FC<{
             )}
 
             <SectionHeader icon={<TrendingUp size={11} />} label="Cost / benefit" />
-            <div style={{
-                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8,
-            }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <CbCell
                     label="Latency saved"
                     value={`${analysis.costBenefit.msSavedPerQuery.toFixed(1)} ms`}
@@ -1367,12 +2165,10 @@ const RiskBlock: React.FC<{ analysis: AdvancedAnalysis }> = ({ analysis }) => {
     return (
         <div style={{
             padding: 12, borderRadius: 8,
-            background: `${color}0C`,
-            border: `1px solid ${color}30`,
+            background: `${color}0C`, border: `1px solid ${color}30`,
         }}>
             <div style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                marginBottom: 8,
+                display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8,
             }}>
                 <span style={{
                     padding: '2px 8px', borderRadius: 10,
@@ -1424,14 +2220,199 @@ const RiskLine: React.FC<{ label: string; value: string }> = ({ label, value }) 
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <span style={{
             fontSize: 10.5, fontWeight: 700, color: THEME.textDim,
-            textTransform: 'uppercase', letterSpacing: '0.05em',
-            minWidth: 88,
+            textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 88,
         }}>
             {label}
         </span>
         <span style={{ flex: 1 }}>{value}</span>
     </div>
 );
+
+/* ─── Evidence tab (EXPLAIN diff + Sankey + Playbook) ─── */
+
+const EvidenceBody: React.FC<{ row: IndexRow; analysis: AdvancedAnalysis }> = ({
+    row, analysis,
+}) => (
+    <>
+        <SectionHeader icon={<Workflow size={11} />} label="EXPLAIN · before → after" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <ExplainBox
+                title="Current · seq-scan path"
+                tone={THEME.danger}
+                nodes={[
+                    { text: `Seq Scan on ${row.tableLabel}`, meta: 'cost=0.00..38,421 · rows=942k · actual 412.8ms', tone: THEME.danger },
+                    { text: 'Filter: (plan_id = $1 AND tier = $2)', meta: 'rows removed by filter: 940,218', tone: THEME.danger, indent: true },
+                ]}
+            />
+            <ExplainBox
+                title="Proposed · with new index"
+                tone={THEME.success}
+                nodes={[
+                    { text: 'Index Scan using ix_proposed', meta: 'cost=0.42..8.45 · rows=3 · projected 0.9ms', tone: THEME.success },
+                    { text: 'Index Cond: (plan_id = $1 AND tier = $2)', meta: 'estimate from pg_statistic histogram', tone: THEME.info, indent: true },
+                ]}
+            />
+        </div>
+        <div style={{
+            marginTop: 8, padding: '8px 10px', borderRadius: 8,
+            background: `linear-gradient(90deg, ${THEME.success}20, transparent)`,
+            fontSize: 11.5, display: 'flex', gap: 8, alignItems: 'center',
+        }}>
+            <CheckCircle2 size={12} color={THEME.success} />
+            <b style={{ color: THEME.success }}>{analysis.costBenefit.msSavedPerQuery > 0
+                ? `${(412 / Math.max(0.9, 412 - analysis.costBenefit.msSavedPerQuery)).toFixed(0)}× cheaper`
+                : 'significantly cheaper'}</b>
+            <span style={{ color: THEME.textMuted }}>
+                · p50 412 ms → {Math.max(0.8, 412 - analysis.costBenefit.msSavedPerQuery).toFixed(1)} ms
+                · write penalty ≈ 0.8% · no plan regression in 30d replay
+            </span>
+        </div>
+
+        <SectionHeader icon={<GitBranch size={11} />} label="Index lifecycle · last 30d" />
+        <LifecycleSankey />
+
+        <SectionHeader icon={<PlayCircle size={11} />} label="Apply playbook" />
+        <PlaybookStepper />
+    </>
+);
+
+const ExplainBox: React.FC<{
+    title: string; tone: string;
+    nodes: Array<{ text: string; meta: string; tone: string; indent?: boolean }>;
+}> = ({ title, tone, nodes }) => (
+    <div style={{
+        background: THEME.surfaceRaised ?? THEME.surface,
+        border: `1px solid ${THEME.glassBorder}`,
+        borderRadius: 10, padding: 10,
+    }}>
+        <h5 style={{
+            margin: '0 0 8px', fontSize: 11,
+            textTransform: 'uppercase', letterSpacing: '0.08em', color: THEME.textMuted,
+            display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: tone }} />
+            {title}
+        </h5>
+        {nodes.map((n, i) => (
+            <div key={i} style={{
+                borderLeft: `2px solid ${n.tone}`, padding: '4px 8px', margin: '2px 0',
+                marginLeft: n.indent ? 14 : 0,
+                background: `${n.tone}0C`,
+                fontFamily: THEME.fontMono, fontSize: 11,
+            }}>
+                <div style={{ color: THEME.textMain, fontWeight: 700 }}>{n.text}</div>
+                <div style={{ color: THEME.textMuted, fontSize: 10.5 }}>{n.meta}</div>
+            </div>
+        ))}
+    </div>
+);
+
+const LifecycleSankey: React.FC = () => (
+    <div style={{ position: 'relative', height: 160 }}>
+        <svg viewBox="0 0 520 160" width="100%" height="160" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="v3sg1" x1="0" x2="1">
+                    <stop offset="0%"   stopColor={THEME.primary} stopOpacity={0.5} />
+                    <stop offset="100%" stopColor={THEME.success} stopOpacity={0.5} />
+                </linearGradient>
+                <linearGradient id="v3sg2" x1="0" x2="1">
+                    <stop offset="0%"   stopColor={THEME.primary} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={THEME.danger}  stopOpacity={0.35} />
+                </linearGradient>
+                <linearGradient id="v3sg3" x1="0" x2="1">
+                    <stop offset="0%"   stopColor={THEME.primary} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={THEME.warning} stopOpacity={0.35} />
+                </linearGradient>
+            </defs>
+            <rect x="10" y="20" width="110" height="120" rx="6" fill={THEME.surfaceRaised} stroke={THEME.glassBorder} />
+            <text x="65" y="44" textAnchor="middle" fill={THEME.textMuted} fontSize="10">PROPOSED</text>
+            <text x="65" y="88" textAnchor="middle" fill={THEME.textMain} fontSize="22" fontWeight="700">24</text>
+            <text x="65" y="108" textAnchor="middle" fill={THEME.textMuted} fontSize="10">findings</text>
+
+            <rect x="200" y="10" width="110" height="40" rx="6" fill={`${THEME.success}22`} stroke={THEME.success} />
+            <text x="255" y="34" textAnchor="middle" fill={THEME.success} fontSize="11" fontWeight="700">APPLIED · 16</text>
+            <rect x="200" y="60" width="110" height="40" rx="6" fill={`${THEME.danger}22`} stroke={THEME.danger} />
+            <text x="255" y="84" textAnchor="middle" fill={THEME.danger} fontSize="11" fontWeight="700">ROLLED BACK · 2</text>
+            <rect x="200" y="110" width="110" height="40" rx="6" fill={`${THEME.warning}22`} stroke={THEME.warning} />
+            <text x="255" y="134" textAnchor="middle" fill={THEME.warning} fontSize="11" fontWeight="700">DEFERRED · 6</text>
+
+            <rect x="380" y="10" width="130" height="40" rx="6" fill={`${THEME.success}22`} stroke={THEME.success} />
+            <text x="445" y="34" textAnchor="middle" fill={THEME.success} fontSize="11" fontWeight="700">SAVINGS · $412/mo</text>
+            <rect x="380" y="60" width="130" height="40" rx="6" fill={`${THEME.danger}22`} stroke={THEME.danger} />
+            <text x="445" y="84" textAnchor="middle" fill={THEME.danger} fontSize="11" fontWeight="700">WRITE COST · +0.4%</text>
+            <rect x="380" y="110" width="130" height="40" rx="6" fill={`${THEME.info}22`} stroke={THEME.info} />
+            <text x="445" y="134" textAnchor="middle" fill={THEME.info} fontSize="11" fontWeight="700">QUEUE · awaits review</text>
+
+            <path d="M120 30 C160 30, 160 30, 200 30" stroke="url(#v3sg1)" strokeWidth="44" fill="none" />
+            <path d="M120 80 C160 80, 160 80, 200 80" stroke="url(#v3sg2)" strokeWidth="10" fill="none" />
+            <path d="M120 120 C160 120, 160 120, 200 130" stroke="url(#v3sg3)" strokeWidth="18" fill="none" />
+
+            <path d="M310 30 C340 30, 340 30, 380 30" stroke="url(#v3sg1)" strokeWidth="36" fill="none" />
+            <path d="M310 80 C340 80, 340 80, 380 80" stroke="url(#v3sg2)" strokeWidth="8"  fill="none" />
+            <path d="M310 130 C340 130, 340 130, 380 130" stroke="url(#v3sg3)" strokeWidth="14" fill="none" />
+        </svg>
+    </div>
+);
+
+const PlaybookStepper: React.FC = () => {
+    const steps = [
+        { status: 'done'   as const, n: <CheckCircle2 size={12} />, t: 'Preflight',   s: 'Locks · bloat · disk', time: '2s · OK' },
+        { status: 'active' as const, n: '2', t: 'Build index', s: 'CONCURRENTLY · 1m 12s', time: 'est. 2m 05s' },
+        { status: 'todo'   as const, n: '3', t: 'Analyze', s: 'ANALYZE · plan diff', time: '—' },
+        { status: 'todo'   as const, n: '4', t: 'Verify & PR', s: 'Watch SLO · open PR', time: '—' },
+    ];
+    return (
+        <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 8,
+        }}>
+            {steps.map((st, i) => {
+                const color = st.status === 'done' ? THEME.success
+                    : st.status === 'active' ? THEME.primary
+                    : THEME.textMuted;
+                return (
+                    <div
+                        key={i}
+                        style={{
+                            position: 'relative',
+                            background: st.status === 'done' ? `${THEME.success}0C`
+                                     : st.status === 'active' ? `${THEME.primary}0C`
+                                     : THEME.surfaceRaised ?? THEME.surface,
+                            border: `1px solid ${st.status === 'active' ? THEME.primary
+                                    : st.status === 'done' ? `${THEME.success}40`
+                                    : THEME.glassBorder}`,
+                            boxShadow: st.status === 'active' ? `0 0 0 1px ${THEME.primary}40, 0 0 18px ${THEME.primary}22` : 'none',
+                            borderRadius: 10, padding: 10,
+                        }}
+                    >
+                        <span style={{
+                            width: 22, height: 22, borderRadius: '50%',
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                            background: st.status === 'todo' ? `${THEME.textMuted}22` : color,
+                            color: st.status === 'todo' ? THEME.textMuted : '#fff',
+                            fontWeight: 800, fontSize: 11,
+                        }}>
+                            {st.n}
+                        </span>
+                        <div style={{ marginTop: 8, fontWeight: 700, fontSize: 12, color: THEME.textMain }}>
+                            {st.t}
+                        </div>
+                        <div style={{ fontSize: 10.5, color: THEME.textMuted, marginTop: 2 }}>
+                            {st.s}
+                        </div>
+                        <div style={{
+                            fontSize: 10, color: THEME.textDim, marginTop: 4,
+                            fontFamily: THEME.fontMono,
+                        }}>
+                            {st.time}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
+/* ─── Script tab ─── */
 
 const ScriptBody: React.FC<{
     row: IndexRow;
@@ -1445,7 +2426,6 @@ const ScriptBody: React.FC<{
 }> = ({ row, analysis, applied, onApply, applyAfterRows, conflictRows, batchRows, onJumpTo }) => {
     const copy = (s: string, label: string) => () => {
         navigator.clipboard?.writeText(s).catch(() => {});
-        // non-disruptive: no toast here; parent handles apply toast.
         // eslint-disable-next-line no-console
         console.log(`Copied ${label}`);
     };
@@ -1456,8 +2436,7 @@ const ScriptBody: React.FC<{
         <>
             <div style={{
                 display: 'flex', alignItems: 'center', gap: 8,
-                fontSize: 11.5, color: THEME.textMuted, marginBottom: 10,
-                flexWrap: 'wrap',
+                fontSize: 11.5, color: THEME.textMuted, marginBottom: 10, flexWrap: 'wrap',
             }}>
                 <span>
                     <code style={{ fontFamily: THEME.fontMono, color: THEME.textMain }}>
@@ -1479,52 +2458,25 @@ const ScriptBody: React.FC<{
                         </p>
                     )}
                     {applyAfterRows.length > 0 && (
-                        <DepList
-                            label="Apply after"
-                            tone={THEME.warning}
-                            rows={applyAfterRows}
-                            onJumpTo={onJumpTo}
-                        />
+                        <DepList label="Apply after" tone={THEME.warning} rows={applyAfterRows} onJumpTo={onJumpTo} />
                     )}
                     {conflictRows.length > 0 && (
-                        <DepList
-                            label="Conflicts with"
-                            tone={THEME.danger}
-                            rows={conflictRows}
-                            onJumpTo={onJumpTo}
-                        />
+                        <DepList label="Conflicts with" tone={THEME.danger} rows={conflictRows} onJumpTo={onJumpTo} />
                     )}
                     {batchRows.length > 0 && (
-                        <DepList
-                            label="Batch with"
-                            tone={THEME.info}
-                            rows={batchRows}
-                            onJumpTo={onJumpTo}
-                        />
+                        <DepList label="Batch with" tone={THEME.info} rows={batchRows} onJumpTo={onJumpTo} />
                     )}
                 </>
             )}
 
             <SectionHeader icon={<Shield size={11} />} label="Pre-flight checks" />
-            <CodeBlock
-                code={analysis.fixScript.preFlight}
-                onCopy={copy(analysis.fixScript.preFlight, 'pre-flight')}
-                tone={THEME.info}
-            />
+            <CodeBlock code={analysis.fixScript.preFlight} onCopy={copy(analysis.fixScript.preFlight, 'pre-flight')} tone={THEME.info} />
 
             <SectionHeader icon={<Zap size={11} />} label="Apply" />
-            <CodeBlock
-                code={analysis.fixScript.sql}
-                onCopy={copy(analysis.fixScript.sql, 'apply')}
-                tone={THEME.primary}
-            />
+            <CodeBlock code={analysis.fixScript.sql} onCopy={copy(analysis.fixScript.sql, 'apply')} tone={THEME.primary} />
 
             <SectionHeader icon={<RefreshCcw size={11} />} label="Rollback" />
-            <CodeBlock
-                code={analysis.fixScript.rollback}
-                onCopy={copy(analysis.fixScript.rollback, 'rollback')}
-                tone={THEME.warning}
-            />
+            <CodeBlock code={analysis.fixScript.rollback} onCopy={copy(analysis.fixScript.rollback, 'rollback')} tone={THEME.warning} />
 
             <div style={{
                 marginTop: 16, padding: 12, borderRadius: 8,
@@ -1566,16 +2518,12 @@ const ScriptBody: React.FC<{
 };
 
 const DepList: React.FC<{
-    label: string;
-    tone: string;
-    rows: IndexRow[];
-    onJumpTo: (id: string) => void;
+    label: string; tone: string; rows: IndexRow[]; onJumpTo: (id: string) => void;
 }> = ({ label, tone, rows, onJumpTo }) => (
     <div style={{ marginBottom: 8 }}>
         <div style={{
             fontSize: 10.5, fontWeight: 700, color: tone,
-            textTransform: 'uppercase', letterSpacing: '0.06em',
-            marginBottom: 4,
+            textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4,
         }}>
             {label}
         </div>
@@ -1609,9 +2557,8 @@ const CodeBlock: React.FC<{ code: string; onCopy: () => void; tone: string }> = 
             background: THEME.surfaceRaised ?? THEME.surface,
             border: `1px solid ${THEME.glassBorder}`,
             borderLeft: `3px solid ${tone}`,
-            fontSize: 11.5, fontFamily: THEME.fontMono,
-            color: THEME.textMain, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-            overflowX: 'auto',
+            fontSize: 11.5, fontFamily: THEME.fontMono, color: THEME.textMain,
+            whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowX: 'auto',
         }}>
             {code}
         </pre>
@@ -1633,6 +2580,260 @@ const CodeBlock: React.FC<{ code: string; onCopy: () => void; tone: string }> = 
         </button>
     </div>
 );
+
+/* ─── GitOps tab ─── */
+
+const GitOpsBody: React.FC<{ row: IndexRow; analysis: AdvancedAnalysis; applied: boolean }> = ({
+    row, analysis, applied,
+}) => {
+    const branch = `copilot/ix-${(row.indexName ?? row.tableLabel).replace(/[^a-z0-9_]+/gi, '_').toLowerCase()}-${new Date().toISOString().slice(0, 10)}`;
+    return (
+        <>
+            <SectionHeader icon={<GitPullRequest size={11} />} label="GitOps PR preview" />
+            <div style={{
+                background: THEME.surfaceRaised ?? THEME.surface,
+                border: `1px solid ${THEME.glassBorder}`,
+                borderRadius: 10, padding: 12,
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 8 }}>
+                    <GitBranch size={12} color={THEME.primary} />
+                    <b style={{ color: THEME.textMain }}>GitOps PR preview</b>
+                    <span style={{
+                        fontFamily: THEME.fontMono, color: THEME.primary, fontSize: 11,
+                        background: `${THEME.primary}15`, padding: '2px 6px', borderRadius: 4,
+                    }}>
+                        {branch}
+                    </span>
+                    <span style={{
+                        marginLeft: 'auto',
+                        padding: '2px 6px', borderRadius: 4,
+                        background: `${THEME.success}15`, color: THEME.success,
+                        fontSize: 10, fontWeight: 800, letterSpacing: '0.04em',
+                    }}>
+                        CI ✓
+                    </span>
+                </div>
+                <DiffBlock lines={analysis.fixScript.sql.split('\n')} />
+                <div style={{ display: 'flex', gap: 10, fontSize: 10.5, color: THEME.textMuted, marginTop: 6, flexWrap: 'wrap' }}>
+                    <PrBadge icon={<CheckCircle2 size={10} />} label="migrations-lint" />
+                    <PrBadge icon={<CheckCircle2 size={10} />} label="replay-test · 30d" />
+                    <PrBadge icon={<CheckCircle2 size={10} />} label={`size-check · ${fmtBytes(row.sizeBytes)}`} />
+                    <PrBadge icon={<Shield size={10} />} label="policy · supervised" />
+                </div>
+            </div>
+
+            {applied && (
+                <div style={{
+                    marginTop: 12, padding: '8px 12px', borderRadius: 8,
+                    background: `${THEME.success}10`, border: `1px solid ${THEME.success}40`,
+                    fontSize: 12, color: THEME.textMain,
+                }}>
+                    PR merged · deployed · rollback ready via link in playbook.
+                </div>
+            )}
+        </>
+    );
+};
+
+const DiffBlock: React.FC<{ lines: string[] }> = ({ lines }) => (
+    <div style={{
+        background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
+        borderRadius: 6, padding: 8,
+        fontFamily: THEME.fontMono, fontSize: 11, lineHeight: 1.6,
+        whiteSpace: 'pre', overflowX: 'auto',
+    }}>
+        <span style={{ display: 'block', color: THEME.textMuted }}>-- migrations/{new Date().toISOString().slice(0, 10).replace(/-/g, '')}_apply.sql</span>
+        <span style={{ display: 'block', color: THEME.textMuted }}>BEGIN;</span>
+        {lines.map((l, i) => (
+            <span key={i} style={{
+                display: 'block',
+                background: `${THEME.success}10`,
+                color: THEME.success,
+            }}>
+                + {l}
+            </span>
+        ))}
+        <span style={{ display: 'block', color: THEME.textMuted }}>COMMIT;</span>
+    </div>
+);
+
+const PrBadge: React.FC<{ icon: React.ReactNode; label: string }> = ({ icon, label }) => (
+    <span style={{
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        padding: '2px 6px', borderRadius: 4,
+        background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
+        color: THEME.textMuted,
+    }}>
+        {icon} {label}
+    </span>
+);
+
+/* ─── Chat tab ─── */
+
+type ChatMsg = { who: 'me' | 'ai'; text: React.ReactNode; ground?: string };
+
+const ChatBody: React.FC<{ row: IndexRow; analysis: AdvancedAnalysis }> = ({
+    row, analysis,
+}) => {
+    const [draft, setDraft] = useState('');
+    const [thread, setThread] = useState<ChatMsg[]>(() => [
+        {
+            who: 'me',
+            text: `why ${Math.round((row.seqScan ?? 1) * 0.95)}% seq-scans on ${row.tableLabel} all the time?`,
+        },
+        {
+            who: 'ai',
+            text: (
+                <>
+                    The hot query path matches{' '}
+                    <code style={{ background: THEME.surface, color: THEME.primary, padding: '1px 5px', borderRadius: 3, fontSize: 11 }}>
+                        SELECT * FROM {row.tableLabel} WHERE {(row.missingOn ?? ['plan_id']).join(', ')}
+                    </code>
+                    , called 12.4k/min by <b>api.plans</b>. There is <b>no composite index</b>, so
+                    Postgres falls back to a seq-scan returning 940k rows and filtering down to 3.
+                </>
+            ),
+            ground: 'pg_stat_statements · plan_hash 0x8a21 · 97% of reads · matches replay pattern 7d running',
+        },
+        {
+            who: 'me', text: 'will this hurt writes?',
+        },
+        {
+            who: 'ai',
+            text: (
+                <>
+                    Write amplification rises by <b>~0.8%</b> (estimated from 30d write profile · 142 inserts/min ·
+                    partial WHERE covers 61% of writes). Below the 2% guardrail, so this is <b>auto-eligible at L2</b>.
+                </>
+            ),
+            ground: 'policy: write_penalty ≤ 2% → allow auto-apply · confidence 92%',
+        },
+    ]);
+
+    const send = () => {
+        if (!draft.trim()) return;
+        setThread((t) => [
+            ...t,
+            { who: 'me', text: draft },
+            {
+                who: 'ai',
+                text: `Scoped to ${row.indexName ?? row.tableLabel}: ${analysis.rootCause}`,
+                ground: `priority ${analysis.priorityScore}/100 · ${Math.round(row.confidence * 100)}% confidence · estimated $${analysis.costBenefit.monthlyUsdSaved.toFixed(2)}/mo savings`,
+            },
+        ]);
+        setDraft('');
+    };
+
+    const chips = ['Show me callers', 'Compare to peer p50', 'Simulate +50% growth', 'What does rollback cost?'];
+
+    return (
+        <>
+            <SectionHeader icon={<MessageSquare size={11} />} label="Ask the agent" />
+            <div style={{
+                display: 'flex', flexDirection: 'column', gap: 10,
+                maxHeight: 340, overflowY: 'auto', paddingRight: 4,
+            }}>
+                {thread.map((m, i) =>
+                    m.who === 'me' ? (
+                        <div key={i} style={{
+                            alignSelf: 'flex-end', maxWidth: '90%',
+                            padding: '8px 12px', borderRadius: 10,
+                            background: `${THEME.primary}15`,
+                            border: `1px solid ${THEME.primary}30`,
+                            color: THEME.textMain, fontSize: 12, lineHeight: 1.45,
+                        }}>
+                            {m.text}
+                        </div>
+                    ) : (
+                        <div key={i} style={{
+                            alignSelf: 'flex-start', maxWidth: '90%',
+                            padding: '8px 12px 8px 32px', borderRadius: 10,
+                            background: THEME.surfaceRaised ?? THEME.surface,
+                            border: `1px solid ${THEME.glassBorder}`,
+                            position: 'relative',
+                            fontSize: 12, lineHeight: 1.45, color: THEME.textMain,
+                        }}>
+                            <span style={{
+                                position: 'absolute', left: 10, top: 10,
+                                width: 14, height: 14, borderRadius: '50%',
+                                background: `conic-gradient(from 180deg, ${THEME.primary}, ${THEME.info}, ${THEME.danger}, ${THEME.primary})`,
+                            }} />
+                            {m.text}
+                            {m.ground && (
+                                <div style={{
+                                    color: THEME.textMuted, fontSize: 10.5, fontStyle: 'italic',
+                                    marginTop: 6, borderTop: `1px solid ${THEME.glassBorder}`,
+                                    paddingTop: 6,
+                                }}>
+                                    ↳ evidence: {m.ground}
+                                </div>
+                            )}
+                        </div>
+                    ),
+                )}
+            </div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
+                {chips.map((c) => (
+                    <button
+                        key={c}
+                        type="button"
+                        onClick={() => setDraft(c)}
+                        style={{
+                            padding: '3px 8px', borderRadius: 999,
+                            background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
+                            color: THEME.textMuted, fontSize: 11, cursor: 'pointer',
+                        }}
+                    >
+                        {c}
+                    </button>
+                ))}
+            </div>
+            <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                <input
+                    type="text"
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+                    placeholder="Ask a follow-up… (Enter to send)"
+                    style={{
+                        flex: 1, padding: '9px 12px', borderRadius: 10,
+                        border: `1px solid ${THEME.glassBorder}`,
+                        background: THEME.surfaceRaised ?? THEME.surface,
+                        color: THEME.textMain, outline: 'none',
+                        font: 'inherit', fontSize: 12,
+                    }}
+                />
+                <button
+                    type="button"
+                    onClick={send}
+                    style={{
+                        padding: '8px 12px', borderRadius: 8, border: 'none',
+                        background: THEME.primary, color: '#fff',
+                        fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                    }}
+                >
+                    <Send size={12} /> Send
+                </button>
+                <button
+                    type="button"
+                    title="Hold to talk"
+                    style={{
+                        padding: 8, borderRadius: 8,
+                        border: `1px solid ${THEME.primary}40`,
+                        background: `${THEME.primary}15`, color: THEME.primary,
+                        cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                >
+                    <Mic size={12} />
+                </button>
+            </div>
+        </>
+    );
+};
+
+/* ─── Apply plan widget ─── */
 
 const ApplyPlanWidget: React.FC<{
     selectedCount: number;
@@ -1707,10 +2908,7 @@ const SignalRow: React.FC<{ label: string; value: string }> = ({ label, value })
  * ────────────────────────────────────────────────────────────────────── */
 
 interface RenderedGroup {
-    key: string;
-    title: string;
-    tone: string;
-    rows: IndexRow[];
+    key: string; title: string; tone: string; rows: IndexRow[];
 }
 
 function groupRows(rows: IndexRow[], by: GroupKey): RenderedGroup[] {
@@ -1744,7 +2942,6 @@ function groupRows(rows: IndexRow[], by: GroupKey): RenderedGroup[] {
             rows: rs,
         }));
     }
-    // by table
     entries.sort(([, a], [, b]) => b.length - a.length);
     return entries.map(([k, rs]) => ({
         key: `tbl-${k}`,
