@@ -205,24 +205,41 @@ function ensureIdxStyles() {
         '@keyframes spin   {to{transform:rotate(360deg)}}',
         '@keyframes pulse  {0%,100%{opacity:1}50%{opacity:.3}}',
         '@keyframes wave   {0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}',
+        '@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}',
+        '@keyframes float  {0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}',
+        '@keyframes glow   {0%,100%{opacity:.55}50%{opacity:1}}',
         '.fade-in{animation:fadeIn .35s ease both;}',
         '.s1{animation-delay:.04s}.s2{animation-delay:.08s}.s3{animation-delay:.12s}',
         '.s4{animation-delay:.16s}.s5{animation-delay:.20s}',
-        '.rh{transition:background .1s;cursor:pointer;}',
+        '.rh{transition:background .12s ease,transform .12s ease;cursor:pointer;}',
         `.rh:hover{background:${C.surfaceHi}!important;}`,
         '.rh:hover .pk{opacity:1!important;}',
         '.pk{opacity:0;transition:opacity .15s;}',
         '::-webkit-scrollbar{width:3px;height:3px}',
         `::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px}`,
         '::-webkit-scrollbar-track{background:transparent}',
-        `.btn{transition:all .15s;cursor:pointer;font-family:${THEME.fontBody};}`,
-        `.btn:hover{background:${C.surfaceHi}!important;border-color:${C.accent}!important;color:${C.accent}!important;}`,
-        `.tab{transition:all .15s;cursor:pointer;background:none;border:none;font-family:${THEME.fontBody};}`,
+        `.btn{transition:all .18s ease;cursor:pointer;font-family:${THEME.fontBody};}`,
+        `.btn:hover{background:${C.surfaceHi}!important;border-color:${C.accent}!important;color:${C.accent}!important;transform:translateY(-1px);}`,
+        `.tab{transition:all .18s ease;cursor:pointer;background:none;border:none;font-family:${THEME.fontBody};}`,
         `.ir{background:none;border:none;outline:none;font-family:${THEME.fontMono};color:${C.textSub};}`,
         '.wv{animation:wave 1.1s ease-in-out infinite;}',
         '.wv:nth-child(2){animation-delay:.12s}.wv:nth-child(3){animation-delay:.24s}',
         '.wv:nth-child(4){animation-delay:.36s}.wv:nth-child(5){animation-delay:.48s}',
         '.bar-g{transform-origin:left;animation:grow 1s cubic-bezier(.22,1,.36,1) both;}',
+        '.kpi{transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;}',
+        `.kpi:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.06);border-color:${C.accent}55!important;}`,
+        '.card-hov{transition:transform .2s ease, box-shadow .2s ease;}',
+        '.card-hov:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.06);}',
+        `.vtab{position:relative;transition:all .18s ease;border-radius:12px 12px 0 0;}`,
+        `.vtab:hover{background:${C.surfaceHi}66;}`,
+        `.rtab{transition:all .18s ease;}`,
+        `.rtab:hover{transform:translateY(-1px);}`,
+        '.gradient-glow{position:absolute;inset:-40px -40px auto auto;width:280px;height:280px;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:.35;z-index:0;}',
+        '.accent-stripe{position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}',
+        `.cta-primary{background:linear-gradient(135deg,${C.accent} 0%,${C.accent}cc 100%);transition:all .2s ease;box-shadow:0 4px 12px ${C.accent}40;}`,
+        `.cta-primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px ${C.accent}55;}`,
+        '.live-ring{position:relative;}',
+        `.live-ring::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:1.5px solid ${C.ok};opacity:0;animation:glow 2s ease-in-out infinite;}`,
     ].join('\n');
 }
 const Styles = () => { useAdaptiveTheme(); ensureIdxStyles(); return null; };
@@ -292,14 +309,18 @@ const SegBar = ({pct,color,h=4}) =>
     </div>;
 
 const Card = ({children,style={}}) =>
-    <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:16,overflow:'hidden',boxShadow:'0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',backdropFilter:'blur(12px)',transition:'all 0.25s ease',...style}}>{children}</div>;
+    <div className="card-hov" style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:16,overflow:'hidden',boxShadow:'0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',backdropFilter:'blur(12px)',...style}}>{children}</div>;
 
 const CH = ({title,right,sub}) =>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
-        padding:'14px 20px',borderBottom:`1px solid ${C.border}`,fontWeight:'700'}}>
-        <div>
-            <Lbl>{title}</Lbl>
-            {sub&&<div style={{fontSize:11,color:C.textDim,fontFamily:THEME.fontBody,marginTop:2}}>{sub}</div>}
+        padding:'14px 20px',borderBottom:`1px solid ${C.border}`,
+        background:`linear-gradient(180deg, ${C.bg}60 0%, transparent 100%)`}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{width:3,height:14,background:`linear-gradient(180deg, ${C.accent} 0%, ${C.accent}55 100%)`,borderRadius:2}}/>
+            <div>
+                <Lbl>{title}</Lbl>
+                {sub&&<div style={{fontSize:11,color:C.textDim,fontFamily:THEME.fontBody,marginTop:2}}>{sub}</div>}
+            </div>
         </div>
         {right}
     </div>;
@@ -1034,42 +1055,62 @@ export default function IndexIntelligence() {
             <div style={{padding:'0 0 48px 0'}}>
 
                 {/* TOPBAR */}
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',
-                    padding:'18px 0 20px',borderBottom:`1px solid ${C.border}`,marginBottom:24}}>
-                    <div style={{display:'flex',alignItems:'center',gap:18}}>
-                        <div>
-                            <div style={{fontSize:18,fontWeight:700,color:C.textPrimary,letterSpacing:'-.01em'}}>
-                                Index Intelligence
+                <div style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'space-between',
+                    padding:'22px 0 22px',borderBottom:`1px solid ${C.border}`,marginBottom:26,overflow:'hidden'}}>
+                    <div className="gradient-glow" style={{background:`radial-gradient(circle, ${C.accent} 0%, transparent 70%)`,left:-60,top:-80,right:'auto'}}/>
+                    <div className="gradient-glow" style={{background:`radial-gradient(circle, ${C.ok} 0%, transparent 70%)`,right:-40,top:-60,opacity:.18}}/>
+                    <div style={{display:'flex',alignItems:'center',gap:18,position:'relative',zIndex:1}}>
+                        <div style={{display:'flex',alignItems:'center',gap:14}}>
+                            <div style={{width:42,height:42,borderRadius:14,
+                                background:`linear-gradient(135deg, ${C.accent} 0%, ${C.accent}aa 100%)`,
+                                display:'flex',alignItems:'center',justifyContent:'center',
+                                boxShadow:`0 6px 18px ${C.accent}40, inset 0 1px 0 rgba(255,255,255,.18)`,
+                                color:'#fff',fontSize:20,fontWeight:700,fontFamily:THEME.fontBody,
+                                animation:'float 3.6s ease-in-out infinite'}}>⚡</div>
+                            <div>
+                                <div style={{fontSize:20,fontWeight:700,color:C.textPrimary,letterSpacing:'-.015em',
+                                    background:`linear-gradient(135deg, ${C.textPrimary} 0%, ${C.accent} 100%)`,
+                                    WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>
+                                    Index Intelligence
+                                </div>
+                                <M sz={10} c={C.textDim} style={{letterSpacing:'.08em',marginTop:3,display:'block',textTransform:'uppercase'}}>
+                                    VIGIL · v5.0 · PostgreSQL 14+
+                                </M>
                             </div>
-                            <M sz={10} c={C.textDim} style={{letterSpacing:'.06em',marginTop:2,display:'block'}}>
-                                VIGIL  v5.0  PostgreSQL 14+
-                            </M>
                         </div>
-                        <div style={{display:'flex',alignItems:'center',gap:7,padding:'5px 12px',
+                        <div style={{display:'flex',alignItems:'center',gap:8,padding:'6px 14px',
                             background:loading?C.surface:data.health.criticalCount>0?C.errBg:C.okBg,
-                            border:`1px solid ${loading?C.border:data.health.criticalCount>0?C.err+'22':C.ok+'22'}`,borderRadius:20}}>
-                            <div style={{width:6,height:6,borderRadius:'50%',flexShrink:0,
+                            border:`1px solid ${loading?C.border:data.health.criticalCount>0?C.err+'30':C.ok+'30'}`,borderRadius:22,
+                            boxShadow:`0 4px 12px ${loading?'transparent':data.health.criticalCount>0?C.err+'15':C.ok+'15'}`,
+                            transition:'all .25s ease'}}>
+                            <div className={!loading?'live-ring':''} style={{width:7,height:7,borderRadius:'50%',flexShrink:0,
                                 background:loading?C.textDim:data.health.criticalCount>0?C.err:C.ok,
                                 animation:!loading&&data.health.criticalCount>0?'pulse 1.4s infinite':'none'}}/>
-                            <span style={{fontSize:11,color:loading?C.textDim:data.health.criticalCount>0?C.err:C.ok,fontWeight:600}}>
+                            <span style={{fontSize:11.5,color:loading?C.textDim:data.health.criticalCount>0?C.err:C.ok,fontWeight:600,letterSpacing:'.02em'}}>
                 {loading?'Loading…':data.health.criticalCount>0?`${data.health.criticalCount} unused`:'All nominal'}
               </span>
                         </div>
                     </div>
-                    <div style={{display:'flex',gap: 20}}>
-                        <button onClick={()=>setCmd(true)} className="btn" style={{display:'flex',gap:7,alignItems:'center',
-                            padding:'7px 14px',border:`1px solid ${C.border}`,borderRadius: 16,background:C.surface,color:C.textSub,fontSize:12}}>
+                    <div style={{display:'flex',gap: 12,position:'relative',zIndex:1}}>
+                        <button onClick={()=>setCmd(true)} className="btn" style={{display:'flex',gap:9,alignItems:'center',
+                            padding:'8px 14px',border:`1px solid ${C.border}`,borderRadius: 12,background:C.surface,color:C.textSub,fontSize:12,fontWeight:500}}>
+                            <span style={{fontSize:13,opacity:.7}}>⌕</span>
                             Search
-                            <span style={{border:`1px solid ${C.border}`,padding:'1px 6px',fontSize:10,borderRadius: 18,fontFamily:THEME.fontMono}}>⌘K</span>
+                            <span style={{border:`1px solid ${C.border}`,padding:'2px 7px',fontSize:10,borderRadius: 6,fontFamily:THEME.fontMono,background:C.bg,marginLeft:4}}>⌘K</span>
                         </button>
-                        <button onClick={()=>setLive(l=>!l)} style={{display:'flex',gap:6,alignItems:'center',
-                            padding:'7px 12px',border:`1px solid ${live?C.ok+'35':C.border}`,borderRadius: 16,
+                        <button onClick={()=>setLive(l=>!l)} style={{display:'flex',gap:7,alignItems:'center',
+                            padding:'8px 14px',border:`1px solid ${live?C.ok+'45':C.border}`,borderRadius: 12,
                             background:live?C.okBg:C.surface,cursor:'pointer',color:live?C.ok:C.textSub,
-                            fontSize:12,fontWeight:500,transition:'all .2s'}}>
-                            <div style={{width:7,height:7,borderRadius:'50%',background:live?C.ok:C.textDim,animation:live?'pulse 1.6s infinite':'none'}}/>
+                            fontSize:12,fontWeight:600,transition:'all .2s',
+                            boxShadow:live?`0 2px 8px ${C.ok}25`:'none'}}>
+                            <div style={{width:7,height:7,borderRadius:'50%',background:live?C.ok:C.textDim,
+                                animation:live?'pulse 1.6s infinite':'none',
+                                boxShadow:live?`0 0 8px ${C.ok}80`:'none'}}/>
                             {live?'Live':'Paused'}
                         </button>
-                        <button className="btn" style={{padding:'7px 14px',border:`1px solid ${C.border}`,borderRadius: 16,background:C.surface,color:C.textSub,fontSize:12}}>Export</button>
+                        <button className="btn" style={{padding:'8px 14px',border:`1px solid ${C.border}`,borderRadius: 12,background:C.surface,color:C.textSub,fontSize:12,fontWeight:500,display:'flex',alignItems:'center',gap:6}}>
+                            <span style={{fontSize:12,opacity:.7}}>↓</span>Export
+                        </button>
                     </div>
                 </div>
 
@@ -1084,21 +1125,24 @@ export default function IndexIntelligence() {
                 </div>}
 
                 {/* KPI */}
-                <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap: 18,marginBottom:24}}>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap: 16,marginBottom:26}}>
                     {[
-                        {l:'Index hit ratio',v:`${data.health.hitRatio}%`,c:C.ok,cls:'s1'},
-                        {l:'Open issues',v:total,c:C.warn,sub:`${data.health.criticalCount} unused`,cls:'s2'},
-                        {l:'Total indexes',v:data.health.totalIndexes,c:C.accent,sub:'across all schemas',cls:'s3'},
-                        {l:'Index storage',v:data.health.totalSize,c:C.textPrimary,sub:'all indexes',cls:'s4'},
-                        {l:'Seq scan rate',v:`${data.health.seqScanRate}%`,c:C.warn,cls:'s5'},
-                    ].map(t=><div key={t.l} className={`fade-in ${t.cls}`} style={{padding:'18px 20px',background:C.surface,
+                        {l:'Index hit ratio',v:`${data.health.hitRatio}%`,c:C.ok,cls:'s1',icon:'◎',sub:'cache efficiency'},
+                        {l:'Open issues',v:total,c:C.warn,sub:`${data.health.criticalCount} unused`,cls:'s2',icon:'⚠'},
+                        {l:'Total indexes',v:data.health.totalIndexes,c:C.accent,sub:'across all schemas',cls:'s3',icon:'⌗'},
+                        {l:'Index storage',v:data.health.totalSize,c:C.textPrimary,sub:'all indexes',cls:'s4',icon:'▤'},
+                        {l:'Seq scan rate',v:`${data.health.seqScanRate}%`,c:C.warn,cls:'s5',icon:'⇄',sub:'scan vs. index'},
+                    ].map(t=><div key={t.l} className={`fade-in kpi ${t.cls}`} style={{padding:'18px 20px',background:C.surface,
                         border:`1px solid ${C.border}`,borderRadius: 18,position:'relative',overflow:'hidden',
-                        opacity:loading?0.5:1,transition:'opacity .3s'}}>
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
+                        opacity:loading?0.5:1,
+                        boxShadow:'0 1px 3px rgba(0,0,0,.04)'}}>
+                        <div className="accent-stripe" style={{background:`linear-gradient(90deg, ${t.c} 0%, ${t.c}55 70%, transparent 100%)`}}/>
+                        <div style={{position:'absolute',top:14,right:14,fontSize:18,color:`${t.c}55`,fontWeight:300,lineHeight:1}}>{t.icon}</div>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
                             <Lbl>{t.l}</Lbl>
                         </div>
-                        <div style={{fontSize:30,fontWeight:700,color:t.c,fontFamily:THEME.fontBody,lineHeight:1,letterSpacing:'-.01em',marginBottom:4}}>{t.v}</div>
-                        {t.sub&&<div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody}}>{t.sub}</div>}
+                        <div style={{fontSize:32,fontWeight:700,color:t.c,fontFamily:THEME.fontBody,lineHeight:1,letterSpacing:'-.02em',marginBottom:6}}>{t.v}</div>
+                        {t.sub&&<div style={{fontSize:11,color:C.textSub,fontFamily:THEME.fontBody,letterSpacing:'.01em'}}>{t.sub}</div>}
                     </div>)}
                 </div>
 
@@ -1106,27 +1150,44 @@ export default function IndexIntelligence() {
                 <div style={{display:'grid',gridTemplateColumns:'1fr 295px',gap: 22,alignItems:'start'}}>
 
                     {/* LEFT */}
-                    <div style={{display:'flex',flexDirection:'column',gap: 18}}>
-                        <div style={{display:'flex',gap:0,borderBottom:`1px solid ${C.border}`}}>
-                            {VIEWS.map(v=><button key={v.id} className="tab" onClick={()=>setView(v.id)} style={{
-                                padding:'10px 18px',borderBottom:view===v.id?`2px solid ${v.c}`:'2px solid transparent',
-                                color:view===v.id?v.c:C.textSub,fontSize:13,fontWeight:view===v.id?600:400}}>
+                    <div style={{display:'flex',flexDirection:'column',gap: 16}}>
+                        <div style={{display:'flex',gap:6,padding:6,background:C.surface,
+                            border:`1px solid ${C.border}`,borderRadius:14}}>
+                            {VIEWS.map(v=><button key={v.id} className="vtab" onClick={()=>setView(v.id)} style={{
+                                flex:1,padding:'10px 14px',borderRadius:10,
+                                background:view===v.id?C.bgAlt:'transparent',
+                                border:view===v.id?`1px solid ${v.c}30`:'1px solid transparent',
+                                boxShadow:view===v.id?`0 2px 8px ${v.c}20`:'none',
+                                color:view===v.id?v.c:C.textSub,fontSize:13,fontWeight:view===v.id?600:500,
+                                cursor:'pointer',fontFamily:THEME.fontBody,
+                                display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+                                <span style={{width:7,height:7,borderRadius:'50%',background:v.c,
+                                    opacity:view===v.id?1:.4,transition:'opacity .2s',
+                                    boxShadow:view===v.id?`0 0 8px ${v.c}80`:'none'}}/>
                                 {v.label}
-                                <span style={{marginLeft:8,fontSize:11,fontWeight:700,color:view===v.id?v.c:C.textDim,fontFamily:THEME.fontMono}}>{v.n}</span>
+                                <span style={{fontSize:11,fontWeight:700,color:view===v.id?v.c:C.textDim,
+                                    fontFamily:THEME.fontMono,padding:'1px 7px',
+                                    background:view===v.id?`${v.c}15`:C.bg,borderRadius:8,minWidth:22,textAlign:'center'}}>{v.n}</span>
                             </button>)}
                         </div>
 
-                        <Card>
+                        <Card style={{boxShadow:'0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)'}}>
                             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',
-                                padding:'10px 16px',borderBottom:`1px solid ${C.border}`}}>
-                                <div style={{display:'flex',alignItems:'center',gap: 20}}>
+                                padding:'12px 18px',borderBottom:`1px solid ${C.border}`,
+                                background:`linear-gradient(180deg, ${C.bg} 0%, transparent 100%)`}}>
+                                <div style={{display:'flex',alignItems:'center',gap: 14}}>
                                     <Lbl>{VIEWS.find(v=>v.id===view)?.label} indexes</Lbl>
-                                    {live&&<div style={{display:'flex',gap:2,alignItems:'center',height:11}}>
+                                    {live&&<div style={{display:'flex',gap:2,alignItems:'center',height:11,padding:'2px 8px',
+                                        background:C.okBg,borderRadius:10,border:`1px solid ${C.ok}25`}}>
                                         {[0,1,2,3,4].map(i=><div key={i} className="wv" style={{width:2.5,height:8,background:C.ok,borderRadius:1}}/>)}
+                                        <span style={{fontSize:9,color:C.ok,fontFamily:THEME.fontMono,marginLeft:4,letterSpacing:'.05em'}}>LIVE</span>
                                     </div>}
                                 </div>
-                                <div style={{display:'flex',gap: 20}}>
-                                    <button onClick={()=>rows[0]&&setApply(rows[0])} style={{padding:'5px 14px',background:C.accent,border:'none',borderRadius: 16,color:'#fff',fontSize:11,fontWeight:600,cursor:'pointer'}}>Apply top priority</button>
+                                <div style={{display:'flex',gap: 10}}>
+                                    <button onClick={()=>rows[0]&&setApply(rows[0])} className="cta-primary" style={{padding:'6px 16px',border:'none',borderRadius: 10,color:'#fff',fontSize:11,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
+                                        <span style={{fontSize:11}}>✦</span>
+                                        Apply top priority
+                                    </button>
                                 </div>
                             </div>
                             <IndexTable rows={rows} view={view} onSelect={setDetail}/>
@@ -1134,12 +1195,16 @@ export default function IndexIntelligence() {
                     </div>
 
                     {/* RIGHT */}
-                    <div style={{display:'flex',flexDirection:'column',gap: 22}}>
-                        <div style={{display:'flex',flexWrap:'wrap',gap:3}}>
-                            {RTABS.map(t=><button key={t.id} className="tab" onClick={()=>setRTab(t.id)} style={{
-                                padding:'5px 10px',borderRadius: 16,fontSize:11,fontWeight:rTab===t.id?600:400,
-                                background:rTab===t.id?C.surface:C.bg,border:`1px solid ${rTab===t.id?C.border:C.borderSub}`,
-                                color:rTab===t.id?C.accent:C.textDim}}>
+                    <div style={{display:'flex',flexDirection:'column',gap: 16}}>
+                        <div style={{display:'flex',flexWrap:'wrap',gap:4,padding:5,background:C.surface,
+                            border:`1px solid ${C.border}`,borderRadius:12}}>
+                            {RTABS.map(t=><button key={t.id} className="rtab" onClick={()=>setRTab(t.id)} style={{
+                                padding:'6px 11px',borderRadius: 8,fontSize:11,fontWeight:rTab===t.id?600:500,
+                                background:rTab===t.id?C.bgAlt:'transparent',
+                                border:rTab===t.id?`1px solid ${C.accent}30`:'1px solid transparent',
+                                boxShadow:rTab===t.id?`0 1px 4px ${C.accent}20`:'none',
+                                color:rTab===t.id?C.accent:C.textDim,cursor:'pointer',fontFamily:THEME.fontBody,
+                                letterSpacing:'.01em'}}>
                                 {t.label}
                             </button>)}
                         </div>
