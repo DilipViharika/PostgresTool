@@ -50,7 +50,7 @@ const SSOCallback = lazyRetry(() => import('./components/auth/SSOCallback'));
 
 /* ── Lazy-loaded tab components for faster initial load ── */
 // Monitoring features
-const OverviewTab = lazyRetry(() => import('./components/views/monitoring/OverviewTabV2'));
+const OverviewTab = lazyRetry(() => import('./components/views/monitoring/OverviewTabV3'));
 const PerformanceTab = lazyRetry(() => import('./components/views/monitoring/PerformanceTab'));
 const ResourcesTab = lazyRetry(() => import('./components/views/monitoring/ResourcesTab'));
 const CloudWatchTab = lazyRetry(() => import('./components/views/monitoring/CloudWatchTab'));
