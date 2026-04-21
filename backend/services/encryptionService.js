@@ -131,6 +131,14 @@ export function decrypt(encrypted) {
     }
 }
 
+// ── Compatibility aliases ──────────────────────────────────────────────────
+// samlService.js (and potentially other callers) import these under
+// `*Secret` names. Keep the two exports as thin wrappers rather than
+// renaming the canonical functions, so existing callers of `encrypt` /
+// `decrypt` keep working without change.
+export const encryptSecret = encrypt;
+export const decryptSecret = decrypt;
+
 export function isEncrypted(value) {
     if (!value || typeof value !== 'string') return false;
     const parts = value.split(':');

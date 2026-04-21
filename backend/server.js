@@ -1721,7 +1721,16 @@ for (const prefix of modularMounts) {
     // ── Roadmap routes (W1–W3) ────────────────────────────────────────────────
     //    Mounted at the same prefixes so they honour the /api and /api/v1
     //    contract. Each module carries its own RBAC via workspaceRbac.
-    app.use(prefix, samlRoutes(pool, authenticate));
+    // samlRoutes factory signature: (pool, authenticate, requireRole, signJwt).
+    // We inline signJwt as a thin wrapper over jsonwebtoken so the SAML ACS
+    // endpoint can mint tokens with the same claims/audience/issuer as the
+    // password login path above.
+    const signJwt = (payload) => jwt.sign(payload, CONFIG.JWT_SECRET, {
+        expiresIn: CONFIG.JWT_EXPIRES_IN,
+        audience:  CONFIG.JWT_AUDIENCE,
+        issuer:    CONFIG.JWT_ISSUER,
+    });
+    app.use(prefix, samlRoutes(pool, authenticate, requireRole, signJwt));
     app.use(prefix, explainRoutes(pool, authenticate));
     app.use(prefix, alertDslRoutes(pool, authenticate));
     app.use(prefix, anomalyRoutes(pool, authenticate));
