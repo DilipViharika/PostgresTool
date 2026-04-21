@@ -1,8 +1,8 @@
-# VIGIL SDK Framework - Build Summary
+# FATHOM SDK Framework - Build Summary
 
 ## Overview
 
-A complete, production-ready SDK framework for VIGIL (universal database monitoring tool) has been successfully created. The SDK provides plug-and-play connectors for external platforms including Salesforce, Mulesoft, and multi-database support.
+A complete, production-ready SDK framework for FATHOM (universal database monitoring tool) has been successfully created. The SDK provides plug-and-play connectors for external platforms including Salesforce, Mulesoft, and multi-database support.
 
 **Total Code: 3,529 lines**
 **Total Files: 10**
@@ -38,7 +38,7 @@ sdk/
 
 **Exports:**
 
-- VigilClient - Main API client
+- FathomClient - Main API client
 - SalesforceConnector - Salesforce integration
 - MulesoftConnector - Mulesoft integration
 - DatabaseConnector - Multi-database connector
@@ -48,11 +48,11 @@ sdk/
 
 ---
 
-### 2. VigilClient (src/core/client.js)
+### 2. FathomClient (src/core/client.js)
 
 **Features:**
 
-- REST API client for VIGIL backend
+- REST API client for FATHOM backend
 - Automatic retry logic with exponential backoff
 - OAuth 2.0 and API key authentication support
 - Event-driven architecture for real-time updates
@@ -83,7 +83,7 @@ await client.healthCheck(); // Verify API health
 
 ```javascript
 {
-  baseUrl: 'https://api.vigil.example.com',
+  baseUrl: 'https://api.fathom.example.com',
   apiKey: 'sk_test_...',
   orgId: 'org_123',
   options: {
@@ -199,7 +199,7 @@ emitter.eventNames(); // Get all event names
 - Setup audit trail tracking
 - Platform Events subscription
 - Automatic token refresh
-- Metrics sync to VIGIL
+- Metrics sync to FATHOM
 
 **Key Methods:**
 
@@ -211,7 +211,7 @@ await sfConnector.getObjects(); // List SObjects
 await sfConnector.getMetrics(); // Get API limits
 await sfConnector.getAuditTrail(options); // Get audit events
 sfConnector.subscribeToEvents(channel, callback); // Subscribe to events
-await sfConnector.syncToVigil(client, options); // Sync to VIGIL
+await sfConnector.syncToFathom(client, options); // Sync to FATHOM
 ```
 
 **Authentication Flows:**
@@ -230,7 +230,7 @@ await sfConnector.syncToVigil(client, options); // Sync to VIGIL
 
 - `authenticated` - Auth successful
 - `metrics_updated` - Metrics fetched
-- `synced_to_vigil` - Metrics synced
+- `synced_to_fathom` - Metrics synced
 - `error` - Error occurred
 
 ---
@@ -245,7 +245,7 @@ await sfConnector.syncToVigil(client, options); // Sync to VIGIL
 - Alert management
 - Audit log tracking
 - Multi-environment support
-- Metrics sync to VIGIL
+- Metrics sync to FATHOM
 
 **Key Methods:**
 
@@ -257,7 +257,7 @@ await muleConnector.getApiManagerApis(); // List APIs
 await muleConnector.getApiAnalytics(apiId, opt); // Get API analytics
 await muleConnector.getAlerts(options); // Get active alerts
 await muleConnector.getAuditLogs(options); // Get audit logs
-await muleConnector.syncToVigil(client, options); // Sync to VIGIL
+await muleConnector.syncToFathom(client, options); // Sync to FATHOM
 ```
 
 **Application Metrics:**
@@ -283,7 +283,7 @@ await muleConnector.syncToVigil(client, options); // Sync to VIGIL
 - `app_metrics_updated` - Metrics updated
 - `apis_fetched` - APIs retrieved
 - `alerts_fetched` - Alerts retrieved
-- `synced_to_vigil` - Metrics synced
+- `synced_to_fathom` - Metrics synced
 - `error` - Error occurred
 
 ---
@@ -369,7 +369,7 @@ dbConnector.getCachedMetrics(key); // Get cached metrics
 
 **Details:**
 
-- Package name: `@vigil/sdk`
+- Package name: `@fathom/sdk`
 - Version: 1.0.0
 - ES Module support
 - Multiple entry points for selective imports
@@ -380,13 +380,13 @@ dbConnector.getCachedMetrics(key); // Get cached metrics
 
 ```javascript
 // Main entry
-import { VigilClient, SalesforceConnector } from '@vigil/sdk';
+import { FathomClient, SalesforceConnector } from '@fathom/sdk';
 
 // Specific imports
-import { VigilClient } from '@vigil/sdk/client';
-import { SalesforceConnector } from '@vigil/sdk/salesforce';
-import { MulesoftConnector } from '@vigil/sdk/mulesoft';
-import { DatabaseConnector } from '@vigil/sdk/database';
+import { FathomClient } from '@fathom/sdk/client';
+import { SalesforceConnector } from '@fathom/sdk/salesforce';
+import { MulesoftConnector } from '@fathom/sdk/mulesoft';
+import { DatabaseConnector } from '@fathom/sdk/database';
 ```
 
 ---
@@ -488,16 +488,16 @@ Metrics are cached to reduce API calls and improve performance.
 ### Complete Integration Flow
 
 ```javascript
-import { VigilClient, SalesforceConnector, DatabaseConnector } from '@vigil/sdk';
+import { FathomClient, SalesforceConnector, DatabaseConnector } from '@fathom/sdk';
 
-// Initialize VIGIL client
-const client = new VigilClient({
-    baseUrl: 'https://api.vigil.example.com',
+// Initialize FATHOM client
+const client = new FathomClient({
+    baseUrl: 'https://api.fathom.example.com',
     apiKey: 'sk_test_...',
     orgId: 'org_123',
 });
 
-// Connect to VIGIL
+// Connect to FATHOM
 await client.connect();
 
 // Set up Salesforce connector
@@ -526,8 +526,8 @@ client.subscribe('alert', (alert) => {
     console.log('Alert:', alert);
 });
 
-// Sync metrics to VIGIL
-await sfConnector.syncToVigil(client);
+// Sync metrics to FATHOM
+await sfConnector.syncToFathom(client);
 await dbConnector.getPerformance();
 
 // Clean shutdown
@@ -543,7 +543,7 @@ await dbConnector.disconnect();
 | File                         | Lines     | Purpose                   |
 | ---------------------------- | --------- | ------------------------- |
 | src/index.js                 | 14        | Main export point         |
-| src/core/client.js           | 486       | VIGIL API client          |
+| src/core/client.js           | 486       | FATHOM API client         |
 | src/core/auth.js             | 255       | Authentication management |
 | src/core/logger.js           | 239       | Structured logging        |
 | src/core/events.js           | 199       | Event system              |
@@ -561,16 +561,16 @@ await dbConnector.disconnect();
 ### Install as npm package:
 
 ```bash
-npm install @vigil/sdk
+npm install @fathom/sdk
 ```
 
 ### Basic usage:
 
 ```javascript
-import { VigilClient } from '@vigil/sdk';
+import { FathomClient } from '@fathom/sdk';
 
-const client = new VigilClient({
-    baseUrl: 'https://api.vigil.example.com',
+const client = new FathomClient({
+    baseUrl: 'https://api.fathom.example.com',
     apiKey: 'your_api_key',
     orgId: 'your_org_id',
 });
@@ -612,9 +612,9 @@ await client.connect();
 
 ## Summary
 
-The VIGIL SDK framework is a complete, production-ready solution for universal database monitoring with external platform integration. It provides:
+The FATHOM SDK framework is a complete, production-ready solution for universal database monitoring with external platform integration. It provides:
 
-✓ Unified client for VIGIL API
+✓ Unified client for FATHOM API
 ✓ Salesforce integration with OAuth and SOQL
 ✓ Mulesoft integration with app and API metrics
 ✓ Multi-database support (PostgreSQL, MySQL, MongoDB, etc.)

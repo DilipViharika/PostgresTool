@@ -1,5 +1,5 @@
 /**
- * VIGIL SDK — Lightweight JavaScript SDK for observability
+ * FATHOM SDK — Lightweight JavaScript SDK for observability
  * Zero dependencies, built-in batching, auto-capture for Express
  */
 
@@ -43,18 +43,18 @@ class EventEmitter {
 }
 
 /**
- * VigilSDK class — Main entry point for observability
+ * FathomSDK class — Main entry point for observability
  */
-class VigilSDK extends EventEmitter {
+class FathomSDK extends EventEmitter {
   constructor(options = {}) {
     super();
 
     // Required options
     if (!options.apiKey) {
-      throw new Error('[VIGIL SDK] apiKey is required (e.g., sk_live_xxx)');
+      throw new Error('[FATHOM SDK] apiKey is required (e.g., sk_live_xxx)');
     }
     if (!options.endpoint) {
-      throw new Error('[VIGIL SDK] endpoint is required (e.g., https://vigil.example.com)');
+      throw new Error('[FATHOM SDK] endpoint is required (e.g., https://fathom.example.com)');
     }
 
     // Configuration
@@ -269,7 +269,7 @@ class VigilSDK extends EventEmitter {
   }
 
   /**
-   * Flush all queued events to VIGIL
+   * Flush all queued events to FATHOM
    */
   async flush() {
     if (this.queue.length === 0) {
@@ -278,7 +278,7 @@ class VigilSDK extends EventEmitter {
     }
 
     const batch = this.queue.splice(0, this.batchSize);
-    this._log(`[Flush] Sending ${batch.length} events to VIGIL`);
+    this._log(`[Flush] Sending ${batch.length} events to FATHOM`);
 
     try {
       const response = await fetch(`${this.endpoint}/api/sdk/ingest`, {
@@ -306,7 +306,7 @@ class VigilSDK extends EventEmitter {
   }
 
   /**
-   * Send a heartbeat to VIGIL
+   * Send a heartbeat to FATHOM
    */
   async heartbeat(status = 'healthy', metadata = {}) {
     this._log('[Heartbeat] Sending heartbeat:', status);
@@ -391,10 +391,10 @@ class VigilSDK extends EventEmitter {
    */
   _log(...args) {
     if (this.debug) {
-      console.log('[VIGIL]', ...args);
+      console.log('[FATHOM]', ...args);
     }
   }
 }
 
-export default VigilSDK;
-export { VigilSDK };
+export default FathomSDK;
+export { FathomSDK };

@@ -64,7 +64,7 @@ export default function scimRoutes(pool) {
     router.get('/scim/v2/ServiceProviderConfig', (_req, res) => {
         res.json({
             schemas: ['urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig'],
-            documentationUri: 'https://docs.vigil.dev/scim',
+            documentationUri: 'https://docs.fathom.dev/scim',
             patch:            { supported: true },
             bulk:             { supported: false },
             filter:           { supported: true, maxResults: 200 },
@@ -273,7 +273,7 @@ export default function scimRoutes(pool) {
         const groups = ['owner', 'admin', 'editor', 'viewer'].map(role => ({
             id: role,
             schemas: [SCIM_GROUP_SCHEMA],
-            displayName: `vigil-${role}`,
+            displayName: `fathom-${role}`,
         }));
         res.json({
             schemas: [LIST_RESP],

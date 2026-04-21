@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — /api/overview/backup
+//  FATHOM — /api/overview/backup
 //
 //  Two strategies (auto-detected):
 //  1. If backup_history table exists → read from it  (preferred)
@@ -21,7 +21,7 @@ router.get('/', async (_req, res, next) => {
                 SELECT 1
                 FROM information_schema.tables
                 WHERE table_schema = 'public'
-                  AND table_name   = 'vigil_backup_history'
+                  AND table_name   = 'fathom_backup_history'
             ) AS exists
         `);
 
@@ -52,7 +52,7 @@ async function fromBackupTable() {
             label,
             next_scheduled_at,
             notes
-        FROM vigil_backup_history
+        FROM fathom_backup_history
         ORDER BY started_at DESC
         LIMIT 1
     `);
@@ -115,7 +115,7 @@ async function fromArchiver() {
         archivedSegments : archivedCount,
         failedSegments   : Number(r.failed_count || 0),
         lastFailedWal    : r.last_failed_wal,
-        note: 'Derived from pg_stat_archiver — install vigil_backup_history for full details',
+        note: 'Derived from pg_stat_archiver — install fathom_backup_history for full details',
     };
 }
 
@@ -138,7 +138,7 @@ export default router;
 /* ══════════════════════════════════════════════════════════════════════════
    MIGRATION — run this in your database to enable strategy 1:
 
-   CREATE TABLE IF NOT EXISTS vigil_backup_history (
+   CREATE TABLE IF NOT EXISTS fathom_backup_history (
        id               BIGSERIAL PRIMARY KEY,
        backup_type      TEXT      NOT NULL DEFAULT 'Full',  -- Full | Incremental | Differential
        status           TEXT      NOT NULL DEFAULT 'success', -- success | failed | running
@@ -152,7 +152,7 @@ export default router;
    );
 
    -- Example insert after a successful backup:
-   INSERT INTO vigil_backup_history (backup_type, status, started_at, finished_at, size_bytes, next_scheduled_at)
+   INSERT INTO fathom_backup_history (backup_type, status, started_at, finished_at, size_bytes, next_scheduled_at)
    VALUES ('Full', 'success', now() - interval '5 minutes', now(), 13319585792, now() + interval '1 day');
 
    ══════════════════════════════════════════════════════════════════════════ */

@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Upgrade Banner (neutralized)
+//  FATHOM — Upgrade Banner (neutralized)
 // ==========================================================================
 //  Single-edition product — there are no upgrade paths to prompt for.
 //  The former implementation rendered a "<feature> is available in Pro and

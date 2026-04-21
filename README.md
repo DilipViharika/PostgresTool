@@ -1,6 +1,6 @@
-# VIGIL
+# FATHOM
 
-VIGIL is a multi-tenant database monitoring and administration platform. It ships
+FATHOM is a multi-tenant database monitoring and administration platform. It ships
 a unified operator UI over PostgreSQL, MySQL/MariaDB, and MongoDB with live
 metrics, alerting, schema exploration, log analysis, and a lightweight SDK that
 customer apps can use to stream their own API logs, errors, and audit events
@@ -13,7 +13,7 @@ backend/    Node.js (Express 5) control-plane API and WebSocket server.
 frontend/   React 19 + Vite SPA.
 api/        Vercel serverless entrypoint that re-exports backend/server.js.
 python/     FastAPI analytics and ML worker.
-sdk/        Zero-dep JS client library (@vigil/sdk) for customer apps.
+sdk/        Zero-dep JS client library (@fathom/sdk) for customer apps.
 shared/     Cross-workspace types and contracts.
 demo/       Stand-alone demo app used by docs and screenshots.
 ```
@@ -26,7 +26,7 @@ scripts.
 
 - Node.js 18 or newer (Node 20 recommended; see `engines` in `sdk/package.json`).
 - Python 3.11+ for the analytics worker (`python/pyproject.toml`).
-- A PostgreSQL 14+ database for the VIGIL control plane (users, sessions,
+- A PostgreSQL 14+ database for the FATHOM control plane (users, sessions,
   connection metadata, audit log, feedback, etc.). Neon, Supabase, or any
   standard Postgres work.
 
@@ -35,16 +35,16 @@ scripts.
 The backend refuses to start unless the following secrets are configured.
 Generate each one with a separate random source.
 
-| Name                          | Required | Purpose                                                                                                     |
-| ----------------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                | yes      | Connection string for the VIGIL control-plane DB.                                                           |
-| `JWT_SECRET`                  | yes      | Signs session JWTs. At least 32 bytes of entropy.                                                           |
-| `ENCRYPTION_KEY`              | yes      | AES-256-GCM key used to encrypt connection secrets at rest. Must NOT equal `JWT_SECRET`.                    |
-| `JWT_AUDIENCE`                | no       | JWT `aud` claim (default `vigil-api`).                                                                      |
-| `JWT_ISSUER`                  | no       | JWT `iss` claim (default `vigil-auth`).                                                                     |
-| `CRON_SECRET`                 | prod     | Bearer credential required by `/api/alerts/run-monitoring`. If unset, the cron endpoint is disabled.        |
-| `VIGIL_TLS_ALLOW_SELF_SIGNED` | no       | Set to `true` to accept self-signed TLS certs on user-added DB connections (default: strict in production). |
-| `VIGIL_TLS_CA_CERT`           | no       | Extra CA bundle (PEM) added to the trust store for DB TLS.                                                  |
+| Name                           | Required | Purpose                                                                                                     |
+| ------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                 | yes      | Connection string for the FATHOM control-plane DB.                                                          |
+| `JWT_SECRET`                   | yes      | Signs session JWTs. At least 32 bytes of entropy.                                                           |
+| `ENCRYPTION_KEY`               | yes      | AES-256-GCM key used to encrypt connection secrets at rest. Must NOT equal `JWT_SECRET`.                    |
+| `JWT_AUDIENCE`                 | no       | JWT `aud` claim (default `fathom-api`).                                                                     |
+| `JWT_ISSUER`                   | no       | JWT `iss` claim (default `fathom-auth`).                                                                    |
+| `CRON_SECRET`                  | prod     | Bearer credential required by `/api/alerts/run-monitoring`. If unset, the cron endpoint is disabled.        |
+| `FATHOM_TLS_ALLOW_SELF_SIGNED` | no       | Set to `true` to accept self-signed TLS certs on user-added DB connections (default: strict in production). |
+| `FATHOM_TLS_CA_CERT`           | no       | Extra CA bundle (PEM) added to the trust store for DB TLS.                                                  |
 
 Generate secrets with:
 
@@ -63,7 +63,7 @@ npm run dev                           # runs frontend + backend
 The first migration run creates an `admin` user with a randomly generated
 password, prints it ONCE to stdout, and sets `must_change_password=true`.
 Record the password immediately — it is not stored anywhere else. You can
-override it for automated CI setups via `VIGIL_INITIAL_ADMIN_PASSWORD`.
+override it for automated CI setups via `FATHOM_INITIAL_ADMIN_PASSWORD`.
 
 ## Deployment
 
@@ -77,18 +77,5 @@ serverless function `maxDuration` to 30 s (audit PRF-04).
 
 ## Security
 
-VIGIL ships with custom Semgrep and Gitleaks rules (`.semgrep/vigil-rules.yml`,
-`.gitleaks.toml`) that guard against the failure modes called out in the
-internal code audit:
-
-- Hardcoded default credentials.
-- Silent `.catch(() => {})` handlers that swallow audit-relevant errors.
-- SSL verification disabled on database connections.
-- `rejectUnauthorized: false` outside the designated TLS helper.
-
-A full list of findings and their resolution status is tracked in
-`VIGIL_Code_Audit_Report.pdf`.
-
-## License
-
-MIT — see `LICENSE` for the full text.
+FATHOM ships with custom Semgrep and Gitleaks rules (`.semgrep/fathom-rules.yml`,
+`.gitleaks.toml`

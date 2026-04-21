@@ -14,7 +14,7 @@ import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme'
 import { fetchData, postData } from '../../../utils/api';
 
 /* ─────────────────────────────────────────────────────────────────
-   VIGIL v3 – Advanced Monitoring & Alert Intelligence Platform
+   FATHOM v3 – Advanced Monitoring & Alert Intelligence Platform
    NEW: Team Collaboration, Approval Workflows, Channel Health,
         Alert Simulator, Impact Radius, Suppression Windows, API Quotas
 ───────────────────────────────────────────────────────────────── */
@@ -167,7 +167,7 @@ const MetricCard = ({ metricKey, data }) => {
 // ─────────────────────────────────────────────────────────────────
 //  MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────
-const VIGILDashboard = () => {
+const FATHOMDashboard = () => {
   useAdaptiveTheme();
   // Note: useGlobalRefresh will be added after loadAlerts is defined
   const [activeTab, setActiveTab]               = useState('active');
@@ -991,7 +991,7 @@ const VIGILDashboard = () => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 4 }}>
               <Terminal size={16} color={THEME.primary} />
-              <span style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, letterSpacing: '0.02em' }}>VIGIL</span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, letterSpacing: '0.02em' }}>FATHOM</span>
               <span style={{ fontSize: 9, color: THEME.textMuted, border: `1px solid ${THEME.glassBorder}`, borderRadius: 18, padding: '2px 6px', letterSpacing: '0.02em' }}>v3.0</span>
               {maintenanceMode && <span style={{ fontSize: 9, background: 'rgba(255,170,0,0.06)', border: `1px solid ${SEVERITY.warning.color}20`, color: SEVERITY.warning.color, borderRadius: 18, padding: '2px 8px', letterSpacing: '0.02em', fontWeight: 700 }}>MAINTENANCE WINDOW</span>}
             </div>
@@ -1045,5 +1045,5 @@ const VIGILDashboard = () => {
   );
 };
 
-const AlertsComponent = VIGILDashboard;
+const AlertsComponent = FATHOMDashboard;
 export default AlertsComponent;

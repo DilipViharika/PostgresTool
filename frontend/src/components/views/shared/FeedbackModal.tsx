@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { API_BASE } from '../../../utils/api';
 
-// Token key must match what AuthContext uses (STORAGE_KEYS.TOKEN = 'vigil_token')
-const AUTH_TOKEN_KEY = 'vigil_token';
+// Token key must match what AuthContext uses (STORAGE_KEYS.TOKEN = 'fathom_token')
+const AUTH_TOKEN_KEY = 'fathom_token';
 
 const FeedbackModal = ({ isOpen, onClose }) => {
   const [feedbackText, setFeedbackText] = useState('');

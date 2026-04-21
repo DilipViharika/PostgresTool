@@ -1,5 +1,5 @@
 /**
- * Logger - Structured logging system for VIGIL SDK
+ * Logger - Structured logging system for FATHOM SDK
  * Supports multiple log levels and optional external log sink
  */
 
@@ -31,7 +31,7 @@ export class Logger {
    * Creates a new Logger instance
    *
    * @param {Object} options - Logger options
-   * @param {string} [options.name='VIGIL'] - Logger name
+   * @param {string} [options.name='FATHOM'] - Logger name
    * @param {LogLevel} [options.level='info'] - Minimum log level
    * @param {Function} [options.sink] - External sink function for custom logging
    * @param {boolean} [options.colors=true] - Enable colored console output
@@ -44,7 +44,7 @@ export class Logger {
    * });
    */
   constructor(options = {}) {
-    this.name = options.name || 'VIGIL';
+    this.name = options.name || 'FATHOM';
     this.level = Logger.LEVELS[options.level] !== undefined ? Logger.LEVELS[options.level] : Logger.LEVELS.info;
     this.sink = options.sink || null;
     this.colors = options.colors !== false;

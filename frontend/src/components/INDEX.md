@@ -1,10 +1,11 @@
-# Component Index - VIGIL Phase 1
+# Component Index - FATHOM Phase 1
 
 Quick reference for Phase 1 components.
 
 ## Components
 
 ### shared/NoConnectionBanner.jsx
+
 - **Purpose:** Display when no database connection is active
 - **Props:** `title`, `description`, `showAddButton`
 - **Key Feature:** Animated pulsing border, glass effect, info chips
@@ -12,10 +13,11 @@ Quick reference for Phase 1 components.
 
 ```jsx
 import NoConnectionBanner from '@/components/shared/NoConnectionBanner';
-<NoConnectionBanner title="Get Started" />
+<NoConnectionBanner title="Get Started" />;
 ```
 
 ### shared/ConnectionStringParser.jsx
+
 - **Purpose:** Parse connection strings into structured fields
 - **Props:** `onChange`, `onError`
 - **Supported:** PostgreSQL, MySQL, MongoDB (+SRV)
@@ -24,23 +26,24 @@ import NoConnectionBanner from '@/components/shared/NoConnectionBanner';
 
 ```jsx
 import ConnectionStringParser from '@/components/shared/ConnectionStringParser';
-<ConnectionStringParser onChange={(parsed) => setForm(parsed)} />
+<ConnectionStringParser onChange={(parsed) => setForm(parsed)} />;
 ```
 
 ### views/onboarding/ConnectionWizard.jsx
+
 - **Purpose:** Complete multi-step database connection flow
 - **Steps:** Type → Details → Options → Test → Success
 - **Features:**
-  - 3 database types
-  - 5 provider templates
-  - Connection string parsing
-  - Real-time testing
-  - Error recovery
+    - 3 database types
+    - 5 provider templates
+    - Connection string parsing
+    - Real-time testing
+    - Error recovery
 - **Usage:** Mount on onboarding page or connection creation flow
 
 ```jsx
 import ConnectionWizard from '@/components/views/onboarding/ConnectionWizard';
-<ConnectionWizard />
+<ConnectionWizard />;
 ```
 
 ## File Locations
@@ -74,18 +77,21 @@ src/components/
 ## Import Paths
 
 ### From Sibling Components
+
 ```jsx
 import NoConnectionBanner from '../shared/NoConnectionBanner';
 import ConnectionStringParser from '../shared/ConnectionStringParser';
 ```
 
 ### From Views/Other Tabs
+
 ```jsx
 import NoConnectionBanner from '@/components/shared/NoConnectionBanner';
 import ConnectionWizard from '@/components/views/onboarding/ConnectionWizard';
 ```
 
 ### Aliases (if configured)
+
 ```jsx
 import NoConnectionBanner from 'components/shared/NoConnectionBanner';
 import ConnectionWizard from 'components/views/onboarding/ConnectionWizard';
@@ -94,65 +100,66 @@ import ConnectionWizard from 'components/views/onboarding/ConnectionWizard';
 ## Common Integration Patterns
 
 ### Check Connection Status
+
 ```jsx
 import { useConnection } from '@/context/ConnectionContext';
 import NoConnectionBanner from '@/components/shared/NoConnectionBanner';
 
 function MyTab() {
-  const { activeConnection, loading } = useConnection();
+    const { activeConnection, loading } = useConnection();
 
-  if (loading) return <Spinner />;
-  if (!activeConnection) return <NoConnectionBanner />;
+    if (loading) return <Spinner />;
+    if (!activeConnection) return <NoConnectionBanner />;
 
-  return <TabContent />;
+    return <TabContent />;
 }
 ```
 
 ### Handle Connection String Input
+
 ```jsx
 import ConnectionStringParser from '@/components/shared/ConnectionStringParser';
 
 function CustomForm() {
-  const [form, setForm] = useState({});
+    const [form, setForm] = useState({});
 
-  return (
-    <>
-      <ConnectionStringParser onChange={setForm} />
-      <button onClick={() => submitForm(form)}>Connect</button>
-    </>
-  );
+    return (
+        <>
+            <ConnectionStringParser onChange={setForm} />
+            <button onClick={() => submitForm(form)}>Connect</button>
+        </>
+    );
 }
 ```
 
 ### Complete Onboarding Flow
+
 ```jsx
 import ConnectionWizard from '@/components/views/onboarding/ConnectionWizard';
 import { useConnection } from '@/context/ConnectionContext';
 
 function OnboardingPage() {
-  const { connections } = useConnection();
+    const { connections } = useConnection();
 
-  return connections.length === 0 ? (
-    <ConnectionWizard />
-  ) : (
-    <DashboardContent />
-  );
+    return connections.length === 0 ? <ConnectionWizard /> : <DashboardContent />;
 }
 ```
 
 ## Error Handling Examples
 
 ### Connection String Parse Error
+
 ```jsx
 <ConnectionStringParser
-  onError={(error) => {
-    console.error('Parse failed:', error);
-    // Show toast/snackbar
-  }}
+    onError={(error) => {
+        console.error('Parse failed:', error);
+        // Show toast/snackbar
+    }}
 />
 ```
 
 ### Test Connection Failure
+
 ```jsx
 // Built into ConnectionWizard - shows error on step 4
 // User can review details and retry

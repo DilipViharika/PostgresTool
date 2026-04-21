@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — /api/overview/top-tables
+//  FATHOM — /api/overview/top-tables
 //  Returns: top N tables ranked by total I/O (reads + writes)
 // ==========================================================================
 

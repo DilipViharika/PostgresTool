@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — ResourcesTab  (v5 — Full Analytics Suite)
+//  FATHOM — ResourcesTab  (v5 — Full Analytics Suite)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';

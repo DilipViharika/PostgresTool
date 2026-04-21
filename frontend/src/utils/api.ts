@@ -58,7 +58,7 @@ export const fetchMetrics = async () => {
 };
 
 function getAuthHeaders() {
-    const token = localStorage.getItem('vigil_token');
+    const token = localStorage.getItem('fathom_token');
     return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -67,7 +67,7 @@ function getAuthHeaders() {
  * The ConnectionContext persists this so API calls automatically target the right DB.
  */
 function getActiveConnectionId() {
-    try { return localStorage.getItem('vigil_active_connection_id') || null; }
+    try { return localStorage.getItem('fathom_active_connection_id') || null; }
     catch { return null; }
 }
 
@@ -185,7 +185,7 @@ async function request(path, options = {}) {
 // --- POLLING REPLACEMENT FOR WEBSOCKET ---
 // WebSockets are not supported on Vercel (serverless). This polls /api/alerts/recent instead.
 export function connectWS(onMessage, intervalMs = 10000) {
-    const token = localStorage.getItem('vigil_token');
+    const token = localStorage.getItem('fathom_token');
     if (!token) return () => {};
 
     let lastAlertId = null;
@@ -321,8 +321,8 @@ export async function deleteData(path) {
  */
 export function setActiveConnectionId(id) {
     try {
-        if (id == null) localStorage.removeItem('vigil_active_connection_id');
-        else localStorage.setItem('vigil_active_connection_id', String(id));
+        if (id == null) localStorage.removeItem('fathom_active_connection_id');
+        else localStorage.setItem('fathom_active_connection_id', String(id));
     } catch {}
 }
 

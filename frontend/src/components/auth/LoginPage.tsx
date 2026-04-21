@@ -243,7 +243,7 @@ const LoginPage = () => {
     }, []);
 
     useEffect(() => {
-        const saved = localStorage.getItem('vigil_remembered_user');
+        const saved = localStorage.getItem('fathom_remembered_user');
         if (saved) { setUsername(saved); setRememberMe(true); pwdRef.current?.focus(); }
         else { userRef.current?.focus(); }
     }, []);
@@ -260,8 +260,8 @@ const LoginPage = () => {
         if (Date.now() < lockoutUntil) { setRateLimitError('Too many attempts. Please wait before trying again.'); return; }
         setRateLimitError('');
         if (username.length > 255 || password.length > 1000) { setRateLimitError('Input too long'); return; }
-        if (rememberMe) localStorage.setItem('vigil_remembered_user', username.trim());
-        else localStorage.removeItem('vigil_remembered_user');
+        if (rememberMe) localStorage.setItem('fathom_remembered_user', username.trim());
+        else localStorage.removeItem('fathom_remembered_user');
         try { localStorage.removeItem('pg_monitor_active_tab'); } catch {}
         try {
             await login(username, password);
@@ -362,7 +362,7 @@ const LoginPage = () => {
                                 </div>
                                 <span style={{
                                     fontWeight: 800, fontSize: '1.4rem', letterSpacing: 4, color: '#fff',
-                                }}>VIGIL</span>
+                                }}>FATHOM</span>
                             </div>
 
                             {/* Headline */}
@@ -591,7 +591,7 @@ const LoginPage = () => {
                                         {authLoading ? (
                                             <><Loader size={17} style={{ animation: 'spin 0.6s linear infinite' }} /> Authenticating...</>
                                         ) : (
-                                            <>Sign in to VIGIL <ArrowRight size={17} strokeWidth={2.5} /></>
+                                            <>Sign in to FATHOM <ArrowRight size={17} strokeWidth={2.5} /></>
                                         )}
                                     </span>
                                 </button>

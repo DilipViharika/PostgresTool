@@ -1,13 +1,13 @@
--- MySQL VIGIL Demo Database Seed Script
+-- MySQL FATHOM Demo Database Seed Script
 -- ================================================
--- This script creates and populates the VIGIL demo database with realistic sample data
+-- This script creates and populates the FATHOM demo database with realistic sample data
 --
 -- USAGE: mysql -u root < seed-mysql.sql
 -- OR:    mysql -u username -p < seed-mysql.sql
 -- OR:    source seed-mysql.sql  (from mysql client prompt)
 --
 -- CLEANUP: To remove the demo database, run:
---   DROP DATABASE IF EXISTS vigil_demo;
+--   DROP DATABASE IF EXISTS fathom_demo;
 -- ================================================
 
 -- Set session variables for error handling
@@ -15,15 +15,15 @@ SET SESSION sql_mode='STRICT_TRANS_TABLES';
 SET foreign_key_checks = 0;
 
 -- Drop the database if it exists (for idempotent runs)
-DROP DATABASE IF EXISTS vigil_demo;
+DROP DATABASE IF EXISTS fathom_demo;
 
 -- Create the demo database
-CREATE DATABASE vigil_demo
+CREATE DATABASE fathom_demo
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
 -- Use the newly created database
-USE vigil_demo;
+USE fathom_demo;
 
 -- ================================================
 -- TABLES
@@ -487,15 +487,15 @@ DO
 -- ================================================
 
 -- Create application user with limited privileges
-CREATE USER IF NOT EXISTS 'vigil_user'@'localhost' IDENTIFIED BY 'vigil_demo_password_123';
-GRANT SELECT, INSERT, UPDATE ON vigil_demo.* TO 'vigil_user'@'localhost';
-GRANT EXECUTE ON PROCEDURE vigil_demo.sp_daily_summary TO 'vigil_user'@'localhost';
-GRANT EXECUTE ON PROCEDURE vigil_demo.sp_cleanup_sessions TO 'vigil_user'@'localhost';
-GRANT EXECUTE ON PROCEDURE vigil_user@'localhost' IDENTIFIED BY 'vigil_demo_password_123';
+CREATE USER IF NOT EXISTS 'fathom_user'@'localhost' IDENTIFIED BY 'fathom_demo_password_123';
+GRANT SELECT, INSERT, UPDATE ON fathom_demo.* TO 'fathom_user'@'localhost';
+GRANT EXECUTE ON PROCEDURE fathom_demo.sp_daily_summary TO 'fathom_user'@'localhost';
+GRANT EXECUTE ON PROCEDURE fathom_demo.sp_cleanup_sessions TO 'fathom_user'@'localhost';
+GRANT EXECUTE ON PROCEDURE fathom_user@'localhost' IDENTIFIED BY 'fathom_demo_password_123';
 
 -- Create read-only user for analytics
-CREATE USER IF NOT EXISTS 'vigil_readonly'@'localhost' IDENTIFIED BY 'vigil_readonly_password_123';
-GRANT SELECT ON vigil_demo.* TO 'vigil_readonly'@'localhost';
+CREATE USER IF NOT EXISTS 'fathom_readonly'@'localhost' IDENTIFIED BY 'fathom_readonly_password_123';
+GRANT SELECT ON fathom_demo.* TO 'fathom_readonly'@'localhost';
 
 -- Flush privileges
 FLUSH PRIVILEGES;
@@ -506,7 +506,7 @@ FLUSH PRIVILEGES;
 
 -- Display summary statistics
 SELECT '=========================================' AS status;
-SELECT 'VIGIL Demo Database Created Successfully' AS status;
+SELECT 'FATHOM Demo Database Created Successfully' AS status;
 SELECT '=========================================' AS status;
 SELECT '' AS blank;
 
@@ -527,6 +527,6 @@ UNION ALL
 SELECT 'Audit Log Entries' AS entity, COUNT(*) AS count FROM audit_log;
 
 SELECT '' AS blank;
-SELECT 'Database vigil_demo is ready for testing!' AS status;
-SELECT 'Connect as vigil_user with: mysql -u vigil_user -p vigil_demo' AS connection_info;
+SELECT 'Database fathom_demo is ready for testing!' AS status;
+SELECT 'Connect as fathom_user with: mysql -u fathom_user -p fathom_demo' AS connection_info;
 SELECT '' AS blank;

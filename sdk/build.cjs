@@ -19,8 +19,8 @@ let code = fs.readFileSync(srcFile, 'utf-8');
 
 // Convert ESM exports to CJS
 code = code.replace(
-  /export default VigilSDK;\nexport \{ VigilSDK \};/,
-  'module.exports = VigilSDK;\nmodule.exports.VigilSDK = VigilSDK;'
+  /export default FathomSDK;\nexport \{ FathomSDK \};/,
+  'module.exports = FathomSDK;\nmodule.exports.FathomSDK = FathomSDK;'
 );
 
 // Write CJS version

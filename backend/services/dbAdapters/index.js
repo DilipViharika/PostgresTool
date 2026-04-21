@@ -6,7 +6,7 @@
  * 2. Adapter instantiation for the appropriate database type
  * 3. Registry of supported databases
  *
- * The adapter pattern allows VIGIL to support multiple databases while maintaining
+ * The adapter pattern allows FATHOM to support multiple databases while maintaining
  * a unified monitoring interface across the frontend and backend.
  */
 

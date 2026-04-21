@@ -1,7 +1,7 @@
 /**
  * routes/pluginRoutes.js
  * ──────────────────────
- * Public read-only discovery + admin install/publish for VIGIL plugins
+ * Public read-only discovery + admin install/publish for FATHOM plugins
  * and shared dashboards.
  */
 

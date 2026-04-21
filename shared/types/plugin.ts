@@ -1,11 +1,11 @@
 /**
  * shared/types/plugin.ts
  * ──────────────────────
- * Canonical VIGIL plugin manifest, shared between frontend, backend, and SDK.
+ * Canonical FATHOM plugin manifest, shared between frontend, backend, and SDK.
  *
  * A plugin is a declarative extension that contributes dashboards, metrics
  * panels, alert rule templates, or route extensions. It never ships
- * arbitrary server-side code — the runtime is the VIGIL host. This keeps
+ * arbitrary server-side code — the runtime is the FATHOM host. This keeps
  * the supply chain small and auditable.
  */
 
@@ -57,8 +57,8 @@ export interface PluginManifest {
     author?: string;
     license?: string;
     homepage?: string;
-    /** Minimum VIGIL API version this plugin targets (e.g., "1"). */
-    minVigilApi: string;
+    /** Minimum FATHOM API version this plugin targets (e.g., "1"). */
+    minFathomApi: string;
     capabilities: PluginCapability[];
     contributions: PluginContribution[];
     /** Workspace-scoped settings the installer must supply. */

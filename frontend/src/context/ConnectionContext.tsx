@@ -17,8 +17,8 @@ const ConnectionContext = createContext(null);
 
 // ── LocalStorage cache helpers ──────────────────────────────────────────
 const CACHE_KEYS = {
-    CONNECTIONS: 'vigil_cached_connections',
-    ACTIVE_ID: 'vigil_active_connection_id',
+    CONNECTIONS: 'fathom_cached_connections',
+    ACTIVE_ID: 'fathom_active_connection_id',
 };
 
 function readCachedConnections() {
@@ -126,7 +126,7 @@ export function ConnectionProvider({ children }) {
     // Persist dbType for sidebar stability (used by Sidebar component)
     useEffect(() => {
         if (activeConnection?.dbType) {
-            try { localStorage.setItem('vigil_last_db_type', activeConnection.dbType); } catch {}
+            try { localStorage.setItem('fathom_last_db_type', activeConnection.dbType); } catch {}
         }
     }, [activeConnection?.dbType]);
 

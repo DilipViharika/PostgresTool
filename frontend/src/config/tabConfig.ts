@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Tab Configuration (central registry of all dashboard tabs)
+//  FATHOM — Tab Configuration (central registry of all dashboard tabs)
 // ==========================================================================
 //
 //  Each entry is either a section header { section, accent }

@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Shared UI Components
+//  FATHOM — Shared UI Components
 // ==========================================================================
 //
 //  Reusable building blocks consumed across tabs.

@@ -1,5 +1,5 @@
 {
-    "name": "@vigil/validators",
+    "name": "@fathom/validators",
     "version": "1.0.0",
     "private": true,
     "type": "module",

@@ -1,5 +1,5 @@
 /**
- * AuthManager - Authentication and authorization management for VIGIL SDK
+ * AuthManager - Authentication and authorization management for FATHOM SDK
  * Supports API key and JWT token authentication with automatic refresh
  */
 

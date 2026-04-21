@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Demo Mode Context
+//  FATHOM — Demo Mode Context
 // ==========================================================================
 //  When demo mode is active, API calls return realistic sample data
 //  without needing a real PostgreSQL connection.
@@ -68,22 +68,22 @@ const DEMO_USER = {
 export const DemoProvider = ({ children }) => {
     const [isDemo, setIsDemo] = useState(() => {
         try {
-            const active = localStorage.getItem('vigil_demo_mode') === 'true';
+            const active = localStorage.getItem('fathom_demo_mode') === 'true';
             // Ensure CloudWatch demo instances are seeded if demo is already active
-            if (active && !localStorage.getItem('vigil_cw_instances')) {
+            if (active && !localStorage.getItem('fathom_cw_instances')) {
                 localStorage.setItem(
-                    'vigil_cw_instances',
+                    'fathom_cw_instances',
                     JSON.stringify([
                         {
                             id: 'demo-rds-prod',
-                            dbId: 'vigil-prod-db',
+                            dbId: 'fathom-prod-db',
                             accessKey: 'DEMO_KEY',
                             secretKey: 'DEMO_SECRET',
                             region: 'us-east-1',
                         },
                         {
                             id: 'demo-rds-replica',
-                            dbId: 'vigil-replica-db',
+                            dbId: 'fathom-replica-db',
                             accessKey: 'DEMO_KEY',
                             secretKey: 'DEMO_SECRET',
                             region: 'us-east-1',
@@ -98,22 +98,22 @@ export const DemoProvider = ({ children }) => {
     });
 
     const enterDemo = useCallback(() => {
-        localStorage.setItem('vigil_demo_mode', 'true');
+        localStorage.setItem('fathom_demo_mode', 'true');
         // Seed CloudWatch demo instances so the tab renders metrics instead of "No Instances"
-        if (!localStorage.getItem('vigil_cw_instances')) {
+        if (!localStorage.getItem('fathom_cw_instances')) {
             localStorage.setItem(
-                'vigil_cw_instances',
+                'fathom_cw_instances',
                 JSON.stringify([
                     {
                         id: 'demo-rds-prod',
-                        dbId: 'vigil-prod-db',
+                        dbId: 'fathom-prod-db',
                         accessKey: 'DEMO_KEY',
                         secretKey: 'DEMO_SECRET',
                         region: 'us-east-1',
                     },
                     {
                         id: 'demo-rds-replica',
-                        dbId: 'vigil-replica-db',
+                        dbId: 'fathom-replica-db',
                         accessKey: 'DEMO_KEY',
                         secretKey: 'DEMO_SECRET',
                         region: 'us-east-1',
@@ -125,12 +125,12 @@ export const DemoProvider = ({ children }) => {
     }, []);
 
     const exitDemo = useCallback(() => {
-        localStorage.removeItem('vigil_demo_mode');
+        localStorage.removeItem('fathom_demo_mode');
         // Clean up demo CloudWatch instances (only remove if they are the demo ones)
         try {
-            const cw = JSON.parse(localStorage.getItem('vigil_cw_instances') || '[]');
+            const cw = JSON.parse(localStorage.getItem('fathom_cw_instances') || '[]');
             if (cw.length && cw[0]?.id === 'demo-rds-prod') {
-                localStorage.removeItem('vigil_cw_instances');
+                localStorage.removeItem('fathom_cw_instances');
             }
         } catch {
             /* ignore */

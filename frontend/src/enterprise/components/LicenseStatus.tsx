@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — License Status Badge Component
+//  FATHOM — License Status Badge Component
 // ==========================================================================
 //  Small status badge showing current license tier, expiry, usage stats
 // ==========================================================================

@@ -1,5 +1,5 @@
 /**
- * SalesforceConnector - Salesforce platform integration for VIGIL
+ * SalesforceConnector - Salesforce platform integration for FATHOM
  * Provides OAuth 2.0 authentication and API limit/metrics monitoring
  */
 
@@ -433,26 +433,26 @@ export class SalesforceConnector extends EventEmitter {
   }
 
   /**
-   * Sync Salesforce metrics to VIGIL dashboard
+   * Sync Salesforce metrics to FATHOM dashboard
    *
-   * @param {Object} vigilClient - VigilClient instance
+   * @param {Object} fathomClient - FathomClient instance
    * @param {Object} [options] - Sync options
    * @returns {Promise<Object>} - Sync result
    *
    * @example
-   * await sfConnector.syncToVigil(vigilClient, {
+   * await sfConnector.syncToFathom(fathomClient, {
    *   includeAuditTrail: true
    * });
    */
-  async syncToVigil(vigilClient, options = {}) {
+  async syncToFathom(fathomClient, options = {}) {
     this._ensureAuthenticated();
 
     try {
-      this.logger.info('Starting Salesforce metrics sync to VIGIL');
+      this.logger.info('Starting Salesforce metrics sync to FATHOM');
 
       const metrics = await this.getMetrics();
 
-      const vigilMetrics = {
+      const fathomMetrics = {
         platform: 'salesforce',
         metrics: {
           apiLimitsUsed: metrics.limits.ApiCalls.Used,
@@ -467,16 +467,16 @@ export class SalesforceConnector extends EventEmitter {
       // If include audit trail, fetch and add
       if (options.includeAuditTrail) {
         const auditTrail = await this.getAuditTrail({ limit: 50 });
-        vigilMetrics.auditTrail = auditTrail.records;
+        fathomMetrics.auditTrail = auditTrail.records;
       }
 
-      // Send to VIGIL (this would use vigilClient.query or similar)
-      this.logger.info('Metrics synced to VIGIL', { recordCount: Object.keys(vigilMetrics.metrics).length });
-      this.emit('synced_to_vigil', vigilMetrics);
+      // Send to FATHOM (this would use fathomClient.query or similar)
+      this.logger.info('Metrics synced to FATHOM', { recordCount: Object.keys(fathomMetrics.metrics).length });
+      this.emit('synced_to_fathom', fathomMetrics);
 
-      return vigilMetrics;
+      return fathomMetrics;
     } catch (error) {
-      this.logger.error('Failed to sync metrics to VIGIL', error);
+      this.logger.error('Failed to sync metrics to FATHOM', error);
       this.emit('error', { type: 'sync_error', error });
       throw error;
     }

@@ -53,11 +53,11 @@ export class TeamsNotifier extends BaseNotifier {
       '@type': 'MessageCard',
       '@context': 'https://schema.org/extensions',
       themeColor,
-      summary: alert.title || alert.message || 'VIGIL alert',
-      title: alert.title || 'VIGIL alert',
+      summary: alert.title || alert.message || 'FATHOM alert',
+      title: alert.title || 'FATHOM alert',
       sections: [
         {
-          activityTitle: alert.title || 'VIGIL alert',
+          activityTitle: alert.title || 'FATHOM alert',
           activitySubtitle: alert.message || '',
           facts,
           markdown: true,
@@ -68,7 +68,7 @@ export class TeamsNotifier extends BaseNotifier {
     if (alert.url) {
       card.potentialAction = [{
         '@type': 'OpenUri',
-        name: 'Open in VIGIL',
+        name: 'Open in FATHOM',
         targets: [{ os: 'default', uri: alert.url }],
       }];
     }

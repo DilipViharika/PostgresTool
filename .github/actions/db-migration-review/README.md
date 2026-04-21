@@ -1,8 +1,8 @@
-# VIGIL DB Migration Review Action
+# FATHOM DB Migration Review Action
 
 Scan SQL migration files changed in a pull request and post a consolidated
 review comment on the PR. Built and maintained by
-[VIGIL](https://vigil.example.com).
+[FATHOM](https://fathom.example.com).
 
 ## What it catches
 
@@ -33,7 +33,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               with: { fetch-depth: 0 }
-            - uses: vigil-io/vigil/.github/actions/db-migration-review@main
+            - uses: fathom-io/fathom/.github/actions/db-migration-review@main
               with:
                   migrations-glob: 'db/migrations/**/*.sql'
                   engine: postgres
@@ -42,13 +42,13 @@ jobs:
 
 ## Options
 
-| Input             | Default                  | Description                                            |
-| ----------------- | ------------------------ | ------------------------------------------------------ |
-| `migrations-glob` | `db/migrations/**/*.sql` | Which files to scan.                                   |
-| `engine`          | `postgres`               | `postgres`, `mysql`, or `mongo`.                       |
-| `block-on-error`  | `false`                  | Fail the job when any ERROR-level finding is produced. |
-| `vigil-api-url`   | _(empty)_                | Optional — also ship findings to a VIGIL workspace.    |
-| `vigil-api-token` | _(empty)_                | Paired with `vigil-api-url`.                           |
+| Input              | Default                  | Description                                            |
+| ------------------ | ------------------------ | ------------------------------------------------------ |
+| `migrations-glob`  | `db/migrations/**/*.sql` | Which files to scan.                                   |
+| `engine`           | `postgres`               | `postgres`, `mysql`, or `mongo`.                       |
+| `block-on-error`   | `false`                  | Fail the job when any ERROR-level finding is produced. |
+| `fathom-api-url`   | _(empty)_                | Optional — also ship findings to a FATHOM workspace.   |
+| `fathom-api-token` | _(empty)_                | Paired with `fathom-api-url`.                          |
 
 ## Output
 
@@ -79,9 +79,5 @@ The action writes `/tmp/findings.json` in this shape:
 ```bash
 cd .github/actions/db-migration-review
 printf '%s\n' db/migrations/*.sql > /tmp/targets.txt
-node lint.mjs --engine=postgres --targets=/tmp/targets.txt --out=/tmp/findings.json
+node lint.mjs --engine=postgre
 ```
-
-## License
-
-MIT.

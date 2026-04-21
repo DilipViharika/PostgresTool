@@ -322,7 +322,7 @@ const SECTION_METADATA = {
 export default function ReportBuilderTab() {
     useAdaptiveTheme();
 
-    const [reportName, setReportName] = useState('VIGIL Report');
+    const [reportName, setReportName] = useState('FATHOM Report');
     const [dateRange, setDateRange] = useState('7d');
     const [selectedSections, setSelectedSections] = useState(['overview', 'performance', 'resources']);
     const [selectedTemplate, setSelectedTemplate] = useState('dba');

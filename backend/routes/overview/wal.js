@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — /api/overview/wal
+//  FATHOM — /api/overview/wal
 //  Returns: WAL generation, checkpoint stats, archive status, autovacuum flag
 // ==========================================================================
 

@@ -17,7 +17,7 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({ children, className = '', style, noPadding }) => (
   <div
-    className={`vigil-card ${className}`}
+    className={`fathom-card ${className}`}
     style={{
       background: THEME.surface,
       borderRadius: 16,
@@ -63,7 +63,7 @@ export const PanelCard: React.FC<PanelCardProps> = ({
 
   return (
     <div
-      className={`vigil-card ${className}`}
+      className={`fathom-card ${className}`}
       style={{
         background: THEME.surface,
         borderRadius: 16,

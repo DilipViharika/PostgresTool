@@ -1,39 +1,39 @@
 /**
- * Unit tests for VIGIL SDK
- * Run with: node --test tests/vigil.test.js
+ * Unit tests for FATHOM SDK
+ * Run with: node --test tests/fathom.test.js
  */
 import { test } from 'node:test';
 import assert from 'node:assert';
-import VigilSDK from '../src/index.js';
+import FathomSDK from '../src/index.js';
 
 test('SDK initialization', () => {
   assert.throws(
-    () => new VigilSDK({ endpoint: 'https://vigil.app' }),
+    () => new FathomSDK({ endpoint: 'https://fathom.app' }),
     /apiKey is required/,
     'Should require apiKey'
   );
 
   assert.throws(
-    () => new VigilSDK({ apiKey: 'sk_live_test' }),
+    () => new FathomSDK({ apiKey: 'sk_live_test' }),
     /endpoint is required/,
     'Should require endpoint'
   );
 
-  const sdk = new VigilSDK({
+  const sdk = new FathomSDK({
     apiKey: 'sk_live_test',
-    endpoint: 'https://vigil.app',
+    endpoint: 'https://fathom.app',
   });
 
   assert.equal(sdk.apiKey, 'sk_live_test');
-  assert.equal(sdk.endpoint, 'https://vigil.app');
+  assert.equal(sdk.endpoint, 'https://fathom.app');
   assert.equal(sdk.batchSize, 50);
   assert.equal(sdk.flushInterval, 10000);
 });
 
 test('Event queueing', () => {
-  const sdk = new VigilSDK({
+  const sdk = new FathomSDK({
     apiKey: 'sk_live_test',
-    endpoint: 'https://vigil.app',
+    endpoint: 'https://fathom.app',
   });
 
   sdk.trackAPI({
@@ -49,9 +49,9 @@ test('Event queueing', () => {
 });
 
 test('Error tracking', () => {
-  const sdk = new VigilSDK({
+  const sdk = new FathomSDK({
     apiKey: 'sk_live_test',
-    endpoint: 'https://vigil.app',
+    endpoint: 'https://fathom.app',
   });
 
   const error = new Error('Test error');
@@ -63,9 +63,9 @@ test('Error tracking', () => {
 });
 
 test('Event listeners', () => {
-  const sdk = new VigilSDK({
+  const sdk = new FathomSDK({
     apiKey: 'sk_live_test',
-    endpoint: 'https://vigil.app',
+    endpoint: 'https://fathom.app',
   });
 
   let shutdownCalled = false;
@@ -78,9 +78,9 @@ test('Event listeners', () => {
 });
 
 test('Graceful shutdown', async () => {
-  const sdk = new VigilSDK({
+  const sdk = new FathomSDK({
     apiKey: 'sk_live_test',
-    endpoint: 'https://vigil.app',
+    endpoint: 'https://fathom.app',
   });
 
   sdk.start();

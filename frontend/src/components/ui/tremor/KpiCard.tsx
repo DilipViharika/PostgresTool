@@ -31,7 +31,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
   sparkline,
 }) => (
   <div
-    className="vigil-card ov-metric-card"
+    className="fathom-card ov-metric-card"
     style={{
       display: 'flex',
       flexDirection: 'row',

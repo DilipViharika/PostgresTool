@@ -6,7 +6,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { initErrorTracking, ErrorTrackingBoundary } from './utils/errorTracking'
 
 // ── Clean up stale demo mode flag (no longer used) ────────────────────────
-try { localStorage.removeItem('vigil_demo_mode'); } catch {}
+try { localStorage.removeItem('fathom_demo_mode'); } catch {}
 
 // ── Initialize error tracking ──────────────────────────────────────────────
 initErrorTracking({

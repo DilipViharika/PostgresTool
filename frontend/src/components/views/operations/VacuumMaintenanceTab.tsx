@@ -411,7 +411,7 @@ export default function VacuumMaintenanceTab() {
     const fetchDeadTupleRate = React.useCallback(async () => {
         setDeadTupleLoading(true);
         try {
-            const token = localStorage.getItem('vigil_token') || localStorage.getItem('authToken');
+            const token = localStorage.getItem('fathom_token') || localStorage.getItem('authToken');
             const API_BASE = import.meta.env.VITE_API_URL || '';
             const res = await fetch(`${API_BASE}/api/vacuum/dead-tuple-rate`, {
                 headers: { Authorization: `Bearer ${token}` },

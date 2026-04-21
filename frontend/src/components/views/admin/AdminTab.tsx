@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — AdminTab (v7 — ADVANCED VISUAL EDITION)
+//  FATHOM — AdminTab (v7 — ADVANCED VISUAL EDITION)
 // ==========================================================================
 import React, { useState, useEffect, useMemo, useCallback, useRef, useReducer } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';
@@ -1662,7 +1662,7 @@ const SettingsView = ({
                         </button>
                     </Tooltip>
                     <Tooltip content="Export JSON">
-                        <button onClick={() => { const b = new Blob([JSON.stringify(settingsData, null, 2)], {type:'application/json'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`vigil-config-${new Date().toISOString().slice(0,10)}.json`; a.click(); }} className="adm-btn" style={{ background: 'transparent', border: `1px solid ${T.grid}60`, padding: '7px', borderRadius: 20, cursor: 'pointer', color: T.textDim, display: 'flex' }}>
+                        <button onClick={() => { const b = new Blob([JSON.stringify(settingsData, null, 2)], {type:'application/json'}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=`fathom-config-${new Date().toISOString().slice(0,10)}.json`; a.click(); }} className="adm-btn" style={{ background: 'transparent', border: `1px solid ${T.grid}60`, padding: '7px', borderRadius: 20, cursor: 'pointer', color: T.textDim, display: 'flex' }}>
                             <Download size={13} />
                         </button>
                     </Tooltip>

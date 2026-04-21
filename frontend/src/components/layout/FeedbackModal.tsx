@@ -594,7 +594,7 @@ export const FeedbackModal = ({ onClose, initialSection }) => {
     const [rateLimited, setRateLimited] = useState(false);
     useEffect(() => {
         try {
-            const last = parseInt(localStorage.getItem('vigil_last_feedback') || '0', 10);
+            const last = parseInt(localStorage.getItem('fathom_last_feedback') || '0', 10);
             if (last > 0 && Date.now() - last < FEEDBACK_RATE_LIMIT_MS) setRateLimited(true);
         } catch {}
     }, []);
@@ -701,7 +701,7 @@ export const FeedbackModal = ({ onClose, initialSection }) => {
 
             /* ✓ Success */
             try {
-                localStorage.setItem('vigil_last_feedback', Date.now().toString());
+                localStorage.setItem('fathom_last_feedback', Date.now().toString());
             } catch {}
             setSent(true);
             setTimeout(onClose, 2800);
@@ -761,7 +761,7 @@ export const FeedbackModal = ({ onClose, initialSection }) => {
                         Thank you!
                     </h3>
                     <p style={{ color: DS.textSub, margin: 0, fontSize: 13, lineHeight: 1.7 }}>
-                        Your feedback helps us make Vigil better for everyone.
+                        Your feedback helps us make Fathom better for everyone.
                     </p>
                 </div>
             </div>
@@ -828,7 +828,7 @@ export const FeedbackModal = ({ onClose, initialSection }) => {
                                 letterSpacing: '0.02em',
                             }}
                         >
-                            VIGIL · DATABASE MONITOR
+                            FATHOM · DATABASE MONITOR
                         </div>
                     </div>
                     <button

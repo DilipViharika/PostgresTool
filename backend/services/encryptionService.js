@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
 /**
- * Encryption Service for VIGIL
+ * Encryption Service for FATHOM
  *
  * Two layers:
  *   1. AES-256-GCM — encrypts connection passwords at rest in the database.
@@ -24,7 +24,7 @@ const PBKDF2_DIGEST = 'sha256';
 // Derive salt deterministically from a fixed prefix hash to ensure consistency across restarts.
 // This allows data encrypted before a restart to be decrypted after the restart.
 function getDeterministicSalt() {
-  const prefix = 'vigil-encryption-salt-v1';
+  const prefix = 'fathom-encryption-salt-v1';
   return crypto.createHash('sha256').update(prefix).digest().slice(0, 16);
 }
 const SALT = getDeterministicSalt();
@@ -86,9 +86,9 @@ function getEncryptionSecret() {
 export function validateEncryptionConfig() {
     try {
         const secret = getEncryptionSecret();
-        const test = encrypt('vigil-self-test');
+        const test = encrypt('fathom-self-test');
         const back = decrypt(test);
-        if (back !== 'vigil-self-test') {
+        if (back !== 'fathom-self-test') {
             throw new Error('Encrypt/decrypt round-trip failed');
         }
         return true;

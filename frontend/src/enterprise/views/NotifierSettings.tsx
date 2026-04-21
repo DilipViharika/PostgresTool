@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Notifier Settings View
+//  FATHOM — Notifier Settings View
 // ==========================================================================
 //  Admin surface for the multi-channel notifier stack (P1 / G1).
 //  Backed by /api/enterprise/notifiers.

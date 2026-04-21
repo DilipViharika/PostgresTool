@@ -193,8 +193,8 @@ const AWS_REGIONS = [
 ];
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
-const STORAGE_KEY = 'vigil_cw_instances';
-const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('vigil_token')}` });
+const STORAGE_KEY = 'fathom_cw_instances';
+const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('fathom_token')}` });
 
 const CW_STYLES = `
     @keyframes cwShimmer { 0% { background-position: -300% 0; } 100% { background-position: 300% 0; } }

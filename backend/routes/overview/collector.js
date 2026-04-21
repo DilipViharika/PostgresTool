@@ -41,7 +41,7 @@ async function collectMetrics() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   ALERT CHECKS → writes to vigil_alerts
+   ALERT CHECKS → writes to fathom_alerts
    ══════════════════════════════════════════════════════════════════════════ */
 async function checkAlerts() {
     try {
@@ -51,7 +51,7 @@ async function checkAlerts() {
         for (const alert of alerts) {
             // Upsert by fingerprint — don't spam duplicates
             await query(`
-                INSERT INTO vigil_alerts (severity, title, message, fingerprint, read, dismissed)
+                INSERT INTO fathom_alerts (severity, title, message, fingerprint, read, dismissed)
                 VALUES ($1, $2, $3, $4, false, false)
                 ON CONFLICT (fingerprint)
                 DO UPDATE SET
@@ -59,16 +59,16 @@ async function checkAlerts() {
                     title     = EXCLUDED.title,
                     message   = EXCLUDED.message,
                     -- only reset read state if severity escalated
-                    read      = CASE WHEN EXCLUDED.severity = 'critical' AND vigil_alerts.severity != 'critical'
-                                     THEN false ELSE vigil_alerts.read END,
-                    created_at = CASE WHEN vigil_alerts.dismissed THEN now() ELSE vigil_alerts.created_at END,
+                    read      = CASE WHEN EXCLUDED.severity = 'critical' AND fathom_alerts.severity != 'critical'
+                                     THEN false ELSE fathom_alerts.read END,
+                    created_at = CASE WHEN fathom_alerts.dismissed THEN now() ELSE fathom_alerts.created_at END,
                     dismissed  = false
             `);
         }
 
         // Auto-resolve alerts that are no longer triggered
         await query(`
-            DELETE FROM vigil_alerts
+            DELETE FROM fathom_alerts
             WHERE source = 'auto'
               AND fingerprint = ANY($1::text[])
         `, [
@@ -147,7 +147,7 @@ async function gatherAlerts() {
 async function pruneOldSnapshots() {
     try {
         const r = await query(`
-            DELETE FROM vigil_metric_snapshots
+            DELETE FROM fathom_metric_snapshots
             WHERE time_bucket < now() - ($1 || ' hours')::interval
         `, [SNAPSHOT_RETENTION_HOURS]);
         if (r.rowCount > 0) {
@@ -160,7 +160,7 @@ async function pruneOldSnapshots() {
 
 async function ensureAlertsTable() {
     await query(`
-        CREATE TABLE IF NOT EXISTS vigil_alerts (
+        CREATE TABLE IF NOT EXISTS fathom_alerts (
             id          BIGSERIAL PRIMARY KEY,
             severity    TEXT        NOT NULL DEFAULT 'info',
             title       TEXT        NOT NULL,

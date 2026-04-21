@@ -7,7 +7,7 @@
  *
  * Export format: newline-delimited JSON (`.ndjson`), one event per line,
  * gzipped. One object per workspace per hour:
- *   s3://<bucket>/vigil/audit/<workspace_slug>/yyyy=YYYY/mm=MM/dd=DD/HH.ndjson.gz
+ *   s3://<bucket>/fathom/audit/<workspace_slug>/yyyy=YYYY/mm=MM/dd=DD/HH.ndjson.gz
  *
  * SQS/EventBridge-compatible objects: if you enable S3 → SQS notifications,
  * your SIEM pipeline can ingest them lossless-ly.
@@ -23,7 +23,7 @@ import { query } from '../db.js';
 const DEFAULTS = {
     bucket:       process.env.AUDIT_EXPORT_BUCKET,
     region:       process.env.AUDIT_EXPORT_REGION || 'us-east-1',
-    prefix:       process.env.AUDIT_EXPORT_PREFIX || 'vigil/audit',
+    prefix:       process.env.AUDIT_EXPORT_PREFIX || 'fathom/audit',
     endpoint:     process.env.AUDIT_EXPORT_ENDPOINT, // set for R2/B2/MinIO
     accessKey:    process.env.AUDIT_EXPORT_ACCESS_KEY,
     secretKey:    process.env.AUDIT_EXPORT_SECRET_KEY,
@@ -111,11 +111,11 @@ export async function runAuditExport({ fromTs, toTs } = {}) {
             // B2) still surface the hashes in the response headers.
             ChecksumSHA256: Buffer.from(gzSha, 'hex').toString('base64'),
             Metadata: {
-                'vigil-workspace-id':   String(wsId),
-                'vigil-event-count':    String(batch.length),
-                'vigil-content-sha256': plainSha,
-                'vigil-gzip-sha256':    gzSha,
-                'vigil-schema-version': '1',
+                'fathom-workspace-id':   String(wsId),
+                'fathom-event-count':    String(batch.length),
+                'fathom-content-sha256': plainSha,
+                'fathom-gzip-sha256':    gzSha,
+                'fathom-schema-version': '1',
             },
         }));
         workspaces.push({

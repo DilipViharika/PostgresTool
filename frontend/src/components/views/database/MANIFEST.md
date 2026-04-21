@@ -1,4 +1,4 @@
-# VIGIL Database Components - File Manifest
+# FATHOM Database Components - File Manifest
 
 ## Overview
 

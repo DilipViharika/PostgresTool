@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Auth Context  (v2.0 — aligned with actual server.js)
+//  FATHOM — Auth Context  (v2.0 — aligned with actual server.js)
 // ==========================================================================
 //  Server endpoints used:
 //    • POST /api/auth/login → { user, token }
@@ -14,7 +14,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 // ═══════════════════════════════════════════════════════════════════════════
 
 const API_BASE = import.meta.env.VITE_API_URL || (() => { console.warn('VITE_API_URL not set, using relative URLs'); return ''; })();
-const STORAGE_KEYS = { TOKEN: 'vigil_token', USER: 'vigil_user' };
+const STORAGE_KEYS = { TOKEN: 'fathom_token', USER: 'fathom_user' };
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  SEC-002: Secure storage wrapper with try-catch and future migration path
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     const [authLoading, setAuthLoading] = useState(false); // login in progress
     const [error, setError] = useState(null);
     const [mustChangePassword, setMustChangePassword] = useState(
-        () => secureStorage.getItem('vigil_must_change_password') === 'true'
+        () => secureStorage.getItem('fathom_must_change_password') === 'true'
     );
 
     // ── Restore session from localStorage on mount (sync — no fetch) ───────
@@ -144,21 +144,21 @@ export const AuthProvider = ({ children }) => {
             const prevParsed = prevUser ? JSON.parse(prevUser) : null;
             if (!prevParsed || prevParsed.username !== data.user.username) {
                 secureStorage.removeItem('pg_monitor_active_tab');
-                secureStorage.removeItem('vigil_active_connection_id');
-                secureStorage.removeItem('vigil_custom_dashboards');
-                secureStorage.removeItem('vigil_active_dashboard');
-                secureStorage.removeItem('vigil_repos_v10');
-                secureStorage.removeItem('vigil_recent_tabs');
-                secureStorage.removeItem('vigil_last_feedback');
+                secureStorage.removeItem('fathom_active_connection_id');
+                secureStorage.removeItem('fathom_custom_dashboards');
+                secureStorage.removeItem('fathom_active_dashboard');
+                secureStorage.removeItem('fathom_repos_v10');
+                secureStorage.removeItem('fathom_recent_tabs');
+                secureStorage.removeItem('fathom_last_feedback');
             }
 
             secureStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
             secureStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
             if (data.mustChangePassword) {
-                secureStorage.setItem('vigil_must_change_password', 'true');
+                secureStorage.setItem('fathom_must_change_password', 'true');
                 setMustChangePassword(true);
             } else {
-                secureStorage.removeItem('vigil_must_change_password');
+                secureStorage.removeItem('fathom_must_change_password');
                 setMustChangePassword(false);
             }
             setCurrentUser(data.user);
@@ -193,12 +193,12 @@ export const AuthProvider = ({ children }) => {
             : null;
         if (!prevParsed || prevParsed.username !== user.username) {
             secureStorage.removeItem('pg_monitor_active_tab');
-            secureStorage.removeItem('vigil_active_connection_id');
-            secureStorage.removeItem('vigil_custom_dashboards');
-            secureStorage.removeItem('vigil_active_dashboard');
-            secureStorage.removeItem('vigil_repos_v10');
-            secureStorage.removeItem('vigil_recent_tabs');
-            secureStorage.removeItem('vigil_last_feedback');
+            secureStorage.removeItem('fathom_active_connection_id');
+            secureStorage.removeItem('fathom_custom_dashboards');
+            secureStorage.removeItem('fathom_active_dashboard');
+            secureStorage.removeItem('fathom_repos_v10');
+            secureStorage.removeItem('fathom_recent_tabs');
+            secureStorage.removeItem('fathom_last_feedback');
         }
         secureStorage.setItem(STORAGE_KEYS.TOKEN, token);
         secureStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
@@ -212,9 +212,9 @@ export const AuthProvider = ({ children }) => {
         // Clear persisted active tab so the next login always opens Overview
         secureStorage.removeItem('pg_monitor_active_tab');
         // Clear active connection so next login starts fresh
-        secureStorage.removeItem('vigil_active_connection_id');
+        secureStorage.removeItem('fathom_active_connection_id');
         // Clear password-change flag so it's re-evaluated on next login
-        secureStorage.removeItem('vigil_must_change_password');
+        secureStorage.removeItem('fathom_must_change_password');
         setMustChangePassword(false);
         setCurrentUser(null);
         setError(null);
@@ -253,7 +253,7 @@ export const AuthProvider = ({ children }) => {
     // ── Context value ──────────────────────────────────────────────────────
     // Allow external code (e.g. ForcePasswordChangeModal) to clear the flag
     const clearMustChangePassword = useCallback(() => {
-        secureStorage.removeItem('vigil_must_change_password');
+        secureStorage.removeItem('fathom_must_change_password');
         setMustChangePassword(false);
     }, []);
 

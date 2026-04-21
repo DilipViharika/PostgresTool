@@ -1,4 +1,4 @@
-# VIGIL — Full Tech Stack with TypeScript
+# FATHOM — Full Tech Stack with TypeScript
 
 ## Current Stack vs Recommended TypeScript Stack
 
@@ -52,7 +52,7 @@
 | Layer        | Current                                  | TypeScript Upgrade                                 |
 | ------------ | ---------------------------------------- | -------------------------------------------------- |
 | Monorepo     | npm workspaces                           | **Turborepo** + npm workspaces                     |
-| Shared Types | None (duplicated shapes)                 | **@vigil/types** shared package                    |
+| Shared Types | None (duplicated shapes)                 | **@fathom/types** shared package                   |
 | API Contract | Implicit (hope frontend matches backend) | **tRPC** or **Zod schemas** shared between FE & BE |
 | Environment  | .env + dotenv                            | **@t3-oss/env-nextjs** pattern with Zod validation |
 | Git Hooks    | None                                     | **Husky** + **lint-staged** (type-check on commit) |
@@ -73,14 +73,14 @@
 
 ## 5. DevOps & Deployment
 
-| Layer        | Current                   | Recommended                                                   |
-| ------------ | ------------------------- | ------------------------------------------------------------- |
-| Hosting (FE) | Vercel                    | Vercel (same)                                                 |
-| Hosting (BE) | Vercel Serverless         | Vercel Serverless (same) or **Railway** for persistent server |
-| CI/CD        | None visible              | **GitHub Actions** (type-check, lint, test, build)            |
-| Monitoring   | Custom (built into VIGIL) | Custom + **Sentry** for error tracking                        |
-| Logging      | Custom JSON logger        | **Pino** (typed, fast, structured JSON)                       |
-| Container    | None                      | **Docker** + **docker-compose** for local dev                 |
+| Layer        | Current                    | Recommended                                                   |
+| ------------ | -------------------------- | ------------------------------------------------------------- |
+| Hosting (FE) | Vercel                     | Vercel (same)                                                 |
+| Hosting (BE) | Vercel Serverless          | Vercel Serverless (same) or **Railway** for persistent server |
+| CI/CD        | None visible               | **GitHub Actions** (type-check, lint, test, build)            |
+| Monitoring   | Custom (built into FATHOM) | Custom + **Sentry** for error tracking                        |
+| Logging      | Custom JSON logger         | **Pino** (typed, fast, structured JSON)                       |
+| Container    | None                       | **Docker** + **docker-compose** for local dev                 |
 
 ---
 
@@ -89,7 +89,7 @@
 ### Phase 1 — Foundation (Week 1-2)
 
 - Add `tsconfig.json` to frontend and backend with `allowJs: true`
-- Create `@vigil/types` shared package with core interfaces
+- Create `@fathom/types` shared package with core interfaces
 - Install TypeScript, `tsx`, and all `@types/*` packages
 - Add type-check script to CI: `tsc --noEmit`
 

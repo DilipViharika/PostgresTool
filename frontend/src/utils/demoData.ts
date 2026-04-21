@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Demo Data Provider (v2 — shapes match actual component expectations)
+//  FATHOM — Demo Data Provider (v2 — shapes match actual component expectations)
 // ==========================================================================
 
 const now = () => new Date().toISOString();
@@ -15,8 +15,8 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 // ── In-memory connection store for demo mode ────────────────────────────────
 // Seeded with defaults; the ConnectionWizard can add more via POST /api/connections
 let _demoConnections = [
-    { id: 'demo-conn-1', name: 'Production DB', host: 'prod-pg.example.com', port: 5432, database: 'vigil_prod', dbType: 'postgresql', isDefault: true, status: 'connected', created_at: ago(43200) },
-    { id: 'demo-conn-2', name: 'Staging DB', host: 'staging-pg.example.com', port: 5432, database: 'vigil_staging', dbType: 'postgresql', isDefault: false, status: 'disconnected', created_at: ago(21600) },
+    { id: 'demo-conn-1', name: 'Production DB', host: 'prod-pg.example.com', port: 5432, database: 'fathom_prod', dbType: 'postgresql', isDefault: true, status: 'connected', created_at: ago(43200) },
+    { id: 'demo-conn-2', name: 'Staging DB', host: 'staging-pg.example.com', port: 5432, database: 'fathom_staging', dbType: 'postgresql', isDefault: false, status: 'disconnected', created_at: ago(21600) },
 ];
 let _activeConnectionId = 'demo-conn-1';
 
@@ -207,9 +207,9 @@ const DEMO_ROUTES = [
             { state: 'active', wait_event_type: 'LWLock', cnt: '4' },
         ],
         longTransactions: [
-            { pid: 10567, usename: 'admin', xact_age_sec: 1520, state: 'idle in transaction', query: 'UPDATE orders SET status = $1 WHERE batch_id = $2', datname: 'vigil_prod', backend_start: ago(180) },
-            { pid: 10890, usename: 'app_user', xact_age_sec: 480, state: 'active', query: 'INSERT INTO events SELECT generate_series(...)', datname: 'vigil_prod', backend_start: ago(45) },
-            { pid: 11023, usename: 'analytics_user', xact_age_sec: 320, state: 'active', query: 'SELECT date_trunc(day, created_at), count(*) FROM events GROUP BY 1', datname: 'vigil_analytics', backend_start: ago(30) },
+            { pid: 10567, usename: 'admin', xact_age_sec: 1520, state: 'idle in transaction', query: 'UPDATE orders SET status = $1 WHERE batch_id = $2', datname: 'fathom_prod', backend_start: ago(180) },
+            { pid: 10890, usename: 'app_user', xact_age_sec: 480, state: 'active', query: 'INSERT INTO events SELECT generate_series(...)', datname: 'fathom_prod', backend_start: ago(45) },
+            { pid: 11023, usename: 'analytics_user', xact_age_sec: 320, state: 'active', query: 'SELECT date_trunc(day, created_at), count(*) FROM events GROUP BY 1', datname: 'fathom_analytics', backend_start: ago(30) },
         ],
         lockSummary: [
             { locktype: 'relation', mode: 'AccessShareLock', count: 42 },
@@ -283,15 +283,15 @@ const DEMO_ROUTES = [
 
     // ── Databases (for TableAnalytics filter) ──────────────────────────────
     [/\/api\/databases$/, () => ([
-        { name: 'vigil_prod', owner: 'app_user', size: '4.2 GB', tables: 42, encoding: 'UTF8' },
-        { name: 'vigil_analytics', owner: 'analytics_user', size: '1.8 GB', tables: 18, encoding: 'UTF8' },
+        { name: 'fathom_prod', owner: 'app_user', size: '4.2 GB', tables: 42, encoding: 'UTF8' },
+        { name: 'fathom_analytics', owner: 'analytics_user', size: '1.8 GB', tables: 18, encoding: 'UTF8' },
         { name: 'postgres', owner: 'postgres', size: '8.5 MB', tables: 12, encoding: 'UTF8' },
     ])],
 
     // ── Tables (TableAnalytics sub-endpoints) ──────────────────────────────
     [/\/api\/tables\/stats/, () => Array.from({ length: 12 }, (_, i) => ({
         name: pick(['users', 'orders', 'products', 'events', 'sessions', 'audit_log', 'notifications', 'payments', 'inventory', 'categories']),
-        schema: 'public', db: 'vigil_prod',
+        schema: 'public', db: 'fathom_prod',
         liveRows: Math.floor(rand(5000, 800000)), deadRows: Math.floor(rand(0, 60000)),
         deadPct: rand(0, 15), rows: Math.floor(rand(5000, 800000)),
         seqScans: Math.floor(rand(0, 300)), idxScans: Math.floor(rand(500, 120000)),
@@ -378,11 +378,11 @@ const DEMO_ROUTES = [
         { name: 'notifications', schema: 'public', lastVacuum: null, lastAutovacuum: ago(240), vacuumCount: 85, analyzeCount: 90 },
     ]],
     [/\/api\/tables\/connections/, () => [
-        { appName: 'web-api', useName: 'app_user', datName: 'vigil_prod', state: 'active', count: 18 },
-        { appName: 'worker', useName: 'app_user', datName: 'vigil_prod', state: 'idle', count: 12 },
-        { appName: 'cron', useName: 'app_user', datName: 'vigil_prod', state: 'idle', count: 3 },
-        { appName: 'analytics-worker', useName: 'analytics_user', datName: 'vigil_analytics', state: 'active', count: 5 },
-        { appName: 'admin-panel', useName: 'admin', datName: 'vigil_prod', state: 'idle', count: 2 },
+        { appName: 'web-api', useName: 'app_user', datName: 'fathom_prod', state: 'active', count: 18 },
+        { appName: 'worker', useName: 'app_user', datName: 'fathom_prod', state: 'idle', count: 12 },
+        { appName: 'cron', useName: 'app_user', datName: 'fathom_prod', state: 'idle', count: 3 },
+        { appName: 'analytics-worker', useName: 'analytics_user', datName: 'fathom_analytics', state: 'active', count: 5 },
+        { appName: 'admin-panel', useName: 'admin', datName: 'fathom_prod', state: 'idle', count: 2 },
     ]],
     [/\/api\/table-stats/, () => Array.from({ length: 8 }, () => ({
         schemaname: 'public', relname: pick(['users', 'orders', 'products', 'events', 'sessions']),
@@ -434,7 +434,7 @@ const DEMO_ROUTES = [
             last_autovacuum: i < 8 ? ago(rand(30, 4320)) : null, last_analyze: ago(rand(60, 7200)),
         })),
         workers: [
-            { table_name: 'events', datname: 'vigil_prod', phase: 'scanning heap', heap_blks_total: 50000, heap_blks_scanned: 23000 },
+            { table_name: 'events', datname: 'fathom_prod', phase: 'scanning heap', heap_blks_total: 50000, heap_blks_scanned: 23000 },
         ],
         settings: [
             { name: 'autovacuum', setting: 'on' },
@@ -512,8 +512,8 @@ const DEMO_ROUTES = [
             { query_preview: 'SELECT p.*, array_agg(c.name) AS categories FROM products p JOIN product_categories pc ON p.id = pc.product_id JOIN categories c ON pc.category_id = c.id GROUP BY p.id', calls: 5600, mean_ms: '125.4', max_ms: '1890.0', stddev_ms: '95.2', pct_total: '3.8' },
         ],
         dbActivity: [
-            { datname: 'vigil_prod', numbackends: 42, cache_hit_pct: '97.8', rollback_pct: '0.3', xact_commit: '4562000', temp_files: '12', deadlocks: '3' },
-            { datname: 'vigil_analytics', numbackends: 8, cache_hit_pct: '94.2', rollback_pct: '1.1', xact_commit: '890000', temp_files: '45', deadlocks: '0' },
+            { datname: 'fathom_prod', numbackends: 42, cache_hit_pct: '97.8', rollback_pct: '0.3', xact_commit: '4562000', temp_files: '12', deadlocks: '3' },
+            { datname: 'fathom_analytics', numbackends: 8, cache_hit_pct: '94.2', rollback_pct: '1.1', xact_commit: '890000', temp_files: '45', deadlocks: '0' },
             { datname: 'postgres', numbackends: 2, cache_hit_pct: '99.9', rollback_pct: '0.0', xact_commit: '12000', temp_files: '0', deadlocks: '0' },
         ],
     })],
@@ -775,16 +775,16 @@ const DEMO_ROUTES = [
     [/\/api\/retention/, () => ({ policy: { metrics_retention_days: 90, logs_retention_days: 30 }, stats: { total_data_size: '4.2 GB' } })],
 
     // ── Export API (TerraformExportTab uses /api/export/*) ──────────────────
-    [/\/api\/export\/bundle/, () => ({ code: 'resource "postgresql_database" "vigil_prod" {\n  name     = "vigil_prod"\n  owner    = "app_user"\n  encoding = "UTF8"\n}\n\nresource "postgresql_role" "app_user" {\n  name             = "app_user"\n  login            = true\n  connection_limit = 50\n}\n\nresource "postgresql_role" "analytics_user" {\n  name             = "analytics_user"\n  login            = true\n  connection_limit = 20\n}\n\nresource "postgresql_extension" "pg_stat_statements" {\n  name     = "pg_stat_statements"\n  database = postgresql_database.vigil_prod.name\n}' })],
+    [/\/api\/export\/bundle/, () => ({ code: 'resource "postgresql_database" "fathom_prod" {\n  name     = "fathom_prod"\n  owner    = "app_user"\n  encoding = "UTF8"\n}\n\nresource "postgresql_role" "app_user" {\n  name             = "app_user"\n  login            = true\n  connection_limit = 50\n}\n\nresource "postgresql_role" "analytics_user" {\n  name             = "analytics_user"\n  login            = true\n  connection_limit = 20\n}\n\nresource "postgresql_extension" "pg_stat_statements" {\n  name     = "pg_stat_statements"\n  database = postgresql_database.fathom_prod.name\n}' })],
     [/\/api\/export\/alert-rules/, () => ({ code: 'resource "postgresql_alert_rule" "high_connections" {\n  name      = "high_connections"\n  metric    = "active_connections"\n  threshold = 150\n  severity  = "warning"\n}\n\nresource "postgresql_alert_rule" "replication_lag" {\n  name      = "replication_lag"\n  metric    = "replication_lag_bytes"\n  threshold = 104857600\n  severity  = "critical"\n}' })],
-    [/\/api\/export\/connections/, () => ({ code: 'resource "postgresql_connection" "prod" {\n  host     = "prod-pg.example.com"\n  port     = 5432\n  database = "vigil_prod"\n  username = "app_user"\n  sslmode  = "require"\n}' })],
+    [/\/api\/export\/connections/, () => ({ code: 'resource "postgresql_connection" "prod" {\n  host     = "prod-pg.example.com"\n  port     = 5432\n  database = "fathom_prod"\n  username = "app_user"\n  sslmode  = "require"\n}' })],
     [/\/api\/export\/retention/, () => ({ code: 'resource "postgresql_retention_policy" "metrics" {\n  type           = "metrics"\n  retention_days = 90\n}\n\nresource "postgresql_retention_policy" "logs" {\n  type           = "logs"\n  retention_days = 30\n}' })],
     [/\/api\/export\/users/, () => ({ code: 'resource "postgresql_role" "app_user" {\n  name             = "app_user"\n  login            = true\n  connection_limit = 50\n  roles            = ["pg_read_all_data"]\n}\n\nresource "postgresql_role" "readonly" {\n  name  = "readonly"\n  login = true\n  roles = ["pg_read_all_data"]\n}' })],
-    [/\/api\/export/, () => ({ code: 'resource "postgresql_database" "vigil_prod" {\n  name  = "vigil_prod"\n  owner = "app_user"\n}' })],
+    [/\/api\/export/, () => ({ code: 'resource "postgresql_database" "fathom_prod" {\n  name  = "fathom_prod"\n  owner = "app_user"\n}' })],
 
-    [/\/api\/terraform\/export\/json/, () => ({ roles: [{ name: 'app_user', login: true }], databases: [{ name: 'vigil', owner: 'app_user' }], extensions: ['pg_stat_statements'] })],
+    [/\/api\/terraform\/export\/json/, () => ({ roles: [{ name: 'app_user', login: true }], databases: [{ name: 'fathom', owner: 'app_user' }], extensions: ['pg_stat_statements'] })],
     [/\/api\/terraform\/export/, () => 'resource "postgresql_role" "app_user" {\n  name     = "app_user"\n  login    = true\n  connection_limit = 50\n}'],
-    [/\/api\/terraform/, () => ({ export: 'resource "postgresql_database" "vigil" {\n  name = "vigil"\n}' })],
+    [/\/api\/terraform/, () => ({ export: 'resource "postgresql_database" "fathom" {\n  name = "fathom"\n}' })],
 
     [/\/api\/custom-dashboard/, () => ({ dashboards: [{ id: 'dash-1', name: 'Production Overview', widgets: 6, created_at: ago(10080) }], available_metrics: ['connections.active', 'cache.hit_ratio', 'tps.commit'] })],
 
@@ -841,7 +841,7 @@ const DEMO_ROUTES = [
         patterns: [
             { pattern: 'ERROR: deadlock detected', count: 12, severity: 'error', first_seen: ago(1440), last_seen: ago(15) },
             { pattern: 'WARNING: archive command failed with exit code 1', count: 3, severity: 'warning', first_seen: ago(720), last_seen: ago(180) },
-            { pattern: 'LOG: automatic vacuum of table "vigil_prod.public.events"', count: 288, severity: 'info', first_seen: ago(1440), last_seen: ago(5) },
+            { pattern: 'LOG: automatic vacuum of table "fathom_prod.public.events"', count: 288, severity: 'info', first_seen: ago(1440), last_seen: ago(5) },
             { pattern: 'ERROR: canceling statement due to statement timeout', count: 7, severity: 'error', first_seen: ago(960), last_seen: ago(45) },
             { pattern: 'WARNING: could not send data to client: Broken pipe', count: 22, severity: 'warning', first_seen: ago(2880), last_seen: ago(30) },
         ],
@@ -1546,6 +1546,6 @@ export function getDemoData(path, method = 'GET', body = null) {
  * Check if demo mode is currently active.
  */
 export function isDemoMode() {
-    try { return localStorage.getItem('vigil_demo_mode') === 'true'; }
+    try { return localStorage.getItem('fathom_demo_mode') === 'true'; }
     catch { return false; }
 }

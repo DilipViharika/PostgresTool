@@ -1,5 +1,5 @@
 /**
- * VigilClient - Core VIGIL SDK client
+ * FathomClient - Core FATHOM SDK client
  * Universal database monitoring integration with external platform connectors
  */
 
@@ -8,8 +8,8 @@ import { Logger } from './logger.js';
 import { AuthManager } from './auth.js';
 
 /**
- * @typedef {Object} VigilClientConfig
- * @property {string} baseUrl - VIGIL API base URL
+ * @typedef {Object} FathomClientConfig
+ * @property {string} baseUrl - FATHOM API base URL
  * @property {string} apiKey - API key for authentication
  * @property {string} orgId - Organization ID
  * @property {Object} [options] - Additional options
@@ -20,23 +20,23 @@ import { AuthManager } from './auth.js';
  */
 
 /**
- * @typedef {Object} VigilMetrics
+ * @typedef {Object} FathomMetrics
  * @property {string} dbType - Database type (postgresql, mysql, mongodb)
  * @property {string} connectionId - Connection ID
  * @property {Object} metrics - Performance metrics
  * @property {number} timestamp - Metric timestamp
  */
 
-export class VigilClient extends EventEmitter {
+export class FathomClient extends EventEmitter {
   /**
-   * Creates a new VigilClient instance
+   * Creates a new FathomClient instance
    *
-   * @param {VigilClientConfig} config - Client configuration
+   * @param {FathomClientConfig} config - Client configuration
    * @throws {Error} If config is invalid
    *
    * @example
-   * const client = new VigilClient({
-   *   baseUrl: 'https://api.vigil.example.com',
+   * const client = new FathomClient({
+   *   baseUrl: 'https://api.fathom.example.com',
    *   apiKey: 'sk_test_...',
    *   orgId: 'org_123',
    *   options: {
@@ -49,7 +49,7 @@ export class VigilClient extends EventEmitter {
     super();
 
     if (!config || !config.baseUrl || !config.apiKey || !config.orgId) {
-      throw new Error('VigilClient requires baseUrl, apiKey, and orgId');
+      throw new Error('FathomClient requires baseUrl, apiKey, and orgId');
     }
 
     this.baseUrl = config.baseUrl.replace(/\/$/, ''); // Remove trailing slash
@@ -63,7 +63,7 @@ export class VigilClient extends EventEmitter {
 
     // Initialize core components
     this.logger = new Logger({
-      name: 'VigilClient',
+      name: 'FathomClient',
       level: opts.logLevel || 'info',
     });
 
@@ -83,33 +83,33 @@ export class VigilClient extends EventEmitter {
     this.healthCheckInterval = null;
     this.metricsCollectionInterval = null;
 
-    this.logger.info('VigilClient initialized', { baseUrl: this.baseUrl, orgId: this.orgId });
+    this.logger.info('FathomClient initialized', { baseUrl: this.baseUrl, orgId: this.orgId });
   }
 
   /**
-   * Connect to VIGIL API
+   * Connect to FATHOM API
    *
    * @returns {Promise<void>}
    * @throws {Error} If connection fails
    *
    * @example
    * await client.connect();
-   * console.log('Connected to VIGIL');
+   * console.log('Connected to FATHOM');
    */
   async connect() {
     try {
-      this.logger.info('Connecting to VIGIL');
+      this.logger.info('Connecting to FATHOM');
 
       const response = await this._request('/api/v1/health', {
         method: 'GET',
       });
 
       if (response.status !== 'ok') {
-        throw new Error('VIGIL health check failed');
+        throw new Error('FATHOM health check failed');
       }
 
       this.isConnected = true;
-      this.logger.info('Connected to VIGIL successfully');
+      this.logger.info('Connected to FATHOM successfully');
       this.emit('connected', { timestamp: Date.now() });
 
       // Start health checks and metrics collection
@@ -123,7 +123,7 @@ export class VigilClient extends EventEmitter {
   }
 
   /**
-   * Disconnect from VIGIL API
+   * Disconnect from FATHOM API
    *
    * @returns {Promise<void>}
    *
@@ -132,7 +132,7 @@ export class VigilClient extends EventEmitter {
    */
   async disconnect() {
     try {
-      this.logger.info('Disconnecting from VIGIL');
+      this.logger.info('Disconnecting from FATHOM');
 
       // Stop health checks
       this._stopHealthChecks();
@@ -153,7 +153,7 @@ export class VigilClient extends EventEmitter {
       this.metrics.clear();
 
       this.isConnected = false;
-      this.logger.info('Disconnected from VIGIL');
+      this.logger.info('Disconnected from FATHOM');
       this.emit('disconnected', { timestamp: Date.now() });
     } catch (error) {
       this.logger.error('Disconnection error', error);
@@ -437,7 +437,7 @@ export class VigilClient extends EventEmitter {
    */
   _ensureConnected() {
     if (!this.isConnected) {
-      throw new Error('VigilClient is not connected. Call connect() first.');
+      throw new Error('FathomClient is not connected. Call connect() first.');
     }
   }
 

@@ -8,8 +8,8 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'src'),
-            '@vigil/types': path.resolve(__dirname, '../shared/types/index.ts'),
-            '@vigil/validators': path.resolve(__dirname, '../shared/validators/index.ts'),
+            '@fathom/types': path.resolve(__dirname, '../shared/types/index.ts'),
+            '@fathom/validators': path.resolve(__dirname, '../shared/validators/index.ts'),
         },
     },
     server: {

@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Email Notification Service
+//  FATHOM — Email Notification Service
 //  Supports multiple providers: Gmail, SendGrid, AWS SES, Generic SMTP
 // ==========================================================================
 
@@ -130,12 +130,12 @@ class EmailNotificationService {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIGIL Alert</title>
+    <title>FATHOM Alert</title>
 </head>
 <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background-color:#f3f4f6;">
     <div style="max-width:600px;margin:0 auto;padding:20px;">
         <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:30px;border-radius:10px 10px 0 0;text-align:center;">
-            <h1 style="margin:0;font-size:28px;font-weight:bold;">VIGIL Alert System</h1>
+            <h1 style="margin:0;font-size:28px;font-weight:bold;">FATHOM Alert System</h1>
             <p style="margin:10px 0 0 0;opacity:0.9;">Database Monitoring Alert</p>
         </div>
         <div style="background-color:white;padding:30px;border-radius:0 0 10px 10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
@@ -159,7 +159,7 @@ class EmailNotificationService {
                 </a>
             </div>
             <div style="margin-top:30px;padding-top:20px;border-top:1px solid #e5e7eb;text-align:center;">
-                <p style="margin:0;color:#9ca3af;font-size:12px;">Automated alert from VIGIL Database Monitoring System</p>
+                <p style="margin:0;color:#9ca3af;font-size:12px;">Automated alert from FATHOM Database Monitoring System</p>
                 <p style="margin:5px 0 0 0;color:#9ca3af;font-size:12px;">Database: ${this.config.databaseName || 'PostgreSQL'}</p>
             </div>
         </div>
@@ -172,7 +172,7 @@ class EmailNotificationService {
     generatePlainTextEmail(alert) {
         let text = `
 ═══════════════════════════════════════════════════════
-  VIGIL Database Monitoring Alert
+  FATHOM Database Monitoring Alert
 ═══════════════════════════════════════════════════════
 
 ${this.getSeverityEmoji(alert.severity)} SEVERITY: ${alert.severity.toUpperCase()}
@@ -236,7 +236,7 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
             const info = await this.transporter.sendMail({
                 from: this.config.from,
                 to:   to.join(', '),
-                subject: `${this.getSeverityEmoji(alert.severity)} [${alert.severity.toUpperCase()}] VIGIL Alert — ${alert.message.substring(0, 60)}${alert.message.length > 60 ? '…' : ''}`,
+                subject: `${this.getSeverityEmoji(alert.severity)} [${alert.severity.toUpperCase()}] FATHOM Alert — ${alert.message.substring(0, 60)}${alert.message.length > 60 ? '…' : ''}`,
                 text: this.generatePlainTextEmail(alert),
                 html: this.generateHTMLEmail(alert),
                 priority: alert.severity === 'critical' ? 'high' : 'normal',
@@ -256,7 +256,7 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
             timestamp: new Date().toISOString(),
             severity:  'info',
             category:  'maintenance',
-            message:   'This is a test email from VIGIL Alert System',
+            message:   'This is a test email from FATHOM Alert System',
             data: {
                 rule:    'test_email',
                 metrics: { activeConnections: 15, maxConnections: 100, cacheHitRatio: 95.5, diskUsedGB: 42.3 },
@@ -278,11 +278,11 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
 
         const html = `<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>VIGIL Alert Digest</title></head>
+<head><meta charset="UTF-8"><title>FATHOM Alert Digest</title></head>
 <body style="margin:0;padding:20px;font-family:Arial,sans-serif;background-color:#f3f4f6;">
     <div style="max-width:600px;margin:0 auto;background-color:white;border-radius:10px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
         <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:30px;text-align:center;">
-            <h1 style="margin:0;font-size:24px;">VIGIL Alert Digest</h1>
+            <h1 style="margin:0;font-size:24px;">FATHOM Alert Digest</h1>
             <p style="margin:10px 0 0 0;">Summary of Recent Alerts</p>
         </div>
         <div style="padding:30px;">
@@ -312,7 +312,7 @@ Database: ${this.config.databaseName || 'PostgreSQL'}
             const result = await this.transporter.sendMail({
                 from:    this.config.from,
                 to:      to.join(', '),
-                subject: `📊 VIGIL Alert Digest — ${critical} Critical, ${warning} Warning, ${info} Info`,
+                subject: `📊 FATHOM Alert Digest — ${critical} Critical, ${warning} Warning, ${info} Info`,
                 html,
             });
 

@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Database Migration  (scripts/migrate.js)
+//  FATHOM — Database Migration  (scripts/migrate.js)
 //  Run once: node scripts/migrate.js
 // ==========================================================================
 
@@ -13,7 +13,7 @@ const migrations = [
 
     // ── Connection registry ──
     `
-    CREATE TABLE IF NOT EXISTS pgmonitoringtool.vigil_connections (
+    CREATE TABLE IF NOT EXISTS pgmonitoringtool.fathom_connections (
         id              SERIAL      PRIMARY KEY,
         user_id         INTEGER,
         name            TEXT        NOT NULL,
@@ -41,7 +41,7 @@ const migrations = [
 
     // ── Metric snapshots (time-series store) ──
     `
-    CREATE TABLE IF NOT EXISTS vigil_metric_snapshots (
+    CREATE TABLE IF NOT EXISTS fathom_metric_snapshots (
         time_bucket           TIMESTAMPTZ PRIMARY KEY,
         avg_qps               NUMERIC     DEFAULT 0,
         avg_tps               NUMERIC     DEFAULT 0,
@@ -57,7 +57,7 @@ const migrations = [
 
     // ── Backup history ──
     `
-    CREATE TABLE IF NOT EXISTS vigil_backup_history (
+    CREATE TABLE IF NOT EXISTS fathom_backup_history (
         id                BIGSERIAL    PRIMARY KEY,
         backup_type       TEXT         NOT NULL DEFAULT 'Full',
         status            TEXT         NOT NULL DEFAULT 'success',
@@ -73,7 +73,7 @@ const migrations = [
 
     // ── Alerts ──
     `
-    CREATE TABLE IF NOT EXISTS vigil_alerts (
+    CREATE TABLE IF NOT EXISTS fathom_alerts (
         id          BIGSERIAL    PRIMARY KEY,
         severity    TEXT         NOT NULL DEFAULT 'info',
         title       TEXT         NOT NULL,
@@ -87,15 +87,15 @@ const migrations = [
     `,
 
     // ── Index on alerts for fast unread lookups ──
-    `CREATE INDEX IF NOT EXISTS idx_vigil_alerts_unread ON vigil_alerts (read, dismissed, created_at DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_fathom_alerts_unread ON fathom_alerts (read, dismissed, created_at DESC)`,
 
     // ── Index on snapshots for time-range queries ──
-    `CREATE INDEX IF NOT EXISTS idx_vigil_snapshots_bucket ON vigil_metric_snapshots (time_bucket DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_fathom_snapshots_bucket ON fathom_metric_snapshots (time_bucket DESC)`,
 
     // ── Auto-prune snapshots older than 48 hours (optional pg rule) ──
     // Uncomment if you want DB-level enforcement:
-    // `CREATE RULE vigil_snapshot_ttl AS ON INSERT TO vigil_metric_snapshots
-    //  DO ALSO DELETE FROM vigil_metric_snapshots WHERE time_bucket < now() - interval '48 hours'`,
+    // `CREATE RULE fathom_snapshot_ttl AS ON INSERT TO fathom_metric_snapshots
+    //  DO ALSO DELETE FROM fathom_metric_snapshots WHERE time_bucket < now() - interval '48 hours'`,
 ];
 
 async function migrate() {

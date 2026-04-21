@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — /api/overview/timeseries
+//  FATHOM — /api/overview/timeseries
 //
 //  Returns time-bucketed metrics for charts:
 //  - QPS / TPS  (velocityData)
@@ -8,7 +8,7 @@
 //  - WAL generation rate
 //
 //  Uses pg_stat_statements + pg_stat_database snapshots stored in
-//  vigil_metric_snapshots (auto-created).
+//  fathom_metric_snapshots (auto-created).
 //
 //  If the snapshots table doesn't exist yet, returns the last available
 //  data from pg_stat_statements directly (less precise but immediate).
@@ -25,7 +25,7 @@ router.get('/', async (req, res, next) => {
     const window = VALID_WINDOWS.has(req.query.window) ? req.query.window : '30m';
 
     try {
-        const snapshotsExist = await tableExists('vigil_metric_snapshots');
+        const snapshotsExist = await tableExists('fathom_metric_snapshots');
 
         if (snapshotsExist) {
             return res.json(await fromSnapshots(window));
@@ -52,7 +52,7 @@ async function fromSnapshots(window) {
             reads,
             writes,
             commits
-        FROM vigil_metric_snapshots
+        FROM fathom_metric_snapshots
         WHERE time_bucket > now() - $1::interval
         ORDER BY time_bucket ASC
     `, [interval]);
@@ -132,7 +132,7 @@ async function fromStatements(window) {
 
     return {
         window,
-        note: 'Single-snapshot mode — install vigil_metric_snapshots collector for accurate time-series',
+        note: 'Single-snapshot mode — install fathom_metric_snapshots collector for accurate time-series',
         ...points,
     };
 }
@@ -163,7 +163,7 @@ export async function recordSnapshot() {
     const d = dbResult.rows[0]   || {};
 
     await query(`
-        INSERT INTO vigil_metric_snapshots
+        INSERT INTO fathom_metric_snapshots
             (time_bucket, avg_qps, avg_tps, avg_latency_p50_ms, avg_latency_p95_ms, avg_latency_p99_ms, reads, writes, commits)
         VALUES
             (date_trunc('minute', now()), $1, $2, $3, $4, $5, $6, $7, $8)
@@ -247,7 +247,7 @@ async function tableExists(name) {
 
 async function ensureSnapshotsTable() {
     await query(`
-        CREATE TABLE IF NOT EXISTS vigil_metric_snapshots (
+        CREATE TABLE IF NOT EXISTS fathom_metric_snapshots (
             time_bucket           TIMESTAMPTZ PRIMARY KEY,
             avg_qps               NUMERIC DEFAULT 0,
             avg_tps               NUMERIC DEFAULT 0,

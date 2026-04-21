@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Elasticsearch Overview View
+//  FATHOM — Elasticsearch Overview View
 // ==========================================================================
 //  Cluster-level health + per-index summary. Served by
 //  /api/enterprise/elasticsearch/health + /indices.

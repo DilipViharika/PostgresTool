@@ -1,7 +1,7 @@
 /**
  * services/samlService.js
  * ───────────────────────
- * SAML 2.0 SP-initiated SSO for VIGIL.
+ * SAML 2.0 SP-initiated SSO for FATHOM.
  *
  * This module intentionally relies on the battle-tested `@node-saml/node-saml`
  * package rather than hand-rolling XML/crypto. Install with:
@@ -216,7 +216,7 @@ export async function provisionUserFromAssertion(workspaceId, profile) {
     const groups = profile[groupsKey];
     const role = resolveRoleFromGroups(groups, cfg.default_role || 'viewer');
 
-    // Find or create the VIGIL user.
+    // Find or create the FATHOM user.
     const existing = await query(
         `SELECT id FROM pgmonitoringtool.users WHERE lower(email) = lower($1)`,
         [email]
@@ -251,19 +251,19 @@ export async function provisionUserFromAssertion(workspaceId, profile) {
 }
 
 /**
- * Map an IdP-provided group list onto a VIGIL role.
+ * Map an IdP-provided group list onto a FATHOM role.
  * Convention:
- *   vigil-owner   → owner
- *   vigil-admin   → admin
- *   vigil-editor  → editor
+ *   fathom-owner   → owner
+ *   fathom-admin   → admin
+ *   fathom-editor  → editor
  *   (anything else / missing) → fallback
  */
 function resolveRoleFromGroups(groups, fallback) {
     if (!groups) return fallback;
     const list = Array.isArray(groups) ? groups : [groups];
     const lc = list.map(g => String(g).toLowerCase());
-    if (lc.includes('vigil-owner')) return 'owner';
-    if (lc.includes('vigil-admin')) return 'admin';
-    if (lc.includes('vigil-editor')) return 'editor';
+    if (lc.includes('fathom-owner')) return 'owner';
+    if (lc.includes('fathom-admin')) return 'admin';
+    if (lc.includes('fathom-editor')) return 'editor';
     return fallback;
 }

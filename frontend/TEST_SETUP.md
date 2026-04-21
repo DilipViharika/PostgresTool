@@ -1,37 +1,38 @@
-# VIGIL Test Framework Setup
+# FATHOM Test Framework Setup
 
 ## Overview
 
-This directory contains the test framework for the VIGIL PostgreSQL monitoring tool frontend. The framework uses **Vitest** (a Vite-native unit testing framework) to test core configuration and utility modules.
+This directory contains the test framework for the FATHOM PostgreSQL monitoring tool frontend. The framework uses **Vitest** (a Vite-native unit testing framework) to test core configuration and utility modules.
 
 ## Test Structure
 
 ### Test Files
 
 1. **`src/config/__tests__/designTokens.test.js`**
-   - Tests the design token system (DS_DARK, DS_LIGHT, DS_ACCENTS)
-   - Validates that all required theme properties exist
-   - Tests theme switching functionality via `getDS()` and `setDS()`
-   - Ensures theme consistency and contrast
+    - Tests the design token system (DS_DARK, DS_LIGHT, DS_ACCENTS)
+    - Validates that all required theme properties exist
+    - Tests theme switching functionality via `getDS()` and `setDS()`
+    - Ensures theme consistency and contrast
 
 2. **`src/config/__tests__/tabConfig.test.js`**
-   - Tests the tab configuration registry (central source of truth for dashboard tabs)
-   - Validates `registerComponents()` for component storage
-   - Tests `buildTabConfig()` returns correct tab structure with sections and metadata
-   - Validates `getTabsOnly()` filters tabs from section headers
-   - Tests `getSectionGroups()` creates proper hierarchical grouping
-   - Verifies `getSectionForTab()` and `getSectionAccent()` lookups
+    - Tests the tab configuration registry (central source of truth for dashboard tabs)
+    - Validates `registerComponents()` for component storage
+    - Tests `buildTabConfig()` returns correct tab structure with sections and metadata
+    - Validates `getTabsOnly()` filters tabs from section headers
+    - Tests `getSectionGroups()` creates proper hierarchical grouping
+    - Verifies `getSectionForTab()` and `getSectionAccent()` lookups
 
 3. **`src/utils/__tests__/demoData.test.js`**
-   - Tests the demo data provider for API route mocking
-   - Validates `getDemoData()` returns proper data structures for key routes
-   - Tests `/api/overview`, `/api/performance`, `/api/alerts`, `/api/indexes`, `/api/reliability`
-   - Validates query string handling and unknown route fallback
-   - Tests data consistency and structure validation
+    - Tests the demo data provider for API route mocking
+    - Validates `getDemoData()` returns proper data structures for key routes
+    - Tests `/api/overview`, `/api/performance`, `/api/alerts`, `/api/indexes`, `/api/reliability`
+    - Validates query string handling and unknown route fallback
+    - Tests data consistency and structure validation
 
 ## Configuration
 
 ### Vite Config
+
 The vitest configuration is integrated into `vite.config.js`:
 
 ```javascript
@@ -45,6 +46,7 @@ test: {
 ### NPM Scripts
 
 Added to `package.json`:
+
 - `npm run test` — Run tests in watch mode
 - `npm run test:run` — Run tests once and exit
 - `npm run test:ui` — Open Vitest UI for interactive testing
@@ -52,12 +54,15 @@ Added to `package.json`:
 ## Running Tests
 
 ### Installation
+
 Before running tests, ensure all dependencies are installed:
+
 ```bash
 npm install
 ```
 
 ### Run Tests
+
 ```bash
 # Watch mode (recommended during development)
 npm run test
@@ -70,7 +75,9 @@ npm run test:ui
 ```
 
 ### Test Output
+
 Tests produce clear output showing:
+
 - Pass/fail status for each test suite
 - Number of tests passed/failed
 - Execution time
@@ -79,6 +86,7 @@ Tests produce clear output showing:
 ## Test Coverage
 
 ### Current Coverage
+
 - **Design System**: 100% coverage of theme tokens and switching
 - **Tab Configuration**: Full coverage of tab registry, component registration, and grouping logic
 - **Demo Data**: Comprehensive coverage of API route matching and data structure validation
@@ -86,12 +94,14 @@ Tests produce clear output showing:
 ### Key Areas Tested
 
 **designTokens.test.js** (5 test suites, 20+ tests):
+
 - Theme property presence and validity
 - Theme switching between dark and light modes
 - Accent color inheritance and consistency
 - Font definitions
 
 **tabConfig.test.js** (8 test suites, 40+ tests):
+
 - Component registration and storage
 - Tab configuration building and structure
 - Tab filtering and section grouping
@@ -100,6 +110,7 @@ Tests produce clear output showing:
 - Integration tests for consistency
 
 **demoData.test.js** (8 test suites, 35+ tests):
+
 - Overview, Performance, Alerts endpoints
 - Index and Reliability data structures
 - Query string handling
@@ -110,6 +121,7 @@ Tests produce clear output showing:
 ## Test Philosophy
 
 These tests follow a **behavior-driven** approach:
+
 - Focus on testing **what** the functions do, not **how** they do it
 - Use descriptive test names that read like specifications
 - Test both happy paths and edge cases
@@ -128,15 +140,16 @@ When adding new tests:
 6. Import only from the module under test
 
 Example:
+
 ```javascript
 import { describe, it, expect } from 'vitest';
 import { myFunction } from '../myModule.js';
 
 describe('myModule', () => {
-  it('should do something specific', () => {
-    const result = myFunction('input');
-    expect(result).toBe('expected output');
-  });
+    it('should do something specific', () => {
+        const result = myFunction('input');
+        expect(result).toBe('expected output');
+    });
 });
 ```
 
@@ -156,6 +169,7 @@ describe('myModule', () => {
 ## Future Enhancements
 
 Potential areas for test expansion:
+
 - Component rendering tests (React Testing Library)
 - Integration tests for the full dashboard flow
 - E2E tests using Playwright or Cypress

@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Trace Detail View
+//  FATHOM — Trace Detail View
 // ==========================================================================
 //  Given a W3C traceparent (or just a trace id), show all Postgres queries
 //  correlated to it. Backed by services/traceContext.js →

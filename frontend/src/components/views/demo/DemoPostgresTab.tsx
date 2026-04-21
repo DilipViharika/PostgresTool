@@ -2659,7 +2659,7 @@ function DemoPostgresTab({ tabId }) {
         if (sectionKey === 'alerts' && itemKey === 'active-alerts') {
             return (
                 <div className="dpg-stagger" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-                    {/* ── VIGIL Header ── */}
+                    {/* ── FATHOM Header ── */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 4 }}>
@@ -2672,7 +2672,7 @@ function DemoPostgresTab({ tabId }) {
                                         letterSpacing: '0.02em',
                                     }}
                                 >
-                                    VIGIL
+                                    FATHOM
                                 </span>
                                 <span
                                     style={{
@@ -8923,7 +8923,7 @@ function DemoPostgresTab({ tabId }) {
                             ]}
                             rows={[
                                 {
-                                    user: 'admin@vigil.io',
+                                    user: 'admin@fathom.io',
                                     role: 'Super Admin',
                                     lastLogin: '2m ago',
                                     status: 'Online',
@@ -9314,7 +9314,7 @@ function DemoPostgresTab({ tabId }) {
                                             color: THEME.textMain,
                                         }}
                                     >
-                                        VIGIL Report
+                                        FATHOM Report
                                     </div>
                                 </div>
                                 <div>

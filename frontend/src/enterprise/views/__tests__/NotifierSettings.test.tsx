@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — NotifierSettings view tests
+//  FATHOM — NotifierSettings view tests
 // ==========================================================================
 //  Covers: loading, success, empty, error, create/test/delete flows.
 // ==========================================================================

@@ -1,6 +1,6 @@
-# .semgrep/vigil-rules.yml
+# .semgrep/fathom-rules.yml
 # ─────────────────────────
-# House SAST rules specific to VIGIL's architecture. Loaded by
+# House SAST rules specific to FATHOM's architecture. Loaded by
 # .github/workflows/security.yml alongside Semgrep's public rulesets.
 #
 # Philosophy: flag patterns that are safe in most codebases but wrong in
@@ -8,7 +8,7 @@
 # handlers, hard-coded admin flags, etc.
 
 rules:
-  - id: vigil-no-raw-tenant-interpolation
+  - id: fathom-no-raw-tenant-interpolation
     languages: [javascript, typescript]
     severity: ERROR
     message: >-
@@ -23,7 +23,7 @@ rules:
           - pattern: |
               "... WHERE tenant_id = '" + $T + "' ..."
 
-  - id: vigil-scim-auth-required
+  - id: fathom-scim-auth-required
     languages: [javascript, typescript]
     severity: ERROR
     message: >-
@@ -34,7 +34,7 @@ rules:
       - pattern-not: app.use('/scim/v2', scimAuth, ...)
       - pattern-not: app.use('/scim/v2', gateRouter($POOL, $FEATURE, $ROUTER))
 
-  - id: vigil-audit-log-no-direct-insert
+  - id: fathom-audit-log-no-direct-insert
     languages: [javascript, typescript]
     severity: WARNING
     message: >-
@@ -51,7 +51,7 @@ rules:
         - backend/services/auditLogSecure.js
         - backend/tests/
 
-  - id: vigil-no-plaintext-token-logging
+  - id: fathom-no-plaintext-token-logging
     languages: [javascript, typescript]
     severity: ERROR
     message: >-
@@ -66,7 +66,7 @@ rules:
           metavariable: $TOKEN
           regex: '^(plaintext|rawToken|bearerToken|apiKey)$'
 
-  - id: vigil-no-hardcoded-admin-bypass
+  - id: fathom-no-hardcoded-admin-bypass
     languages: [javascript, typescript]
     severity: ERROR
     message: >-
@@ -79,7 +79,7 @@ rules:
           - pattern: |
               const SUPER_ADMINS = [ "..." ];
 
-  - id: vigil-pool-release-in-finally
+  - id: fathom-pool-release-in-finally
     languages: [javascript, typescript]
     severity: WARNING
     message: >-

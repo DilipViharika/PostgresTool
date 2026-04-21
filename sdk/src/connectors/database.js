@@ -1,6 +1,6 @@
 /**
- * DatabaseConnector - Generic database connector wrapper for VIGIL
- * Supports multiple database types through VIGIL's native integration
+ * DatabaseConnector - Generic database connector wrapper for FATHOM
+ * Supports multiple database types through FATHOM's native integration
  */
 
 import { EventEmitter } from '../core/events.js';

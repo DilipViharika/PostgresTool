@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Spacing Scale (4px base unit — consistent rhythm)
+//  FATHOM — Spacing Scale (4px base unit — consistent rhythm)
 // ==========================================================================
 //
 //  Usage:  import { SP, GAP, PAD } from '@/config/spacing';

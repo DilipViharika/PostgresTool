@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — ObservabilityHub (Unified Monitoring Dashboard)
+//  FATHOM — ObservabilityHub (Unified Monitoring Dashboard)
 // ==========================================================================
 import React, { useState, useEffect, useMemo } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';

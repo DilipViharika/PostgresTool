@@ -6,7 +6,7 @@
  * integrity.
  *
  * Signature format:
- *   X-VIGIL-Signature: t=<unix-seconds>,v1=<hex(hmac-sha256(secret, t + '.' + body))>
+ *   X-FATHOM-Signature: t=<unix-seconds>,v1=<hex(hmac-sha256(secret, t + '.' + body))>
  *
  * This matches the widely-adopted "Stripe-style" signing convention, chosen
  * for familiarity. The timestamp prevents replay; receivers reject signatures
@@ -63,8 +63,8 @@ export class WebhookNotifier extends BaseNotifier {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'VIGIL/1.0',
-        'X-VIGIL-Signature': `t=${ts},v1=${sig}`,
+        'User-Agent': 'FATHOM/1.0',
+        'X-FATHOM-Signature': `t=${ts},v1=${sig}`,
         ...this.extraHeaders,
       },
       body,
@@ -83,12 +83,12 @@ export class WebhookNotifier extends BaseNotifier {
 
 /**
  * Receiver-side verifier. Pass the raw request body as a string, the value of
- * the X-VIGIL-Signature header, and the shared secret. Returns true iff the
+ * the X-FATHOM-Signature header, and the shared secret. Returns true iff the
  * signature is valid AND the timestamp is within tolerance.
  *
  * @param {object} params
  * @param {string} params.rawBody
- * @param {string} params.header               — value of X-VIGIL-Signature
+ * @param {string} params.header               — value of X-FATHOM-Signature
  * @param {string} params.secret
  * @param {number} [params.toleranceSeconds=300]
  * @param {number} [params.nowSeconds]         — injectable clock (tests)

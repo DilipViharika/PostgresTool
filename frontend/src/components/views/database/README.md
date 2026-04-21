@@ -1,4 +1,4 @@
-# VIGIL Database Components - TypeScript Edition
+# FATHOM Database Components - TypeScript Edition
 
 Complete TypeScript conversion of 13 production-grade database visualization and analysis components.
 
@@ -211,7 +211,7 @@ interface MyComponentProps {
 ✅ **Design System Integration**
 
 - THEME object compatibility
-- Consistent styling with vigil-\* colors
+- Consistent styling with fathom-\* colors
 - Responsive layouts
 
 ✅ **Performance**

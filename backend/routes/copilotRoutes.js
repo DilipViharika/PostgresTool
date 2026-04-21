@@ -5,7 +5,7 @@
  *
  * Factory signature matches the other DB-aware routes:
  *   app.use('/api', copilotRoutes(pool, authenticate, getPool))
- *     pool       — VIGIL control-plane pool (used for copilot_turns only)
+ *     pool       — FATHOM control-plane pool (used for copilot_turns only)
  *     getPool    — (connectionId) => pg Pool for a MONITORED database.
  *                  Same helper already used by mysqlRoutes / explain.
  *

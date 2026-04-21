@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Anomaly Detector Picker
+//  FATHOM — Anomaly Detector Picker
 // ==========================================================================
 //  Per-metric detector configuration: pick between z-score, EWMA, or MAD,
 //  tune the sensitivity, save per-metric. Lists current anomaly events.

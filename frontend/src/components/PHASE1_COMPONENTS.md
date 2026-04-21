@@ -1,28 +1,31 @@
-# VIGIL Phase 1 Components
+# FATHOM Phase 1 Components
 
-This document describes the Phase 1 components built for VIGIL database monitoring platform.
+This document describes the Phase 1 components built for FATHOM database monitoring platform.
 
 ## Overview
 
-Phase 1 introduces three critical onboarding and connection management components that follow VIGIL's design system (glassmorphism, cyan/teal accents, inline styles, lucide-react icons).
+Phase 1 introduces three critical onboarding and connection management components that follow FATHOM's design system (glassmorphism, cyan/teal accents, inline styles, lucide-react icons).
 
 ## Components
 
 ### 1. NoConnectionBanner.jsx
+
 **Location:** `/components/shared/NoConnectionBanner.jsx`
 
 A reusable banner component shown when no database connection is active.
 
 **Features:**
+
 - Animated gradient border with pulsing glow effect
 - Glass-effect card with `backdrop-filter: blur(8px)`
 - Customizable title and description
 - Four info chips (Host & Port, Database Name, Credentials, SSL Optional)
 - "Add Connection" button that navigates to pool tab
 - Responsive design with hover animations
-- Semi-transparent backgrounds matching VIGIL theme (rgba values)
+- Semi-transparent backgrounds matching FATHOM theme (rgba values)
 
 **Props:**
+
 ```jsx
 {
   title?: string          // Default: "No Database Connected"
@@ -32,15 +35,17 @@ A reusable banner component shown when no database connection is active.
 ```
 
 **Usage:**
+
 ```jsx
 import NoConnectionBanner from '@/components/shared/NoConnectionBanner';
 
 export function MyPage() {
-  return <NoConnectionBanner />;
+    return <NoConnectionBanner />;
 }
 ```
 
 **Dependencies:**
+
 - React, useState, useEffect
 - lucide-react: Database, Plus, Shield, Key, Wifi, Zap
 - NavigationContext (useNavigation)
@@ -50,16 +55,18 @@ export function MyPage() {
 ---
 
 ### 2. ConnectionStringParser.jsx
+
 **Location:** `/components/shared/ConnectionStringParser.jsx`
 
 A utility component that parses database connection strings and extracts individual fields.
 
 **Features:**
+
 - Supports multiple connection string formats:
-  - PostgreSQL: `postgresql://user:pass@host:port/database?sslmode=require`
-  - MySQL: `mysql://user:pass@host:port/database`
-  - MongoDB SRV: `mongodb+srv://user:pass@cluster.mongodb.net/database`
-  - MongoDB Standard: `mongodb://user:pass@host:port/database`
+    - PostgreSQL: `postgresql://user:pass@host:port/database?sslmode=require`
+    - MySQL: `mysql://user:pass@host:port/database`
+    - MongoDB SRV: `mongodb+srv://user:pass@cluster.mongodb.net/database`
+    - MongoDB Standard: `mongodb://user:pass@host:port/database`
 - Real-time parsing with validation
 - Displays parsed breakdown below textarea
 - Copy-to-clipboard buttons for each field
@@ -67,6 +74,7 @@ A utility component that parses database connection strings and extracts individ
 - SSL mode detection from query parameters
 
 **Props:**
+
 ```jsx
 {
   onChange?: (parsed: ParsedConnectionData) => void
@@ -75,21 +83,23 @@ A utility component that parses database connection strings and extracts individ
 ```
 
 **Returned Data Structure:**
+
 ```javascript
 {
-  type: 'postgresql' | 'mysql' | 'mongodb'
-  host: string
-  port: string | number
-  username: string
-  password: string
-  database: string
-  ssl: boolean
-  sslmode: string      // e.g., 'require', 'true'
-  rawParams: object    // All query parameters
+    type: 'postgresql' | 'mysql' | 'mongodb';
+    host: string;
+    port: string | number;
+    username: string;
+    password: string;
+    database: string;
+    ssl: boolean;
+    sslmode: string; // e.g., 'require', 'true'
+    rawParams: object; // All query parameters
 }
 ```
 
 **Usage:**
+
 ```jsx
 import ConnectionStringParser from '@/components/shared/ConnectionStringParser';
 
@@ -108,6 +118,7 @@ function MyWizard() {
 ```
 
 **Dependencies:**
+
 - React, useState, useCallback
 - lucide-react: Copy, Check, AlertCircle
 - THEME from utils/theme.jsx
@@ -115,35 +126,38 @@ function MyWizard() {
 ---
 
 ### 3. ConnectionWizard.jsx
+
 **Location:** `/components/views/onboarding/ConnectionWizard.jsx`
 
 A comprehensive multi-step wizard for creating new database connections.
 
 **Features:**
+
 - 5-step wizard:
-  1. **Type Selection** - Choose PostgreSQL/MySQL/MongoDB with provider templates
-  2. **Connection Details** - Manual entry or connection string parsing
-  3. **Options** - SSL/TLS, SSH tunnel configuration
-  4. **Test Connection** - Real-time connection verification
-  5. **Success Screen** - Confirmation with dashboard navigation
+    1. **Type Selection** - Choose PostgreSQL/MySQL/MongoDB with provider templates
+    2. **Connection Details** - Manual entry or connection string parsing
+    3. **Options** - SSL/TLS, SSH tunnel configuration
+    4. **Test Connection** - Real-time connection verification
+    5. **Success Screen** - Confirmation with dashboard navigation
 
 - Provider Templates (pre-configured):
-  - AWS RDS
-  - Neon
-  - Supabase
-  - PlanetScale
-  - MongoDB Atlas
+    - AWS RDS
+    - Neon
+    - Supabase
+    - PlanetScale
+    - MongoDB Atlas
 
 - Built-in Features:
-  - Step indicator with progress tracking
-  - Connection string parsing via ConnectionStringParser
-  - Real-time form validation
-  - Loading states during testing
-  - Error handling with retry capability
-  - Automatic connection activation on success
-  - Context integration for connection management
+    - Step indicator with progress tracking
+    - Connection string parsing via ConnectionStringParser
+    - Real-time form validation
+    - Loading states during testing
+    - Error handling with retry capability
+    - Automatic connection activation on success
+    - Context integration for connection management
 
 **DB Types Configuration:**
+
 ```javascript
 {
   postgresql: { label: 'PostgreSQL', defaultPort: 5432, color: '#336791', icon: '🐘' }
@@ -153,19 +167,22 @@ A comprehensive multi-step wizard for creating new database connections.
 ```
 
 **API Endpoints Used:**
+
 - `POST /api/connections/test` - Test connection with provided credentials
 - `POST /api/connections` - Create new connection (called on test success)
 
 **Usage:**
+
 ```jsx
 import ConnectionWizard from '@/components/views/onboarding/ConnectionWizard';
 
 export function OnboardingPage() {
-  return <ConnectionWizard />;
+    return <ConnectionWizard />;
 }
 ```
 
 **Dependencies:**
+
 - React, useState, useEffect, useCallback
 - lucide-react: ChevronRight, ChevronLeft, CheckCircle, Loader, AlertCircle, Database, etc.
 - postData from utils/api
@@ -178,9 +195,10 @@ export function OnboardingPage() {
 
 ## Design System Integration
 
-All components follow VIGIL's design conventions:
+All components follow FATHOM's design conventions:
 
 ### Colors & Tokens (from THEME)
+
 - **Primary:** `#00D4FF` (Electric Cyan)
 - **Secondary:** `#2AFFD4` (Aquamarine)
 - **Success:** `#2EE89C` (Emerald)
@@ -191,6 +209,7 @@ All components follow VIGIL's design conventions:
 - **Glass:** `rgba(18, 10, 31, 0.65)` (Dark with transparency)
 
 ### Styling Patterns
+
 - **Inline styles only** (no CSS modules or classNames)
 - **Glassmorphism:** `backdrop-filter: blur(8px)` on dark backgrounds
 - **Borders:** `rgba(0, 212, 255, 0.12)` to `0.4)` with hover states
@@ -198,6 +217,7 @@ All components follow VIGIL's design conventions:
 - **Icons:** lucide-react with consistent sizing (12-32px)
 
 ### Typography
+
 - **Display:** `THEME.fontBody` ('Exo 2', sans-serif)
 - **Monospace:** `THEME.fontMono` (JetBrains Mono)
 - **Font Weights:** 500 (normal), 600 (labels), 700 (titles)
@@ -213,16 +233,16 @@ import NoConnectionBanner from '@/components/shared/NoConnectionBanner';
 import { useConnection } from '@/context/ConnectionContext';
 
 function DashboardTab() {
-  const { activeConnection, loading } = useConnection();
+    const { activeConnection, loading } = useConnection();
 
-  if (loading) return <div>Loading...</div>;
+    if (loading) return <div>Loading...</div>;
 
-  if (!activeConnection) {
-    return <NoConnectionBanner />;
-  }
+    if (!activeConnection) {
+        return <NoConnectionBanner />;
+    }
 
-  // Render normal dashboard content
-  return <Dashboard connection={activeConnection} />;
+    // Render normal dashboard content
+    return <Dashboard connection={activeConnection} />;
 }
 ```
 
@@ -233,14 +253,14 @@ import ConnectionWizard from '@/components/views/onboarding/ConnectionWizard';
 import { useConnection } from '@/context/ConnectionContext';
 
 function OnboardingFlow() {
-  const { connections } = useConnection();
+    const { connections } = useConnection();
 
-  // Show wizard if no connections exist
-  if (connections.length === 0) {
-    return <ConnectionWizard />;
-  }
+    // Show wizard if no connections exist
+    if (connections.length === 0) {
+        return <ConnectionWizard />;
+    }
 
-  return <SelectExistingConnection />;
+    return <SelectExistingConnection />;
 }
 ```
 
@@ -250,31 +270,31 @@ function OnboardingFlow() {
 import ConnectionStringParser from '@/components/shared/ConnectionStringParser';
 
 function CustomConnectionForm() {
-  const [formData, setFormData] = useState({
-    host: '',
-    port: '',
-    username: '',
-    password: '',
-    database: '',
-  });
-
-  const handleStringParsed = (parsed) => {
-    // Auto-populate form from connection string
-    setFormData({
-      host: parsed.host,
-      port: parsed.port,
-      username: parsed.username,
-      password: parsed.password,
-      database: parsed.database,
+    const [formData, setFormData] = useState({
+        host: '',
+        port: '',
+        username: '',
+        password: '',
+        database: '',
     });
-  };
 
-  return (
-    <div>
-      <ConnectionStringParser onChange={handleStringParsed} />
-      {/* Rest of form... */}
-    </div>
-  );
+    const handleStringParsed = (parsed) => {
+        // Auto-populate form from connection string
+        setFormData({
+            host: parsed.host,
+            port: parsed.port,
+            username: parsed.username,
+            password: parsed.password,
+            database: parsed.database,
+        });
+    };
+
+    return (
+        <div>
+            <ConnectionStringParser onChange={handleStringParsed} />
+            {/* Rest of form... */}
+        </div>
+    );
 }
 ```
 
@@ -283,16 +303,19 @@ function CustomConnectionForm() {
 ## Error Handling
 
 ### ConnectionWizard
+
 - **Test Failure:** Shows error message with retry button
 - **Connection Creation Failure:** Allows backtracking to fix details
 - **Validation:** Empty field checks before submission
 
 ### ConnectionStringParser
+
 - **Invalid Format:** Displays error message below textarea
 - **Unsupported Protocol:** Shows specific protocol error
 - **Malformed URL:** Provides user-friendly error description
 
 ### NoConnectionBanner
+
 - **No visible errors:** Component is resilient and always renders
 - **Context fallback:** Uses default props if context unavailable
 
@@ -301,12 +324,14 @@ function CustomConnectionForm() {
 ## Browser Compatibility
 
 All components use modern CSS and React features:
+
 - CSS Backdrop Filters (supported in all modern browsers)
 - CSS Grid and Flexbox layouts
 - React Hooks (useState, useEffect, useCallback, useContext)
 - ES6+ JavaScript
 
 Tested with:
+
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
@@ -356,7 +381,7 @@ frontend/src/components/
 ## Author Notes
 
 - All components are **production-ready**
-- Code follows existing VIGIL patterns and conventions
+- Code follows existing FATHOM patterns and conventions
 - Each component is self-contained and independently testable
 - API integration uses existing `postData` and `fetchData` utilities
 - Context providers (NavigationContext, ConnectionContext) are required in parent

@@ -1,6 +1,6 @@
-# VIGIL — SOC 2 Type II Controls Checklist
+# FATHOM — SOC 2 Type II Controls Checklist
 
-**Purpose.** This document is an internal, engineering-facing checklist of the controls VIGIL must have in place _before the SOC 2 Type II observation window opens_. It maps each control to (a) the Trust Service Criterion it satisfies, (b) the owning team, (c) the artifact a SOC 2 auditor will ask for, and (d) the current status. It is _not_ the audit itself — it is the preparation sheet an auditor would expect to see on the first day of kickoff.
+**Purpose.** This document is an internal, engineering-facing checklist of the controls FATHOM must have in place _before the SOC 2 Type II observation window opens_. It maps each control to (a) the Trust Service Criterion it satisfies, (b) the owning team, (c) the artifact a SOC 2 auditor will ask for, and (d) the current status. It is _not_ the audit itself — it is the preparation sheet an auditor would expect to see on the first day of kickoff.
 
 **Scope.** The initial SOC 2 engagement covers Security (mandatory) plus Availability and Confidentiality. Privacy and Processing Integrity are out of scope for the first year and will be reassessed before the Year 2 renewal.
 
@@ -31,7 +31,7 @@ Each Trust Service Criterion section contains a table of specific controls. A co
 | #     | Control                                                                      | Owner         | Artifact                     | Status |
 | ----- | ---------------------------------------------------------------------------- | ------------- | ---------------------------- | ------ |
 | CC2.1 | Internal runbook index kept current (on-call, incident, customer escalation) | Eng           | `runbooks/` in internal repo | `[x]`  |
-| CC2.2 | Customer-facing status page with subscription and incident history           | Eng           | status.vigil.example.com     | `[ ]`  |
+| CC2.2 | Customer-facing status page with subscription and incident history           | Eng           | status.fathom.example.com    | `[ ]`  |
 | CC2.3 | External communication policy — who speaks to customers during incidents     | Eng / Support | Policy doc                   | `[~]`  |
 | CC2.4 | Whistleblower / anonymous-reporting channel with published email alias       | People        | Policy doc + mailbox         | `[ ]`  |
 
@@ -65,7 +65,7 @@ Each Trust Service Criterion section contains a table of specific controls. A co
 
 | #     | Control                                                                          | Owner           | Artifact                                                   | Status |
 | ----- | -------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------- | ------ |
-| CC6.1 | SSO (SAML 2.0) supported for customer tenants; enforced for all internal systems | Eng             | VIGIL SAML settings UI, IdP screenshots                    | `[x]`  |
+| CC6.1 | SSO (SAML 2.0) supported for customer tenants; enforced for all internal systems | Eng             | FATHOM SAML settings UI, IdP screenshots                   | `[x]`  |
 | CC6.2 | MFA enforced for every employee on every system that holds customer data         | Security        | IdP enforcement policy                                     | `[x]`  |
 | CC6.3 | Role-based access control (RBAC) with least-privilege role assignment            | Eng             | `RBAC_CONFIGURATION.md`, role matrix                       | `[x]`  |
 | CC6.4 | SCIM 2.0 provisioning so tenants can automate user lifecycle                     | Eng             | `backend/enterprise/scim/` + Okta / Entra integration docs | `[x]`  |

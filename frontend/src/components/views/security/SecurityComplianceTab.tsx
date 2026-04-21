@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Security & Compliance Center (v2.0)
+//  FATHOM — Security & Compliance Center (v2.0)
 // ==========================================================================
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';

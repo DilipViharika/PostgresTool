@@ -82,9 +82,9 @@ const CONFIG = Object.freeze({
     JWT_SECRET:     process.env.JWT_SECRET  || null,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '8h',
     // SEC-07 (audit): bind tokens to this app & issuer so a JWT minted for
-    // some other service (or a different VIGIL deployment) cannot be replayed.
-    JWT_AUDIENCE:   process.env.JWT_AUDIENCE || 'vigil-api',
-    JWT_ISSUER:     process.env.JWT_ISSUER   || 'vigil-auth',
+    // some other service (or a different FATHOM deployment) cannot be replayed.
+    JWT_AUDIENCE:   process.env.JWT_AUDIENCE || 'fathom-api',
+    JWT_ISSUER:     process.env.JWT_ISSUER   || 'fathom-auth',
     CORS_ORIGINS: [
         ...(IS_PROD ? [] : ['http://localhost:5173', 'http://localhost:3000']),
         'https://postgres-tool.vercel.app',
@@ -120,7 +120,7 @@ const CONFIG = Object.freeze({
         provider:     process.env.EMAIL_PROVIDER    || 'smtp',
         minSeverity:  process.env.EMAIL_MIN_SEVERITY || 'warning',
         recipients:   process.env.EMAIL_RECIPIENTS?.split(',').map(e => e.trim()) || [],
-        from:         process.env.EMAIL_FROM || '"VIGIL Alert System" <alerts@vigil.local>',
+        from:         process.env.EMAIL_FROM || '"FATHOM Alert System" <alerts@fathom.local>',
         dashboardUrl: process.env.DASHBOARD_URL   || 'http://localhost:5173',
         databaseName: process.env.PGDATABASE      || 'postgres',
         gmail:   { user: process.env.GMAIL_USER,       appPassword: process.env.GMAIL_APP_PASSWORD },
@@ -169,7 +169,7 @@ const HAS_ADMIN_DB = !!(process.env.DATABASE_URL || (process.env.PGHOST && proce
         } else {
             warnings.push('JWT_SECRET not configured. Set a strong secret before deploying to production.');
         }
-    } else if (process.env.JWT_SECRET === 'vigil-change-me-in-production') {
+    } else if (process.env.JWT_SECRET === 'fathom-change-me-in-production') {
         errors.push(
             'FATAL: JWT_SECRET is using the insecure default value. ' +
             'Change it to a strong, random secret in your environment configuration. ' +
@@ -183,7 +183,7 @@ const HAS_ADMIN_DB = !!(process.env.DATABASE_URL || (process.env.PGHOST && proce
     }
 
     // ── Required variables in production ────────────────────────────────
-    // NOTE: PGHOST / PGPASSWORD are NOT required — VIGIL is a monitoring
+    // NOTE: PGHOST / PGPASSWORD are NOT required — FATHOM is a monitoring
     //       tool where users connect their own databases at runtime.
     if (IS_PROD) {
         // At least one CORS origin must be configured
@@ -229,16 +229,16 @@ function log(level, message, meta = {}) {
 // TLS HELPER — SEC-04 (audit)
 // ─────────────────────────────────────────────────────────────────────────────
 // In production we default to strict TLS certificate validation.
-// Set VIGIL_TLS_ALLOW_SELF_SIGNED=true to opt back into the permissive
+// Set FATHOM_TLS_ALLOW_SELF_SIGNED=true to opt back into the permissive
 // behavior (needed for some self-hosted DBs with self-signed certs).
-// Set VIGIL_TLS_CA_CERT to a PEM bundle to trust a custom CA.
+// Set FATHOM_TLS_CA_CERT to a PEM bundle to trust a custom CA.
 function buildSslOption(sslEnabled) {
     if (!sslEnabled) return false;
     const isProd = process.env.NODE_ENV === 'production';
     const allowSelfSigned =
-        process.env.VIGIL_TLS_ALLOW_SELF_SIGNED === 'true'
-        || (!isProd && process.env.VIGIL_TLS_STRICT !== 'true');
-    const ca = process.env.VIGIL_TLS_CA_CERT;
+        process.env.FATHOM_TLS_ALLOW_SELF_SIGNED === 'true'
+        || (!isProd && process.env.FATHOM_TLS_STRICT !== 'true');
+    const ca = process.env.FATHOM_TLS_CA_CERT;
     const opt = { rejectUnauthorized: !allowSelfSigned };
     if (ca) opt.ca = ca;
     return opt;
@@ -248,7 +248,7 @@ function buildSslOption(sslEnabled) {
 // DATABASE POOL — admin pool (env-based, for metadata) + per-connection pool map
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Admin pool: used ONLY for vigil_connections, users, feedback, etc.
+// Admin pool: used ONLY for fathom_connections, users, feedback, etc.
 // NOT used for monitoring queries — those must go through user-added connections.
 // PRF-05 (audit): admin pool max reduced from 10 to 3 per instance.
 // On Vercel each cold-started function instance owns its own pool, so a max
@@ -256,8 +256,8 @@ function buildSslOption(sslEnabled) {
 // (default ~100 max). Three is plenty for the metadata workload (control-plane
 // reads/writes only), and the per-user query workload runs through dynamic
 // pools created by getPool() with their own caps.
-// Override with VIGIL_ADMIN_POOL_MAX if a deployment genuinely needs more.
-const ADMIN_POOL_MAX = Number(process.env.VIGIL_ADMIN_POOL_MAX) || 3;
+// Override with FATHOM_ADMIN_POOL_MAX if a deployment genuinely needs more.
+const ADMIN_POOL_MAX = Number(process.env.FATHOM_ADMIN_POOL_MAX) || 3;
 const pool = HAS_ADMIN_DB
     ? new Pool(
           process.env.DATABASE_URL
@@ -299,9 +299,9 @@ const mongoInFlight = new Map();         // Map<connectionId, Promise<{client,db
 const poolLastUsed = new Map();          // Map<connectionId, ms epoch>
 const mongoLastUsed = new Map();         // Map<connectionId, ms epoch>
 const POOL_IDLE_EVICT_MS =
-    Number(process.env.VIGIL_POOL_IDLE_EVICT_MS) || 30 * 60 * 1000; // 30 min
+    Number(process.env.FATHOM_POOL_IDLE_EVICT_MS) || 30 * 60 * 1000; // 30 min
 const POOL_EVICT_SWEEP_MS =
-    Number(process.env.VIGIL_POOL_EVICT_SWEEP_MS) || 5 * 60 * 1000; // 5 min
+    Number(process.env.FATHOM_POOL_EVICT_SWEEP_MS) || 5 * 60 * 1000; // 5 min
 
 function touchPool(id)       { poolLastUsed.set(id, Date.now()); }
 function touchMongoClient(id){ mongoLastUsed.set(id, Date.now()); }
@@ -823,12 +823,12 @@ const queryHistory = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONNECTIONS — persisted in the app database (vigil_connections table)
+// CONNECTIONS — persisted in the app database (fathom_connections table)
 // Using the DB instead of a JSON file ensures data survives Vercel cold-starts,
 // is scoped per-user, and is never accidentally recreated after deletion.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Ensure the vigil_connections table exists (idempotent) */
+/** Ensure the fathom_connections table exists (idempotent) */
 async function ensureConnectionsTable() {
     if (!pool) throw new Error('Admin database not configured');
     // 1. Guarantee the schema exists before touching any table inside it.
@@ -838,7 +838,7 @@ async function ensureConnectionsTable() {
     //    when the users table hasn't been provisioned yet.  The FK is added as a
     //    separate best-effort step below so it never blocks table creation.
     await pool.query(`
-        CREATE TABLE IF NOT EXISTS pgmonitoringtool.vigil_connections (
+        CREATE TABLE IF NOT EXISTS pgmonitoringtool.fathom_connections (
             id          SERIAL      PRIMARY KEY,
             user_id     INTEGER,
             name        TEXT        NOT NULL,
@@ -866,7 +866,7 @@ async function ensureConnectionsTable() {
 
     // 3. Best-effort: attach FK to users only when that table already exists.
     //    A missing users table (fresh DB, different init order) must never
-    //    prevent vigil_connections from being usable.
+    //    prevent fathom_connections from being usable.
     try {
         await pool.query(`
             DO $$ BEGIN
@@ -876,12 +876,12 @@ async function ensureConnectionsTable() {
                 ) AND NOT EXISTS (
                     SELECT 1 FROM information_schema.table_constraints
                     WHERE table_schema   = 'pgmonitoringtool'
-                      AND table_name     = 'vigil_connections'
+                      AND table_name     = 'fathom_connections'
                       AND constraint_type = 'FOREIGN KEY'
-                      AND constraint_name = 'vigil_connections_user_id_fkey'
+                      AND constraint_name = 'fathom_connections_user_id_fkey'
                 ) THEN
-                    ALTER TABLE pgmonitoringtool.vigil_connections
-                        ADD CONSTRAINT vigil_connections_user_id_fkey
+                    ALTER TABLE pgmonitoringtool.fathom_connections
+                        ADD CONSTRAINT fathom_connections_user_id_fkey
                         FOREIGN KEY (user_id)
                         REFERENCES pgmonitoringtool.users(id)
                         ON DELETE CASCADE;
@@ -893,7 +893,7 @@ async function ensureConnectionsTable() {
     // 4. Add db_type column if it doesn't exist (backward compatibility)
     try {
         await pool.query(`
-            ALTER TABLE pgmonitoringtool.vigil_connections
+            ALTER TABLE pgmonitoringtool.fathom_connections
             ADD COLUMN IF NOT EXISTS db_type TEXT NOT NULL DEFAULT 'postgresql'
         `);
     } catch { /* Column may already exist */ }
@@ -961,7 +961,7 @@ async function dbLoadConnections(userId, role) {
     // Always scope to the user's own connections — admins see all connections
     // only through the /api/admin/connections endpoint, not in their personal pool
     const { rows } = await pool.query(
-        'SELECT * FROM pgmonitoringtool.vigil_connections WHERE user_id = $1 ORDER BY id',
+        'SELECT * FROM pgmonitoringtool.fathom_connections WHERE user_id = $1 ORDER BY id',
         [userId]
     );
     return rows.map(rowToConn);
@@ -969,7 +969,7 @@ async function dbLoadConnections(userId, role) {
 
 /** Admin-only: load ALL connections across all users (for admin panel) */
 async function dbLoadAllConnections() {
-    const { rows } = await pool.query('SELECT * FROM pgmonitoringtool.vigil_connections ORDER BY id');
+    const { rows } = await pool.query('SELECT * FROM pgmonitoringtool.fathom_connections ORDER BY id');
     return rows.map(rowToConn);
 }
 
@@ -982,7 +982,7 @@ async function dbInsertConnection(conn) {
     const encryptedSshPassword = (conn.sshPassword && conn.sshPassword.trim()) ? encrypt(conn.sshPassword) : '';
 
     const { rows } = await pool.query(`
-        INSERT INTO pgmonitoringtool.vigil_connections
+        INSERT INTO pgmonitoringtool.fathom_connections
             (user_id, name, host, port, db_name, username, password, ssl,
              ssh_enabled, ssh_host, ssh_port, ssh_user, ssh_auth_type,
              ssh_private_key, ssh_passphrase, ssh_password, is_default, status, last_tested, db_type)
@@ -1008,7 +1008,7 @@ async function dbUpdateConnection(id, fields) {
     // Note: null here is intentional for UPDATE — COALESCE($14, ssh_private_key) preserves existing value
 
     const { rows } = await pool.query(`
-        UPDATE pgmonitoringtool.vigil_connections SET
+        UPDATE pgmonitoringtool.fathom_connections SET
             name        = COALESCE($2, name),
             host        = COALESCE($3, host),
             port        = COALESCE($4, port),
@@ -1059,7 +1059,7 @@ async function dbUpdateConnection(id, fields) {
 async function dbDeleteConnection(id, userId) {
     // Safety: always scope delete by user_id to prevent cross-user deletion
     const result = await pool.query(
-        'DELETE FROM pgmonitoringtool.vigil_connections WHERE id = $1 AND user_id = $2 RETURNING id',
+        'DELETE FROM pgmonitoringtool.fathom_connections WHERE id = $1 AND user_id = $2 RETURNING id',
         [id, userId]
     );
     if (result.rowCount === 0) {
@@ -1071,7 +1071,7 @@ async function dbDeleteConnection(id, userId) {
 async function dbSetDefault(userId, role, newDefaultId) {
     // Always scope by user_id — each user manages their own default connection
     await pool.query(
-        'UPDATE pgmonitoringtool.vigil_connections SET is_default = (id = $1) WHERE user_id = $2',
+        'UPDATE pgmonitoringtool.fathom_connections SET is_default = (id = $1) WHERE user_id = $2',
         [newDefaultId, userId]
     );
 }
@@ -1084,7 +1084,7 @@ let CONNECTIONS = [];
 async function syncConnectionsCache() {
     if (!pool) return;   // no admin DB — nothing to sync
     try {
-        const { rows } = await pool.query('SELECT * FROM pgmonitoringtool.vigil_connections ORDER BY id');
+        const { rows } = await pool.query('SELECT * FROM pgmonitoringtool.fathom_connections ORDER BY id');
         CONNECTIONS = rows.map(rowToConn);
     } catch { /* DB not reachable yet — leave cache as-is */ }
 }
@@ -2327,7 +2327,7 @@ app.post('/api/alerts/slack/test', authenticate, requireScreen('admin'), async (
     try {
         const webhookUrl = process.env.SLACK_WEBHOOK_URL;
         if (!webhookUrl) return res.status(400).json({ error: 'SLACK_WEBHOOK_URL is not configured.' });
-        await sendSlackMessage(':white_check_mark: *Vigil Slack integration is working!* This is a test message from your Vigil monitoring platform.', webhookUrl);
+        await sendSlackMessage(':white_check_mark: *Fathom Slack integration is working!* This is a test message from your Fathom monitoring platform.', webhookUrl);
         res.json({ success: true, message: 'Test message sent to Slack.' });
     } catch (e) {
         log('ERROR', 'Slack test error', { error: e.message });
@@ -2393,7 +2393,7 @@ app.post('/api/slack/commands', express.raw({ type: 'application/x-www-form-urle
     return res.status(400).json({ text: 'Unknown command.' });
 });
 
-// ── Slack Events: thread replies sync back to VIGIL ──────────────────────
+// ── Slack Events: thread replies sync back to FATHOM ──────────────────────
 app.post('/api/slack/events', express.raw({ type: 'application/json' }), async (req, res) => {
     req.rawBody = req.body?.toString?.() || '';
 
@@ -2417,7 +2417,7 @@ app.post('/api/slack/events', express.raw({ type: 'application/json' }), async (
     // Only handle threaded replies that aren't from bots
     if (event?.type === 'message' && event.thread_ts && !event.bot_id && event.text) {
         try {
-            // Find the VIGIL alert that owns this Slack thread
+            // Find the FATHOM alert that owns this Slack thread
             const alertResult = await pool.query(
                 `SELECT * FROM alerts WHERE slack_ts = $1 LIMIT 1`,
                 [event.thread_ts],
@@ -2439,7 +2439,7 @@ app.post('/api/slack/events', express.raw({ type: 'application/json' }), async (
                         alert.id,
                     ],
                 );
-                log('INFO', 'Slack thread reply synced to VIGIL', { alertId: alert.id, author: authorName });
+                log('INFO', 'Slack thread reply synced to FATHOM', { alertId: alert.id, author: authorName });
             }
         } catch (err) {
             log('ERROR', 'Failed to sync Slack thread reply', { error: err.message });
@@ -2701,7 +2701,7 @@ app.post('/api/connections', authenticate, ensureConnections, async (req, res) =
                 await testConn.end();
             } else {
                 // Try as-is first; on cert errors, retry with the configured SSL
-                // policy (see buildSslOption + VIGIL_TLS_ALLOW_SELF_SIGNED).
+                // policy (see buildSslOption + FATHOM_TLS_ALLOW_SELF_SIGNED).
                 // PRF-03 (audit): always end() the test pool, even on the
                 // failure path, so we don't leak open sockets when the connect()
                 // succeeds but the followup query throws.
@@ -4933,7 +4933,7 @@ app.post('/api/admin/connections/kill', authenticate, requireRole('admin', 'supe
         );
         if (check.rows.length === 0) return res.status(404).json({ error: 'Connection not found' });
         const conn = check.rows[0];
-        if (conn.application_name === 'vigil_backend') {
+        if (conn.application_name === 'fathom_backend') {
             return res.status(403).json({ error: 'Cannot terminate the monitoring backend connection' });
         }
         const r = await _p.query('SELECT pg_terminate_backend($1) AS killed', [pid]);
@@ -5902,7 +5902,7 @@ async function startup() {
         });
 
         server.listen(CONFIG.PORT, '0.0.0.0', () => {
-            log('INFO', `🚀 VIGIL v3.0.0 running on port ${CONFIG.PORT}`);
+            log('INFO', `🚀 FATHOM v3.0.0 running on port ${CONFIG.PORT}`);
         });
 
         if (pool) {

@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Enhanced Alert System Module
+//  FATHOM — Enhanced Alert System Module
 // ==========================================================================
 
 import { v4 as uuid } from 'uuid';

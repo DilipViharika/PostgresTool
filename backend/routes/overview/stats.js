@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — /api/overview/stats
+//  FATHOM — /api/overview/stats
 //  Returns: connections, cache hit ratio, disk size, uptime, system resources,
 //           latency percentiles, pg version, host
 // ==========================================================================

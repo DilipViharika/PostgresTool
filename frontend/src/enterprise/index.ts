@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Enterprise Module Exports
+//  FATHOM — Enterprise Module Exports
 // ==========================================================================
 //  Central exports for license and organization management
 

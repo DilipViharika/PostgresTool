@@ -26,7 +26,7 @@ const lazyRetry = (importFn) =>
     lazy(() =>
         importFn().catch((err) => {
             // Chunk fetch failed (likely stale hash after deploy) — force-reload once
-            const key = 'vigil_chunk_retry';
+            const key = 'fathom_chunk_retry';
             try {
                 if (!sessionStorage.getItem(key)) {
                     sessionStorage.setItem(key, '1');
@@ -307,7 +307,7 @@ const getSectionAccent = (tabId) => {
 const WS_RECONNECT_INTERVAL = 5000;
 const ALERT_AUTO_DISMISS_TIME = 5000;
 const MAX_NOTIFICATIONS = 50;
-const AUTH_TOKEN_KEY = 'vigil_token';
+const AUTH_TOKEN_KEY = 'fathom_token';
 const FEEDBACK_RATE_LIMIT_MS = 5 * 60 * 1000; // 5 minutes
 
 /* ─────────────────────────────────────────────────────────────────
@@ -343,7 +343,7 @@ const AppStyles = React.memo(() => (
             }
         }
 
-        /* ═══ VIGIL — Clean & Refined ═══ */
+        /* ═══ FATHOM — Clean & Refined ═══ */
 
         /* ── Sidebar ── */
         aside {
@@ -386,10 +386,10 @@ const AppStyles = React.memo(() => (
         }
 
         /* ═══ CARD SYSTEM — clean elevation ═══ */
-        .vigil-card {
+        .fathom-card {
             transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
         }
-        .vigil-card:hover {
+        .fathom-card:hover {
             box-shadow: ${DS._dark
                 ? '0 4px 16px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.15)'
                 : '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)'
@@ -789,7 +789,7 @@ const StatusPill = ({ connected }) => (
    also keeps the mutable DS object in sync for legacy consumers
    ───────────────────────────────────────────────────────────────── */
 /* ─────────────────────────────────────────────────────────────────
-   GLOBAL REFRESH BUTTON — dispatches 'vigil-refresh' CustomEvent
+   GLOBAL REFRESH BUTTON — dispatches 'fathom-refresh' CustomEvent
    that individual tabs listen for to trigger their own data reload.
    ───────────────────────────────────────────────────────────────── */
 const GlobalRefreshButton = () => {
@@ -797,7 +797,7 @@ const GlobalRefreshButton = () => {
 
     const handleRefresh = () => {
         setSpinning(true);
-        window.dispatchEvent(new CustomEvent('vigil-refresh'));
+        window.dispatchEvent(new CustomEvent('fathom-refresh'));
         setTimeout(() => setSpinning(false), 900);
     };
 
@@ -1448,7 +1448,7 @@ const FeedbackModal = ({ onClose, initialSection }) => {
     const [rateLimited, setRateLimited] = useState(false);
     useEffect(() => {
         try {
-            const last = parseInt(localStorage.getItem('vigil_last_feedback') || '0', 10);
+            const last = parseInt(localStorage.getItem('fathom_last_feedback') || '0', 10);
             if (last > 0 && Date.now() - last < FEEDBACK_RATE_LIMIT_MS) setRateLimited(true);
         } catch {}
     }, []);
@@ -1555,7 +1555,7 @@ const FeedbackModal = ({ onClose, initialSection }) => {
 
             /* ✓ Success */
             try {
-                localStorage.setItem('vigil_last_feedback', Date.now().toString());
+                localStorage.setItem('fathom_last_feedback', Date.now().toString());
             } catch {}
             setSent(true);
             setTimeout(onClose, 2800);
@@ -1615,7 +1615,7 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                         Thank you!
                     </h3>
                     <p style={{ color: DS.textSub, margin: 0, fontSize: 13, lineHeight: 1.7 }}>
-                        Your feedback helps us make Vigil better for everyone.
+                        Your feedback helps us make Fathom better for everyone.
                     </p>
                 </div>
             </div>
@@ -1682,7 +1682,7 @@ const FeedbackModal = ({ onClose, initialSection }) => {
                                 letterSpacing: '0.02em',
                             }}
                         >
-                            VIGIL · DATABASE MONITOR
+                            FATHOM · DATABASE MONITOR
                         </div>
                     </div>
                     <button
@@ -2046,8 +2046,8 @@ class ErrorBoundary extends React.Component {
                             <button
                                 onClick={() => {
                                     try {
-                                        localStorage.removeItem('vigil_active_tab');
-                                        localStorage.removeItem('vigil_sidebar_collapsed');
+                                        localStorage.removeItem('fathom_active_tab');
+                                        localStorage.removeItem('fathom_sidebar_collapsed');
                                     } catch {}
                                     window.location.href = '/';
                                 }}
@@ -2099,7 +2099,7 @@ class ErrorBoundary extends React.Component {
                         <p style={{ color: DS.textMuted, margin: '20px 0 0', fontSize: 11, lineHeight: 1.5 }}>
                             If this error persists, please{' '}
                             <a
-                                href="mailto:support@vigil.io"
+                                href="mailto:support@fathom.io"
                                 style={{ color: DS.cyan, textDecoration: 'none', fontWeight: 600 }}
                             >
                                 contact support
@@ -2139,7 +2139,7 @@ const ProfileModal = ({ user, onClose, onSave }) => {
         setSaving(true);
         setError('');
         try {
-            const token = localStorage.getItem('vigil_token');
+            const token = localStorage.getItem('fathom_token');
             const res = await fetch('/api/users/profile', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -4653,7 +4653,7 @@ const LoadingScreen = () => (
                     letterSpacing: '-0.01em',
                 }}
             >
-                Vigil
+                Fathom
             </div>
             <div
                 style={{

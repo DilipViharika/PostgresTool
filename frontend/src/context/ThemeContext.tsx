@@ -79,7 +79,7 @@ export const LIGHT_TOKENS = {
 export const ThemeProvider = ({ children }) => {
     const [isDark, setIsDark] = useState(() => {
         try {
-            return localStorage.getItem('vigil_theme') === 'dark';
+            return localStorage.getItem('fathom_theme') === 'dark';
         } catch {
             return false;
         }
@@ -89,7 +89,7 @@ export const ThemeProvider = ({ children }) => {
 
     useEffect(() => {
         try {
-            localStorage.setItem('vigil_theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('fathom_theme', isDark ? 'dark' : 'light');
         } catch {}
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
         document.body.style.backgroundColor = tokens.bg;
@@ -100,7 +100,7 @@ export const ThemeProvider = ({ children }) => {
         setIsDark((prev) => {
             const next = !prev;
             /* Broadcast for legacy module-level DS consumers */
-            window.dispatchEvent(new CustomEvent('vigil-theme-change', { detail: { isDark: next } }));
+            window.dispatchEvent(new CustomEvent('fathom-theme-change', { detail: { isDark: next } }));
             return next;
         });
     }, []);

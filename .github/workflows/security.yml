@@ -1,6 +1,6 @@
 # .github/workflows/security.yml
 # ──────────────────────────────────
-# Supply-chain and static-analysis gates for VIGIL.
+# Supply-chain and static-analysis gates for FATHOM.
 #
 # Three layers:
 #   1. gitleaks   — block commits that introduce secrets (API keys, tokens,

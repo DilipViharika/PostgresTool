@@ -1,6 +1,6 @@
 /**
  * SDKDashboardTab.tsx
- * SDK Integration Hub for VIGIL — register apps, ingest events, view metrics.
+ * SDK Integration Hub for FATHOM — register apps, ingest events, view metrics.
  */
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
@@ -11,7 +11,7 @@ import {
 
 /* ── Safe fetch helpers (avoid global auth:logout on 401) ─────────────── */
 function getToken() {
-    try { return localStorage.getItem('vigil_token'); } catch { return null; }
+    try { return localStorage.getItem('fathom_token'); } catch { return null; }
 }
 
 async function sdkFetch(path) {

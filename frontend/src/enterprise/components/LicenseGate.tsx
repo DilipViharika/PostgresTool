@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — License Gate (neutralized)
+//  FATHOM — License Gate (neutralized)
 // ==========================================================================
 //  This product ships as a single edition — there is no community / pro /
 //  enterprise tier split. LicenseGate used to render an UpgradeBanner when

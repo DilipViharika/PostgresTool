@@ -1,13 +1,13 @@
 # .github/actions/db-migration-review/action.yml
 # ──────────────────────────────────────────────────────────────────────────────
-# VIGIL — DB Migration Review
+# FATHOM — DB Migration Review
 #
 # Composite GitHub Action that scans the SQL migration files changed in a
 # pull request, lints them for risky statements (e.g. blocking ALTERs on
 # big tables, destructive drops, missing CONCURRENTLY on index builds), and
 # posts a consolidated review comment on the PR.
 #
-# Usage (in a repo that consumes VIGIL as a tool):
+# Usage (in a repo that consumes FATHOM as a tool):
 #
 #   name: DB migration review
 #   on: pull_request
@@ -25,10 +25,10 @@
 #             migrations-glob: 'db/migrations/**/*.sql'
 #             engine: postgres            # postgres | mysql | mongo
 #             block-on-error: 'true'      # fail the job if any ERROR-level findings
-#             vigil-api-url: ${{ secrets.VIGIL_API_URL }}      # optional
-#             vigil-api-token: ${{ secrets.VIGIL_API_TOKEN }}  # optional
+#             fathom-api-url: ${{ secrets.FATHOM_API_URL }}      # optional
+#             fathom-api-token: ${{ secrets.FATHOM_API_TOKEN }}  # optional
 
-name: VIGIL DB Migration Review
+name: FATHOM DB Migration Review
 description: Review SQL migration files in a pull request for risky operations.
 branding: { icon: database, color: blue }
 
@@ -45,12 +45,12 @@ inputs:
     description: Fail the job if any ERROR-level findings are produced.
     required: false
     default: 'false'
-  vigil-api-url:
-    description: Optional VIGIL API endpoint. If set, findings are also recorded there.
+  fathom-api-url:
+    description: Optional FATHOM API endpoint. If set, findings are also recorded there.
     required: false
     default: ''
-  vigil-api-token:
-    description: Optional VIGIL API token (paired with vigil-api-url).
+  fathom-api-token:
+    description: Optional FATHOM API token (paired with fathom-api-url).
     required: false
     default: ''
 
@@ -108,7 +108,7 @@ runs:
         echo "Discovered $count migration files:"
         cat /tmp/targets.txt || true
 
-    - name: Run VIGIL migration linter
+    - name: Run FATHOM migration linter
       id: review
       if: steps.files.outputs.count != '0'
       shell: bash
@@ -145,12 +145,12 @@ runs:
           "--repo=$REPO" \
           "--pr=$PR"
 
-    - name: Report findings to VIGIL API (optional)
-      if: steps.files.outputs.count != '0' && inputs.vigil-api-url != ''
+    - name: Report findings to FATHOM API (optional)
+      if: steps.files.outputs.count != '0' && inputs.fathom-api-url != ''
       shell: bash
       env:
-        VIGIL_API_URL:   ${{ inputs.vigil-api-url }}
-        VIGIL_API_TOKEN: ${{ inputs.vigil-api-token }}
+        FATHOM_API_URL:   ${{ inputs.fathom-api-url }}
+        FATHOM_API_TOKEN: ${{ inputs.fathom-api-token }}
       run: node "$GITHUB_ACTION_PATH/report.mjs" --findings=/tmp/findings.json
 
     - name: Enforce error gate

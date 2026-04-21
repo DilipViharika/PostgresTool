@@ -12,9 +12,9 @@ import { isFeatureAvailable, getTierConfig } from './tiers.js';
 const S = 'pgmonitoringtool';
 
 /* ─── LICENSE KEY FORMAT ───────────────────────────────────────────────────── */
-// Format: VIGIL-{TIER}-{ORG_HASH}-{SIGNATURE}
-// Example: VIGIL-PRO-abc123def456-signature789...
-// Signature is HMAC-SHA256 of "VIGIL-{TIER}-{ORG_HASH}"
+// Format: FATHOM-{TIER}-{ORG_HASH}-{SIGNATURE}
+// Example: FATHOM-PRO-abc123def456-signature789...
+// Signature is HMAC-SHA256 of "FATHOM-{TIER}-{ORG_HASH}"
 
 function toClientLicense(row) {
   if (!row) return null;
@@ -44,14 +44,14 @@ function toClientLicense(row) {
 export function generateLicenseKey(tier, orgId, licenseSecret) {
   const tierUpper = tier.toUpperCase();
   const orgHash = crypto.createHash('sha256').update(orgId).digest('hex').slice(0, 12);
-  const message = `VIGIL-${tierUpper}-${orgHash}`;
+  const message = `FATHOM-${tierUpper}-${orgHash}`;
   const signature = crypto
     .createHmac('sha256', licenseSecret)
     .update(message)
     .digest('hex')
     .slice(0, 16);
 
-  return `VIGIL-${tierUpper}-${orgHash}-${signature}`;
+  return `FATHOM-${tierUpper}-${orgHash}-${signature}`;
 }
 
 /**
@@ -67,7 +67,7 @@ export function validateLicenseKeyFormat(licenseKey, licenseSecret) {
   }
 
   const parts = licenseKey.split('-');
-  if (parts.length !== 4 || parts[0] !== 'VIGIL') {
+  if (parts.length !== 4 || parts[0] !== 'FATHOM') {
     return { valid: false, error: 'License key has invalid format' };
   }
 
@@ -79,7 +79,7 @@ export function validateLicenseKeyFormat(licenseKey, licenseSecret) {
   }
 
   // Verify signature
-  const message = `VIGIL-${tierPart}-${orgHash}`;
+  const message = `FATHOM-${tierPart}-${orgHash}`;
   const expectedSig = crypto
     .createHmac('sha256', licenseSecret)
     .update(message)

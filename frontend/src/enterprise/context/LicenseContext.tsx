@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — License Context (neutralized)
+//  FATHOM — License Context (neutralized)
 // ==========================================================================
 //  Single-edition product. Kept only so App.tsx's existing
 //  <LicenseProvider> wrapper (and any stale useLicense() calls) still work.

@@ -2,7 +2,7 @@
 /**
  * lint.mjs
  * ────────
- * VIGIL migration linter. Reads a list of .sql files, classifies every
+ * FATHOM migration linter. Reads a list of .sql files, classifies every
  * statement, and emits a JSON report with findings at levels:
  *   info    — harmless
  *   warn    — review recommended
@@ -240,7 +240,7 @@ fs.writeFileSync(out, JSON.stringify(report, null, 2));
 
 // summary to stdout / actions log
 const { error = 0, warn = 0, info = 0 } = counts;
-console.log(`VIGIL migration review: ${error} error, ${warn} warn, ${info} info across ${files.length} files.`);
+console.log(`FATHOM migration review: ${error} error, ${warn} warn, ${info} info across ${files.length} files.`);
 for (const f of findings) {
     const lvl = f.level.toUpperCase();
     console.log(`::${f.level === 'error' ? 'error' : 'warning'} file=${f.file}::${lvl} [${f.ruleId}] ${f.message}`);

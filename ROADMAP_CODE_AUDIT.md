@@ -1,4 +1,4 @@
-# VIGIL Roadmap — Code Audit
+# FATHOM Roadmap — Code Audit
 
 Independent review of every file added or modified during the Wave 1–3
 roadmap implementation. Scope is limited to the diff introduced by the
@@ -106,18 +106,18 @@ including for owners. The feature is dead on arrival.
 **Fix** — insert `resolveWorkspace` between `authenticate` and
 `requireWorkspaceRole('owner')`.
 
-### HIGH-2 — Copilot schema context queries the VIGIL control-plane DB
+### HIGH-2 — Copilot schema context queries the FATHOM control-plane DB
 
 **File** — `backend/services/copilotService.js`, `buildSchemaContext`
 
 `generateSql` receives the server-wide `pool` and passes it to
 `buildSchemaContext`, which queries `information_schema` on that pool.
-That is VIGIL's **own** metadata DB — not the customer's monitored DB.
+That is FATHOM's **own** metadata DB — not the customer's monitored DB.
 Two problems:
 
 1. The copilot produces SQL against the wrong schema, so it is never
    useful.
-2. We ship the VIGIL schema (including internal table shapes like
+2. We ship the FATHOM schema (including internal table shapes like
    `scim_tokens`, `saml_configs`) to whichever third-party LLM
    provider is configured. Information-disclosure risk.
 
@@ -427,9 +427,4 @@ the actual edits:
 |  LOW-7  | `frontend/src/components/Copilot.tsx` (32 KB byte-length cap)                               | Manual                                                         |
 |  LOW-8  | `backend/routes/scimRoutes.js` (200 on re-provision, 201 on create)                         | `tests/scimCrossTenant.test.js` — "LOW-8: …"                   |
 |  LOW-9  | `.github/actions/db-migration-review/comment.mjs` (single `apiFetch` path)                  | Manual — `node --check` + simulated 403/404 path               |
-| LOW-10  | `backend/middleware/ipAllowList.js` (`invalidateIpAllowListCache`)                          | `tests/ipAllowListEnforcement.test.js` — "LOW-10: …"           |
-
-**Test totals after remediation.** `node --test tests/*.test.js` reports
-**245 / 245 passing** (44 suites). Two new test files — `scimCrossTenant.test.js`
-and `ipAllowListEnforcement.test.js` — contribute 14 focused regression
-tests for the three CRIT findings and LOW-8 / LOW-10.
+| LOW-10  | `backend/middleware/ipAllowList.js` (`invalidateIpAllowListCache`)                          |

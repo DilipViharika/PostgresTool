@@ -1,14 +1,14 @@
 /**
- * Example: Express server with VIGIL integration
+ * Example: Express server with FATHOM integration
  * Demonstrates auto-tracking of HTTP requests and error handling
  */
 import express from 'express';
-import VigilSDK from '../src/index.js';
+import FathomSDK from '../src/index.js';
 
-// Initialize VIGIL SDK
-const vigil = new VigilSDK({
-  apiKey: process.env.VIGIL_API_KEY || 'sk_live_demo_key',
-  endpoint: process.env.VIGIL_ENDPOINT || 'https://vigil.example.com',
+// Initialize FATHOM SDK
+const fathom = new FathomSDK({
+  apiKey: process.env.FATHOM_API_KEY || 'sk_live_demo_key',
+  endpoint: process.env.FATHOM_ENDPOINT || 'https://fathom.example.com',
   appName: 'express-example',
   environment: process.env.NODE_ENV || 'development',
   batchSize: 10,
@@ -19,11 +19,11 @@ const vigil = new VigilSDK({
 // Create Express app
 const app = express();
 
-// Add VIGIL middleware (must be early in the chain)
-app.use(vigil.expressMiddleware());
+// Add FATHOM middleware (must be early in the chain)
+app.use(fathom.expressMiddleware());
 
 // Capture uncaught exceptions
-vigil.captureUncaughtExceptions();
+fathom.captureUncaughtExceptions();
 
 // Routes
 app.get('/api/users', (req, res) => {
@@ -31,7 +31,7 @@ app.get('/api/users', (req, res) => {
 });
 
 app.post('/api/users', (req, res) => {
-  vigil.trackAudit({
+  fathom.trackAudit({
     title: 'User Created',
     message: 'New user account created',
     metadata: { ip: req.ip },
@@ -41,7 +41,7 @@ app.post('/api/users', (req, res) => {
 
 app.get('/api/error', (req, res) => {
   const error = new Error('Simulated error');
-  vigil.trackError({
+  fathom.trackError({
     error,
     severity: 'error',
     metadata: { endpoint: req.path },
@@ -50,7 +50,7 @@ app.get('/api/error', (req, res) => {
 });
 
 app.get('/api/metric', (req, res) => {
-  vigil.trackMetric({
+  fathom.trackMetric({
     title: 'API Response Time',
     value: Math.random() * 500,
     unit: 'ms',
@@ -61,7 +61,7 @@ app.get('/api/metric', (req, res) => {
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM: Shutting down...');
-  await vigil.shutdown();
+  await fathom.shutdown();
   process.exit(0);
 });
 
@@ -69,5 +69,5 @@ process.on('SIGTERM', async () => {
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
-  vigil.start();
+  fathom.start();
 });

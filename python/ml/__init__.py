@@ -1,5 +1,5 @@
 """
-ML/AI modules for VIGIL database monitoring app.
+ML/AI modules for FATHOM database monitoring app.
 Provides anomaly detection, forecasting, query classification, and capacity prediction.
 """
 

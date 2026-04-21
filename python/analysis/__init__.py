@@ -1,5 +1,5 @@
 """
-VIGIL Database Analysis Module
+FATHOM Database Analysis Module
 
 Provides analysis tools for SQL queries, table statistics, and performance metrics.
 """

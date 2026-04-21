@@ -150,7 +150,7 @@ export default function Copilot({ workspaceId, connectionId, defaultMode = 'sql'
     return (
         <div className="copilot-panel" style={panel}>
             <header style={header}>
-                <strong>VIGIL Copilot</strong>
+                <strong>FATHOM Copilot</strong>
                 <div style={{ display: 'flex', gap: 8 }}>
                     {(['sql', 'explain', 'rca'] as Mode[]).map(m => (
                         <button

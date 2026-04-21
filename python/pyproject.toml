@@ -3,11 +3,11 @@ requires = ["setuptools>=65.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "vigil-python"
+name = "fathom-python"
 version = "1.0.0"
-description = "VIGIL Python Backend - Analytics, ML, and Data Processing for PostgreSQL Monitoring"
+description = "FATHOM Python Backend - Analytics, ML, and Data Processing for PostgreSQL Monitoring"
 requires-python = ">=3.11"
-authors = [{name = "VIGIL Team"}]
+authors = [{name = "FATHOM Team"}]
 license = {text = "MIT"}
 
 dependencies = [
@@ -30,7 +30,7 @@ dev = [
 ]
 
 [project.scripts]
-vigil-api = "api.main:app"
+fathom-api = "api.main:app"
 
 [tool.setuptools]
 packages = ["api", "tests"]

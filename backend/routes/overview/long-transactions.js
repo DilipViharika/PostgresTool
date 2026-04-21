@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — /api/overview/long-transactions
+//  FATHOM — /api/overview/long-transactions
 //  Returns: queries/transactions running longer than THRESHOLD_SECONDS
 // ==========================================================================
 

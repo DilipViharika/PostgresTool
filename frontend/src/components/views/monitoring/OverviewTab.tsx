@@ -813,7 +813,7 @@ const ConnectionStatusBanner = () => {
                         Connect your first database
                     </div>
                     <div style={{ fontSize: 13, color: THEME.textMuted, lineHeight: 1.6, maxWidth: 520 }}>
-                        VIGIL needs a PostgreSQL connection to show live metrics. Add your host, port, database name and
+                        FATHOM needs a PostgreSQL connection to show live metrics. Add your host, port, database name and
                         credentials to get started.
                     </div>
                     <div style={{ marginTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -977,7 +977,7 @@ const ConnectionStatusBanner = () => {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const OV_CACHE_KEY = 'vigil_overview_cache';
+const OV_CACHE_KEY = 'fathom_overview_cache';
 function readOverviewCache() {
     try {
         const raw = localStorage.getItem(OV_CACHE_KEY);
@@ -1133,7 +1133,7 @@ const OverviewTab = () => {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 80, minHeight: 400 }}>
                 <div style={{ textAlign: 'center', maxWidth: 480 }}>
                     <Database size={48} color={THEME.primary} style={{ marginBottom: 16, opacity: 0.7 }} />
-                    <div style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>Welcome to VIGIL</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: THEME.textMain, marginBottom: 8 }}>Welcome to FATHOM</div>
                     <div style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 24 }}>Connect a database to monitor it, or explore the interactive demos from the sidebar.</div>
                 </div>
             </div>

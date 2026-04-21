@@ -1,11 +1,11 @@
 /**
- * @vigil/validators — Zod validation schemas
+ * @fathom/validators — Zod validation schemas
  * ─────────────────────────────────────────────
  * One schema = runtime validation + TypeScript type (zero duplication).
  * Import and use on both frontend (form validation) and backend (request validation).
  *
  * Usage:
- *   import { LoginSchema, type LoginInput } from '@vigil/validators';
+ *   import { LoginSchema, type LoginInput } from '@fathom/validators';
  *   const result = LoginSchema.safeParse(req.body);
  *   if (!result.success) return res.status(400).json({ error: result.error });
  */
@@ -157,7 +157,7 @@ export const ServerEnvSchema = z.object({
   PGDATABASE: z.string().default('postgres'),
   PGPASSWORD: z.string().optional(),
   PGPORT: z.coerce.number().int().default(5432),
-  JWT_SECRET: z.string().min(1).default('vigil-change-me-in-production'),
+  JWT_SECRET: z.string().min(1).default('fathom-change-me-in-production'),
   JWT_EXPIRES_IN: z.string().default('8h'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   CORS_ORIGIN: z.string().optional(),
@@ -166,7 +166,7 @@ export const ServerEnvSchema = z.object({
   (env) => {
     // In production, require critical variables
     if (env.NODE_ENV === 'production') {
-      return !!env.PGHOST && !!env.PGPASSWORD && env.JWT_SECRET !== 'vigil-change-me-in-production';
+      return !!env.PGHOST && !!env.PGPASSWORD && env.JWT_SECRET !== 'fathom-change-me-in-production';
     }
     return true;
   },

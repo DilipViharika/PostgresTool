@@ -978,7 +978,7 @@ const ConnectionWizard = () => {
         {step === 4 && (
           <>
             <h2 style={styles.title}>Test Connection</h2>
-            <p style={styles.description}>Verify that VIGIL can connect to your database.</p>
+            <p style={styles.description}>Verify that FATHOM can connect to your database.</p>
 
             <div style={{ marginBottom: '24px' }}>
               <div
@@ -1080,7 +1080,7 @@ const ConnectionWizard = () => {
             <div style={styles.successIcon}>✨</div>
             <h2 style={styles.title}>Connection Established!</h2>
             <p style={styles.description}>
-              Your database connection is ready. You can now start monitoring your database with VIGIL.
+              Your database connection is ready. You can now start monitoring your database with FATHOM.
             </p>
 
             <button

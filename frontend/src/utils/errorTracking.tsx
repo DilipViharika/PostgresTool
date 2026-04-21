@@ -41,21 +41,21 @@ const MAX_BREADCRUMBS = 20;
 const errorTracker: ErrorTracker = {
   init: (cfg: ErrorTrackerConfig) => {
     config = { ...config, ...cfg };
-    if (config.debug) console.log('[VIGIL-ERROR] Error tracking initialized', { environment: cfg.environment, enabled: cfg.enabled });
+    if (config.debug) console.log('[FATHOM-ERROR] Error tracking initialized', { environment: cfg.environment, enabled: cfg.enabled });
   },
 
   captureException: (error: Error, context?: Record<string, any>) => {
     if (!config.enabled) return;
     const contextStr = context ? JSON.stringify(context, null, 2) : '';
     console.error(
-      `[VIGIL-ERROR] Exception: ${error.message}\n${error.stack}${contextStr ? '\nContext: ' + contextStr : ''}`
+      `[FATHOM-ERROR] Exception: ${error.message}\n${error.stack}${contextStr ? '\nContext: ' + contextStr : ''}`
     );
   },
 
   captureMessage: (message: string, level: 'info' | 'warning' | 'error' = 'error') => {
     if (!config.enabled) return;
     const logFn = level === 'warning' ? 'warn' : level === 'info' ? 'log' : 'error';
-    console[logFn](`[VIGIL-ERROR] ${level.toUpperCase()}: ${message}`);
+    console[logFn](`[FATHOM-ERROR] ${level.toUpperCase()}: ${message}`);
   },
 
   setUser: (_user: { id: string; email?: string; username?: string } | null) => {
@@ -73,7 +73,7 @@ const errorTracker: ErrorTracker = {
     return {
       finish: () => {
         const duration = Date.now() - startTime;
-        if (config.debug) console.log(`[VIGIL-ERROR] Transaction "${name}" completed in ${duration}ms`);
+        if (config.debug) console.log(`[FATHOM-ERROR] Transaction "${name}" completed in ${duration}ms`);
       },
     };
   },

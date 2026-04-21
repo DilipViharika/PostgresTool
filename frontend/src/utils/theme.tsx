@@ -254,8 +254,8 @@ export const useAdaptiveTheme = () => {
 export const useGlobalRefresh = (callback: () => void) => {
     React.useEffect(() => {
         const handler = () => callback();
-        window.addEventListener('vigil-refresh', handler);
-        return () => window.removeEventListener('vigil-refresh', handler);
+        window.addEventListener('fathom-refresh', handler);
+        return () => window.removeEventListener('fathom-refresh', handler);
     }, [callback]);
 };
 
@@ -458,7 +458,7 @@ import { KEYFRAMES_CSS } from '../config/animations';
 
 export const GlobalStyles = () => (
     <style>{`
-    /* ── Shared VIGIL Keyframes (from config/animations.ts) ── */
+    /* ── Shared FATHOM Keyframes (from config/animations.ts) ── */
     ${KEYFRAMES_CSS}
 
     /* ── Google Font Import ── */

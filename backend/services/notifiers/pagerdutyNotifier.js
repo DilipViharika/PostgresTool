@@ -24,10 +24,10 @@ export class PagerDutyNotifier extends BaseNotifier {
   /**
    * @param {object} opts
    * @param {string} opts.routingKey     — Events API integration key (32-char hex)
-   * @param {string} [opts.source='vigil'] — PD "source" field
+   * @param {string} [opts.source='fathom'] — PD "source" field
    * @param {string} [opts.name='pagerduty']
    */
-  constructor({ routingKey, source = 'vigil', name = 'pagerduty', ...rest } = {}) {
+  constructor({ routingKey, source = 'fathom', name = 'pagerduty', ...rest } = {}) {
     super({ name, ...rest });
     if (!routingKey) throw new Error('PagerDutyNotifier: routingKey is required');
     this.routingKey = routingKey;
@@ -51,7 +51,7 @@ export class PagerDutyNotifier extends BaseNotifier {
       event_action: 'trigger',
       dedup_key: dedup,
       payload: {
-        summary: (alert.title || alert.message || 'VIGIL alert').slice(0, 1024),
+        summary: (alert.title || alert.message || 'FATHOM alert').slice(0, 1024),
         source: alert.source || this.source,
         severity: PD_SEVERITY[alert.severity] || 'warning',
         timestamp: alert.timestamp || new Date().toISOString(),
@@ -60,7 +60,7 @@ export class PagerDutyNotifier extends BaseNotifier {
         class: alert.class || alert.type,
         custom_details: alert.metadata || {},
       },
-      client: 'VIGIL',
+      client: 'FATHOM',
       client_url: alert.url,
     };
   }

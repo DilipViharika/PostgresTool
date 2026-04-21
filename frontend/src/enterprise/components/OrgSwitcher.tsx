@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Organization Switcher Component
+//  FATHOM — Organization Switcher Component
 // ==========================================================================
 //  Organization selector dropdown for multi-tenant users
 //  Shows current org name with a dropdown to switch

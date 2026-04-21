@@ -463,7 +463,7 @@ export const GlassCard = ({
     return (
         <div
             {...hoverProps}
-            className="vigil-card glass-card"
+            className="fathom-card glass-card"
             style={{
                 background: _AT.surface,
                 borderRadius: 16,

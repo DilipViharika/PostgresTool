@@ -1,5 +1,5 @@
 /**
- * EventEmitter - Core event management system for VIGIL SDK
+ * EventEmitter - Core event management system for FATHOM SDK
  * Provides typed events for monitoring alerts, metric updates, and connection changes
  */
 

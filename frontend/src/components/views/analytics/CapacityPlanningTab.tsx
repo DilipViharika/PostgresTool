@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Capacity Planning & Forecasting (v1.0)
+//  FATHOM — Capacity Planning & Forecasting (v1.0)
 // ==========================================================================
 import React, { useState, useMemo } from 'react';
 import { THEME, useAdaptiveTheme } from '../../../utils/theme';

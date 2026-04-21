@@ -447,8 +447,8 @@
             "checkConstraints": {},
             "isRLSEnabled": false
         },
-        "pgmonitoringtool.vigil_connections": {
-            "name": "vigil_connections",
+        "pgmonitoringtool.fathom_connections": {
+            "name": "fathom_connections",
             "schema": "pgmonitoringtool",
             "columns": {
                 "id": {
@@ -597,9 +597,9 @@
                 }
             },
             "foreignKeys": {
-                "vigil_connections_user_id_users_id_fk": {
-                    "name": "vigil_connections_user_id_users_id_fk",
-                    "tableFrom": "vigil_connections",
+                "fathom_connections_user_id_users_id_fk": {
+                    "name": "fathom_connections_user_id_users_id_fk",
+                    "tableFrom": "fathom_connections",
                     "tableTo": "users",
                     "schemaTo": "pgmonitoringtool",
                     "columnsFrom": ["user_id"],

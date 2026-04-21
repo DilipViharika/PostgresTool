@@ -88,7 +88,7 @@ export default function governanceRoutes(pool, authenticate) {
         async (req, res, next) => {
             try {
                 const ttlDays = Math.min(Math.max(Number(req.body?.ttlDays) || 365, 1), 3650);
-                const token = `vigil_scim_${crypto.randomBytes(24).toString('base64url')}`;
+                const token = `fathom_scim_${crypto.randomBytes(24).toString('base64url')}`;
                 const hash = crypto.createHash('sha256').update(token).digest('hex');
                 const prefix = token.slice(0, 16);
                 const { rows } = await query(

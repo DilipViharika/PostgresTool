@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — /api/overview/vacuum
+//  FATHOM — /api/overview/vacuum
 //  Returns: urgentCount, warnCount, healthyCount, bloat, dead tuples,
 //           last autovacuum run, per-table breakdown
 // ==========================================================================

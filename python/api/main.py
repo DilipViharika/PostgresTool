@@ -1,4 +1,4 @@
-"""FastAPI application for VIGIL database monitoring backend."""
+"""FastAPI application for FATHOM database monitoring backend."""
 
 from contextlib import asynccontextmanager
 import logging
@@ -25,16 +25,16 @@ class HealthCheckResponse(BaseModel):
 async def lifespan(app: FastAPI):
     """Handle startup and shutdown events."""
     # Startup
-    logger.info("Starting VIGIL FastAPI backend")
+    logger.info("Starting FATHOM FastAPI backend")
     logger.info(f"Database URL: {settings.DATABASE_URL}")
     logger.info(f"Node backend URL: {settings.NODE_BACKEND_URL}")
     yield
     # Shutdown
-    logger.info("Shutting down VIGIL FastAPI backend")
+    logger.info("Shutting down FATHOM FastAPI backend")
 
 
 app = FastAPI(
-    title="VIGIL Analytics API",
+    title="FATHOM Analytics API",
     description="Analytics, ML, and data processing APIs for database monitoring",
     version="1.0.0",
     lifespan=lifespan,
@@ -78,7 +78,7 @@ async def root():
         API information and available endpoints
     """
     return {
-        "name": "VIGIL Analytics API",
+        "name": "FATHOM Analytics API",
         "version": "1.0.0",
         "description": "Analytics, ML, and data processing backend for database monitoring",
         "endpoints": {

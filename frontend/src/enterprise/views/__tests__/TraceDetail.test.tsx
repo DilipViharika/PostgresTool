@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — TraceDetail view tests
+//  FATHOM — TraceDetail view tests
 // ==========================================================================
 //  Covers: traceparent normalisation, load flow, summary + queries render,
 //  error surface, initialTraceId auto-load.

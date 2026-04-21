@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Enterprise Features Migration  (scripts/migrate-enterprise.js)
+//  FATHOM — Enterprise Features Migration  (scripts/migrate-enterprise.js)
 //  Run once: npm run migrate:enterprise
 //  Or: node scripts/migrate-enterprise.js
 // ==========================================================================

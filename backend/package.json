@@ -2,7 +2,7 @@
     "name": "postgrestool-backend",
     "version": "1.0.0",
     "type": "module",
-    "description": "VIGIL — Universal Database Monitoring & Administration Backend",
+    "description": "FATHOM — Universal Database Monitoring & Administration Backend",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",

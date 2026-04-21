@@ -24,8 +24,8 @@
         /* ── Paths ─────────────────────────────────────────────────────── */
         "baseUrl": ".",
         "paths": {
-            "@vigil/types": ["../shared/types/index.ts"],
-            "@vigil/types/*": ["../shared/types/*"]
+            "@fathom/types": ["../shared/types/index.ts"],
+            "@fathom/types/*": ["../shared/types/*"]
         },
 
         /* ── Output ────────────────────────────────────────────────────── */

@@ -1,8 +1,8 @@
 // ==========================================================================
-//  VIGIL — Design Tokens (single source of truth for the visual system)
+//  FATHOM — Design Tokens (single source of truth for the visual system)
 // ==========================================================================
 
-/* Accent colors shared by both themes — VIGIL Indigo palette */
+/* Accent colors shared by both themes — FATHOM Indigo palette */
 export const DS_ACCENTS = {
     cyan:         '#6366f1',
     cyanDim:      'rgba(99,102,241,0.15)',
@@ -91,7 +91,7 @@ export const Z = {
 
 /* Mutable DS — swapped by ThemeToggle, picked up on re-render */
 let DS = (() => {
-    try { return localStorage.getItem('vigil_theme') === 'dark' ? DS_DARK : DS_LIGHT; }
+    try { return localStorage.getItem('fathom_theme') === 'dark' ? DS_DARK : DS_LIGHT; }
     catch { return DS_LIGHT; }
 })();
 

@@ -27,7 +27,7 @@ export const ProfileModal = ({ user, onClose, onSave }) => {
         setError('');
         try {
             // SECURITY: Retrieve token from sessionStorage instead of localStorage
-            const token = sessionStorage.getItem('vigil_token');
+            const token = sessionStorage.getItem('fathom_token');
             const res = await fetch('/api/users/profile', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

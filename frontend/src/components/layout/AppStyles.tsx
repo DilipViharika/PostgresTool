@@ -25,7 +25,7 @@ export const AppStyles = () => (
         @keyframes waveFlow        { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes dotBlink        { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-        /* ═══ VIGIL — Clean & Refined ═══ */
+        /* ═══ FATHOM — Clean & Refined ═══ */
 
         /* ── Sidebar ── */
         aside {
@@ -68,10 +68,10 @@ export const AppStyles = () => (
         }
 
         /* ═══ CARD SYSTEM — clean elevation ═══ */
-        .vigil-card {
+        .fathom-card {
             transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
         }
-        .vigil-card:hover {
+        .fathom-card:hover {
             box-shadow: ${DS._dark
                 ? '0 4px 16px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.15)'
                 : '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)'

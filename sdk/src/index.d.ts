@@ -1,8 +1,8 @@
 /**
- * VIGIL SDK TypeScript definitions
+ * FATHOM SDK TypeScript definitions
  */
 
-declare class VigilSDK {
+declare class FathomSDK {
   apiKey: string;
   endpoint: string;
   environment: string;
@@ -13,7 +13,7 @@ declare class VigilSDK {
   queue: Event[];
   sessionId: string;
 
-  constructor(options: VigilOptions);
+  constructor(options: FathomOptions);
 
   trackAPI(options: TrackAPIOptions): void;
   trackError(options: TrackErrorOptions): void;
@@ -36,7 +36,7 @@ declare class VigilSDK {
   removeAllListeners(event?: string): this;
 }
 
-interface VigilOptions {
+interface FathomOptions {
   apiKey: string;
   endpoint: string;
   appName?: string;
@@ -94,5 +94,5 @@ interface Event {
   environment: string;
 }
 
-export default VigilSDK;
-export { VigilSDK };
+export default FathomSDK;
+export { FathomSDK };

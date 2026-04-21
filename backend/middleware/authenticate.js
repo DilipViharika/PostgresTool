@@ -95,8 +95,8 @@ export function buildAuthenticate(pool, config) {
         let payload;
         try {
             payload = jwt.verify(header.slice(7), config.JWT_SECRET, {
-                audience: config.JWT_AUDIENCE || 'vigil-api',
-                issuer:   config.JWT_ISSUER   || 'vigil-auth',
+                audience: config.JWT_AUDIENCE || 'fathom-api',
+                issuer:   config.JWT_ISSUER   || 'fathom-auth',
             });
         } catch {
             return res.status(401).json({ error: 'Invalid or expired token' });

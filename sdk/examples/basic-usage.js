@@ -1,23 +1,23 @@
 /**
- * Example: Basic usage of VIGIL SDK
+ * Example: Basic usage of FATHOM SDK
  * Demonstrates core tracking methods
  */
-import VigilSDK from '../src/index.js';
+import FathomSDK from '../src/index.js';
 
 // Initialize
-const vigil = new VigilSDK({
+const fathom = new FathomSDK({
   apiKey: 'sk_live_your_api_key',
-  endpoint: 'https://vigil.example.com',
+  endpoint: 'https://fathom.example.com',
   appName: 'my-service',
   environment: 'production',
   debug: true,
 });
 
 // Start auto-flush
-vigil.start();
+fathom.start();
 
 // Track an API call
-vigil.trackAPI({
+fathom.trackAPI({
   method: 'GET',
   endpoint: '/api/products',
   statusCode: 200,
@@ -29,7 +29,7 @@ vigil.trackAPI({
 try {
   throw new Error('Database connection failed');
 } catch (error) {
-  vigil.trackError({
+  fathom.trackError({
     error,
     severity: 'critical',
     metadata: { database: 'postgres', host: 'db.example.com' },
@@ -37,14 +37,14 @@ try {
 }
 
 // Track an audit event
-vigil.trackAudit({
+fathom.trackAudit({
   title: 'Admin Login',
   message: 'Administrator logged in from new IP',
   metadata: { adminId: 'admin_123', ip: '203.0.113.42' },
 });
 
 // Track a metric
-vigil.trackMetric({
+fathom.trackMetric({
   title: 'Database Connection Pool',
   value: 45,
   unit: '%',
@@ -52,7 +52,7 @@ vigil.trackMetric({
 });
 
 // Track a custom event
-vigil.track('payment.processed', {
+fathom.track('payment.processed', {
   title: 'Payment Processed',
   severity: 'info',
   message: 'Payment of $99.99 was successful',
@@ -67,5 +67,5 @@ vigil.track('payment.processed', {
 // Graceful shutdown
 setTimeout(async () => {
   console.log('Shutting down...');
-  await vigil.shutdown();
+  await fathom.shutdown();
 }, 5000);

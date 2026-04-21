@@ -1,4 +1,4 @@
-# VIGIL Database Components - TypeScript Migration Guide
+# FATHOM Database Components - TypeScript Migration Guide
 
 ## Migration Status
 
@@ -134,20 +134,20 @@ All components are currently using inline styles (via THEME object from theme.js
 
 ### Tailwind Integration (Optional Enhancement)
 
-To convert inline styles to Tailwind, create a custom Tailwind config with vigil-\* custom colors:
+To convert inline styles to Tailwind, create a custom Tailwind config with fathom-\* custom colors:
 
 ```typescript
 // tailwind.config.js
 theme: {
   extend: {
     colors: {
-      'vigil-primary': THEME.primary,
-      'vigil-secondary': THEME.secondary,
-      'vigil-success': THEME.success,
-      'vigil-warning': THEME.warning,
-      'vigil-danger': THEME.danger,
-      'vigil-surface': THEME.surface,
-      'vigil-glass': THEME.glass,
+      'fathom-primary': THEME.primary,
+      'fathom-secondary': THEME.secondary,
+      'fathom-success': THEME.success,
+      'fathom-warning': THEME.warning,
+      'fathom-danger': THEME.danger,
+      'fathom-surface': THEME.surface,
+      'fathom-glass': THEME.glass,
     },
     fontFamily: {
       body: THEME.fontBody,
@@ -164,7 +164,7 @@ Then replace inline styles:
 <div style={{ background: THEME.surface, padding: '16px' }}>
 
 // AFTER:
-<div className="bg-vigil-surface p-4">
+<div className="bg-fathom-surface p-4">
 ```
 
 ## API Type Expectations

@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — /api/overview/replication
+//  FATHOM — /api/overview/replication
 //  Returns: primary info, replica list with lag, lock stats, blocked queries
 // ==========================================================================
 

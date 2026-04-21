@@ -1,14 +1,15 @@
-# VIGIL Python Backend
+# FATHOM Python Backend
 
 Analytics, ML, and Data Processing for PostgreSQL Monitoring
 
 ## Overview
 
-VIGIL Python Backend is a high-performance REST API built with FastAPI that provides advanced analytics, machine learning predictions, and data processing capabilities for the VIGIL database monitoring platform. It handles query analysis, anomaly detection, capacity forecasting, and metric aggregation.
+FATHOM Python Backend is a high-performance REST API built with FastAPI that provides advanced analytics, machine learning predictions, and data processing capabilities for the FATHOM database monitoring platform. It handles query analysis, anomaly detection, capacity forecasting, and metric aggregation.
 
 ## Quick Start
 
 ### Prerequisites
+
 - Python 3.11+
 - pip or uv
 
@@ -81,8 +82,8 @@ pytest tests/ -v
 Build and run the application in a Docker container:
 
 ```bash
-docker build -t vigil-python:latest .
-docker run -p 8000:8000 --env-file .env vigil-python:latest
+docker build -t fathom-python:latest .
+docker run -p 8000:8000 --env-file .env fathom-python:latest
 ```
 
 ## Configuration

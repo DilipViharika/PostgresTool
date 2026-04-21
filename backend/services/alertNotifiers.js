@@ -62,9 +62,9 @@ export async function notifyPagerDuty(routingKey, alert) {
     const payload = {
         routing_key: routingKey,
         event_action: action,
-        dedup_key: `vigil:${alert.ruleId}:${alert.connectionId}`,
+        dedup_key: `fathom:${alert.ruleId}:${alert.connectionId}`,
         payload: {
-            summary: `[VIGIL] ${alert.ruleName}: ${alert.message}`.slice(0, 1024),
+            summary: `[FATHOM] ${alert.ruleName}: ${alert.message}`.slice(0, 1024),
             severity: mapSeverity(alert.severity),
             source: alert.connectionName || `connection:${alert.connectionId}`,
             component: alert.metric || 'database',
@@ -76,7 +76,7 @@ export async function notifyPagerDuty(routingKey, alert) {
             },
         },
         links: [
-            ...(alert.dashboardUrl ? [{ href: alert.dashboardUrl, text: 'VIGIL dashboard' }] : []),
+            ...(alert.dashboardUrl ? [{ href: alert.dashboardUrl, text: 'FATHOM dashboard' }] : []),
             ...(alert.runbookUrl ? [{ href: alert.runbookUrl, text: 'Runbook' }] : []),
         ],
     };

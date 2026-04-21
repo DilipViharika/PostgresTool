@@ -83,7 +83,7 @@ export async function issueScimToken(pool, tenantId, label = null) {
         [tenantId, tokenHash, label],
     );
     // Prefix so humans can spot the token type at a glance.
-    return { plaintext: `vigil_scim_${plaintext}`, id: rows[0].id, createdAt: rows[0].created_at };
+    return { plaintext: `fathom_scim_${plaintext}`, id: rows[0].id, createdAt: rows[0].created_at };
 }
 
 /** Revoke a token by id. Idempotent. */
@@ -123,7 +123,7 @@ export function createScimAuth(pool, { touchEveryMs = 60_000 } = {}) {
         if (!raw) return sendScimError(res, 401, 'missing bearer token');
 
         // Strip the non-secret prefix before hashing.
-        const token = raw.startsWith('vigil_scim_') ? raw.slice('vigil_scim_'.length) : raw;
+        const token = raw.startsWith('fathom_scim_') ? raw.slice('fathom_scim_'.length) : raw;
         const tokenHash = sha256Hex(token);
 
         try {

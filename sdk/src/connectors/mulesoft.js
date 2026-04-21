@@ -1,5 +1,5 @@
 /**
- * MulesoftConnector - Mulesoft Anypoint Platform integration for VIGIL
+ * MulesoftConnector - Mulesoft Anypoint Platform integration for FATHOM
  * Provides OAuth authentication and application/API metrics monitoring
  */
 
@@ -372,9 +372,9 @@ export class MulesoftConnector extends EventEmitter {
   }
 
   /**
-   * Sync Mulesoft metrics to VIGIL dashboard
+   * Sync Mulesoft metrics to FATHOM dashboard
    *
-   * @param {Object} vigilClient - VigilClient instance
+   * @param {Object} fathomClient - FathomClient instance
    * @param {Object} [options] - Sync options
    * @param {boolean} [options.includeApps=true] - Include application metrics
    * @param {boolean} [options.includeApis=true] - Include API metrics
@@ -382,18 +382,18 @@ export class MulesoftConnector extends EventEmitter {
    * @returns {Promise<Object>} - Sync result
    *
    * @example
-   * await muleConnector.syncToVigil(vigilClient, {
+   * await muleConnector.syncToFathom(fathomClient, {
    *   includeApps: true,
    *   includeApis: true
    * });
    */
-  async syncToVigil(vigilClient, options = {}) {
+  async syncToFathom(fathomClient, options = {}) {
     this._ensureAuthenticated();
 
     try {
-      this.logger.info('Starting Mulesoft metrics sync to VIGIL');
+      this.logger.info('Starting Mulesoft metrics sync to FATHOM');
 
-      const vigilMetrics = {
+      const fathomMetrics = {
         platform: 'mulesoft',
         orgId: this.config.orgId,
         metrics: {},
@@ -411,8 +411,8 @@ export class MulesoftConnector extends EventEmitter {
             appMetrics.push(metrics);
           }
 
-          vigilMetrics.metrics.applications = appMetrics;
-          vigilMetrics.metrics.appCount = apps.length;
+          fathomMetrics.metrics.applications = appMetrics;
+          fathomMetrics.metrics.appCount = apps.length;
         } catch (error) {
           this.logger.warn('Failed to sync app metrics', error);
         }
@@ -430,8 +430,8 @@ export class MulesoftConnector extends EventEmitter {
             apiMetrics.push(analytics);
           }
 
-          vigilMetrics.metrics.apis = apiMetrics;
-          vigilMetrics.metrics.apiCount = apis.length;
+          fathomMetrics.metrics.apis = apiMetrics;
+          fathomMetrics.metrics.apiCount = apis.length;
         } catch (error) {
           this.logger.warn('Failed to sync API metrics', error);
         }
@@ -441,19 +441,19 @@ export class MulesoftConnector extends EventEmitter {
       if (options.includeAlerts !== false) {
         try {
           const alerts = await this.getAlerts();
-          vigilMetrics.metrics.activeAlerts = alerts.filter((a) => a.active).length;
-          vigilMetrics.metrics.totalAlerts = alerts.length;
+          fathomMetrics.metrics.activeAlerts = alerts.filter((a) => a.active).length;
+          fathomMetrics.metrics.totalAlerts = alerts.length;
         } catch (error) {
           this.logger.warn('Failed to sync alerts', error);
         }
       }
 
-      this.logger.info('Metrics synced to VIGIL', { metrics: Object.keys(vigilMetrics.metrics) });
-      this.emit('synced_to_vigil', vigilMetrics);
+      this.logger.info('Metrics synced to FATHOM', { metrics: Object.keys(fathomMetrics.metrics) });
+      this.emit('synced_to_fathom', fathomMetrics);
 
-      return vigilMetrics;
+      return fathomMetrics;
     } catch (error) {
-      this.logger.error('Failed to sync metrics to VIGIL', error);
+      this.logger.error('Failed to sync metrics to FATHOM', error);
       this.emit('error', { type: 'sync_error', error });
       throw error;
     }

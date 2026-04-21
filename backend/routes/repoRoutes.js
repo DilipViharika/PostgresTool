@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Repository API Endpoints
+//  FATHOM — Repository API Endpoints
 // ==========================================================================
 import express from 'express';
 import fs from 'fs/promises';

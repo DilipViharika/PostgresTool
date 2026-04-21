@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — Slack Bot API Service (two-way sync)
+//  FATHOM — Slack Bot API Service (two-way sync)
 //  Replaces the legacy incoming-webhook-only approach.
 //
 //  Required env vars:
@@ -117,11 +117,11 @@ export async function sendSlackAlert(alert, webhookUrl) {
     const time     = new Date(alert.timestamp || Date.now()).toUTCString();
 
     const payload = {
-        text: `${emoji} *Vigil Alert — ${severity}*: ${alert.message}`,
+        text: `${emoji} *Fathom Alert — ${severity}*: ${alert.message}`,
         attachments: [{
             color,
             blocks: [
-                { type: 'header', text: { type: 'plain_text', text: `${emoji}  Vigil Alert — ${severity}`, emoji: true } },
+                { type: 'header', text: { type: 'plain_text', text: `${emoji}  Fathom Alert — ${severity}`, emoji: true } },
                 { type: 'section', text: { type: 'mrkdwn', text: `*${alert.message}*` } },
                 {
                     type: 'section',
@@ -135,7 +135,7 @@ export async function sendSlackAlert(alert, webhookUrl) {
                 ...(alert.data && Object.keys(alert.data).length > 0
                     ? [{ type: 'section', text: { type: 'mrkdwn', text: `*Details*\n\`\`\`${JSON.stringify(alert.data, null, 2)}\`\`\`` } }]
                     : []),
-                { type: 'context', elements: [{ type: 'mrkdwn', text: ':bar_chart: Sent by *Vigil* — PostgreSQL Monitoring Platform' }] },
+                { type: 'context', elements: [{ type: 'mrkdwn', text: ':bar_chart: Sent by *Fathom* — PostgreSQL Monitoring Platform' }] },
             ],
         }],
     };
@@ -170,12 +170,12 @@ export async function postAlertToSlack(alert) {
         attachments: [{
             color,
             fields: [
-                { title: 'Source',   value: alert.source   || alert.category || 'vigil', short: true },
+                { title: 'Source',   value: alert.source   || alert.category || 'fathom', short: true },
                 { title: 'Category', value: alert.category || 'general',                 short: true },
                 { title: 'Rule',     value: alert.rule     || alert.id       || 'N/A',   short: true },
                 { title: 'Alert ID', value: alert.id       || 'N/A',                     short: true },
             ],
-            footer: `VIGIL · ${new Date(alert.timestamp || Date.now()).toLocaleString()}`,
+            footer: `FATHOM · ${new Date(alert.timestamp || Date.now()).toLocaleString()}`,
         }],
     });
 
@@ -205,7 +205,7 @@ export async function updateAlertMessage(slackTs, alert) {
 }
 
 /**
- * Mirror a VIGIL comment to the corresponding Slack thread.
+ * Mirror a FATHOM comment to the corresponding Slack thread.
  *
  * @param {string} slackTs  - The ts of the parent alert message
  * @param {object} comment  - { author, text }

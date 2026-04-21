@@ -1,17 +1,17 @@
-# OpenTelemetry Instrumentation for VIGIL Trace Correlation
+# OpenTelemetry Instrumentation for FATHOM Trace Correlation
 
-VIGIL's trace-correlation feature ties a slow SQL query back to the HTTP
+FATHOM's trace-correlation feature ties a slow SQL query back to the HTTP
 request that issued it. For that to work, your application must propagate
 a W3C `traceparent` down to Postgres. There are two supported mechanisms,
 either of which is enough on its own:
 
 1. **`application_name` encoding** — the app sets
    `application_name='traceparent:<traceparent>'` on the session.
-   VIGIL reads `pg_stat_activity.application_name` and extracts the
+   FATHOM reads `pg_stat_activity.application_name` and extracts the
    traceparent. Cheapest, works on managed Postgres, no SQL changes.
 
 2. **SQL-comment encoding** — the app prepends a SQL comment of the form
-   `/* traceparent='00-...-...-01' */ SELECT ...` to each query. VIGIL's
+   `/* traceparent='00-...-...-01' */ SELECT ...` to each query. FATHOM's
    log parser reads the comment off `pg_stat_statements.query`. Works
    even when `application_name` is used for something else, and gives
    per-query (not per-session) correlation.

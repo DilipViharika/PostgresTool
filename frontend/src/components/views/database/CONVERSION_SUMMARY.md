@@ -1,4 +1,4 @@
-# VIGIL Database Components - TypeScript Conversion Summary
+# FATHOM Database Components - TypeScript Conversion Summary
 
 ## Project Overview
 

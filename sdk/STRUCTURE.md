@@ -20,48 +20,55 @@ sdk/
 │   └── express-server.js     # Express middleware integration example
 │
 └── tests/
-    └── vigil.test.js         # Unit tests
+    └── fathom.test.js         # Unit tests
 ```
 
 ## File Descriptions
 
 ### `package.json`
-- Declares the package as `@vigil/sdk` v1.0.0
+
+- Declares the package as `@fathom/sdk` v1.0.0
 - Configures both ESM and CJS exports
 - Specifies Node.js 18+ requirement
 - Includes build and test scripts
 
 ### `src/index.js` (Main SDK)
-The complete VIGIL SDK implementation with:
-- **VigilSDK class**: Main entry point
+
+The complete FATHOM SDK implementation with:
+
+- **FathomSDK class**: Main entry point
 - **Inline EventEmitter**: Zero-dependency event system
 - **Core Methods**:
-  - `trackAPI()` - Track HTTP requests
-  - `trackError()` - Track exceptions and errors
-  - `trackAudit()` - Track audit trail events
-  - `trackMetric()` - Track numeric metrics
-  - `track()` - Track custom events
+    - `trackAPI()` - Track HTTP requests
+    - `trackError()` - Track exceptions and errors
+    - `trackAudit()` - Track audit trail events
+    - `trackMetric()` - Track numeric metrics
+    - `track()` - Track custom events
 - **Auto-Capture**:
-  - `expressMiddleware()` - Auto-track all Express requests
-  - `captureUncaughtExceptions()` - Catch uncaught errors
+    - `expressMiddleware()` - Auto-track all Express requests
+    - `captureUncaughtExceptions()` - Catch uncaught errors
 - **Batching & Transport**:
-  - `_enqueue()` - Queue events with auto-flush
-  - `flush()` - Send batched events to VIGIL
-  - `heartbeat()` - Send health checks
-  - `start()` / `shutdown()` - Lifecycle management
+    - `_enqueue()` - Queue events with auto-flush
+    - `flush()` - Send batched events to FATHOM
+    - `heartbeat()` - Send health checks
+    - `start()` / `shutdown()` - Lifecycle management
 - **Utilities**:
-  - `_generateId()` - Session ID generation
-  - `_log()` - Debug logging
+    - `_generateId()` - Session ID generation
+    - `_log()` - Debug logging
 
 ### `src/index.d.ts`
+
 TypeScript type definitions for:
-- VigilSDK class and all method signatures
+
+- FathomSDK class and all method signatures
 - Configuration interfaces
 - Event tracking options
 - EventEmitter interface
 
 ### `build.cjs`
+
 Simple Node.js build script that:
+
 1. Reads `src/index.js` (ESM)
 2. Converts exports to CommonJS
 3. Writes to `dist/index.cjs`
@@ -69,20 +76,26 @@ Simple Node.js build script that:
 Usage: `npm run build`
 
 ### `examples/basic-usage.js`
+
 Standalone example demonstrating:
+
 - SDK initialization
 - All tracking methods (API, error, audit, metric, custom)
 - Graceful shutdown
 
 ### `examples/express-server.js`
+
 Full Express.js integration example with:
-- VIGIL middleware setup
+
+- FATHOM middleware setup
 - Auto-tracking of all routes
 - Error handling
 - Graceful shutdown on SIGTERM
 
-### `tests/vigil.test.js`
+### `tests/fathom.test.js`
+
 Unit tests for:
+
 - SDK initialization validation
 - Event queueing
 - Error tracking
@@ -92,7 +105,9 @@ Unit tests for:
 Run with: `npm test`
 
 ### `README.md`
+
 Comprehensive 400+ line documentation including:
+
 - Quick start guide
 - Configuration reference
 - Usage examples for all tracking methods
@@ -108,27 +123,32 @@ Comprehensive 400+ line documentation including:
 ## Key Features
 
 ### Zero Dependencies
+
 - No external packages required
 - Inline EventEmitter for browser/Node.js compatibility
 - Native `fetch` for HTTP (Node 18+)
 
 ### Event Batching
+
 - Queue events until `batchSize` reached (default 50)
 - Auto-flush every `flushInterval` ms (default 10000)
-- Manual flush with `await vigil.flush()`
+- Manual flush with `await fathom.flush()`
 - Failed events re-queued on network errors
 
 ### Express Integration
+
 - Single middleware call
 - Automatic tracking of all routes
 - Captures method, path, status, duration, user-agent, IP
 
 ### Error Handling
+
 - Graceful network failure recovery
 - Console warnings without crashes
 - Event re-queueing on send failure
 
 ### Production Ready
+
 - Session tracking across events
 - Severity levels (info, warning, error, critical)
 - Metadata support on all event types
@@ -138,26 +158,31 @@ Comprehensive 400+ line documentation including:
 ## Usage
 
 ### Install from npm
+
 ```bash
-npm install @vigil/sdk
+npm install @fathom/sdk
 ```
 
 ### ESM Import
+
 ```javascript
-import VigilSDK from '@vigil/sdk';
+import FathomSDK from '@fathom/sdk';
 ```
 
 ### CJS Require
+
 ```javascript
-const VigilSDK = require('@vigil/sdk');
+const FathomSDK = require('@fathom/sdk');
 ```
 
 ### Build for Distribution
+
 ```bash
 npm run build
 ```
 
 ### Run Tests
+
 ```bash
 npm test
 ```

@@ -1274,7 +1274,7 @@ const DeepAIPanel = ({view, data, rows}) => {
             display:'flex',justifyContent:'space-between',alignItems:'center'}}>
             <div style={{display:'flex',alignItems:'center',gap:6,fontSize:10,color:C.textDim,fontFamily:THEME.fontMono}}>
                 <span style={{color:cfg.color}}>●</span>
-                <span>Model: vigil-dba-v5 · updated {new Date().toISOString().slice(0,10)}</span>
+                <span>Model: fathom-dba-v5 · updated {new Date().toISOString().slice(0,10)}</span>
             </div>
         </div>
     </Card>;
@@ -1491,7 +1491,7 @@ export default function IndexIntelligence() {
                                     Index Intelligence
                                 </div>
                                 <M sz={10} c={C.textDim} style={{letterSpacing:'.08em',marginTop:3,display:'block',textTransform:'uppercase'}}>
-                                    VIGIL · v5.0 · PostgreSQL 14+
+                                    FATHOM · v5.0 · PostgreSQL 14+
                                 </M>
                             </div>
                         </div>

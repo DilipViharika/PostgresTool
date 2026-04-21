@@ -1,11 +1,11 @@
 /**
  * services/copilotService.js
  * ──────────────────────────
- * Schema-aware SQL copilot for VIGIL.
+ * Schema-aware SQL copilot for FATHOM.
  *
  * Capabilities
  *   1. Generate SQL from natural language (NL → SQL) using a live schema
- *      snapshot of the MONITORED database (not the VIGIL control plane).
+ *      snapshot of the MONITORED database (not the FATHOM control plane).
  *   2. Explain a query plan in plain English and call out risky nodes.
  *   3. Draft incident RCA narratives from metric / alert / plan context.
  *
@@ -283,7 +283,7 @@ export function isSafeToRun(sql) {
 // High-level calls
 // ─────────────────────────────────────────────────────────────────────────────
 const NL_TO_SQL_SYSTEM = `
-You are VIGIL's SQL copilot. Translate the user's question into a single
+You are FATHOM's SQL copilot. Translate the user's question into a single
 PostgreSQL SELECT statement using ONLY the tables and columns listed in the
 provided schema. Return ONLY the SQL — no backticks, no prose, no explanation.
 If the question cannot be answered from the schema, return a SQL comment
@@ -294,7 +294,7 @@ Use LIMIT 100 by default unless the user asks for something else.
 `.trim();
 
 const EXPLAIN_SYSTEM = `
-You are VIGIL's performance coach. Given a PostgreSQL EXPLAIN (ANALYZE, BUFFERS)
+You are FATHOM's performance coach. Given a PostgreSQL EXPLAIN (ANALYZE, BUFFERS)
 plan in JSON, write a short (<=6 bullet) review: (1) the dominant cost driver,
 (2) whether statistics look stale (rows vs actual), (3) the 1-2 highest-value
 fixes (indexes, predicate pushdown, rewrite), (4) a concrete next step. Keep
@@ -302,7 +302,7 @@ each bullet under 25 words. No marketing tone.
 `.trim();
 
 const RCA_SYSTEM = `
-You are VIGIL's incident writer. Given metric, alert, and plan context, draft
+You are FATHOM's incident writer. Given metric, alert, and plan context, draft
 a Root Cause Analysis note with these sections, each 2-3 sentences:
 Impact, Trigger, Root cause, Mitigation, Follow-ups. Be specific. If the data
 is insufficient, say so in that section.

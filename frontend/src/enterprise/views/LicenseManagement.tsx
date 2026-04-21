@@ -1,5 +1,5 @@
 // ==========================================================================
-//  VIGIL — License Management View
+//  FATHOM — License Management View
 // ==========================================================================
 //  Full license management page (admin only)
 //  Shows: current license details, tier comparison table, activation form
@@ -256,7 +256,7 @@ const LicenseManagement = () => {
         <div style={styles.container}>
             <div style={styles.header}>
                 <h1 style={styles.title}>License Management</h1>
-                <p style={styles.subtitle}>View and manage your VIGIL license</p>
+                <p style={styles.subtitle}>View and manage your FATHOM license</p>
             </div>
 
             {/* Current License */}
@@ -389,7 +389,7 @@ const LicenseManagement = () => {
                     Contact our support team for license questions or to purchase an upgrade.
                 </p>
                 <a
-                    href="mailto:license@vigil.dev"
+                    href="mailto:license@fathom.dev"
                     style={{
                         ...styles.button,
                         display: 'inline-flex',

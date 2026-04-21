@@ -1,8 +1,8 @@
 ================================================================================
-VIGIL TEST FRAMEWORK SETUP — COMPLETION SUMMARY
+FATHOM TEST FRAMEWORK SETUP — COMPLETION SUMMARY
 ================================================================================
 
-PROJECT: VIGIL PostgreSQL Monitoring Tool Frontend
+PROJECT: FATHOM PostgreSQL Monitoring Tool Frontend
 LOCATION: /sessions/zealous-dazzling-mendel/mnt/PostgresTool/frontend
 
 ================================================================================
