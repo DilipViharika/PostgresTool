@@ -50,6 +50,18 @@ import mongoRoutes     from './routes/mongoRoutes.js';
 import sdkRoutes       from './routes/sdkRoutes.js';
 import enterpriseUIRoutes from './routes/enterpriseUIRoutes.js';
 
+// ── Roadmap routes (W1–W3) ────────────────────────────────────────────────────
+import samlRoutes       from './routes/samlRoutes.js';
+import explainRoutes    from './routes/explainRoutes.js';
+import alertDslRoutes   from './routes/alertDslRoutes.js';
+import anomalyRoutes    from './routes/anomalyRoutes.js';
+import pluginRoutes     from './routes/pluginRoutes.js';
+import scimRoutes       from './routes/scimRoutes.js';
+import governanceRoutes from './routes/governanceRoutes.js';
+import copilotRoutes    from './routes/copilotRoutes.js';
+import { ipAllowListMiddleware } from './middleware/ipAllowList.js';
+import { scheduleAuditExport }   from './services/auditExport.js';
+
 // ── Optional DB drivers (graceful fallback if not installed) ──
 let mysql2 = null;
 let mongodb = null;
@@ -1671,6 +1683,14 @@ app.use('/api', (req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const modularMounts = ['/api', '/api/v1'];
 
+// ── IP allow-list gate (runs before every /api route) ───────────────────────
+// No-op when the workspace has no rules configured; denies non-matching IPs
+// when at least one CIDR is present. See middleware/ipAllowList.js.
+app.use('/api', ipAllowListMiddleware(pool));
+
+// ── SCIM 2.0 (mounted at /scim/v2, dedicated Bearer-token auth) ──────────────
+app.use(scimRoutes(pool));
+
 for (const prefix of modularMounts) {
     app.use(prefix, userRoutes(pool, authenticate, requireScreen, requireRole));
     app.use(prefix, sessionRoutes(pool, authenticate, requireScreen, requireRole));
@@ -1696,6 +1716,22 @@ for (const prefix of modularMounts) {
     //    Mounted under /api/enterprise — each handler is feature-gated via
     //    requireFeature(), so unlicensed tenants receive a uniform 403.
     app.use(`${prefix}/enterprise`, enterpriseUIRoutes(pool, authenticate, requireRole));
+
+    // ── Roadmap routes (W1–W3) ────────────────────────────────────────────────
+    //    Mounted at the same prefixes so they honour the /api and /api/v1
+    //    contract. Each module carries its own RBAC via workspaceRbac.
+    app.use(prefix, samlRoutes(pool, authenticate));
+    app.use(prefix, explainRoutes(pool, authenticate));
+    app.use(prefix, alertDslRoutes(pool, authenticate));
+    app.use(prefix, anomalyRoutes(pool, authenticate));
+    app.use(prefix, pluginRoutes(pool, authenticate));
+    app.use(prefix, governanceRoutes(pool, authenticate));
+    app.use(prefix, copilotRoutes(pool, authenticate));
+}
+
+// ── Scheduled audit-log export (no-op when AUDIT_EXPORT_BUCKET unset) ────────
+if (process.env.AUDIT_EXPORT_ENABLED !== 'false') {
+    scheduleAuditExport();
 }
 
 // ── Enterprise routes (hidden — uncomment when ready) ────────────────────────

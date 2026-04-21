@@ -1,0 +1,142 @@
+# .github/actions/db-migration-review/action.yml
+# ──────────────────────────────────────────────────────────────────────────────
+# VIGIL — DB Migration Review
+#
+# Composite GitHub Action that scans the SQL migration files changed in a
+# pull request, lints them for risky statements (e.g. blocking ALTERs on
+# big tables, destructive drops, missing CONCURRENTLY on index builds), and
+# posts a consolidated review comment on the PR.
+#
+# Usage (in a repo that consumes VIGIL as a tool):
+#
+#   name: DB migration review
+#   on: pull_request
+#   jobs:
+#     review:
+#       runs-on: ubuntu-latest
+#       permissions:
+#         contents: read
+#         pull-requests: write
+#       steps:
+#         - uses: actions/checkout@v4
+#           with: { fetch-depth: 0 }
+#         - uses: ./.github/actions/db-migration-review
+#           with:
+#             migrations-glob: 'db/migrations/**/*.sql'
+#             engine: postgres            # postgres | mysql | mongo
+#             block-on-error: 'true'      # fail the job if any ERROR-level findings
+#             vigil-api-url: ${{ secrets.VIGIL_API_URL }}      # optional
+#             vigil-api-token: ${{ secrets.VIGIL_API_TOKEN }}  # optional
+
+name: VIGIL DB Migration Review
+description: Review SQL migration files in a pull request for risky operations.
+branding: { icon: database, color: blue }
+
+inputs:
+  migrations-glob:
+    description: Glob pattern for migration files relative to repo root.
+    required: false
+    default: 'db/migrations/**/*.sql'
+  engine:
+    description: Database engine — postgres | mysql | mongo.
+    required: false
+    default: postgres
+  block-on-error:
+    description: Fail the job if any ERROR-level findings are produced.
+    required: false
+    default: 'false'
+  vigil-api-url:
+    description: Optional VIGIL API endpoint. If set, findings are also recorded there.
+    required: false
+    default: ''
+  vigil-api-token:
+    description: Optional VIGIL API token (paired with vigil-api-url).
+    required: false
+    default: ''
+
+outputs:
+  findings-json:
+    description: Path to the JSON findings report.
+    value: ${{ steps.review.outputs.findings-json }}
+  error-count:
+    description: Number of ERROR-level findings.
+    value: ${{ steps.review.outputs.error-count }}
+
+runs:
+  using: composite
+  steps:
+    - name: Discover changed migrations
+      id: files
+      shell: bash
+      run: |
+        set -eo pipefail
+        base="${{ github.event.pull_request.base.sha }}"
+        head="${{ github.event.pull_request.head.sha }}"
+        if [ -z "$base" ] || [ -z "$head" ]; then
+          base=$(git rev-parse HEAD~1 2>/dev/null || echo "")
+          head=$(git rev-parse HEAD)
+        fi
+        echo "Base: $base  Head: $head"
+        if [ -n "$base" ]; then
+          git diff --name-only --diff-filter=AMR "$base" "$head" > /tmp/changed.txt || true
+        else
+          git ls-files > /tmp/changed.txt
+        fi
+        pattern='${{ inputs.migrations-glob }}'
+        shopt -s globstar nullglob
+        > /tmp/targets.txt
+        while IFS= read -r f; do
+          case "$f" in
+            $pattern) echo "$f" >> /tmp/targets.txt ;;
+          esac
+        done < /tmp/changed.txt
+        count=$(wc -l < /tmp/targets.txt | tr -d ' ')
+        echo "targets=/tmp/targets.txt" >> "$GITHUB_OUTPUT"
+        echo "count=$count" >> "$GITHUB_OUTPUT"
+        echo "Discovered $count migration files:"
+        cat /tmp/targets.txt || true
+
+    - name: Run VIGIL migration linter
+      id: review
+      if: steps.files.outputs.count != '0'
+      shell: bash
+      run: |
+        set -eo pipefail
+        node "$GITHUB_ACTION_PATH/lint.mjs" \
+          --engine="${{ inputs.engine }}" \
+          --targets=/tmp/targets.txt \
+          --out=/tmp/findings.json
+        echo "findings-json=/tmp/findings.json" >> "$GITHUB_OUTPUT"
+        errors=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/findings.json','utf8')).counts.error || 0)")
+        echo "error-count=$errors" >> "$GITHUB_OUTPUT"
+        echo "ERROR-level findings: $errors"
+
+    - name: Post review comment
+      if: steps.files.outputs.count != '0' && github.event_name == 'pull_request'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -eo pipefail
+        node "$GITHUB_ACTION_PATH/comment.mjs" \
+          --findings=/tmp/findings.json \
+          --repo="${{ github.repository }}" \
+          --pr="${{ github.event.pull_request.number }}"
+
+    - name: Report findings to VIGIL API (optional)
+      if: steps.files.outputs.count != '0' && inputs.vigil-api-url != ''
+      shell: bash
+      env:
+        VIGIL_API_URL:   ${{ inputs.vigil-api-url }}
+        VIGIL_API_TOKEN: ${{ inputs.vigil-api-token }}
+      run: node "$GITHUB_ACTION_PATH/report.mjs" --findings=/tmp/findings.json
+
+    - name: Enforce error gate
+      if: steps.files.outputs.count != '0' && inputs.block-on-error == 'true'
+      shell: bash
+      run: |
+        errors="${{ steps.review.outputs.error-count }}"
+        if [ "${errors:-0}" -gt 0 ]; then
+          echo "::error::$errors ERROR-level migration findings — failing job."
+          exit 1
+        fi
