@@ -115,13 +115,13 @@ const S = {
         width: '100%', boxSizing: 'border-box',
         background: THEME.surfaceHover,
         border: `1px solid ${hasError ? THEME.danger : THEME.glassBorder}`,
-        borderRadius: 16, padding: '9px 12px', color: THEME.textMain, fontSize: 13,
+        borderRadius: 10, padding: '11px 14px', color: THEME.textMain, fontSize: 13,
         outline: 'none', transition: 'border-color 0.2s',
-        fontFamily: FONT_UI,
+        fontFamily: FONT_UI, lineHeight: 1.4,
     }),
     get label() { return {
-        display: 'block', fontSize: 11, fontWeight: 700,
-        color: THEME.textMuted, marginBottom: 6,  letterSpacing: '0.02em',
+        display: 'block', fontSize: 12, fontWeight: 600,
+        color: THEME.textDim, marginBottom: 8, letterSpacing: '0.01em',
         fontFamily: FONT_UI,
     }; },
 };
@@ -139,11 +139,11 @@ const DBTypeSelector = ({ value, onChange }) => {
                 onClick={() => setOpen(o => !o)}
                 style={{
                     ...S.btn(THEME.surface, THEME.glassBorder, THEME.textMain),
-                    width: '100%', justifyContent: 'space-between', padding: '22px 28px', fontSize: 14,
+                    width: '100%', justifyContent: 'space-between', padding: '12px 14px', fontSize: 14, borderRadius: 10,
                 }}
             >
-                <span style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
-                    <span style={{ fontSize: 20 }}>{current.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: 18 }}>{current.icon}</span>
                     <span style={{ fontWeight: 600 }}>{current.label}</span>
                     <span style={S.badge(current.accent)}>:{current.defaultPort || 'N/A'}</span>
                 </span>
@@ -166,8 +166,8 @@ const DBTypeSelector = ({ value, onChange }) => {
                                     background: key === value ? `${db.accent}15` : 'transparent',
                                     border: 'none',
                                     borderLeft: key === value ? `3px solid ${db.accent}` : '3px solid transparent',
-                                    padding: '22px 28px', cursor: 'pointer', textAlign: 'left',
-                                    display: 'flex', alignItems: 'center', gap: 22, transition: 'all 0.15s',
+                                    padding: '12px 14px', cursor: 'pointer', textAlign: 'left',
+                                    display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s',
                                 }}
                                 onMouseEnter={e => e.currentTarget.style.background = `${db.accent}12`}
                                 onMouseLeave={e => e.currentTarget.style.background = key === value ? `${db.accent}15` : 'transparent'}
@@ -198,7 +198,7 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
 
         if (meta.type === 'checkbox') {
             rows.push(
-                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <input
                         type="checkbox"
                         id={`chk-${f}`}
@@ -340,14 +340,14 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                 type="button"
                 onClick={() => toggle(!formData.sshEnabled)}
                 style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 22,
-                    padding: '18px 22px', background: formData.sshEnabled ? '${THEME.primary}08' : THEME.surfaceHover,
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '14px 16px', background: formData.sshEnabled ? `${THEME.primary}14` : THEME.surfaceHover,
                     border: 'none', cursor: 'pointer', textAlign: 'left',
                     borderBottom: open ? `1px solid ${THEME.glassBorder}` : 'none',
                     transition: 'background 0.15s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = formData.sshEnabled ? '${THEME.primary}14' : THEME.surface}
-                onMouseLeave={e => e.currentTarget.style.background = formData.sshEnabled ? '${THEME.primary}08' : THEME.surfaceHover}
+                onMouseEnter={e => e.currentTarget.style.background = formData.sshEnabled ? `${THEME.primary}1f` : THEME.surface}
+                onMouseLeave={e => e.currentTarget.style.background = formData.sshEnabled ? `${THEME.primary}14` : THEME.surfaceHover}
             >
                 <Terminal size={15} color={formData.sshEnabled ? THEME.primary : THEME.textMuted} />
                 <div style={{ flex: 1 }}>
@@ -384,8 +384,8 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
 
                     {/* Info banner */}
                     <div style={{
-                        display: 'flex', gap: 22, padding: '20px 24px', borderRadius: 16,
-                        background: '${THEME.primary}08', border: '1px solid ${THEME.primary}30',
+                        display: 'flex', gap: 10, padding: '12px 14px', borderRadius: 10,
+                        background: `${THEME.primary}14`, border: `1px solid ${THEME.primary}30`,
                         fontSize: 12, color: THEME.textMuted, lineHeight: 1.5,
                     }}>
                         <Lock size={13} color={THEME.primary} style={{ flexShrink: 0, marginTop: 1 }} />
@@ -443,10 +443,10 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
                                 <button key={val} type="button"
                                     onClick={() => setFormData(p => ({ ...p, sshAuthType: val }))}
                                     style={{
-                                        flex: 1, padding: '20px 24px', borderRadius: 16, fontSize: 12, fontWeight: 600,
+                                        flex: 1, padding: '12px 14px', borderRadius: 10, fontSize: 12, fontWeight: 600,
                                         cursor: 'pointer', transition: 'all 0.15s',
-                                        background: formData.sshAuthType === val ? '${THEME.primary}22' : THEME.surfaceHover,
-                                        border: `1px solid ${formData.sshAuthType === val ? '${THEME.primary}66' : THEME.glassBorder}`,
+                                        background: formData.sshAuthType === val ? `${THEME.primary}22` : THEME.surfaceHover,
+                                        border: `1px solid ${formData.sshAuthType === val ? `${THEME.primary}66` : THEME.glassBorder}`,
                                         color: formData.sshAuthType === val ? THEME.primary : THEME.textMuted,
                                     }}
                                 >{label}</button>
@@ -1318,8 +1318,8 @@ const ConnectionsTab = () => {
 
                         {/* Scrollable form body */}
                         <div style={{
-                            flex: 1, overflowY: 'auto', padding: '24px 28px',
-                            display: 'flex', flexDirection: 'column', gap: 18,
+                            flex: 1, overflowY: 'auto', padding: '20px 24px',
+                            display: 'flex', flexDirection: 'column', gap: 16,
                         }}>
                             <DBTypeSelector value={formData.dbType} onChange={handleDbTypeChange} />
 
@@ -1350,7 +1350,7 @@ const ConnectionsTab = () => {
                             <SSHTunnelSection formData={formData} setFormData={setFormData} />
 
                             {!editingConnection && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <input
                                         type="checkbox"
                                         id="isDefault"
@@ -1366,8 +1366,8 @@ const ConnectionsTab = () => {
 
                             {errorMsg && (
                                 <div style={{
-                                    display: 'flex', alignItems: 'flex-start', gap: 22,
-                                    padding: '22px 28px', borderRadius: 20,
+                                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                                    padding: '12px 14px', borderRadius: 10,
                                     background: 'rgba(239,68,68,0.08)',
                                     border: '1px solid rgba(239,68,68,0.3)',
                                 }}>
