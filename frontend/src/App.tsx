@@ -3829,10 +3829,13 @@ const ConnectionSelector = () => {
    ───────────────────────────────────────────────────────────────── */
 const Dashboard = ({ onLogout }) => (
     <ConnectionProvider>
-        {/* Enterprise providers (hidden — uncomment when ready) */}
-        {/* <LicenseProvider><OrgProvider> */}
-        <DashboardInner onLogout={onLogout} />
-        {/* </OrgProvider></LicenseProvider> */}
+        {/* Enterprise providers — required by LicenseGate (Redis/Elasticsearch/
+            Anomaly Detectors/Trace Detail views) and by useOrg() consumers. */}
+        <LicenseProvider>
+            <OrgProvider>
+                <DashboardInner onLogout={onLogout} />
+            </OrgProvider>
+        </LicenseProvider>
     </ConnectionProvider>
 );
 
