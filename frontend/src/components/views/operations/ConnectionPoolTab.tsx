@@ -115,14 +115,15 @@ const S = {
         width: '100%', boxSizing: 'border-box',
         background: THEME.surfaceHover,
         border: `1px solid ${hasError ? THEME.danger : THEME.glassBorder}`,
-        borderRadius: 10, padding: '11px 14px', color: THEME.textMain, fontSize: 13,
+        borderRadius: 10, padding: '12px 14px', color: THEME.textMain, fontSize: 13,
         outline: 'none', transition: 'border-color 0.2s',
         fontFamily: FONT_UI, lineHeight: 1.4,
     }),
     get label() { return {
         display: 'block', fontSize: 12, fontWeight: 600,
-        color: THEME.textDim, marginBottom: 8, letterSpacing: '0.01em',
+        color: THEME.textDim, marginBottom: 10, letterSpacing: '0.01em',
         fontFamily: FONT_UI,
+        lineHeight: 1.4,
     }; },
 };
 
