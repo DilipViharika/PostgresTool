@@ -129,82 +129,93 @@ const S = {
     // ── Section grouping (used in redesigned modal) ────────────────────────
     sectionTitle: {
         display: 'flex', alignItems: 'center', gap: 8,
-        fontSize: 11, fontWeight: 700, color: THEME.textMuted,
+        fontSize: 11, fontWeight: 700, color: THEME.textDim,
         textTransform: 'uppercase' as const, letterSpacing: '0.08em',
-        marginBottom: 14, marginTop: 4,
+        marginBottom: 14, marginTop: 0,
         fontFamily: FONT_UI,
     },
     sectionDivider: {
         height: 1, background: THEME.glassBorder,
-        margin: '24px 0 4px 0',
+        margin: '4px 0',
+    },
+    sectionCard: {
+        background: THEME.surfaceHover,
+        border: `1px solid ${THEME.glassBorder}`,
+        borderRadius: 14,
+        padding: '18px 18px 20px',
+        fontFamily: FONT_UI,
     },
 };
 
-// ─── FloatingField — label rendered INSIDE the input border box ───────────────
-// This eliminates any "label glued to input" rendering issue because there is
-// no separate label element above the input. The label floats up on focus/fill.
+// ─── FormField — conventional layout: small uppercase label, then input ──────
+// Renamed-in-place from FloatingField; the floating-label pattern looked like
+// a large empty placeholder when the field was unfilled, so we switched to a
+// classic above-input label which reads correctly at a glance.
 const FloatingField = ({
     label, value, onChange, type = 'text', placeholder, error, required, optional,
-    autoFocus, paddingRight, children, inputRef, monospace, rows,
+    autoFocus, paddingRight, children, inputRef, monospace, rows, helper,
 }: any) => {
     const [focused, setFocused] = useState(false);
-    const filled = value !== '' && value != null && String(value).length > 0;
-    const float = focused || filled;
-    const Tag = rows ? 'textarea' : 'input';
+    const Tag: any = rows ? 'textarea' : 'input';
 
     return (
-        <div style={{ position: 'relative', width: '100%' }}>
-            <Tag
-                ref={inputRef}
-                type={rows ? undefined : type}
-                value={value || ''}
-                onChange={onChange}
-                onFocus={() => setFocused(true)}
-                onBlur={() => setFocused(false)}
-                placeholder={float ? (placeholder || '') : ''}
-                autoFocus={autoFocus}
-                rows={rows}
-                style={{
-                    width: '100%',
-                    boxSizing: 'border-box',
-                    background: THEME.surfaceHover,
-                    border: `1px solid ${error ? THEME.danger : focused ? THEME.primary : THEME.glassBorder}`,
-                    borderRadius: 12,
-                    // Top padding is enlarged so the floated label has its own room.
-                    padding: rows ? '24px 16px 12px' : `22px ${paddingRight || 16}px 8px 16px`,
-                    color: THEME.textMain,
-                    fontSize: 14,
-                    outline: 'none',
-                    transition: 'border-color 0.18s, background 0.18s',
-                    fontFamily: monospace ? FONT_MONO : FONT_UI,
-                    lineHeight: 1.4,
-                    boxShadow: focused ? `0 0 0 3px ${THEME.primary}1a` : 'none',
-                    resize: rows ? ('vertical' as const) : undefined,
-                }}
-            />
-            <label
-                style={{
-                    position: 'absolute',
-                    left: 16,
-                    top: float ? 7 : 16,
-                    fontSize: float ? 10 : 14,
-                    color: error ? THEME.danger : focused ? THEME.primary : THEME.textMuted,
-                    pointerEvents: 'none',
-                    transition: 'all 0.18s ease',
-                    fontWeight: float ? 700 : 500,
-                    letterSpacing: float ? '0.06em' : 0,
-                    textTransform: float ? ('uppercase' as const) : ('none' as const),
-                    fontFamily: FONT_UI,
-                    background: float ? 'transparent' : 'transparent',
-                }}
-            >
+        <div style={{ width: '100%', fontFamily: FONT_UI }}>
+            <label style={{
+                display: 'block',
+                fontSize: 11,
+                fontWeight: 700,
+                color: error ? THEME.danger : focused ? THEME.primary : THEME.textMuted,
+                textTransform: 'uppercase' as const,
+                letterSpacing: '0.08em',
+                marginBottom: 8,
+                fontFamily: FONT_UI,
+                transition: 'color 0.15s',
+            }}>
                 {label}
-                {required && <span style={{ color: THEME.danger, marginLeft: 3 }}>*</span>}
-                {optional && <span style={{ color: THEME.textMuted, marginLeft: 4, fontSize: float ? 9 : 11 }}>(optional)</span>}
+                {required && <span style={{ color: THEME.danger, marginLeft: 4 }}>*</span>}
+                {optional && (
+                    <span style={{ color: THEME.textMuted, marginLeft: 6, fontSize: 10, textTransform: 'none', fontWeight: 500, letterSpacing: 0 }}>
+                        optional
+                    </span>
+                )}
             </label>
-            {children}
+            <div style={{ position: 'relative' }}>
+                <Tag
+                    ref={inputRef}
+                    type={rows ? undefined : type}
+                    value={value || ''}
+                    onChange={onChange}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
+                    placeholder={placeholder || ''}
+                    autoFocus={autoFocus}
+                    rows={rows}
+                    style={{
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        background: focused ? THEME.surface : THEME.surfaceHover,
+                        border: `1.5px solid ${error ? THEME.danger : focused ? THEME.primary : THEME.glassBorder}`,
+                        borderRadius: 10,
+                        padding: rows ? '12px 14px' : `12px ${paddingRight || 14}px 12px 14px`,
+                        color: THEME.textMain,
+                        fontSize: 14,
+                        outline: 'none',
+                        transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
+                        fontFamily: monospace ? FONT_MONO : FONT_UI,
+                        lineHeight: 1.4,
+                        boxShadow: focused ? `0 0 0 4px ${THEME.primary}1a` : 'none',
+                        resize: rows ? ('vertical' as const) : undefined,
+                    }}
+                />
+                {children}
+            </div>
+            {helper && !error && (
+                <div style={{ color: THEME.textMuted, fontSize: 11, marginTop: 6, lineHeight: 1.5 }}>
+                    {helper}
+                </div>
+            )}
             {error && (
-                <div style={{ color: THEME.danger, fontSize: 11, marginTop: 6, marginLeft: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ color: THEME.danger, fontSize: 11, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <AlertCircle size={11} /> {error}
                 </div>
             )}
@@ -212,14 +223,14 @@ const FloatingField = ({
     );
 };
 
-// ─── DB Type Selector — card grid (no dropdown) ───────────────────────────────
+// ─── DB Type Selector — compact card grid (no dropdown) ───────────────────────
 const DBTypeSelector = ({ value, onChange }) => {
     return (
         <div>
             <div style={S.sectionTitle}>
                 <Database size={12} /> Database Engine
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
                 {Object.entries(DB_TYPES).map(([key, db]) => {
                     const selected = key === value;
                     return (
@@ -229,36 +240,32 @@ const DBTypeSelector = ({ value, onChange }) => {
                             onClick={() => onChange(key)}
                             style={{
                                 position: 'relative',
-                                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                                gap: 8, padding: '18px 12px',
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                padding: '12px 14px',
                                 background: selected ? `${db.accent}14` : THEME.surfaceHover,
                                 border: `1.5px solid ${selected ? db.accent : THEME.glassBorder}`,
-                                borderRadius: 14,
+                                borderRadius: 12,
                                 cursor: 'pointer',
                                 transition: 'all 0.18s',
                                 fontFamily: FONT_UI,
-                                boxShadow: selected ? `0 0 0 3px ${db.accent}25` : 'none',
+                                textAlign: 'left' as const,
+                                boxShadow: selected ? `0 0 0 3px ${db.accent}22` : 'none',
                             }}
                             onMouseEnter={e => { if (!selected) e.currentTarget.style.borderColor = THEME.textMuted; }}
                             onMouseLeave={e => { if (!selected) e.currentTarget.style.borderColor = THEME.glassBorder; }}
                         >
-                            {selected && (
-                                <div style={{
-                                    position: 'absolute', top: 8, right: 8,
-                                    width: 16, height: 16, borderRadius: '50%',
-                                    background: db.accent, display: 'flex',
-                                    alignItems: 'center', justifyContent: 'center',
-                                }}>
-                                    <Check size={10} color="#fff" strokeWidth={3} />
+                            <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>{db.icon}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: selected ? db.accent : THEME.textMain, lineHeight: 1.2 }}>
+                                    {db.label}
                                 </div>
+                                <div style={{ fontSize: 10, color: THEME.textMuted, letterSpacing: '0.04em', marginTop: 2 }}>
+                                    :{db.defaultPort || '—'}
+                                </div>
+                            </div>
+                            {selected && (
+                                <Check size={14} color={db.accent} strokeWidth={3} style={{ flexShrink: 0 }} />
                             )}
-                            <span style={{ fontSize: 26 }}>{db.icon}</span>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: selected ? db.accent : THEME.textMain }}>
-                                {db.label}
-                            </div>
-                            <div style={{ fontSize: 10, color: THEME.textMuted, letterSpacing: '0.04em' }}>
-                                PORT {db.defaultPort || '—'}
-                            </div>
                         </button>
                     );
                 })}
@@ -326,20 +333,21 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
         );
     };
 
+    const sectionGap = 22;
+    const fieldGap = 14;
+
     return (
-        <>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: sectionGap }}>
             {/* ── Server section ────────────────────────────────────────────── */}
             {serverFields.length > 0 && (
                 <div>
                     <div style={S.sectionTitle}><Server size={12} /> Server</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        {serverFields.includes('host') && serverFields.includes('port') ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: fieldGap }}>
+                        {serverFields.includes('host') && serverFields.includes('port') && (
                             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
                                 {renderField('host')}
                                 {renderField('port')}
                             </div>
-                        ) : (
-                            <>{serverFields.filter(f => f !== 'database').map(f => renderField(f))}</>
                         )}
                         {serverFields.includes('database') && renderField('database')}
                     </div>
@@ -368,38 +376,44 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
 
             {/* ── Checkbox row (SSL, etc) ───────────────────────────────────── */}
             {checkFields.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {checkFields.map(f => {
-                        const meta = FIELD_META[f];
-                        const on = !!formData[f];
-                        return (
-                            <label key={f} htmlFor={`chk-${f}`} style={{
-                                display: 'flex', alignItems: 'center', gap: 12,
-                                padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
-                                background: on ? `${THEME.primary}10` : THEME.surfaceHover,
-                                border: `1px solid ${on ? THEME.primary + '55' : THEME.glassBorder}`,
-                                transition: 'all 0.15s',
-                                fontFamily: FONT_UI,
-                            }}>
-                                <input
-                                    type="checkbox"
-                                    id={`chk-${f}`}
-                                    checked={on}
-                                    onChange={e => update(f, e.target.checked)}
-                                    style={{ cursor: 'pointer', accentColor: THEME.primary, width: 16, height: 16 }}
-                                />
-                                <span style={{ fontSize: 13, fontWeight: 600, color: on ? THEME.primary : THEME.textMain }}>
-                                    {meta.label}
-                                </span>
-                                <span style={{ marginLeft: 'auto', fontSize: 11, color: THEME.textMuted }}>
-                                    {on ? 'Enabled' : 'Disabled'}
-                                </span>
-                            </label>
-                        );
-                    })}
+                <div>
+                    <div style={S.sectionTitle}><ShieldCheck size={12} /> Security</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {checkFields.map(f => {
+                            const meta = FIELD_META[f];
+                            const on = !!formData[f];
+                            return (
+                                <label key={f} htmlFor={`chk-${f}`} style={{
+                                    display: 'flex', alignItems: 'center', gap: 12,
+                                    padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
+                                    background: on ? `${THEME.primary}10` : THEME.surface,
+                                    border: `1.5px solid ${on ? THEME.primary + '55' : THEME.glassBorder}`,
+                                    transition: 'all 0.15s',
+                                    fontFamily: FONT_UI,
+                                }}>
+                                    <input
+                                        type="checkbox"
+                                        id={`chk-${f}`}
+                                        checked={on}
+                                        onChange={e => update(f, e.target.checked)}
+                                        style={{ cursor: 'pointer', accentColor: THEME.primary, width: 16, height: 16 }}
+                                    />
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: on ? THEME.primary : THEME.textMain }}>
+                                        {meta.label}
+                                    </span>
+                                    <span style={{
+                                        marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: on ? THEME.primary : THEME.textMuted,
+                                        letterSpacing: '0.08em', textTransform: 'uppercase',
+                                    }}>
+                                        {on ? 'On' : 'Off'}
+                                    </span>
+                                </label>
+                            );
+                        })}
+                    </div>
                 </div>
             )}
-        </>
+        </div>
     );
 };
 
@@ -1396,15 +1410,15 @@ const ConnectionsTab = () => {
 
                         {/* Scrollable form body */}
                         <div style={{
-                            flex: 1, overflowY: 'auto', padding: '24px 28px 28px',
-                            display: 'flex', flexDirection: 'column', gap: 22,
+                            flex: 1, overflowY: 'auto', padding: '24px 26px 26px',
+                            display: 'flex', flexDirection: 'column', gap: 18,
                         }}>
+                            {/* Engine picker (no card wrapper — flat) */}
                             <DBTypeSelector value={formData.dbType} onChange={handleDbTypeChange} />
 
-                            <div style={S.sectionDivider} />
-
-                            <div>
-                                <div style={S.sectionTitle}><Database size={12} /> Identity</div>
+                            {/* ── Connection identity card ─────────────────── */}
+                            <div style={S.sectionCard}>
+                                <div style={S.sectionTitle}><LinkIcon size={12} /> Identity</div>
                                 <FloatingField
                                     label="Connection Name"
                                     value={formData.name}
@@ -1413,32 +1427,32 @@ const ConnectionsTab = () => {
                                     error={formErrors.name}
                                     required
                                     autoFocus
+                                    helper="A friendly name to identify this connection in lists & dashboards."
                                 />
                             </div>
 
-                            <DynamicFields
-                                dbType={formData.dbType}
-                                formData={formData}
-                                setFormData={setFormData}
-                                formErrors={formErrors}
-                                showPassword={showPassword}
-                                togglePasswordVisibility={() => setShowPassword(p => !p)}
-                            />
-
-                            <div style={S.sectionDivider} />
-
-                            {/* ── SSH Tunnel ── */}
-                            <div>
-                                <div style={S.sectionTitle}><Terminal size={12} /> Secure Tunnel</div>
-                                <SSHTunnelSection formData={formData} setFormData={setFormData} />
+                            {/* ── Server + Auth + Options + Checkboxes (in one card) ── */}
+                            <div style={S.sectionCard}>
+                                <DynamicFields
+                                    dbType={formData.dbType}
+                                    formData={formData}
+                                    setFormData={setFormData}
+                                    formErrors={formErrors}
+                                    showPassword={showPassword}
+                                    togglePasswordVisibility={() => setShowPassword(p => !p)}
+                                />
                             </div>
 
+                            {/* ── SSH Tunnel card ──────────────────────────── */}
+                            <SSHTunnelSection formData={formData} setFormData={setFormData} />
+
+                            {/* ── Set as default ──────────────────────────── */}
                             {!editingConnection && (
                                 <label htmlFor="isDefault" style={{
                                     display: 'flex', alignItems: 'center', gap: 12,
-                                    padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                                    padding: '14px 18px', borderRadius: 12, cursor: 'pointer',
                                     background: formData.isDefault ? `${THEME.primary}10` : THEME.surfaceHover,
-                                    border: `1px solid ${formData.isDefault ? THEME.primary + '55' : THEME.glassBorder}`,
+                                    border: `1.5px solid ${formData.isDefault ? THEME.primary + '55' : THEME.glassBorder}`,
                                     transition: 'all 0.15s',
                                 }}>
                                     <input
@@ -1446,14 +1460,14 @@ const ConnectionsTab = () => {
                                         id="isDefault"
                                         checked={formData.isDefault}
                                         onChange={e => setFormData(p => ({ ...p, isDefault: e.target.checked }))}
-                                        style={{ cursor: 'pointer', accentColor: THEME.primary, width: 16, height: 16 }}
+                                        style={{ cursor: 'pointer', accentColor: THEME.primary, width: 17, height: 17 }}
                                     />
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontSize: 13, fontWeight: 600, color: formData.isDefault ? THEME.primary : THEME.textMain }}>
                                             Set as default connection
                                         </div>
                                         <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2 }}>
-                                            Auto-select this when the app opens
+                                            Auto-select this connection when the app opens
                                         </div>
                                     </div>
                                 </label>
