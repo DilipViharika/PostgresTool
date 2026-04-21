@@ -9,7 +9,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link as LinkIcon, RefreshCw, ExternalLink } from 'lucide-react';
 import { fetchData } from '../../utils/api';
-import LicenseGate from '../components/LicenseGate';
 
 interface TraceQuery {
     traceId: string;
@@ -202,10 +201,6 @@ const KV: React.FC<{ label: string; value: string | number; mono?: boolean }> = 
     </div>
 );
 
-const TraceDetail: React.FC<{ initialTraceId?: string }> = (props) => (
-    <LicenseGate feature="trace_correlation">
-        <TraceDetailInner {...props} />
-    </LicenseGate>
-);
+const TraceDetail: React.FC<{ initialTraceId?: string }> = (props) => <TraceDetailInner {...props} />;
 
 export default TraceDetail;

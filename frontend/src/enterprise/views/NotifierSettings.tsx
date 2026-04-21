@@ -8,7 +8,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Bell, PlusCircle, RefreshCw, Send, Trash2 } from 'lucide-react';
 import { fetchData, postData, deleteData } from '../../utils/api';
-import LicenseGate from '../components/LicenseGate';
 
 type NotifierKind = 'pagerduty' | 'opsgenie' | 'teams' | 'webhook';
 
@@ -235,10 +234,6 @@ const NotifierSettingsInner: React.FC = () => {
     );
 };
 
-const NotifierSettings: React.FC = () => (
-    <LicenseGate feature="notifiers_webhook">
-        <NotifierSettingsInner />
-    </LicenseGate>
-);
+const NotifierSettings: React.FC = () => <NotifierSettingsInner />;
 
 export default NotifierSettings;

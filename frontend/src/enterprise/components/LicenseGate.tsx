@@ -1,44 +1,18 @@
 // ==========================================================================
-//  VIGIL — License Gate Component
+//  VIGIL — License Gate (neutralized)
 // ==========================================================================
-//  Feature gating component that checks license tier
-//  Usage: <LicenseGate feature="sso_saml" fallback={<UpgradeBanner feature="sso_saml" />}>
-//           <SSOSettings />
-//         </LicenseGate>
+//  This product ships as a single edition — there is no community / pro /
+//  enterprise tier split. LicenseGate used to render an UpgradeBanner when
+//  the active license didn't include a feature; it now renders its children
+//  unconditionally. Kept as a thin pass-through so existing call sites
+//  (and tests that mock it) keep working without edits.
 // ==========================================================================
 
 import React from 'react';
-import { useLicense } from '../context/LicenseContext';
-import UpgradeBanner from './UpgradeBanner';
 
-const LicenseGate = ({
-    feature,
-    tier = null,
-    children,
-    fallback = null,
-}) => {
-    const { isFeatureAvailable, tier: currentTier } = useLicense();
-
-    // Check if feature is available
-    const hasAccess = isFeatureAvailable(feature);
-
-    // If tier is specified, check against current tier
-    if (tier) {
-        const tierHierarchy = { community: 0, pro: 1, enterprise: 2 };
-        const requiredLevel = tierHierarchy[tier] || 0;
-        const currentLevel = tierHierarchy[currentTier] || 0;
-        if (currentLevel < requiredLevel) {
-            return fallback || <UpgradeBanner feature={feature} tier={tier} />;
-        }
-    }
-
-    // Check feature availability
-    if (!hasAccess) {
-        return fallback || <UpgradeBanner feature={feature} />;
-    }
-
-    // Feature is available, render children
-    return children;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const LicenseGate = ({ feature, tier, children, fallback }: any) => {
+    return <>{children}</>;
 };
 
 export default LicenseGate;

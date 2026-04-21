@@ -8,7 +8,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Database, RefreshCw } from 'lucide-react';
 import { fetchData } from '../../utils/api';
-import LicenseGate from '../components/LicenseGate';
 
 interface RedisInfo {
     server: Record<string, string | number>;
@@ -134,10 +133,6 @@ const KV: React.FC<{ label: string; value: string | number | undefined }> = ({ l
     </div>
 );
 
-const RedisOverview: React.FC = () => (
-    <LicenseGate feature="adapter_redis">
-        <RedisOverviewInner />
-    </LicenseGate>
-);
+const RedisOverview: React.FC = () => <RedisOverviewInner />;
 
 export default RedisOverview;

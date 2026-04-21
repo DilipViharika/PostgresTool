@@ -10,7 +10,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Activity, Save, RefreshCw, AlertTriangle } from 'lucide-react';
 import { fetchData, postData } from '../../utils/api';
-import LicenseGate from '../components/LicenseGate';
 
 type DetectorKind = 'zscore' | 'ewma' | 'mad';
 
@@ -252,10 +251,6 @@ const DetectorPickerInner: React.FC = () => {
     );
 };
 
-const DetectorPicker: React.FC = () => (
-    <LicenseGate feature="anomaly_detection_suggest">
-        <DetectorPickerInner />
-    </LicenseGate>
-);
+const DetectorPicker: React.FC = () => <DetectorPickerInner />;
 
 export default DetectorPicker;

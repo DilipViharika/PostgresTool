@@ -8,7 +8,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Search, RefreshCw } from 'lucide-react';
 import { fetchData } from '../../utils/api';
-import LicenseGate from '../components/LicenseGate';
 
 interface ClusterHealth {
     cluster_name: string;
@@ -166,10 +165,6 @@ const KV: React.FC<{ label: string; value: number | string }> = ({ label, value 
     </div>
 );
 
-const ElasticsearchOverview: React.FC = () => (
-    <LicenseGate feature="adapter_elasticsearch">
-        <ElasticsearchOverviewInner />
-    </LicenseGate>
-);
+const ElasticsearchOverview: React.FC = () => <ElasticsearchOverviewInner />;
 
 export default ElasticsearchOverview;
