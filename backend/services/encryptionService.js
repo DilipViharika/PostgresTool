@@ -47,42 +47,35 @@ function deriveKey(secret) {
     return crypto.pbkdf2Sync(secret, SALT, PBKDF2_ITERATIONS, 32, PBKDF2_DIGEST);
 }
 
+// SEC-06 (audit): ENCRYPTION_KEY is REQUIRED. The previous fallback to
+// JWT_SECRET violated key-separation principles (one secret used for two
+// distinct cryptographic purposes) and is no longer permitted in any
+// environment. Operators MUST generate and set ENCRYPTION_KEY explicitly.
+//
+// Generate a key with:
+//   node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"
 function getEncryptionSecret() {
-    const IS_PROD = process.env.NODE_ENV === 'production';
-    let key = process.env.ENCRYPTION_KEY;
-
-    if (!key) {
-        key = process.env.JWT_SECRET;
-        if (key) {
-            // SECURITY RISK: JWT_SECRET is designed for token signing, not encryption.
-            // It may be shorter than ideal for cryptographic key derivation and could be
-            // shared or rotated independently of the encryption key. Always set a dedicated
-            // ENCRYPTION_KEY environment variable in production.
-            const message = '[Encryption] CRITICAL WARNING: Using JWT_SECRET as fallback for encryption key. Set ENCRYPTION_KEY environment variable for production security.';
-            if (IS_PROD) {
-                console.error(message);
-            } else {
-                console.warn(message);
-            }
-        }
-    }
-
+    const key = process.env.ENCRYPTION_KEY;
     if (!key) {
         throw new Error(
-            'ENCRYPTION_KEY (or JWT_SECRET) environment variable is required. '
-          + 'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))"'
+            'FATAL: ENCRYPTION_KEY environment variable is required. '
+          + 'Generate one with: '
+          + 'node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))" '
+          + '(JWT_SECRET fallback removed for security — see audit SEC-06.)'
         );
     }
-
-    // In production, fail if only using JWT_SECRET fallback
-    if (IS_PROD && !process.env.ENCRYPTION_KEY && process.env.JWT_SECRET) {
+    if (key.length < 32) {
         throw new Error(
-            'FATAL: ENCRYPTION_KEY must be explicitly set in production. ' +
-            'Using JWT_SECRET as fallback is not allowed. ' +
-            'Generate a dedicated key with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))"'
+            'FATAL: ENCRYPTION_KEY must be at least 32 characters of entropy. '
+          + 'Regenerate with: '
+          + 'node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))"'
         );
     }
-
+    if (process.env.JWT_SECRET && key === process.env.JWT_SECRET) {
+        throw new Error(
+            'FATAL: ENCRYPTION_KEY must NOT equal JWT_SECRET. Generate a distinct key — see audit SEC-06.'
+        );
+    }
     return key;
 }
 

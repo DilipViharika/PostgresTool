@@ -12,7 +12,7 @@ import fs                       from 'fs/promises';
 import path                     from 'path';
 import { fileURLToPath }        from 'url';
 import { dirname }              from 'path';
-import { randomUUID }           from 'crypto';
+import crypto, { randomUUID }   from 'crypto';
 
 import { getStatus, getMetric } from './services/cloudwatchService.js';
 import { sendSlackAlert, sendSlackMessage, verifySlackSignature, updateAlertMessage, postThreadComment, resolveSlackUser } from './services/slackService.js';
@@ -69,6 +69,10 @@ const CONFIG = Object.freeze({
     FRONTEND_URL:   process.env.FRONTEND_URL || 'http://localhost:5173',
     JWT_SECRET:     process.env.JWT_SECRET  || null,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '8h',
+    // SEC-07 (audit): bind tokens to this app & issuer so a JWT minted for
+    // some other service (or a different VIGIL deployment) cannot be replayed.
+    JWT_AUDIENCE:   process.env.JWT_AUDIENCE || 'vigil-api',
+    JWT_ISSUER:     process.env.JWT_ISSUER   || 'vigil-auth',
     CORS_ORIGINS: [
         ...(IS_PROD ? [] : ['http://localhost:5173', 'http://localhost:3000']),
         'https://postgres-tool.vercel.app',
@@ -210,21 +214,48 @@ function log(level, message, meta = {}) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// TLS HELPER — SEC-04 (audit)
+// ─────────────────────────────────────────────────────────────────────────────
+// In production we default to strict TLS certificate validation.
+// Set VIGIL_TLS_ALLOW_SELF_SIGNED=true to opt back into the permissive
+// behavior (needed for some self-hosted DBs with self-signed certs).
+// Set VIGIL_TLS_CA_CERT to a PEM bundle to trust a custom CA.
+function buildSslOption(sslEnabled) {
+    if (!sslEnabled) return false;
+    const isProd = process.env.NODE_ENV === 'production';
+    const allowSelfSigned =
+        process.env.VIGIL_TLS_ALLOW_SELF_SIGNED === 'true'
+        || (!isProd && process.env.VIGIL_TLS_STRICT !== 'true');
+    const ca = process.env.VIGIL_TLS_CA_CERT;
+    const opt = { rejectUnauthorized: !allowSelfSigned };
+    if (ca) opt.ca = ca;
+    return opt;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // DATABASE POOL — admin pool (env-based, for metadata) + per-connection pool map
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Admin pool: used ONLY for vigil_connections, users, feedback, etc.
 // NOT used for monitoring queries — those must go through user-added connections.
+// PRF-05 (audit): admin pool max reduced from 10 to 3 per instance.
+// On Vercel each cold-started function instance owns its own pool, so a max
+// of 10 fans out to dozens of idle connections against a small Neon free tier
+// (default ~100 max). Three is plenty for the metadata workload (control-plane
+// reads/writes only), and the per-user query workload runs through dynamic
+// pools created by getPool() with their own caps.
+// Override with VIGIL_ADMIN_POOL_MAX if a deployment genuinely needs more.
+const ADMIN_POOL_MAX = Number(process.env.VIGIL_ADMIN_POOL_MAX) || 3;
 const pool = HAS_ADMIN_DB
     ? new Pool(
           process.env.DATABASE_URL
               ? {
                     connectionString: process.env.DATABASE_URL,
-                    max:      10,
+                    max:      ADMIN_POOL_MAX,
                     idleTimeoutMillis:       10_000,
                     connectionTimeoutMillis: 15_000,
                     statement_timeout:       30_000,
-                    ssl: { rejectUnauthorized: false },
+                    ssl: buildSslOption(true),
                 }
               : {
                     user:     process.env.PGUSER     || 'postgres',
@@ -232,11 +263,11 @@ const pool = HAS_ADMIN_DB
                     database: process.env.PGDATABASE || 'postgres',
                     password: process.env.PGPASSWORD,
                     port:     Number(process.env.PGPORT) || 5432,
-                    max:      10,
+                    max:      ADMIN_POOL_MAX,
                     idleTimeoutMillis:       10_000,
                     connectionTimeoutMillis: 15_000,
                     statement_timeout:       30_000,
-                    ssl: { rejectUnauthorized: false },
+                    ssl: buildSslOption(process.env.PGSSL !== 'false'),
                 }
       )
     : null;
@@ -247,6 +278,21 @@ if (pool) pool.on('error', (err) => log('ERROR', 'Pool background error', { err:
 const connectionPools = new Map();
 // Map<connectionId, { client: MongoClient, db: Db }> — MongoDB clients
 const mongoClients = new Map();
+// PRF-01 (audit): in-flight pool/client creations. Two concurrent callers for
+// the same connectionId share a single pending Promise instead of racing and
+// leaking a duplicate pool/client.
+const poolInFlight = new Map();          // Map<connectionId, Promise<pool>>
+const mongoInFlight = new Map();         // Map<connectionId, Promise<{client,db}>>
+// PRF-02 (audit): per-pool lastUsed timestamps for idle eviction.
+const poolLastUsed = new Map();          // Map<connectionId, ms epoch>
+const mongoLastUsed = new Map();         // Map<connectionId, ms epoch>
+const POOL_IDLE_EVICT_MS =
+    Number(process.env.VIGIL_POOL_IDLE_EVICT_MS) || 30 * 60 * 1000; // 30 min
+const POOL_EVICT_SWEEP_MS =
+    Number(process.env.VIGIL_POOL_EVICT_SWEEP_MS) || 5 * 60 * 1000; // 5 min
+
+function touchPool(id)       { poolLastUsed.set(id, Date.now()); }
+function touchMongoClient(id){ mongoLastUsed.set(id, Date.now()); }
 
 // Per-user active connection map: Map<userId, connectionId>
 // Each user's active connection is independent — switching in one session
@@ -277,8 +323,8 @@ async function resolveConnection(connectionId, userId) {
     const id = parseInt(connectionId, 10);
     let conn = CONNECTIONS.find(c => c.id === id);
     if (!conn) {
-        await ensureConnectionsTable().catch(() => {});
-        await syncConnectionsCache().catch(() => {});
+        await ensureConnectionsTable().catch(err => log('WARN', 'ensureConnectionsTable failed during resolveConnection', { error: err.message }));
+        await syncConnectionsCache().catch(err => log('WARN', 'syncConnectionsCache failed during resolveConnection', { error: err.message }));
         conn = CONNECTIONS.find(c => c.id === id);
     }
     if (!conn) throw new Error(`Connection ${id} not found`);
@@ -294,54 +340,70 @@ async function getPool(connectionId, userId) {
     const conn = await resolveConnection(connectionId, userId);
     const id = conn.id;
 
-    if (connectionPools.has(id)) return connectionPools.get(id);
+    // Hot path: pool already exists.
+    if (connectionPools.has(id)) {
+        touchPool(id);
+        return connectionPools.get(id);
+    }
 
-    // Check connection pool limit
+    // PRF-01 (audit): if another async caller is already creating this pool,
+    // await their Promise instead of starting a second concurrent creation.
+    if (poolInFlight.has(id)) return poolInFlight.get(id);
+
+    // Cap total live pools across the process.
     if (connectionPools.size >= 20) {
         throw new Error('Too many active connections. Please close some connections first.');
     }
 
     const dbType = (conn.dbType || 'postgresql').toLowerCase();
-
     if (dbType === 'mongodb') {
         throw new Error('MongoDB connections must use getMongoClient() — pool-based access is not supported. Use /api/mongodb/* endpoints instead.');
     }
 
-    if (dbType === 'mysql' || dbType === 'mariadb') {
-        // ── MySQL / MariaDB ──
-        if (!mysql2) throw new Error('MySQL driver (mysql2) not installed on the server. Run: npm install mysql2');
+    const creation = (async () => {
+        if (dbType === 'mysql' || dbType === 'mariadb') {
+            if (!mysql2) throw new Error('MySQL driver (mysql2) not installed on the server. Run: npm install mysql2');
+            const cfg = await resolvePoolConfig(conn);
+            const mysqlPool = mysql2.createPool({
+                host:     cfg.host,
+                port:     cfg.port,
+                database: cfg.database,
+                user:     cfg.user,
+                password: cfg.password,
+                ssl:      buildSslOption(conn.ssl) || undefined,
+                waitForConnections: true,
+                connectionLimit: 8,
+                queueLimit: 0,
+                enableKeepAlive: true,
+                connectTimeout: 15000,
+            });
+            connectionPools.set(id, mysqlPool);
+            touchPool(id);
+            log('INFO', `Created MySQL pool for connection ${id} (${conn.name})`);
+            return mysqlPool;
+        }
+        // PostgreSQL (default)
         const cfg = await resolvePoolConfig(conn);
-        const mysqlPool = mysql2.createPool({
-            host:     cfg.host,
-            port:     cfg.port,
-            database: cfg.database,
-            user:     cfg.user,
-            password: cfg.password,
-            ssl:      conn.ssl ? { rejectUnauthorized: false } : undefined,
-            waitForConnections: true,
-            connectionLimit: 8,
-            queueLimit: 0,
-            enableKeepAlive: true,
-            connectTimeout: 15000,
+        const newPool = new Pool({
+            ...cfg,
+            max:                     8,
+            idleTimeoutMillis:       10_000,
+            connectionTimeoutMillis: 15_000,
+            statement_timeout:       30_000,
         });
-        connectionPools.set(id, mysqlPool);
-        log('INFO', `Created MySQL pool for connection ${id} (${conn.name})`);
-        return mysqlPool;
-    }
+        newPool.on('error', (err) => log('ERROR', `Pool [conn:${id}] background error`, { err: err.message }));
+        connectionPools.set(id, newPool);
+        touchPool(id);
+        log('INFO', `Created PG pool for connection ${id} (${conn.name})`);
+        return newPool;
+    })();
 
-    // ── PostgreSQL (default) ──
-    const cfg = await resolvePoolConfig(conn);
-    const newPool = new Pool({
-        ...cfg,
-        max:                     8,
-        idleTimeoutMillis:       10_000,
-        connectionTimeoutMillis: 15_000,
-        statement_timeout:       30_000,
-    });
-    newPool.on('error', (err) => log('ERROR', `Pool [conn:${id}] background error`, { err: err.message }));
-    connectionPools.set(id, newPool);
-    log('INFO', `Created PG pool for connection ${id} (${conn.name})`);
-    return newPool;
+    poolInFlight.set(id, creation);
+    try {
+        return await creation;
+    } finally {
+        poolInFlight.delete(id);
+    }
 }
 
 /**
@@ -351,27 +413,41 @@ async function getMongoClient(connectionId, userId) {
     const conn = await resolveConnection(connectionId, userId);
     const id = conn.id;
 
-    if (mongoClients.has(id)) return mongoClients.get(id);
+    if (mongoClients.has(id)) {
+        touchMongoClient(id);
+        return mongoClients.get(id);
+    }
+    // PRF-01 (audit): share in-flight creations to avoid leaking duplicate clients.
+    if (mongoInFlight.has(id)) return mongoInFlight.get(id);
 
     if (!mongodb) throw new Error('MongoDB driver not installed on the server. Run: npm install mongodb');
 
-    const cfg = await resolvePoolConfig(conn);
-    // Build MongoDB connection string
-    const userPart = cfg.user ? `${encodeURIComponent(cfg.user)}:${encodeURIComponent(cfg.password || '')}@` : '';
-    const sslParam = conn.ssl ? '?tls=true&tlsAllowInvalidCertificates=true' : '';
-    const connStr = `mongodb://${userPart}${cfg.host}:${cfg.port || 27017}/${cfg.database || 'admin'}${sslParam}`;
+    const creation = (async () => {
+        const cfg = await resolvePoolConfig(conn);
+        const userPart = cfg.user ? `${encodeURIComponent(cfg.user)}:${encodeURIComponent(cfg.password || '')}@` : '';
+        const sslParam = conn.ssl ? '?tls=true&tlsAllowInvalidCertificates=true' : '';
+        const connStr = `mongodb://${userPart}${cfg.host}:${cfg.port || 27017}/${cfg.database || 'admin'}${sslParam}`;
 
-    const client = new mongodb.MongoClient(connStr, {
-        serverSelectionTimeoutMS: 8000,
-        connectTimeoutMS: 15000,
-    });
-    await client.connect();
-    const db = client.db(cfg.database || 'admin');
+        const client = new mongodb.MongoClient(connStr, {
+            serverSelectionTimeoutMS: 8000,
+            connectTimeoutMS: 15000,
+        });
+        await client.connect();
+        const db = client.db(cfg.database || 'admin');
 
-    const entry = { client, db };
-    mongoClients.set(id, entry);
-    log('INFO', `Created MongoDB client for connection ${id} (${conn.name})`);
-    return entry;
+        const entry = { client, db };
+        mongoClients.set(id, entry);
+        touchMongoClient(id);
+        log('INFO', `Created MongoDB client for connection ${id} (${conn.name})`);
+        return entry;
+    })();
+
+    mongoInFlight.set(id, creation);
+    try {
+        return await creation;
+    } finally {
+        mongoInFlight.delete(id);
+    }
 }
 
 /**
@@ -383,17 +459,42 @@ async function destroyPool(connectionId) {
     const p = connectionPools.get(id);
     if (p) {
         connectionPools.delete(id);
-        await p.end().catch(() => {});
+        poolLastUsed.delete(id);
+        await p.end().catch(err => log('WARN', `Pool end failed for connection ${id}`, { error: err.message }));
         log('INFO', `Destroyed pool for connection ${id}`);
     }
     // MongoDB client
     const m = mongoClients.get(id);
     if (m) {
         mongoClients.delete(id);
-        await m.client.close().catch(() => {});
+        mongoLastUsed.delete(id);
+        await m.client.close().catch(err => log('WARN', `MongoDB close failed for connection ${id}`, { error: err.message }));
         log('INFO', `Destroyed MongoDB client for connection ${id}`);
     }
 }
+
+// PRF-02 (audit): periodically evict pools that have not served a request in
+// POOL_IDLE_EVICT_MS. Without this the connectionPools map grows monotonically
+// to its 20-entry cap and never shrinks, eventually starving brand-new
+// connections.
+const _idleSweep = setInterval(async () => {
+    const now = Date.now();
+    for (const [id] of connectionPools) {
+        const lastUsed = poolLastUsed.get(id) ?? 0;
+        if (now - lastUsed > POOL_IDLE_EVICT_MS) {
+            log('INFO', `Evicting idle pool for connection ${id} (idle for ${Math.round((now - lastUsed) / 1000)}s)`);
+            await destroyPool(id);
+        }
+    }
+    for (const [id] of mongoClients) {
+        const lastUsed = mongoLastUsed.get(id) ?? 0;
+        if (now - lastUsed > POOL_IDLE_EVICT_MS) {
+            log('INFO', `Evicting idle MongoDB client for connection ${id} (idle for ${Math.round((now - lastUsed) / 1000)}s)`);
+            await destroyPool(id);
+        }
+    }
+}, POOL_EVICT_SWEEP_MS);
+_idleSweep.unref?.();
 
 /**
  * Shorthand: get the right pool for an Express request.
@@ -1138,42 +1239,16 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
     }
 
     try {
-        // ── Fallback demo login when no admin database is configured ──
-        // Only allowed in non-production environments
-        if (!pool && process.env.NODE_ENV !== 'production' && username === 'admin' && password === 'admin123') {
-            const NEW_SCREENS = [
-                'backup', 'checkpoint', 'maintenance',
-                'replication', 'bloat', 'regression', 'cloudwatch',
-                'tasks', 'log-patterns', 'alert-correlation', 'Table',
-                'table-indexes', 'table-sizes',
-                'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring',
-                'retention', 'terraform', 'custom-dashboard',
-                'mongo-overview', 'mongo-performance', 'mongo-storage',
-                'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
-                'query-plan', 'chart-builder', 'pool-metrics',
-            ];
-            const demoPayload = {
-                id:             1,
-                username:       'admin',
-                name:           'Demo Admin',
-                email:          'admin@vigil.local',
-                role:           'superadmin',
-                accessLevel:    'full',
-                allowedScreens: NEW_SCREENS,
-                sid:            `demo-${Date.now()}`,
-            };
-            const token = jwt.sign(demoPayload, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
-            recordLoginAttempt(username, true);
-            log('INFO', 'Demo fallback login (no admin DB)', { username });
-            return res.json({ token, user: demoPayload });
-        }
-
+        // SEC-02 (audit): The hardcoded admin/admin123 demo-login fallback was
+        // removed. Authentication ALWAYS goes through the admin database; if
+        // DATABASE_URL is unset the request returns 503 above.
         const user = await getUserByUsername(pool, username);
 
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             recordLoginAttempt(username, false);
             if (user) {
-                await recordFailedLogin(pool, user.id).catch(() => {});
+                await recordFailedLogin(pool, user.id)
+                    .catch(err => log('WARN', 'recordFailedLogin failed', { userId: user.id, error: err.message }));
                 await writeAudit(pool, {
                     actorId:       user.id,
                     actorUsername: username,
@@ -1181,7 +1256,7 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
                     level:         'warn',
                     detail:        'Invalid credentials',
                     ip:            req.ip,
-                }).catch(() => {});
+                }).catch(err => log('WARN', 'writeAudit LOGIN_FAILED failed', { userId: user.id, error: err.message }));
             }
             return res.status(401).json({ error: 'Invalid credentials' });
         }
@@ -1233,7 +1308,11 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             sid:            sessionId,
         };
 
-        const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
+        const token = jwt.sign(payload, CONFIG.JWT_SECRET, {
+            expiresIn: CONFIG.JWT_EXPIRES_IN,
+            audience:  CONFIG.JWT_AUDIENCE,
+            issuer:    CONFIG.JWT_ISSUER,
+        });
         recordLoginAttempt(username, true);
 
         const results = await Promise.allSettled([
@@ -1318,7 +1397,11 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
             sid:            sessionId,
         };
 
-        const token = jwt.sign(payload, CONFIG.JWT_SECRET, { expiresIn: CONFIG.JWT_EXPIRES_IN });
+        const token = jwt.sign(payload, CONFIG.JWT_SECRET, {
+            expiresIn: CONFIG.JWT_EXPIRES_IN,
+            audience:  CONFIG.JWT_AUDIENCE,
+            issuer:    CONFIG.JWT_ISSUER,
+        });
 
         const results = await Promise.allSettled([
             touchLastLogin(pool, user.id),
@@ -1336,15 +1419,55 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
             if (r.status === 'rejected') log('WARN', `Post-SSO login task ${i} failed`, { error: r.reason?.message });
         });
 
+        // SEC-08 (audit): do NOT put the JWT in the redirect URL — URLs leak to
+        // referrer headers, browser history, and server access logs. Instead:
+        //   1. Mint a single-use exchange code (random, short-lived).
+        //   2. Store { token, payload } in an in-memory map keyed by the code.
+        //   3. Redirect the browser with ONLY the code.
+        //   4. Frontend POSTs the code to /api/auth/sso/exchange and receives
+        //      the JWT in a JSON response body (not in a URL).
+        const exchangeCode = crypto.randomBytes(32).toString('hex');
+        ssoExchangeCodes.set(exchangeCode, {
+            token,
+            user: payload,
+            expiresAt: Date.now() + 60_000, // 60-second TTL
+        });
         const redirectUri = new URL(`${CONFIG.FRONTEND_URL}/auth/callback`);
-        redirectUri.searchParams.append('token', token);
-        redirectUri.searchParams.append('user', encodeURIComponent(JSON.stringify(payload)));
+        redirectUri.searchParams.append('code', exchangeCode);
         res.redirect(redirectUri.toString());
 
     } catch (err) {
         log('ERROR', 'SSO Callback processing failed', { error: err.message });
         res.redirect(`${CONFIG.FRONTEND_URL}/auth/callback?error=Internal server error during SSO`);
     }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SSO EXCHANGE — POST /api/auth/sso/exchange
+// SEC-08 (audit): single-use code -> JWT exchange. The token travels in the
+// JSON response body, never in a URL.
+// ─────────────────────────────────────────────────────────────────────────────
+const ssoExchangeCodes = new Map();
+// Sweep expired codes every minute to prevent unbounded growth.
+setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of ssoExchangeCodes) {
+        if (v.expiresAt <= now) ssoExchangeCodes.delete(k);
+    }
+}, 60_000).unref?.();
+
+app.post('/api/auth/sso/exchange', (req, res) => {
+    const { code } = req.body || {};
+    if (!code || typeof code !== 'string') {
+        return res.status(400).json({ error: 'exchange code required' });
+    }
+    const entry = ssoExchangeCodes.get(code);
+    // Delete first to enforce single-use semantics even under concurrent calls.
+    ssoExchangeCodes.delete(code);
+    if (!entry || entry.expiresAt <= Date.now()) {
+        return res.status(401).json({ error: 'Invalid or expired exchange code' });
+    }
+    res.json({ token: entry.token, user: entry.user });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1394,7 +1517,7 @@ app.post('/api/auth/change-password', authenticate, async (req, res) => {
             level:         'info',
             detail:        'User changed their password',
             ip:            req.ip,
-        }).catch(() => {});
+        }).catch(err => log('WARN', 'writeAudit PASSWORD_CHANGED failed', { userId, error: err.message }));
 
         res.json({ success: true, message: 'Password changed successfully' });
     } catch (err) {
@@ -1525,7 +1648,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
             level:         'info',
             detail:        'Password reset via token',
             ip:            req.ip,
-        }).catch(() => {});
+        }).catch(err => log('WARN', 'writeAudit PASSWORD_RESET failed', { userId: tokenData.user_id, error: err.message }));
 
         res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
 
@@ -2113,11 +2236,24 @@ app.delete('/api/alerts/cleanup', authenticate, requireScreen('admin'), async (r
 });
 
 // ── Vercel Cron: run monitoring on schedule ───────────────────────────────────
-// Called every minute by Vercel Cron (see vercel.json). No auth required since
-// Vercel calls this internally; protected by checking the cron secret header.
+// Called every minute by Vercel Cron (see vercel.json). Protected by CRON_SECRET.
+// SEC-03 (audit): fail-closed. If CRON_SECRET is not configured the endpoint is
+// DISABLED entirely rather than becoming open to the world.
 app.post('/api/alerts/run-monitoring', async (req, res) => {
     const cronSecret = process.env.CRON_SECRET;
-    if (cronSecret && req.headers['authorization'] !== `Bearer ${cronSecret}`) {
+    if (!cronSecret) {
+        log('WARN', 'run-monitoring invoked but CRON_SECRET is not configured; refusing');
+        return res.status(503).json({ error: 'Cron endpoint disabled: CRON_SECRET is not configured.' });
+    }
+    const header = req.headers['authorization'];
+    const expected = `Bearer ${cronSecret}`;
+    // Constant-time comparison to prevent timing attacks.
+    const headerBuf   = Buffer.from(typeof header === 'string' ? header : '');
+    const expectedBuf = Buffer.from(expected);
+    const ok =
+        headerBuf.length === expectedBuf.length &&
+        crypto.timingSafeEqual(headerBuf, expectedBuf);
+    if (!ok) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     try {
@@ -2432,7 +2568,7 @@ async function resolvePoolConfig(c) {
         database: c.database,
         user:     c.username,
         password: c.password,
-        ssl: c.ssl ? { rejectUnauthorized: false } : false,
+        ssl: buildSslOption(c.ssl),
     };
 }
 
@@ -2512,27 +2648,38 @@ app.post('/api/connections', authenticate, ensureConnections, async (req, res) =
                 const testConn = await mysql2.createConnection({
                     host: cfg.host, port: cfg.port, database: cfg.database,
                     user: cfg.user, password: cfg.password,
-                    ssl: newConn.ssl ? { rejectUnauthorized: false } : undefined,
+                    ssl: buildSslOption(newConn.ssl) || undefined,
                     connectTimeout: 8000,
                 });
                 await testConn.query('SELECT 1');
                 await testConn.end();
             } else {
-                // Try as-is first; on cert errors, retry with rejectUnauthorized: false
+                // Try as-is first; on cert errors, retry with the configured SSL
+                // policy (see buildSslOption + VIGIL_TLS_ALLOW_SELF_SIGNED).
+                // PRF-03 (audit): always end() the test pool, even on the
+                // failure path, so we don't leak open sockets when the connect()
+                // succeeds but the followup query throws.
                 let pgOk = false;
-                for (const sslOverride of [undefined, { rejectUnauthorized: false }]) {
+                for (const sslOverride of [undefined, buildSslOption(true)]) {
+                    const poolOpts = { ...cfg, connectionTimeoutMillis: 8000 };
+                    if (sslOverride) poolOpts.ssl = sslOverride;
+                    const testPool = new Pool(poolOpts);
                     try {
-                        const poolOpts = { ...cfg, connectionTimeoutMillis: 8000 };
-                        if (sslOverride) poolOpts.ssl = sslOverride;
-                        const testPool = new Pool(poolOpts);
                         const client = await testPool.connect();
-                        await client.query('SELECT 1');
-                        client.release();
-                        await testPool.end();
+                        try {
+                            await client.query('SELECT 1');
+                        } finally {
+                            client.release();
+                        }
                         pgOk = true;
                         break;
                     } catch (pgErr) {
-                        if (!pgErr.message.includes('certificate') && !pgErr.message.includes('SSL')) throw pgErr;
+                        if (!pgErr.message.includes('certificate') && !pgErr.message.includes('SSL')) {
+                            await testPool.end().catch(() => undefined);
+                            throw pgErr;
+                        }
+                    } finally {
+                        await testPool.end().catch(() => undefined);
                     }
                 }
                 if (!pgOk) throw new Error('Connection failed — could not establish SSL connection');
@@ -2687,33 +2834,40 @@ app.post('/api/connections/test', authenticate, async (req, res) => {
                 const testConn = await mysql2.createConnection({
                     host, port: port || 3306, database: database || undefined,
                     user: username, password,
-                    ssl: ssl ? { rejectUnauthorized: false } : undefined,
+                    ssl: buildSslOption(ssl) || undefined,
                     connectTimeout: 8000,
                 });
                 await testConn.query('SELECT 1');
                 await testConn.end();
             } else {
-                // Try with the user's SSL preference first; on cert errors, retry with rejectUnauthorized: false
-                const sslOpt = ssl ? { rejectUnauthorized: false } : undefined;
+                // Try with the user's SSL preference first; on cert errors, retry
+                // honoring buildSslOption (strict in prod by default).
+                // PRF-03 (audit): always end() the test pool, including on the
+                // failure path, to avoid leaking open sockets.
+                const sslOpt = buildSslOption(ssl) || undefined;
                 let lastErr;
-                for (const sslAttempt of [sslOpt, sslOpt ? null : { rejectUnauthorized: false }]) {
+                for (const sslAttempt of [sslOpt, sslOpt ? null : buildSslOption(true)]) {
+                    const testPool = new Pool({
+                        host, port: port || 5432, database: database || 'postgres',
+                        user: username, password,
+                        ssl: sslAttempt === null ? undefined : sslAttempt,
+                        connectionTimeoutMillis: 8000,
+                    });
                     try {
-                        const testPool = new Pool({
-                            host, port: port || 5432, database: database || 'postgres',
-                            user: username, password,
-                            ssl: sslAttempt === null ? undefined : sslAttempt,
-                            connectionTimeoutMillis: 8000,
-                        });
                         const client = await testPool.connect();
-                        await client.query('SELECT 1');
-                        client.release();
-                        await testPool.end();
+                        try {
+                            await client.query('SELECT 1');
+                        } finally {
+                            client.release();
+                        }
                         lastErr = null;
                         break;
                     } catch (e) {
                         lastErr = e;
                         // Only retry if it's a certificate error
                         if (!e.message.includes('certificate') && !e.message.includes('SSL')) break;
+                    } finally {
+                        await testPool.end().catch(() => undefined);
                     }
                 }
                 if (lastErr) throw lastErr;
@@ -2764,18 +2918,25 @@ app.post('/api/connections/:id/test', authenticate, ensureConnections, async (re
                 const testConn = await mysql2.createConnection({
                     host: poolCfg.host, port: poolCfg.port, database: poolCfg.database,
                     user: poolCfg.user, password: poolCfg.password,
-                    ssl: c.ssl ? { rejectUnauthorized: false } : undefined,
+                    ssl: buildSslOption(c.ssl) || undefined,
                     connectTimeout: 8000,
                 });
                 await testConn.query('SELECT 1');
                 await testConn.end();
             } else {
                 // ── PostgreSQL test ──
+                // PRF-03 (audit): always end() the test pool, even on failure.
                 const testPool = new Pool({ ...poolCfg, connectionTimeoutMillis: 8000 });
-                const client = await testPool.connect();
-                await client.query('SELECT 1');
-                client.release();
-                await testPool.end();
+                try {
+                    const client = await testPool.connect();
+                    try {
+                        await client.query('SELECT 1');
+                    } finally {
+                        client.release();
+                    }
+                } finally {
+                    await testPool.end().catch(() => undefined);
+                }
             }
 
             await dbUpdateConnection(id, { status: 'success', lastTested: new Date().toISOString() });
@@ -2886,17 +3047,24 @@ app.get('/api/connections/health', authenticate, async (req, res) => {
                     const testConn = await mysql2.createConnection({
                         host: poolCfg.host, port: poolCfg.port, database: poolCfg.database,
                         user: poolCfg.user, password: poolCfg.password,
-                        ssl: conn.ssl ? { rejectUnauthorized: false } : undefined,
+                        ssl: buildSslOption(conn.ssl) || undefined,
                         connectTimeout: 5000,
                     });
                     await testConn.query('SELECT 1');
                     await testConn.end();
                 } else {
+                    // PRF-03 (audit): always end() the test pool, even on failure.
                     const testPool = new Pool({ ...poolCfg, connectionTimeoutMillis: 5000 });
-                    const client = await testPool.connect();
-                    await client.query('SELECT 1');
-                    client.release();
-                    await testPool.end();
+                    try {
+                        const client = await testPool.connect();
+                        try {
+                            await client.query('SELECT 1');
+                        } finally {
+                            client.release();
+                        }
+                    } finally {
+                        await testPool.end().catch(() => undefined);
+                    }
                 }
 
                 const latencyMs = Date.now() - startTime;
@@ -4461,25 +4629,37 @@ app.get('/api/resources/maintenance-logs', authenticate, cached('res:maint', 30_
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Schema migrations endpoint
+// SEC-10 (audit): the table we read from is restricted to a closed allowlist
+// of well-known migration-tracking tables. This eliminates the case where a
+// user-created table whose name happens to contain "migration" gets selected.
 app.get('/api/schema/migrations', authenticate, cached('schema:migrations', CONFIG.CACHE_TTL.SCHEMAS), async (req, res) => {
     try {
         const pool = await reqPool(req);
-        // Try to find a migrations table (common patterns)
+        // Closed allowlist of the migration-table names we know how to read.
+        const ALLOWED_MIGRATION_TABLES = new Set([
+            'flyway_schema_history',
+            'schema_migrations',
+            'knex_migrations',
+            '_prisma_migrations',
+            'migrations',
+            'schema_version',
+        ]);
         const { rows: tables } = await pool.query(`
             SELECT table_name FROM information_schema.tables
             WHERE table_schema = 'public'
-            AND (table_name LIKE '%migration%' OR table_name LIKE '%schema_version%' OR table_name = 'flyway_schema_history' OR table_name = 'schema_migrations')
+            AND table_name = ANY($1::text[])
             LIMIT 1
-        `);
+        `, [Array.from(ALLOWED_MIGRATION_TABLES)]);
         if (tables.length === 0) {
             return res.json({ migrations: [], pending: [], message: 'No migration tracking table found. Schema versioning data will appear if you use a migration tool (Flyway, Knex, Prisma, etc.).' });
         }
         const tableName = tables[0].table_name;
-        // Validate table name to prevent injection
-        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(tableName)) {
+        // Defense in depth: re-validate against the allowlist AND the
+        // identifier-shape regex, even though the SQL above already enforced it.
+        if (!ALLOWED_MIGRATION_TABLES.has(tableName) || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(tableName)) {
             return res.json({ migrations: [], pending: [], message: 'Invalid table name' });
         }
-        const { rows } = await pool.query(`SELECT * FROM "${tableName}" ORDER BY 1 DESC LIMIT 50`);
+        const { rows } = await pool.query(`SELECT * FROM "public"."${tableName}" ORDER BY 1 DESC LIMIT 50`);
         res.json({ migrations: rows, pending: [], tableName });
     } catch (e) { res.json({ migrations: [], pending: [], message: e.message }); }
 });
@@ -5539,7 +5719,10 @@ if (process.env.VERCEL !== '1') {
             try {
                 const msg = JSON.parse(raw.toString());
                 if (msg?.type !== 'auth' || !msg.token) throw new Error('Expected {type:"auth",token:"..."}');
-                jwt.verify(msg.token, CONFIG.JWT_SECRET);
+                jwt.verify(msg.token, CONFIG.JWT_SECRET, {
+                    audience: CONFIG.JWT_AUDIENCE,
+                    issuer:   CONFIG.JWT_ISSUER,
+                });
                 authenticated = true;
             } catch (err) {
                 log('WARN', 'WebSocket auth failed — closing connection', { error: err.message });
@@ -5556,7 +5739,7 @@ if (process.env.VERCEL !== '1') {
                 if (ws.readyState === 1) {
                     ws.send(JSON.stringify({ type: 'alert_summary', payload: { count: recent.length, alerts: recent } }));
                 }
-            }).catch(() => {});
+            }).catch(err => log('WARN', 'WS alert_summary send failed', { error: err.message }));
 
             ws.on('close', () => { log('INFO', 'WebSocket closed'); alerts.removeSubscriber(ws); });
             ws.on('error', (e) => log('ERROR', 'WebSocket error', { error: e.message }));
@@ -5668,7 +5851,7 @@ async function startup() {
             } else {
                 log('ERROR', 'Server listen error', { error: err.message });
             }
-            await closeAllTunnels().catch(() => {});
+            await closeAllTunnels().catch(err => log('WARN', 'closeAllTunnels on listen-error failed', { error: err.message }));
             process.exit(1);
         });
 
@@ -5717,15 +5900,15 @@ async function shutdown(signal) {
         if (alerts) alerts.stopMonitoring();
         // Close all MongoDB clients
         for (const [id, m] of mongoClients) {
-            await m.client.close().catch(() => {});
+            await m.client.close().catch(err => log('WARN', `MongoDB shutdown close failed for ${id}`, { error: err.message }));
         }
         mongoClients.clear();
         // Close all PG/MySQL pools
         for (const [id, p] of connectionPools) {
-            await p.end().catch(() => {});
+            await p.end().catch(err => log('WARN', `Pool shutdown end failed for ${id}`, { error: err.message }));
         }
         connectionPools.clear();
-        await closeAllTunnels().catch(() => {});
+        await closeAllTunnels().catch(err => log('WARN', 'closeAllTunnels on shutdown failed', { error: err.message }));
         server.close(() => (pool ? pool.end(() => process.exit(0)) : process.exit(0)));
     } catch (err) {
         log('ERROR', 'Shutdown error', { error: err.message });

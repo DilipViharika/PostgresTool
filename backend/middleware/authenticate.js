@@ -94,14 +94,29 @@ export function buildAuthenticate(pool, config) {
 
         let payload;
         try {
-            payload = jwt.verify(header.slice(7), config.JWT_SECRET);
+            payload = jwt.verify(header.slice(7), config.JWT_SECRET, {
+                audience: config.JWT_AUDIENCE || 'vigil-api',
+                issuer:   config.JWT_ISSUER   || 'vigil-auth',
+            });
         } catch {
             return res.status(401).json({ error: 'Invalid or expired token' });
         }
 
-        // Session revocation check (sid stored in JWT on login)
+        // Session revocation check (sid stored in JWT on login).
+        // SEC-05 (audit): fail-CLOSED — if the lookup throws (e.g. admin DB
+        // unreachable) we MUST NOT treat the session as active, otherwise a
+        // revoked token would silently keep working during DB blips.
         if (payload.sid) {
-            const active = await isSessionActive(pool, payload.sid).catch(() => true);
+            let active;
+            try {
+                active = await isSessionActive(pool, payload.sid);
+            } catch (err) {
+                console.error('[SECURITY] Session revocation lookup failed', {
+                    sid: payload.sid,
+                    error: err.message,
+                });
+                return res.status(503).json({ error: 'Session validation unavailable, try again' });
+            }
             if (!active) return res.status(401).json({ error: 'Session revoked' });
         } else {
             // Legacy token without sid detected — could be revoked but cannot verify

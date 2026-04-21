@@ -1,11 +1,11 @@
 {
     "version": 2,
-    "installCommand": "npm install --no-package-lock",
+    "installCommand": "npm ci",
     "buildCommand": "npm run build --workspace=frontend",
     "outputDirectory": "frontend/dist",
     "functions": {
         "api/index.js": {
-            "maxDuration": 10,
+            "maxDuration": 30,
             "memory": 256,
             "includeFiles": "backend/**"
         }
