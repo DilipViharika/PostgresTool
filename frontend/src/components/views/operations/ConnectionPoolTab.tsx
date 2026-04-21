@@ -131,12 +131,12 @@ const S = {
         display: 'flex', alignItems: 'center', gap: 8,
         fontSize: 11, fontWeight: 700, color: THEME.textDim,
         textTransform: 'uppercase' as const, letterSpacing: '0.1em',
-        marginBottom: 14, marginTop: 0,
+        marginBottom: 10, marginTop: 0,
         fontFamily: FONT_UI,
     },
     sectionRule: {
         height: 1, background: THEME.glassBorder,
-        border: 'none', margin: '24px 0',
+        border: 'none', margin: '14px 0',
         width: '100%',
     },
 };
@@ -161,7 +161,7 @@ const FloatingField = ({
                 color: error ? THEME.danger : focused ? THEME.primary : THEME.textMuted,
                 textTransform: 'uppercase' as const,
                 letterSpacing: '0.08em',
-                marginBottom: 8,
+                marginBottom: 6,
                 fontFamily: FONT_UI,
                 transition: 'color 0.15s',
             }}>
@@ -190,7 +190,7 @@ const FloatingField = ({
                         background: focused ? THEME.surface : THEME.surfaceHover,
                         border: `1.5px solid ${error ? THEME.danger : focused ? THEME.primary : THEME.glassBorder}`,
                         borderRadius: 10,
-                        padding: rows ? '12px 14px' : `12px ${paddingRight || 14}px 12px 14px`,
+                        padding: rows ? '10px 14px' : `10px ${paddingRight || 14}px 10px 14px`,
                         color: THEME.textMain,
                         fontSize: 14,
                         outline: 'none',
@@ -328,17 +328,17 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
     };
 
     // Use margin-based vertical stacking (more robust than flex gap for this layout).
-    const fieldRow  = { marginBottom: 14 };
+    const fieldRow  = { marginBottom: 10 };
     const lastField = { marginBottom: 0 };
 
     return (
         <div>
             {/* ── Server section ────────────────────────────────────────────── */}
             {serverFields.length > 0 && (
-                <div style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 14 }}>
                     <div style={S.sectionHeading}><Server size={12} /> Server</div>
                     {serverFields.includes('host') && serverFields.includes('port') && (
-                        <div style={{ ...fieldRow, display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+                        <div style={{ ...fieldRow, display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10 }}>
                             {renderField('host')}
                             {renderField('port')}
                         </div>
@@ -351,9 +351,9 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
 
             {/* ── Auth section ──────────────────────────────────────────────── */}
             {authFields.length > 0 && (
-                <div style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 14 }}>
                     <div style={S.sectionHeading}><Key size={12} /> Authentication</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                         {authFields.map(f => renderField(f))}
                     </div>
                 </div>
@@ -361,9 +361,9 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
 
             {/* ── Extras (MongoDB authSource / replicaSet) ──────────────────── */}
             {extraFields.length > 0 && (
-                <div style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 14 }}>
                     <div style={S.sectionHeading}><Zap size={12} /> Options</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                         {extraFields.map(f => renderField(f))}
                     </div>
                 </div>
@@ -1363,7 +1363,7 @@ const ConnectionsTab = () => {
                         {/* Modal header — sticky */}
                         <div style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            padding: '22px 28px 20px',
+                            padding: '14px 24px 14px',
                             borderBottom: `1px solid ${THEME.glassBorder}`,
                             background: THEME.surface,
                         }}>
@@ -1404,7 +1404,7 @@ const ConnectionsTab = () => {
 
                         {/* Scrollable form body — flat layout, no nested cards */}
                         <div style={{
-                            flex: 1, overflowY: 'auto', padding: '28px 32px',
+                            flex: 1, overflowY: 'auto', padding: '18px 24px',
                             background: THEME.surface,
                             fontFamily: FONT_UI,
                         }}>
@@ -1497,8 +1497,8 @@ const ConnectionsTab = () => {
 
                         {/* Modal footer — sticky */}
                         <div style={{
-                            display: 'flex', gap: 22, justifyContent: 'flex-end',
-                            padding: '16px 28px',
+                            display: 'flex', gap: 18, justifyContent: 'flex-end',
+                            padding: '12px 24px',
                             borderTop: `1px solid ${THEME.glassBorder}`,
                             background: THEME.surface,
                         }}>
