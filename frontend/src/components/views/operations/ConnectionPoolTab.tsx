@@ -106,214 +106,301 @@ const S = {
         border: `1px solid ${color}44`, letterSpacing: '0.02em',
     }),
     btn: (bg, border, color) => ({
-        background: bg, border: `1px solid ${border}`, borderRadius: 16,
-        padding: '14px 20px', color, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-        transition: 'all 0.15s', display: 'inline-flex', alignItems: 'center', gap: 6,
-        letterSpacing: '0.02em',
+        background: bg, border: `1px solid ${border}`, borderRadius: 12,
+        padding: '12px 18px', color, cursor: 'pointer', fontSize: 13, fontWeight: 600,
+        transition: 'all 0.15s', display: 'inline-flex', alignItems: 'center', gap: 8,
+        letterSpacing: '0.01em',
     }),
+    // Legacy input (kept for non-floating uses like checkbox row labels & textareas inside SSH)
     input: (hasError) => ({
         width: '100%', boxSizing: 'border-box',
         background: THEME.surfaceHover,
         border: `1px solid ${hasError ? THEME.danger : THEME.glassBorder}`,
-        borderRadius: 10, padding: '12px 14px', color: THEME.textMain, fontSize: 13,
+        borderRadius: 12, padding: '14px 16px', color: THEME.textMain, fontSize: 14,
         outline: 'none', transition: 'border-color 0.2s',
         fontFamily: FONT_UI, lineHeight: 1.4,
     }),
     get label() { return {
         display: 'block', fontSize: 12, fontWeight: 600,
-        color: THEME.textDim, marginBottom: 10, letterSpacing: '0.01em',
+        color: THEME.textDim, marginBottom: 10, letterSpacing: '0.02em',
         fontFamily: FONT_UI,
         lineHeight: 1.4,
     }; },
+    // ── Section grouping (used in redesigned modal) ────────────────────────
+    sectionTitle: {
+        display: 'flex', alignItems: 'center', gap: 8,
+        fontSize: 11, fontWeight: 700, color: THEME.textMuted,
+        textTransform: 'uppercase' as const, letterSpacing: '0.08em',
+        marginBottom: 14, marginTop: 4,
+        fontFamily: FONT_UI,
+    },
+    sectionDivider: {
+        height: 1, background: THEME.glassBorder,
+        margin: '24px 0 4px 0',
+    },
 };
 
-// ─── DB Type Selector ─────────────────────────────────────────────────────────
-const DBTypeSelector = ({ value, onChange }) => {
-    const [open, setOpen] = useState(false);
-    const current = DB_TYPES[value];
+// ─── FloatingField — label rendered INSIDE the input border box ───────────────
+// This eliminates any "label glued to input" rendering issue because there is
+// no separate label element above the input. The label floats up on focus/fill.
+const FloatingField = ({
+    label, value, onChange, type = 'text', placeholder, error, required, optional,
+    autoFocus, paddingRight, children, inputRef, monospace, rows,
+}: any) => {
+    const [focused, setFocused] = useState(false);
+    const filled = value !== '' && value != null && String(value).length > 0;
+    const float = focused || filled;
+    const Tag = rows ? 'textarea' : 'input';
 
     return (
-        <div style={{ position: 'relative' }}>
-            <label style={S.label}>Database Type *</label>
-            <button
-                type="button"
-                onClick={() => setOpen(o => !o)}
+        <div style={{ position: 'relative', width: '100%' }}>
+            <Tag
+                ref={inputRef}
+                type={rows ? undefined : type}
+                value={value || ''}
+                onChange={onChange}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                placeholder={float ? (placeholder || '') : ''}
+                autoFocus={autoFocus}
+                rows={rows}
                 style={{
-                    ...S.btn(THEME.surface, THEME.glassBorder, THEME.textMain),
-                    width: '100%', justifyContent: 'space-between', padding: '12px 14px', fontSize: 14, borderRadius: 10,
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    background: THEME.surfaceHover,
+                    border: `1px solid ${error ? THEME.danger : focused ? THEME.primary : THEME.glassBorder}`,
+                    borderRadius: 12,
+                    // Top padding is enlarged so the floated label has its own room.
+                    padding: rows ? '24px 16px 12px' : `22px ${paddingRight || 16}px 8px 16px`,
+                    color: THEME.textMain,
+                    fontSize: 14,
+                    outline: 'none',
+                    transition: 'border-color 0.18s, background 0.18s',
+                    fontFamily: monospace ? FONT_MONO : FONT_UI,
+                    lineHeight: 1.4,
+                    boxShadow: focused ? `0 0 0 3px ${THEME.primary}1a` : 'none',
+                    resize: rows ? ('vertical' as const) : undefined,
+                }}
+            />
+            <label
+                style={{
+                    position: 'absolute',
+                    left: 16,
+                    top: float ? 7 : 16,
+                    fontSize: float ? 10 : 14,
+                    color: error ? THEME.danger : focused ? THEME.primary : THEME.textMuted,
+                    pointerEvents: 'none',
+                    transition: 'all 0.18s ease',
+                    fontWeight: float ? 700 : 500,
+                    letterSpacing: float ? '0.06em' : 0,
+                    textTransform: float ? ('uppercase' as const) : ('none' as const),
+                    fontFamily: FONT_UI,
+                    background: float ? 'transparent' : 'transparent',
                 }}
             >
-                <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 18 }}>{current.icon}</span>
-                    <span style={{ fontWeight: 600 }}>{current.label}</span>
-                    <span style={S.badge(current.accent)}>:{current.defaultPort || 'N/A'}</span>
-                </span>
-                <ChevronDown size={16} style={{ color: THEME.textMuted, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-            </button>
-            {open && (
-                <div style={{
-                    position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 200,
-                    background: THEME.surfaceRaised, border: `1px solid ${THEME.glassBorder}`,
-                    borderRadius: 16, overflow: 'hidden',
-                    boxShadow: THEME.shadowLg,
-                }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', maxHeight: 360, overflowY: 'auto' }}>
-                        {Object.entries(DB_TYPES).map(([key, db]) => (
-                            <button
-                                key={key}
-                                type="button"
-                                onClick={() => { onChange(key); setOpen(false); }}
-                                style={{
-                                    background: key === value ? `${db.accent}15` : 'transparent',
-                                    border: 'none',
-                                    borderLeft: key === value ? `3px solid ${db.accent}` : '3px solid transparent',
-                                    padding: '12px 14px', cursor: 'pointer', textAlign: 'left',
-                                    display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s',
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = `${db.accent}12`}
-                                onMouseLeave={e => e.currentTarget.style.background = key === value ? `${db.accent}15` : 'transparent'}
-                            >
-                                <span style={{ fontSize: 18 }}>{db.icon}</span>
-                                <div>
-                                    <div style={{ fontSize: 13, fontWeight: 600, color: key === value ? db.accent : THEME.textMain }}>{db.label}</div>
-                                    <div style={{ fontSize: 11, color: THEME.textMuted }}>port {db.defaultPort || '—'}</div>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
+                {label}
+                {required && <span style={{ color: THEME.danger, marginLeft: 3 }}>*</span>}
+                {optional && <span style={{ color: THEME.textMuted, marginLeft: 4, fontSize: float ? 9 : 11 }}>(optional)</span>}
+            </label>
+            {children}
+            {error && (
+                <div style={{ color: THEME.danger, fontSize: 11, marginTop: 6, marginLeft: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <AlertCircle size={11} /> {error}
                 </div>
             )}
         </div>
     );
 };
 
-// ─── Dynamic Form Fields ──────────────────────────────────────────────────────
+// ─── DB Type Selector — card grid (no dropdown) ───────────────────────────────
+const DBTypeSelector = ({ value, onChange }) => {
+    return (
+        <div>
+            <div style={S.sectionTitle}>
+                <Database size={12} /> Database Engine
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                {Object.entries(DB_TYPES).map(([key, db]) => {
+                    const selected = key === value;
+                    return (
+                        <button
+                            key={key}
+                            type="button"
+                            onClick={() => onChange(key)}
+                            style={{
+                                position: 'relative',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                gap: 8, padding: '18px 12px',
+                                background: selected ? `${db.accent}14` : THEME.surfaceHover,
+                                border: `1.5px solid ${selected ? db.accent : THEME.glassBorder}`,
+                                borderRadius: 14,
+                                cursor: 'pointer',
+                                transition: 'all 0.18s',
+                                fontFamily: FONT_UI,
+                                boxShadow: selected ? `0 0 0 3px ${db.accent}25` : 'none',
+                            }}
+                            onMouseEnter={e => { if (!selected) e.currentTarget.style.borderColor = THEME.textMuted; }}
+                            onMouseLeave={e => { if (!selected) e.currentTarget.style.borderColor = THEME.glassBorder; }}
+                        >
+                            {selected && (
+                                <div style={{
+                                    position: 'absolute', top: 8, right: 8,
+                                    width: 16, height: 16, borderRadius: '50%',
+                                    background: db.accent, display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                    <Check size={10} color="#fff" strokeWidth={3} />
+                                </div>
+                            )}
+                            <span style={{ fontSize: 26 }}>{db.icon}</span>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: selected ? db.accent : THEME.textMain }}>
+                                {db.label}
+                            </div>
+                            <div style={{ fontSize: 10, color: THEME.textMuted, letterSpacing: '0.04em' }}>
+                                PORT {db.defaultPort || '—'}
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+// ─── Dynamic Form Fields — grouped sections, floating labels ────────────────
 const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword, togglePasswordVisibility }) => {
     const fields = DB_TYPES[dbType].fields;
-    const rows = [];
+    const update = (k, v) => setFormData(p => ({ ...p, [k]: v }));
 
-    let i = 0;
-    while (i < fields.length) {
-        const f = fields[i];
+    // Partition fields into server / auth / extras / checkboxes
+    const serverFields = fields.filter(f => ['host', 'port', 'database'].includes(f));
+    const authFields   = fields.filter(f => ['username', 'password'].includes(f));
+    const extraFields  = fields.filter(f => ['authSource', 'replicaSet'].includes(f));
+    const checkFields  = fields.filter(f => FIELD_META[f]?.type === 'checkbox');
+
+    const renderField = (f, extraProps: any = {}) => {
         const meta = FIELD_META[f];
-
-        if (meta.type === 'checkbox') {
-            rows.push(
-                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <input
-                        type="checkbox"
-                        id={`chk-${f}`}
-                        checked={!!formData[f]}
-                        onChange={e => setFormData(p => ({ ...p, [f]: e.target.checked }))}
-                        style={{ cursor: 'pointer', accentColor: THEME.primary, width: 16, height: 16 }}
-                    />
-                    <label htmlFor={`chk-${f}`} style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: THEME.textDim }}>
-                        {meta.label}
-                    </label>
-                </div>
+        if (!meta) return null;
+        if (meta.type === 'password') {
+            return (
+                <FloatingField
+                    key={f}
+                    label={meta.label}
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData[f]}
+                    onChange={e => update(f, e.target.value)}
+                    placeholder={meta.placeholder}
+                    error={formErrors[f]}
+                    required={!meta.optional}
+                    optional={meta.optional}
+                    paddingRight={48}
+                >
+                    <button
+                        type="button"
+                        onClick={togglePasswordVisibility}
+                        style={{
+                            position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                            background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer',
+                            padding: 6, borderRadius: 8, display: 'flex',
+                        }}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                </FloatingField>
             );
-            i++;
-            continue;
         }
+        return (
+            <FloatingField
+                key={f}
+                label={meta.label}
+                type={meta.type || 'text'}
+                value={formData[f]}
+                onChange={e => update(f, e.target.value)}
+                placeholder={f === 'port' ? (DB_TYPES[dbType].defaultPort || '') : meta.placeholder}
+                error={formErrors[f]}
+                required={!meta.optional}
+                optional={meta.optional}
+                {...extraProps}
+            />
+        );
+    };
 
-        if (meta.type === 'textarea') {
-            rows.push(
-                <div key={f}>
-                    <label style={S.label}>{meta.label} {!meta.optional && '*'}</label>
-                    <textarea
-                        value={formData[f] || ''}
-                        onChange={e => setFormData(p => ({ ...p, [f]: e.target.value }))}
-                        placeholder={meta.placeholder}
-                        rows={5}
-                        style={{ ...S.input(!!formErrors[f]), resize: 'vertical', lineHeight: 1.5 }}
-                        onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                        onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? THEME.danger : THEME.glassBorder}
-                    />
-                    {formErrors[f] && <div style={{ color: THEME.danger, fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
-                </div>
-            );
-            i++;
-            continue;
-        }
-
-        if (f === 'host' && fields[i + 1] === 'port') {
-            rows.push(
-                <div key="host-port" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 18 }}>
-                    {['host', 'port'].map(field => {
-                        const m = FIELD_META[field];
-                        return (
-                            <div key={field}>
-                                <label style={S.label}>{m.label} *</label>
-                                <input
-                                    type={m.type}
-                                    value={formData[field] || ''}
-                                    onChange={e => setFormData(p => ({ ...p, [field]: e.target.value }))}
-                                    placeholder={field === 'port' ? (DB_TYPES[dbType].defaultPort || '') : m.placeholder}
-                                    style={S.input(!!formErrors[field])}
-                                    onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                                    onBlur={e => e.currentTarget.style.borderColor = formErrors[field] ? THEME.danger : THEME.glassBorder}
-                                />
-                                {formErrors[field] && <div style={{ color: THEME.danger, fontSize: 11, marginTop: 4 }}>{formErrors[field]}</div>}
+    return (
+        <>
+            {/* ── Server section ────────────────────────────────────────────── */}
+            {serverFields.length > 0 && (
+                <div>
+                    <div style={S.sectionTitle}><Server size={12} /> Server</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        {serverFields.includes('host') && serverFields.includes('port') ? (
+                            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+                                {renderField('host')}
+                                {renderField('port')}
                             </div>
+                        ) : (
+                            <>{serverFields.filter(f => f !== 'database').map(f => renderField(f))}</>
+                        )}
+                        {serverFields.includes('database') && renderField('database')}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Auth section ──────────────────────────────────────────────── */}
+            {authFields.length > 0 && (
+                <div>
+                    <div style={S.sectionTitle}><Key size={12} /> Authentication</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        {authFields.map(f => renderField(f))}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Extras (MongoDB authSource / replicaSet) ──────────────────── */}
+            {extraFields.length > 0 && (
+                <div>
+                    <div style={S.sectionTitle}><Zap size={12} /> Options</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        {extraFields.map(f => renderField(f))}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Checkbox row (SSL, etc) ───────────────────────────────────── */}
+            {checkFields.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {checkFields.map(f => {
+                        const meta = FIELD_META[f];
+                        const on = !!formData[f];
+                        return (
+                            <label key={f} htmlFor={`chk-${f}`} style={{
+                                display: 'flex', alignItems: 'center', gap: 12,
+                                padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
+                                background: on ? `${THEME.primary}10` : THEME.surfaceHover,
+                                border: `1px solid ${on ? THEME.primary + '55' : THEME.glassBorder}`,
+                                transition: 'all 0.15s',
+                                fontFamily: FONT_UI,
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    id={`chk-${f}`}
+                                    checked={on}
+                                    onChange={e => update(f, e.target.checked)}
+                                    style={{ cursor: 'pointer', accentColor: THEME.primary, width: 16, height: 16 }}
+                                />
+                                <span style={{ fontSize: 13, fontWeight: 600, color: on ? THEME.primary : THEME.textMain }}>
+                                    {meta.label}
+                                </span>
+                                <span style={{ marginLeft: 'auto', fontSize: 11, color: THEME.textMuted }}>
+                                    {on ? 'Enabled' : 'Disabled'}
+                                </span>
+                            </label>
                         );
                     })}
                 </div>
-            );
-            i += 2;
-            continue;
-        }
-
-        if (meta.type === 'password') {
-            rows.push(
-                <div key={f}>
-                    <label style={S.label}>{meta.label} *</label>
-                    <div style={{ position: 'relative' }}>
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            value={formData[f] || ''}
-                            onChange={e => setFormData(p => ({ ...p, [f]: e.target.value }))}
-                            placeholder={meta.placeholder}
-                            style={{ ...S.input(!!formErrors[f]), paddingRight: 42 }}
-                            onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                            onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? THEME.danger : THEME.glassBorder}
-                        />
-                        <button
-                            type="button"
-                            onClick={togglePasswordVisibility}
-                            style={{
-                                position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
-                                background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 4,
-                            }}
-                        >
-                            {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                        </button>
-                    </div>
-                    {formErrors[f] && <div style={{ color: THEME.danger, fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
-                </div>
-            );
-            i++;
-            continue;
-        }
-
-        rows.push(
-            <div key={f}>
-                <label style={S.label}>{meta.label} {!meta.optional ? '*' : <span style={{ color: THEME.textMuted, textTransform: 'none', fontSize: 10 }}>(optional)</span>}</label>
-                <input
-                    type={meta.type || 'text'}
-                    value={formData[f] || ''}
-                    onChange={e => setFormData(p => ({ ...p, [f]: e.target.value }))}
-                    placeholder={meta.placeholder}
-                    style={S.input(!!formErrors[f])}
-                    onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                    onBlur={e => e.currentTarget.style.borderColor = formErrors[f] ? THEME.danger : THEME.glassBorder}
-                />
-                {formErrors[f] && <div style={{ color: THEME.danger, fontSize: 11, marginTop: 4 }}>{formErrors[f]}</div>}
-            </div>
-        );
-        i++;
-    }
-
-    return <>{rows}</>;
+            )}
+        </>
+    );
 };
 
 // ─── SSH Tunnel Section ───────────────────────────────────────────────────────
@@ -326,15 +413,15 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
         setFormData(p => ({ ...p, sshEnabled: enabled }));
         setOpen(enabled);
     };
-
-    const rowStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 };
+    const update = (k, v) => setFormData(p => ({ ...p, [k]: v }));
 
     return (
         <div style={{
-            border: `1px solid ${formData.sshEnabled ? THEME.primary : THEME.glassBorder}`,
-            borderRadius: 16,
+            border: `1.5px solid ${formData.sshEnabled ? THEME.primary + '66' : THEME.glassBorder}`,
+            borderRadius: 14,
             overflow: 'hidden',
             transition: 'border-color 0.2s',
+            background: formData.sshEnabled ? `${THEME.primary}06` : 'transparent',
         }}>
             {/* Header toggle */}
             <button
@@ -381,141 +468,130 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
 
             {/* Expanded fields */}
             {open && (
-                <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 20, background: THEME.surface }}>
+                <div style={{ padding: '18px 16px 20px', display: 'flex', flexDirection: 'column', gap: 16, background: formData.sshEnabled ? THEME.surface : 'transparent' }}>
 
                     {/* Info banner */}
                     <div style={{
-                        display: 'flex', gap: 10, padding: '12px 14px', borderRadius: 10,
-                        background: `${THEME.primary}14`, border: `1px solid ${THEME.primary}30`,
-                        fontSize: 12, color: THEME.textMuted, lineHeight: 1.5,
+                        display: 'flex', gap: 10, padding: '12px 14px', borderRadius: 12,
+                        background: `${THEME.primary}10`, border: `1px solid ${THEME.primary}30`,
+                        fontSize: 12, color: THEME.textDim, lineHeight: 1.55,
                     }}>
-                        <Lock size={13} color={THEME.primary} style={{ flexShrink: 0, marginTop: 1 }} />
+                        <Lock size={13} color={THEME.primary} style={{ flexShrink: 0, marginTop: 2 }} />
                         <span>
-                            Traffic is routed through your bastion/jump host via local port forwarding.
-                            The DB host below should be the <strong style={{ color: THEME.textDim }}>private</strong> address
-                            reachable from the bastion (e.g. <code style={{ fontFamily: 'monospace', color: THEME.primary }}>db.internal</code> or <code style={{ fontFamily: 'monospace', color: THEME.primary }}>10.0.1.5</code>).
+                            Traffic routes through your bastion via local port-forwarding.
+                            The DB host above should be the <strong style={{ color: THEME.textMain }}>private</strong> address
+                            reachable from the bastion (e.g. <code style={{ fontFamily: FONT_MONO, color: THEME.primary, fontSize: 11 }}>10.0.1.5</code>).
                         </span>
                     </div>
 
                     {/* Bastion host + port */}
-                    <div style={rowStyle}>
-                        <div>
-                            <label style={S.label}>Bastion Host *</label>
-                            <input type="text"
-                                value={formData.sshHost}
-                                onChange={e => setFormData(p => ({ ...p, sshHost: e.target.value }))}
-                                placeholder="bastion.example.com"
-                                style={S.input(!formData.sshHost && formData.sshEnabled)}
-                                onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                                onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
-                            />
-                        </div>
-                        <div>
-                            <label style={S.label}>SSH Port</label>
-                            <input type="number"
-                                value={formData.sshPort}
-                                onChange={e => setFormData(p => ({ ...p, sshPort: e.target.value }))}
-                                placeholder="22"
-                                style={S.input(false)}
-                                onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                                onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
-                            />
-                        </div>
-                    </div>
-
-                    {/* SSH user */}
-                    <div>
-                        <label style={S.label}>SSH Username *</label>
-                        <input type="text"
-                            value={formData.sshUser}
-                            onChange={e => setFormData(p => ({ ...p, sshUser: e.target.value }))}
-                            placeholder="ec2-user"
-                            style={S.input(!formData.sshUser && formData.sshEnabled)}
-                            onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                            onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+                        <FloatingField
+                            label="Bastion Host"
+                            value={formData.sshHost}
+                            onChange={e => update('sshHost', e.target.value)}
+                            placeholder="bastion.example.com"
+                            error={!formData.sshHost && formData.sshEnabled ? 'Required' : ''}
+                            required
+                        />
+                        <FloatingField
+                            label="SSH Port"
+                            type="number"
+                            value={formData.sshPort}
+                            onChange={e => update('sshPort', e.target.value)}
+                            placeholder="22"
                         />
                     </div>
 
-                    {/* Auth type tabs */}
+                    {/* SSH user */}
+                    <FloatingField
+                        label="SSH Username"
+                        value={formData.sshUser}
+                        onChange={e => update('sshUser', e.target.value)}
+                        placeholder="ec2-user"
+                        error={!formData.sshUser && formData.sshEnabled ? 'Required' : ''}
+                        required
+                    />
+
+                    {/* Auth type segmented control */}
                     <div>
-                        <label style={S.label}>Authentication Method</label>
-                        <div style={{ display: 'flex', gap: 20 }}>
-                            {[['key', '🔑 Private Key'], ['password', '🔒 Password']].map(([val, label]) => (
-                                <button key={val} type="button"
-                                    onClick={() => setFormData(p => ({ ...p, sshAuthType: val }))}
-                                    style={{
-                                        flex: 1, padding: '12px 14px', borderRadius: 10, fontSize: 12, fontWeight: 600,
-                                        cursor: 'pointer', transition: 'all 0.15s',
-                                        background: formData.sshAuthType === val ? `${THEME.primary}22` : THEME.surfaceHover,
-                                        border: `1px solid ${formData.sshAuthType === val ? `${THEME.primary}66` : THEME.glassBorder}`,
-                                        color: formData.sshAuthType === val ? THEME.primary : THEME.textMuted,
-                                    }}
-                                >{label}</button>
-                            ))}
+                        <div style={{ ...S.sectionTitle, marginBottom: 8 }}>Authentication</div>
+                        <div style={{
+                            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6,
+                            padding: 4, borderRadius: 12, background: THEME.surfaceHover,
+                            border: `1px solid ${THEME.glassBorder}`,
+                        }}>
+                            {[['key', 'Private Key', '🔑'], ['password', 'Password', '🔒']].map(([val, label, emoji]) => {
+                                const active = formData.sshAuthType === val;
+                                return (
+                                    <button key={val} type="button"
+                                        onClick={() => update('sshAuthType', val)}
+                                        style={{
+                                            padding: '10px 14px', borderRadius: 9, fontSize: 13, fontWeight: 600,
+                                            cursor: 'pointer', transition: 'all 0.15s',
+                                            background: active ? THEME.surface : 'transparent',
+                                            border: 'none',
+                                            color: active ? THEME.primary : THEME.textMuted,
+                                            boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                                            fontFamily: FONT_UI,
+                                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                        }}
+                                    >
+                                        <span>{emoji}</span>{label}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
                     {/* Private Key fields */}
                     {formData.sshAuthType === 'key' && (<>
-                        <div>
-                            <label style={S.label}>Private Key (PEM) *</label>
-                            <textarea
-                                value={formData.sshPrivateKey}
-                                onChange={e => setFormData(p => ({ ...p, sshPrivateKey: e.target.value }))}
-                                placeholder={'-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----'}
-                                rows={5}
-                                style={{
-                                    ...S.input(!formData.sshPrivateKey && formData.sshEnabled),
-                                    resize: 'vertical', lineHeight: 1.4,
-                                    fontFamily: 'JetBrains Mono, Fira Code, monospace', fontSize: 11,
-                                }}
-                                onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                                onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
-                            />
-                            <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 4 }}>
-                                Paste the contents of your <code style={{ fontFamily: 'monospace' }}>~/.ssh/id_rsa</code> or <code style={{ fontFamily: 'monospace' }}>id_ed25519</code> file
-                            </div>
+                        <FloatingField
+                            label="Private Key (PEM)"
+                            rows={5}
+                            monospace
+                            value={formData.sshPrivateKey}
+                            onChange={e => update('sshPrivateKey', e.target.value)}
+                            placeholder={'-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----'}
+                            error={!formData.sshPrivateKey && formData.sshEnabled ? 'Required' : ''}
+                            required
+                        />
+                        <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: -8, marginLeft: 4 }}>
+                            Paste the contents of your <code style={{ fontFamily: FONT_MONO }}>~/.ssh/id_rsa</code> or <code style={{ fontFamily: FONT_MONO }}>id_ed25519</code>.
                         </div>
-                        <div>
-                            <label style={S.label}>Key Passphrase <span style={{ color: THEME.textMuted, fontSize: 10, textTransform: 'none' }}>(optional)</span></label>
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    type={showPassphrase ? 'text' : 'password'}
-                                    value={formData.sshPassphrase}
-                                    onChange={e => setFormData(p => ({ ...p, sshPassphrase: e.target.value }))}
-                                    placeholder="Leave blank if key has no passphrase"
-                                    style={{ ...S.input(false), paddingRight: 42 }}
-                                    onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                                    onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
-                                />
-                                <button type="button" onClick={() => setShowPassphrase(p => !p)}
-                                    style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 4 }}>
-                                    {showPassphrase ? <EyeOff size={14}/> : <Eye size={14}/>}
-                                </button>
-                            </div>
-                        </div>
+                        <FloatingField
+                            label="Key Passphrase"
+                            type={showPassphrase ? 'text' : 'password'}
+                            value={formData.sshPassphrase}
+                            onChange={e => update('sshPassphrase', e.target.value)}
+                            placeholder="Leave blank if key has no passphrase"
+                            optional
+                            paddingRight={48}
+                        >
+                            <button type="button" onClick={() => setShowPassphrase(p => !p)}
+                                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 6, borderRadius: 8, display: 'flex' }}>
+                                {showPassphrase ? <EyeOff size={16}/> : <Eye size={16}/>}
+                            </button>
+                        </FloatingField>
                     </>)}
 
                     {/* Password auth field */}
                     {formData.sshAuthType === 'password' && (
-                        <div>
-                            <label style={S.label}>SSH Password *</label>
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    type={showSshPass ? 'text' : 'password'}
-                                    value={formData.sshPassword}
-                                    onChange={e => setFormData(p => ({ ...p, sshPassword: e.target.value }))}
-                                    placeholder="••••••••"
-                                    style={{ ...S.input(!formData.sshPassword && formData.sshEnabled), paddingRight: 42 }}
-                                    onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                                    onBlur={e => e.currentTarget.style.borderColor = THEME.glassBorder}
-                                />
-                                <button type="button" onClick={() => setShowSshPass(p => !p)}
-                                    style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 4 }}>
-                                    {showSshPass ? <EyeOff size={14}/> : <Eye size={14}/>}
-                                </button>
-                            </div>
-                        </div>
+                        <FloatingField
+                            label="SSH Password"
+                            type={showSshPass ? 'text' : 'password'}
+                            value={formData.sshPassword}
+                            onChange={e => update('sshPassword', e.target.value)}
+                            placeholder="••••••••"
+                            error={!formData.sshPassword && formData.sshEnabled ? 'Required' : ''}
+                            required
+                            paddingRight={48}
+                        >
+                            <button type="button" onClick={() => setShowSshPass(p => !p)}
+                                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: THEME.textMuted, cursor: 'pointer', padding: 6, borderRadius: 8, display: 'flex' }}>
+                                {showSshPass ? <EyeOff size={16}/> : <Eye size={16}/>}
+                            </button>
+                        </FloatingField>
                     )}
                 </div>
             )}
@@ -1259,12 +1335,12 @@ const ConnectionsTab = () => {
                     <div style={{
                         position: 'fixed', top: '50%', left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        width: '94%', maxWidth: 540, maxHeight: '88vh',
+                        width: '94%', maxWidth: 640, maxHeight: '90vh',
                         display: 'flex', flexDirection: 'column',
                         background: THEME.surface,
                         border: `1px solid ${THEME.glassBorder}`,
-                        borderRadius: 16,
-                        boxShadow: `0 0 0 1px ${DB_TYPES[formData.dbType].accent}15, 0 24px 80px rgba(0,0,0,0.6), 0 0 120px ${DB_TYPES[formData.dbType].accent}08`,
+                        borderRadius: 20,
+                        boxShadow: `0 0 0 1px ${DB_TYPES[formData.dbType].accent}18, 0 32px 80px rgba(0,0,0,0.6), 0 0 160px ${DB_TYPES[formData.dbType].accent}10`,
                         fontFamily: FONT_UI,
                         zIndex: 1000,
                         animation: 'modalIn 0.25s ease-out',
@@ -1279,25 +1355,25 @@ const ConnectionsTab = () => {
                         {/* Modal header — sticky */}
                         <div style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            padding: '20px 28px 16px',
+                            padding: '22px 28px 20px',
                             borderBottom: `1px solid ${THEME.glassBorder}`,
                             background: THEME.surface,
                         }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                                 <div style={{
-                                    width: 36, height: 36, borderRadius: 16,
-                                    background: `${DB_TYPES[formData.dbType].accent}15`,
-                                    border: `1px solid ${DB_TYPES[formData.dbType].accent}30`,
+                                    width: 44, height: 44, borderRadius: 14,
+                                    background: `${DB_TYPES[formData.dbType].accent}18`,
+                                    border: `1px solid ${DB_TYPES[formData.dbType].accent}40`,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontSize: 18,
+                                    fontSize: 22,
                                 }}>
                                     {DB_TYPES[formData.dbType].icon}
                                 </div>
                                 <div>
-                                    <h2 style={{ fontSize: 16, fontWeight: 700, color: THEME.textMain, margin: 0 }}>
+                                    <h2 style={{ fontSize: 18, fontWeight: 700, color: THEME.textMain, margin: 0, lineHeight: 1.2 }}>
                                         {editingConnection ? 'Edit Connection' : 'New Connection'}
                                     </h2>
-                                    <p style={{ fontSize: 11, color: THEME.textMuted, margin: 0, marginTop: 2 }}>
+                                    <p style={{ fontSize: 12, color: THEME.textMuted, margin: 0, marginTop: 4 }}>
                                         {DB_TYPES[formData.dbType].label} · Port {DB_TYPES[formData.dbType].defaultPort}
                                     </p>
                                 </div>
@@ -1306,36 +1382,38 @@ const ConnectionsTab = () => {
                                 onClick={closeModal}
                                 style={{
                                     background: 'none', border: `1px solid ${THEME.glassBorder}`,
-                                    color: THEME.textMuted, cursor: 'pointer', padding: 6, borderRadius: 20,
+                                    color: THEME.textMuted, cursor: 'pointer',
+                                    width: 36, height: 36, borderRadius: 10,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     transition: 'all 0.15s',
                                 }}
                                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.12)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; e.currentTarget.style.color = THEME.danger; }}
                                 onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = THEME.glassBorder; e.currentTarget.style.color = THEME.textMuted; }}
                             >
-                                <X size={16} />
+                                <X size={18} />
                             </button>
                         </div>
 
                         {/* Scrollable form body */}
                         <div style={{
-                            flex: 1, overflowY: 'auto', padding: '20px 24px',
-                            display: 'flex', flexDirection: 'column', gap: 16,
+                            flex: 1, overflowY: 'auto', padding: '24px 28px 28px',
+                            display: 'flex', flexDirection: 'column', gap: 22,
                         }}>
                             <DBTypeSelector value={formData.dbType} onChange={handleDbTypeChange} />
 
+                            <div style={S.sectionDivider} />
+
                             <div>
-                                <label style={S.label}>Connection Name *</label>
-                                <input
-                                    type="text"
+                                <div style={S.sectionTitle}><Database size={12} /> Identity</div>
+                                <FloatingField
+                                    label="Connection Name"
                                     value={formData.name}
                                     onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
                                     placeholder={`My ${DB_TYPES[formData.dbType].label} DB`}
-                                    style={S.input(!!formErrors.name)}
-                                    onFocus={e => e.currentTarget.style.borderColor = THEME.primary}
-                                    onBlur={e => e.currentTarget.style.borderColor = formErrors.name ? THEME.danger : THEME.glassBorder}
+                                    error={formErrors.name}
+                                    required
+                                    autoFocus
                                 />
-                                {formErrors.name && <div style={{ color: THEME.danger, fontSize: 11, marginTop: 4 }}>{formErrors.name}</div>}
                             </div>
 
                             <DynamicFields
@@ -1347,11 +1425,22 @@ const ConnectionsTab = () => {
                                 togglePasswordVisibility={() => setShowPassword(p => !p)}
                             />
 
+                            <div style={S.sectionDivider} />
+
                             {/* ── SSH Tunnel ── */}
-                            <SSHTunnelSection formData={formData} setFormData={setFormData} />
+                            <div>
+                                <div style={S.sectionTitle}><Terminal size={12} /> Secure Tunnel</div>
+                                <SSHTunnelSection formData={formData} setFormData={setFormData} />
+                            </div>
 
                             {!editingConnection && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <label htmlFor="isDefault" style={{
+                                    display: 'flex', alignItems: 'center', gap: 12,
+                                    padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                                    background: formData.isDefault ? `${THEME.primary}10` : THEME.surfaceHover,
+                                    border: `1px solid ${formData.isDefault ? THEME.primary + '55' : THEME.glassBorder}`,
+                                    transition: 'all 0.15s',
+                                }}>
                                     <input
                                         type="checkbox"
                                         id="isDefault"
@@ -1359,24 +1448,29 @@ const ConnectionsTab = () => {
                                         onChange={e => setFormData(p => ({ ...p, isDefault: e.target.checked }))}
                                         style={{ cursor: 'pointer', accentColor: THEME.primary, width: 16, height: 16 }}
                                     />
-                                    <label htmlFor="isDefault" style={{ ...S.label, margin: 0, textTransform: 'none', fontSize: 13, cursor: 'pointer', color: THEME.textDim }}>
-                                        Set as default connection
-                                    </label>
-                                </div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontSize: 13, fontWeight: 600, color: formData.isDefault ? THEME.primary : THEME.textMain }}>
+                                            Set as default connection
+                                        </div>
+                                        <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2 }}>
+                                            Auto-select this when the app opens
+                                        </div>
+                                    </div>
+                                </label>
                             )}
 
                             {errorMsg && (
                                 <div style={{
                                     display: 'flex', alignItems: 'flex-start', gap: 10,
-                                    padding: '12px 14px', borderRadius: 10,
+                                    padding: '14px 16px', borderRadius: 12,
                                     background: 'rgba(239,68,68,0.08)',
                                     border: '1px solid rgba(239,68,68,0.3)',
                                 }}>
-                                    <AlertCircle size={15} color={THEME.danger} style={{ flexShrink: 0, marginTop: 1 }} />
-                                    <span style={{ fontSize: 13, color: THEME.danger, lineHeight: 1.4 }}>{errorMsg}</span>
+                                    <AlertCircle size={16} color={THEME.danger} style={{ flexShrink: 0, marginTop: 1 }} />
+                                    <span style={{ fontSize: 13, color: THEME.danger, lineHeight: 1.45, flex: 1 }}>{errorMsg}</span>
                                     <button
                                         onClick={() => setErrorMsg('')}
-                                        style={{ marginLeft: 'auto', background: 'none', border: 'none', color: THEME.danger, cursor: 'pointer', padding: 0, flexShrink: 0 }}
+                                        style={{ background: 'none', border: 'none', color: THEME.danger, cursor: 'pointer', padding: 0, flexShrink: 0, display: 'flex' }}
                                     >
                                         <X size={14} />
                                     </button>
