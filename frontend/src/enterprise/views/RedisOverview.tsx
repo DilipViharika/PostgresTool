@@ -6,8 +6,12 @@
 // ==========================================================================
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Database, RefreshCw } from 'lucide-react';
+import { Database } from 'lucide-react';
 import { fetchData } from '../../utils/api';
+import { THEME } from '../../utils/theme';
+import {
+    Page, PageHeader, Card, KV, Muted, Alert, Table,
+} from './_viewKit';
 
 interface RedisInfo {
     server: Record<string, string | number>;
@@ -41,97 +45,75 @@ const RedisOverviewInner: React.FC = () => {
     }, [refresh]);
 
     return (
-        <div className="p-6 space-y-6 text-vigil-text">
-            <header className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Database className="w-5 h-5 text-vigil-rose" aria-hidden />
-                    <h1 className="text-xl font-semibold">Redis overview</h1>
-                </div>
-                <button
-                    onClick={refresh}
-                    className="flex items-center gap-1 px-3 py-1 border border-vigil-border rounded text-sm hover:bg-vigil-elevated"
-                    aria-label="Refresh Redis info"
-                >
-                    <RefreshCw className="w-4 h-4" /> Refresh
-                </button>
-            </header>
+        <Page>
+            <PageHeader
+                icon={<Database size={18} />}
+                title="Redis overview"
+                subtitle="Server health, memory, replication, and keyspace"
+                accent={THEME.danger}
+                onRefresh={refresh}
+                refreshing={loading}
+            />
 
-            {error && (
-                <div
-                    role="alert"
-                    className="p-3 bg-vigil-rose/10 text-vigil-rose rounded border border-vigil-rose/30 text-sm"
-                >
-                    {error}
-                </div>
-            )}
-
-            {loading && <p className="text-sm text-vigil-muted">Loading…</p>}
+            {error && <Alert>{error}</Alert>}
+            {loading && !info && <Muted>Loading…</Muted>}
 
             {info && (
-                <>
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                        gap: 16,
+                    }}
+                >
                     <Card title="Server">
-                        <KV value={info.server.redis_version} label="Version" />
-                        <KV value={info.server.uptime_in_seconds} label="Uptime (s)" />
-                        <KV value={info.server.os} label="OS" />
+                        <KV label="Version" value={info.server.redis_version} mono />
+                        <KV label="Uptime (s)" value={info.server.uptime_in_seconds} mono />
+                        <KV label="OS" value={info.server.os} />
                     </Card>
+
                     <Card title="Clients">
-                        <KV value={info.clients.connected_clients} label="Connected" />
-                        <KV value={info.clients.blocked_clients} label="Blocked" />
+                        <KV label="Connected" value={info.clients.connected_clients} mono />
+                        <KV label="Blocked" value={info.clients.blocked_clients} mono />
                     </Card>
+
                     <Card title="Memory">
-                        <KV value={info.memory.used_memory_human} label="Used" />
-                        <KV value={info.memory.used_memory_peak_human} label="Peak" />
-                        <KV value={info.memory.mem_fragmentation_ratio} label="Frag ratio" />
+                        <KV label="Used" value={info.memory.used_memory_human} mono />
+                        <KV label="Peak" value={info.memory.used_memory_peak_human} mono />
+                        <KV label="Frag ratio" value={info.memory.mem_fragmentation_ratio} mono />
                     </Card>
+
                     <Card title="Replication">
-                        <KV value={info.replication.role} label="Role" />
-                        <KV value={info.replication.connected_slaves} label="Replicas" />
+                        <KV label="Role" value={info.replication.role} />
+                        <KV label="Replicas" value={info.replication.connected_slaves} mono />
                     </Card>
-                    <Card title="Keyspace">
+
+                    <Card title="Keyspace" style={{ gridColumn: '1 / -1' }}>
                         {Object.keys(info.keyspace).length === 0 ? (
-                            <p className="text-sm text-vigil-muted">No data in any DB.</p>
+                            <Muted>No data in any DB.</Muted>
                         ) : (
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="text-left text-vigil-muted">
-                                        <th className="py-1">DB</th>
-                                        <th>Keys</th>
-                                        <th>Expires</th>
-                                        <th>Avg TTL</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {Object.entries(info.keyspace).map(([db, v]) => (
-                                        <tr key={db} className="border-t border-vigil-border">
-                                            <td className="py-1 font-mono">{db}</td>
-                                            <td>{v.keys}</td>
-                                            <td>{v.expires}</td>
-                                            <td>{v.avg_ttl}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <Table
+                                columns={[
+                                    { key: 'db', label: 'DB', mono: true },
+                                    { key: 'keys', label: 'Keys', align: 'right', mono: true },
+                                    { key: 'expires', label: 'Expires', align: 'right', mono: true },
+                                    { key: 'avg_ttl', label: 'Avg TTL', align: 'right', mono: true },
+                                ]}
+                                rows={Object.entries(info.keyspace).map(([db, v]) => ({
+                                    db,
+                                    keys: v.keys,
+                                    expires: v.expires,
+                                    avg_ttl: v.avg_ttl,
+                                }))}
+                                rowKey={(r) => String(r.db)}
+                            />
                         )}
                     </Card>
-                </>
+                </div>
             )}
-        </div>
+        </Page>
     );
 };
-
-const Card: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <section className="border border-vigil-border bg-vigil-surface rounded p-4 space-y-2">
-        <h2 className="text-sm font-medium text-vigil-muted">{title}</h2>
-        <div className="text-sm space-y-1">{children}</div>
-    </section>
-);
-
-const KV: React.FC<{ label: string; value: string | number | undefined }> = ({ label, value }) => (
-    <div className="flex justify-between">
-        <span className="text-vigil-muted">{label}</span>
-        <span className="font-mono">{value ?? '—'}</span>
-    </div>
-);
 
 const RedisOverview: React.FC = () => <RedisOverviewInner />;
 

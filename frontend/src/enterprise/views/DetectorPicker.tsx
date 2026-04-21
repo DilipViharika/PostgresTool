@@ -8,8 +8,12 @@
 // ==========================================================================
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Activity, Save, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Activity, Save, AlertTriangle } from 'lucide-react';
 import { fetchData, postData } from '../../utils/api';
+import { THEME } from '../../utils/theme';
+import {
+    Page, PageHeader, Card, Muted, Alert, Button, Select, Input, Table,
+} from './_viewKit';
 
 type DetectorKind = 'zscore' | 'ewma' | 'mad';
 
@@ -89,68 +93,88 @@ const DetectorPickerInner: React.FC = () => {
     };
 
     return (
-        <div className="p-6 space-y-6 text-vigil-text">
-            <header className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-vigil-violet" aria-hidden />
-                    <h1 className="text-xl font-semibold">Anomaly detectors</h1>
-                </div>
-                <button
-                    onClick={refresh}
-                    className="flex items-center gap-1 px-3 py-1 border border-vigil-border rounded text-sm hover:bg-vigil-elevated"
-                    aria-label="Refresh anomaly data"
-                >
-                    <RefreshCw className="w-4 h-4" /> Refresh
-                </button>
-            </header>
+        <Page>
+            <PageHeader
+                icon={<Activity size={18} />}
+                title="Anomaly detectors"
+                subtitle="Per-metric detector kind, threshold, and window tuning"
+                accent="#a78bfa"
+                onRefresh={refresh}
+                refreshing={loading}
+            />
 
-            {error && (
-                <div
-                    role="alert"
-                    className="p-3 bg-vigil-rose/10 text-vigil-rose rounded border border-vigil-rose/30 text-sm"
-                >
-                    {error}
-                </div>
-            )}
+            {error && <Alert>{error}</Alert>}
 
-            <section aria-label="Per-metric configuration">
-                <h2 className="text-sm font-medium mb-2 text-vigil-muted">
-                    Per-metric configuration
-                </h2>
-                {loading ? (
-                    <p className="text-sm text-vigil-muted">Loading…</p>
+            <Card title="Per-metric configuration">
+                {loading && configs.length === 0 ? (
+                    <Muted>Loading…</Muted>
                 ) : configs.length === 0 ? (
-                    <p className="text-sm text-vigil-muted">
-                        No metrics are currently being tracked for anomaly detection.
-                    </p>
+                    <Muted>No metrics are currently being tracked for anomaly detection.</Muted>
                 ) : (
-                    <div className="space-y-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {configs.map((cfg) => (
                             <div
                                 key={cfg.metric}
-                                className="border border-vigil-border rounded p-3 space-y-2 bg-vigil-surface"
+                                style={{
+                                    border: `1px solid ${THEME.glassBorder}`,
+                                    borderRadius: 10,
+                                    padding: 14,
+                                    background: THEME.surfaceHover,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 8,
+                                }}
                             >
-                                <div className="flex items-center justify-between">
-                                    <span className="font-mono text-sm">{cfg.metric}</span>
-                                    <label className="text-xs flex items-center gap-1 text-vigil-muted">
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: 10,
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            fontFamily: `'JetBrains Mono', monospace`,
+                                            fontSize: 13,
+                                            color: THEME.textMain,
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {cfg.metric}
+                                    </span>
+                                    <label
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 6,
+                                            fontSize: 12,
+                                            color: THEME.textMuted,
+                                            cursor: 'pointer',
+                                        }}
+                                    >
                                         <input
                                             type="checkbox"
                                             checked={cfg.enabled}
                                             onChange={(e) =>
-                                                updateConfig(cfg.metric, {
-                                                    enabled: e.target.checked,
-                                                })
+                                                updateConfig(cfg.metric, { enabled: e.target.checked })
                                             }
+                                            style={{ accentColor: THEME.primary }}
                                             aria-label={`Enable detector for ${cfg.metric}`}
                                         />
                                         enabled
                                     </label>
                                 </div>
-                                <div className="flex flex-wrap gap-2 text-sm">
-                                    <label className="sr-only" htmlFor={`detector-${cfg.metric}`}>
-                                        Detector kind
-                                    </label>
-                                    <select
+
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: 8,
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Select
                                         id={`detector-${cfg.metric}`}
                                         value={cfg.detector}
                                         onChange={(e) =>
@@ -158,16 +182,14 @@ const DetectorPickerInner: React.FC = () => {
                                                 detector: e.target.value as DetectorKind,
                                             })
                                         }
-                                        className="border border-vigil-border rounded p-1 bg-vigil-surface text-vigil-text"
+                                        aria-label="Detector kind"
+                                        style={{ width: 'auto', minWidth: 140 }}
                                     >
                                         <option value="zscore">z-score</option>
                                         <option value="ewma">EWMA</option>
                                         <option value="mad">MAD</option>
-                                    </select>
-                                    <label className="sr-only" htmlFor={`threshold-${cfg.metric}`}>
-                                        Threshold
-                                    </label>
-                                    <input
+                                    </Select>
+                                    <Input
                                         id={`threshold-${cfg.metric}`}
                                         type="number"
                                         step="0.1"
@@ -178,12 +200,10 @@ const DetectorPickerInner: React.FC = () => {
                                             })
                                         }
                                         placeholder="threshold"
-                                        className="border border-vigil-border rounded p-1 w-24 bg-vigil-surface text-vigil-text"
+                                        aria-label="Threshold"
+                                        style={{ width: 110 }}
                                     />
-                                    <label className="sr-only" htmlFor={`window-${cfg.metric}`}>
-                                        Window size
-                                    </label>
-                                    <input
+                                    <Input
                                         id={`window-${cfg.metric}`}
                                         type="number"
                                         value={cfg.windowSize}
@@ -193,61 +213,71 @@ const DetectorPickerInner: React.FC = () => {
                                             })
                                         }
                                         placeholder="window"
-                                        className="border border-vigil-border rounded p-1 w-24 bg-vigil-surface text-vigil-text"
+                                        aria-label="Window size"
+                                        style={{ width: 110 }}
                                     />
-                                    <button
-                                        onClick={() => save(cfg)}
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
                                         disabled={saving === cfg.metric}
-                                        className="ml-auto flex items-center gap-1 px-2 py-1 border border-vigil-border rounded text-xs hover:bg-vigil-elevated disabled:opacity-50"
-                                        aria-label={`Save detector config for ${cfg.metric}`}
+                                        onClick={() => save(cfg)}
+                                        ariaLabel={`Save detector config for ${cfg.metric}`}
+                                        style={{ marginLeft: 'auto' }}
                                     >
-                                        <Save className="w-3 h-3" />
+                                        <Save size={12} />
                                         {saving === cfg.metric ? 'Saving…' : 'Save'}
-                                    </button>
+                                    </Button>
                                 </div>
-                                <p className="text-xs text-vigil-muted">
-                                    {DETECTOR_LABELS[cfg.detector]} — {DETECTOR_HELP[cfg.detector]}
+
+                                <p
+                                    style={{
+                                        margin: 0,
+                                        fontSize: 12,
+                                        color: THEME.textMuted,
+                                        lineHeight: 1.5,
+                                    }}
+                                >
+                                    <strong style={{ color: THEME.textMain }}>
+                                        {DETECTOR_LABELS[cfg.detector]}
+                                    </strong>{' '}
+                                    — {DETECTOR_HELP[cfg.detector]}
                                 </p>
                             </div>
                         ))}
                     </div>
                 )}
-            </section>
+            </Card>
 
-            <section aria-label="Recent anomalies">
-                <h2 className="text-sm font-medium mb-2 flex items-center gap-1 text-vigil-muted">
-                    <AlertTriangle className="w-4 h-4" /> Recent anomalies
-                </h2>
-                {events.length === 0 ? (
-                    <p className="text-sm text-vigil-muted">No anomalies in the last window.</p>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm border border-vigil-border rounded">
-                            <thead className="bg-vigil-surface-alt text-vigil-muted">
-                                <tr>
-                                    <th className="text-left p-2">Time</th>
-                                    <th className="text-left p-2">Metric</th>
-                                    <th className="text-left p-2">Detector</th>
-                                    <th className="text-right p-2">Value</th>
-                                    <th className="text-right p-2">Score</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {events.map((ev) => (
-                                    <tr key={ev.id} className="border-t border-vigil-border">
-                                        <td className="p-2 text-vigil-muted">{ev.ts}</td>
-                                        <td className="p-2 font-mono">{ev.metric}</td>
-                                        <td className="p-2">{ev.detector}</td>
-                                        <td className="p-2 text-right">{ev.value}</td>
-                                        <td className="p-2 text-right">{ev.score.toFixed(2)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </section>
-        </div>
+            <Card
+                title="Recent anomalies"
+                right={
+                    <AlertTriangle
+                        size={14}
+                        color={THEME.warning}
+                        style={{ flexShrink: 0 }}
+                    />
+                }
+            >
+                <Table
+                    columns={[
+                        { key: 'ts', label: 'Time' },
+                        { key: 'metric', label: 'Metric', mono: true },
+                        { key: 'detector', label: 'Detector' },
+                        { key: 'value', label: 'Value', align: 'right', mono: true },
+                        { key: 'score', label: 'Score', align: 'right', mono: true },
+                    ]}
+                    rows={events.map((ev) => ({
+                        ts: ev.ts,
+                        metric: ev.metric,
+                        detector: ev.detector,
+                        value: ev.value,
+                        score: ev.score.toFixed(2),
+                    }))}
+                    rowKey={(r: any, idx: number) => events[idx]?.id ?? String(idx)}
+                    emptyText="No anomalies in the last window."
+                />
+            </Card>
+        </Page>
     );
 };
 

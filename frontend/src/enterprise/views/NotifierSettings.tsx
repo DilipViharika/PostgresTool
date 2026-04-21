@@ -6,8 +6,12 @@
 // ==========================================================================
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Bell, PlusCircle, RefreshCw, Send, Trash2 } from 'lucide-react';
+import { Bell, PlusCircle, Send, Trash2 } from 'lucide-react';
 import { fetchData, postData, deleteData } from '../../utils/api';
+import { THEME } from '../../utils/theme';
+import {
+    Page, PageHeader, Card, Muted, Alert, Button, Input, Select, Textarea, Table,
+} from './_viewKit';
 
 type NotifierKind = 'pagerduty' | 'opsgenie' | 'teams' | 'webhook';
 
@@ -26,6 +30,13 @@ const KIND_LABELS: Record<NotifierKind, string> = {
     opsgenie: 'Opsgenie',
     teams: 'Microsoft Teams',
     webhook: 'Generic Webhook',
+};
+
+const statusColor = (s?: string | null) => {
+    if (s === 'ok') return THEME.success;
+    if (s === 'failed') return THEME.danger;
+    if (s === 'pending') return THEME.warning;
+    return THEME.textMuted;
 };
 
 const NotifierSettingsInner: React.FC = () => {
@@ -103,134 +114,135 @@ const NotifierSettingsInner: React.FC = () => {
     };
 
     return (
-        <div className="p-6 space-y-6 text-vigil-text">
-            <header className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Bell className="w-5 h-5 text-vigil-accent" aria-hidden />
-                    <h1 className="text-xl font-semibold">Notifier settings</h1>
-                </div>
-                <button
-                    onClick={refresh}
-                    className="flex items-center gap-1 px-3 py-1 border border-vigil-border rounded text-sm hover:bg-vigil-elevated"
-                    aria-label="Refresh notifier list"
-                >
-                    <RefreshCw className="w-4 h-4" /> Refresh
-                </button>
-            </header>
+        <Page>
+            <PageHeader
+                icon={<Bell size={18} />}
+                title="Notifier settings"
+                subtitle="PagerDuty, Opsgenie, Teams, and webhook destinations"
+                accent={THEME.primary}
+                onRefresh={refresh}
+                refreshing={loading}
+            />
 
-            {error && (
-                <div
-                    role="alert"
-                    className="p-3 bg-vigil-rose/10 text-vigil-rose rounded border border-vigil-rose/30 text-sm"
-                >
-                    {error}
-                </div>
-            )}
+            {error && <Alert>{error}</Alert>}
 
-            <section aria-label="Configured notifiers">
-                <h2 className="text-sm font-medium mb-2 text-vigil-muted">Configured</h2>
-                {loading ? (
-                    <p className="text-sm text-vigil-muted">Loading…</p>
+            <Card title="Configured">
+                {loading && rows.length === 0 ? (
+                    <Muted>Loading…</Muted>
                 ) : rows.length === 0 ? (
-                    <p className="text-sm text-vigil-muted">
-                        No notifiers configured yet. Add one below.
-                    </p>
+                    <Muted>No notifiers configured yet. Add one below.</Muted>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm border border-vigil-border rounded">
-                            <thead className="bg-vigil-surface-alt text-vigil-muted">
-                                <tr>
-                                    <th className="text-left p-2">Label</th>
-                                    <th className="text-left p-2">Kind</th>
-                                    <th className="text-left p-2">Status</th>
-                                    <th className="text-left p-2">Last used</th>
-                                    <th className="text-right p-2">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((r) => (
-                                    <tr key={r.id} className="border-t border-vigil-border">
-                                        <td className="p-2 font-mono">{r.label}</td>
-                                        <td className="p-2">{KIND_LABELS[r.kind]}</td>
-                                        <td className="p-2">
-                                            {r.lastStatus ?? (r.enabled ? 'enabled' : 'disabled')}
-                                        </td>
-                                        <td className="p-2 text-vigil-muted">
-                                            {r.lastUsedAt ?? '—'}
-                                        </td>
-                                        <td className="p-2 text-right space-x-2 whitespace-nowrap">
-                                            <button
-                                                onClick={() => handleTest(r.id)}
-                                                className="inline-flex items-center gap-1 px-2 py-1 border border-vigil-border rounded text-xs hover:bg-vigil-elevated"
-                                                aria-label={`Send test to ${r.label}`}
-                                            >
-                                                <Send className="w-3 h-3" /> Test
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(r.id)}
-                                                className="inline-flex items-center gap-1 px-2 py-1 border border-vigil-rose/40 rounded text-xs text-vigil-rose hover:bg-vigil-rose/10"
-                                                aria-label={`Remove ${r.label}`}
-                                            >
-                                                <Trash2 className="w-3 h-3" /> Remove
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <Table
+                        columns={[
+                            { key: 'label', label: 'Label', mono: true },
+                            { key: 'kind', label: 'Kind' },
+                            { key: 'status', label: 'Status' },
+                            { key: 'lastUsed', label: 'Last used' },
+                            { key: 'actions', label: '', align: 'right' },
+                        ]}
+                        rows={rows.map((r) => ({
+                            label: r.label,
+                            kind: KIND_LABELS[r.kind],
+                            status: (
+                                <span
+                                    style={{
+                                        color: statusColor(r.lastStatus ?? (r.enabled ? 'ok' : null)),
+                                        fontWeight: 600,
+                                        fontSize: 12,
+                                    }}
+                                >
+                                    {r.lastStatus ?? (r.enabled ? 'enabled' : 'disabled')}
+                                </span>
+                            ),
+                            lastUsed: r.lastUsedAt ?? '—',
+                            actions: (
+                                <div
+                                    style={{
+                                        display: 'inline-flex',
+                                        gap: 6,
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    <Button
+                                        size="sm"
+                                        onClick={() => handleTest(r.id)}
+                                        ariaLabel={`Send test to ${r.label}`}
+                                    >
+                                        <Send size={11} /> Test
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="danger"
+                                        onClick={() => handleDelete(r.id)}
+                                        ariaLabel={`Remove ${r.label}`}
+                                    >
+                                        <Trash2 size={11} /> Remove
+                                    </Button>
+                                </div>
+                            ),
+                        }))}
+                        rowKey={(_r: any, idx: number) => rows[idx]?.id ?? String(idx)}
+                    />
                 )}
-            </section>
+            </Card>
 
-            <section aria-label="Add notifier">
-                <h2 className="text-sm font-medium mb-2 flex items-center gap-1 text-vigil-muted">
-                    <PlusCircle className="w-4 h-4" /> Add a notifier
-                </h2>
-                <form onSubmit={handleCreate} className="space-y-2 max-w-xl">
-                    <div className="flex gap-2">
-                        <label className="sr-only" htmlFor="notifier-kind">Kind</label>
-                        <select
+            <Card
+                title="Add a notifier"
+                right={<PlusCircle size={14} color={THEME.primary} />}
+            >
+                <form
+                    onSubmit={handleCreate}
+                    style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 640 }}
+                >
+                    <div style={{ display: 'flex', gap: 8 }}>
+                        <label htmlFor="notifier-kind" style={{ position: 'absolute', left: -9999 }}>
+                            Kind
+                        </label>
+                        <Select
                             id="notifier-kind"
                             value={form.kind}
                             onChange={(e) =>
                                 setForm({ ...form, kind: e.target.value as NotifierKind })
                             }
-                            className="border border-vigil-border rounded p-2 text-sm bg-vigil-surface text-vigil-text"
+                            style={{ width: 'auto', minWidth: 160 }}
                         >
                             <option value="webhook">Webhook</option>
                             <option value="teams">Teams</option>
                             <option value="pagerduty">PagerDuty</option>
                             <option value="opsgenie">Opsgenie</option>
-                        </select>
-                        <label className="sr-only" htmlFor="notifier-label">Label</label>
-                        <input
+                        </Select>
+                        <label htmlFor="notifier-label" style={{ position: 'absolute', left: -9999 }}>
+                            Label
+                        </label>
+                        <Input
                             id="notifier-label"
                             value={form.label}
                             onChange={(e) => setForm({ ...form, label: e.target.value })}
                             placeholder="Label (e.g. prod-pager)"
-                            className="flex-1 border border-vigil-border rounded p-2 text-sm bg-vigil-surface text-vigil-text"
                             required
+                            style={{ flex: 1 }}
                         />
                     </div>
-                    <label className="sr-only" htmlFor="notifier-config">Config JSON</label>
-                    <textarea
+                    <label htmlFor="notifier-config" style={{ position: 'absolute', left: -9999 }}>
+                        Config JSON
+                    </label>
+                    <Textarea
                         id="notifier-config"
                         value={form.config}
                         onChange={(e) => setForm({ ...form, config: e.target.value })}
                         placeholder='Config JSON (e.g. {"url":"https://...","secret":"..."})'
-                        rows={4}
-                        className="w-full border border-vigil-border rounded p-2 text-xs font-mono bg-vigil-surface text-vigil-text"
+                        rows={5}
+                        mono
                     />
-                    <button
-                        type="submit"
-                        disabled={creating}
-                        className="px-3 py-1 bg-vigil-accent text-vigil-bg rounded text-sm disabled:opacity-50 font-medium"
-                    >
-                        {creating ? 'Creating…' : 'Create'}
-                    </button>
+                    <div>
+                        <Button type="submit" variant="primary" disabled={creating}>
+                            <PlusCircle size={13} />
+                            {creating ? 'Creating…' : 'Create'}
+                        </Button>
+                    </div>
                 </form>
-            </section>
-        </div>
+            </Card>
+        </Page>
     );
 };
 

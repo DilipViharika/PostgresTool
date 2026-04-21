@@ -7,8 +7,12 @@
 // ==========================================================================
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link as LinkIcon, RefreshCw, ExternalLink } from 'lucide-react';
+import { Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { fetchData } from '../../utils/api';
+import { THEME } from '../../utils/theme';
+import {
+    Page, PageHeader, Card, KVGrid, Muted, Alert, Button, Input, Table,
+} from './_viewKit';
 
 interface TraceQuery {
     traceId: string;
@@ -72,135 +76,128 @@ const TraceDetailInner: React.FC<{ initialTraceId?: string }> = ({ initialTraceI
     };
 
     return (
-        <div className="p-6 space-y-6 text-vigil-text">
-            <header className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <LinkIcon className="w-5 h-5 text-vigil-cyan" aria-hidden />
-                    <h1 className="text-xl font-semibold">Trace detail</h1>
-                </div>
-                <button
-                    onClick={() => load(normaliseTraceInput(summary?.traceId ?? traceInput))}
-                    className="flex items-center gap-1 px-3 py-1 border border-vigil-border rounded text-sm hover:bg-vigil-elevated"
-                    aria-label="Refresh trace"
-                >
-                    <RefreshCw className="w-4 h-4" /> Refresh
-                </button>
-            </header>
+        <Page>
+            <PageHeader
+                icon={<LinkIcon size={18} />}
+                title="Trace detail"
+                subtitle="Postgres queries correlated to a W3C trace id"
+                accent="#22d3ee"
+                onRefresh={
+                    summary?.traceId
+                        ? () => load(normaliseTraceInput(summary.traceId))
+                        : undefined
+                }
+                refreshing={loading}
+            />
 
-            <form onSubmit={onSubmit} className="flex gap-2 max-w-2xl" aria-label="Load trace">
-                <label className="sr-only" htmlFor="trace-input">
-                    Traceparent or trace id
-                </label>
-                <input
-                    id="trace-input"
-                    value={traceInput}
-                    onChange={(e) => setTraceInput(e.target.value)}
-                    placeholder="traceparent or 32-char trace id"
-                    className="flex-1 border border-vigil-border rounded p-2 text-sm font-mono bg-vigil-surface text-vigil-text"
-                />
-                <button
-                    type="submit"
-                    className="px-3 py-1 bg-vigil-accent text-vigil-bg rounded text-sm font-medium"
+            <Card>
+                <form
+                    onSubmit={onSubmit}
+                    style={{ display: 'flex', gap: 8, alignItems: 'center' }}
+                    aria-label="Load trace"
                 >
-                    Load
-                </button>
-            </form>
+                    <label htmlFor="trace-input" style={{ position: 'absolute', left: -9999 }}>
+                        Traceparent or trace id
+                    </label>
+                    <Input
+                        id="trace-input"
+                        mono
+                        value={traceInput}
+                        onChange={(e) => setTraceInput(e.target.value)}
+                        placeholder="traceparent or 32-char trace id"
+                        style={{ flex: 1 }}
+                    />
+                    <Button type="submit" variant="primary" disabled={!traceInput.trim() || loading}>
+                        Load
+                    </Button>
+                </form>
+            </Card>
 
-            {error && (
-                <div
-                    role="alert"
-                    className="p-3 bg-vigil-rose/10 text-vigil-rose rounded border border-vigil-rose/30 text-sm"
-                >
-                    {error}
-                </div>
-            )}
-
-            {loading && <p className="text-sm text-vigil-muted">Loading…</p>}
+            {error && <Alert>{error}</Alert>}
+            {loading && !summary && <Muted>Loading…</Muted>}
 
             {summary && (
-                <section
-                    aria-label="Trace summary"
-                    className="border border-vigil-border bg-vigil-surface rounded p-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-sm"
-                >
-                    <KV label="Trace id" value={summary.traceId} mono />
-                    <KV label="Queries" value={summary.queryCount} />
-                    <KV label="Total exec (ms)" value={summary.totalExecMs.toFixed(1)} />
-                    <KV label="First seen" value={summary.firstSeen} />
-                    <KV label="Last seen" value={summary.lastSeen} />
-                    {summary.slowestQueryId && (
-                        <KV label="Slowest query" value={summary.slowestQueryId} mono />
-                    )}
-                </section>
+                <Card title="Trace summary">
+                    <KVGrid
+                        columns={2}
+                        items={[
+                            { label: 'Trace id', value: summary.traceId, mono: true },
+                            { label: 'Queries', value: summary.queryCount, mono: true },
+                            { label: 'Total exec (ms)', value: summary.totalExecMs.toFixed(1), mono: true },
+                            { label: 'First seen', value: summary.firstSeen },
+                            { label: 'Last seen', value: summary.lastSeen },
+                            ...(summary.slowestQueryId
+                                ? [{ label: 'Slowest query', value: summary.slowestQueryId, mono: true }]
+                                : []),
+                        ]}
+                    />
+                </Card>
             )}
 
-            {queries.length > 0 ? (
-                <section aria-label="Correlated queries">
-                    <h2 className="text-sm font-medium mb-2 text-vigil-muted">
-                        Correlated queries
-                    </h2>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm border border-vigil-border rounded">
-                            <thead className="bg-vigil-surface-alt text-vigil-muted">
-                                <tr>
-                                    <th className="text-left p-2">Time</th>
-                                    <th className="text-left p-2">Span</th>
-                                    <th className="text-left p-2">SQL</th>
-                                    <th className="text-right p-2">Mean (ms)</th>
-                                    <th className="text-right p-2">Rows</th>
-                                    <th className="text-right p-2"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {queries.map((q) => (
-                                    <tr
-                                        key={`${q.spanId}-${q.queryId}`}
-                                        className="border-t border-vigil-border"
-                                    >
-                                        <td className="p-2 text-vigil-muted">{q.ts}</td>
-                                        <td className="p-2 font-mono text-xs">
-                                            {q.spanId.slice(0, 8)}
-                                        </td>
-                                        <td className="p-2 font-mono text-xs truncate max-w-md">
-                                            {q.sqlPreview}
-                                        </td>
-                                        <td className="p-2 text-right">
-                                            {q.meanExecMs.toFixed(1)}
-                                        </td>
-                                        <td className="p-2 text-right">{q.rows}</td>
-                                        <td className="p-2 text-right">
-                                            <a
-                                                href={`#/queries/${q.queryId}`}
-                                                className="text-vigil-accent inline-flex items-center gap-1 text-xs"
-                                            >
-                                                View <ExternalLink className="w-3 h-3" />
-                                            </a>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-            ) : summary && !loading ? (
-                <p className="text-sm text-vigil-muted">
-                    No correlated queries found for this trace.
-                </p>
-            ) : null}
-        </div>
+            {queries.length > 0 && (
+                <Card title="Correlated queries">
+                    <Table
+                        columns={[
+                            { key: 'ts', label: 'Time' },
+                            { key: 'spanId', label: 'Span', mono: true },
+                            { key: 'sqlPreview', label: 'SQL', mono: true },
+                            { key: 'meanExecMs', label: 'Mean (ms)', align: 'right', mono: true },
+                            { key: 'rows', label: 'Rows', align: 'right', mono: true },
+                            { key: 'actions', label: '', align: 'right' },
+                        ]}
+                        rows={queries.map((q) => ({
+                            ts: q.ts,
+                            spanId: q.spanId.slice(0, 8),
+                            sqlPreview: (
+                                <span
+                                    style={{
+                                        display: 'inline-block',
+                                        maxWidth: 360,
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        verticalAlign: 'bottom',
+                                    }}
+                                    title={q.sqlPreview}
+                                >
+                                    {q.sqlPreview}
+                                </span>
+                            ),
+                            meanExecMs: q.meanExecMs.toFixed(1),
+                            rows: q.rows,
+                            actions: (
+                                <a
+                                    href={`#/queries/${q.queryId}`}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 4,
+                                        color: THEME.primary,
+                                        fontSize: 12,
+                                        textDecoration: 'none',
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    View <ExternalLink size={11} />
+                                </a>
+                            ),
+                        }))}
+                        rowKey={(_r: any, idx: number) =>
+                            `${queries[idx]?.spanId}-${queries[idx]?.queryId}`
+                        }
+                    />
+                </Card>
+            )}
+
+            {summary && queries.length === 0 && !loading && (
+                <Muted>No correlated queries found for this trace.</Muted>
+            )}
+        </Page>
     );
 };
 
-const KV: React.FC<{ label: string; value: string | number; mono?: boolean }> = ({
-    label,
-    value,
-    mono,
-}) => (
-    <div className="flex flex-col">
-        <span className="text-xs text-vigil-muted">{label}</span>
-        <span className={mono ? 'font-mono text-xs' : 'text-sm'}>{value}</span>
-    </div>
+const TraceDetail: React.FC<{ initialTraceId?: string }> = (props) => (
+    <TraceDetailInner {...props} />
 );
-
-const TraceDetail: React.FC<{ initialTraceId?: string }> = (props) => <TraceDetailInner {...props} />;
 
 export default TraceDetail;
