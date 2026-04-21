@@ -126,24 +126,18 @@ const S = {
         fontFamily: FONT_UI,
         lineHeight: 1.4,
     }; },
-    // ── Section grouping (used in redesigned modal) ────────────────────────
-    sectionTitle: {
+    // ── Section grouping (flat, no card wrappers) ──────────────────────────
+    sectionHeading: {
         display: 'flex', alignItems: 'center', gap: 8,
         fontSize: 11, fontWeight: 700, color: THEME.textDim,
-        textTransform: 'uppercase' as const, letterSpacing: '0.08em',
+        textTransform: 'uppercase' as const, letterSpacing: '0.1em',
         marginBottom: 14, marginTop: 0,
         fontFamily: FONT_UI,
     },
-    sectionDivider: {
+    sectionRule: {
         height: 1, background: THEME.glassBorder,
-        margin: '4px 0',
-    },
-    sectionCard: {
-        background: THEME.surfaceHover,
-        border: `1px solid ${THEME.glassBorder}`,
-        borderRadius: 14,
-        padding: '18px 18px 20px',
-        fontFamily: FONT_UI,
+        border: 'none', margin: '24px 0',
+        width: '100%',
     },
 };
 
@@ -227,7 +221,7 @@ const FloatingField = ({
 const DBTypeSelector = ({ value, onChange }) => {
     return (
         <div>
-            <div style={S.sectionTitle}>
+            <div style={S.sectionHeading}>
                 <Database size={12} /> Database Engine
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
@@ -333,31 +327,32 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
         );
     };
 
-    const sectionGap = 22;
-    const fieldGap = 14;
+    // Use margin-based vertical stacking (more robust than flex gap for this layout).
+    const fieldRow  = { marginBottom: 14 };
+    const lastField = { marginBottom: 0 };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: sectionGap }}>
+        <div>
             {/* ── Server section ────────────────────────────────────────────── */}
             {serverFields.length > 0 && (
-                <div>
-                    <div style={S.sectionTitle}><Server size={12} /> Server</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: fieldGap }}>
-                        {serverFields.includes('host') && serverFields.includes('port') && (
-                            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
-                                {renderField('host')}
-                                {renderField('port')}
-                            </div>
-                        )}
-                        {serverFields.includes('database') && renderField('database')}
-                    </div>
+                <div style={{ marginBottom: 24 }}>
+                    <div style={S.sectionHeading}><Server size={12} /> Server</div>
+                    {serverFields.includes('host') && serverFields.includes('port') && (
+                        <div style={{ ...fieldRow, display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+                            {renderField('host')}
+                            {renderField('port')}
+                        </div>
+                    )}
+                    {serverFields.includes('database') && (
+                        <div style={lastField}>{renderField('database')}</div>
+                    )}
                 </div>
             )}
 
             {/* ── Auth section ──────────────────────────────────────────────── */}
             {authFields.length > 0 && (
-                <div>
-                    <div style={S.sectionTitle}><Key size={12} /> Authentication</div>
+                <div style={{ marginBottom: 24 }}>
+                    <div style={S.sectionHeading}><Key size={12} /> Authentication</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                         {authFields.map(f => renderField(f))}
                     </div>
@@ -366,8 +361,8 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
 
             {/* ── Extras (MongoDB authSource / replicaSet) ──────────────────── */}
             {extraFields.length > 0 && (
-                <div>
-                    <div style={S.sectionTitle}><Zap size={12} /> Options</div>
+                <div style={{ marginBottom: 24 }}>
+                    <div style={S.sectionHeading}><Zap size={12} /> Options</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                         {extraFields.map(f => renderField(f))}
                     </div>
@@ -377,40 +372,39 @@ const DynamicFields = ({ dbType, formData, setFormData, formErrors, showPassword
             {/* ── Checkbox row (SSL, etc) ───────────────────────────────────── */}
             {checkFields.length > 0 && (
                 <div>
-                    <div style={S.sectionTitle}><ShieldCheck size={12} /> Security</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {checkFields.map(f => {
-                            const meta = FIELD_META[f];
-                            const on = !!formData[f];
-                            return (
-                                <label key={f} htmlFor={`chk-${f}`} style={{
-                                    display: 'flex', alignItems: 'center', gap: 12,
-                                    padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
-                                    background: on ? `${THEME.primary}10` : THEME.surface,
-                                    border: `1.5px solid ${on ? THEME.primary + '55' : THEME.glassBorder}`,
-                                    transition: 'all 0.15s',
-                                    fontFamily: FONT_UI,
+                    <div style={S.sectionHeading}><ShieldCheck size={12} /> Security</div>
+                    {checkFields.map((f, idx) => {
+                        const meta = FIELD_META[f];
+                        const on = !!formData[f];
+                        return (
+                            <label key={f} htmlFor={`chk-${f}`} style={{
+                                display: 'flex', alignItems: 'center', gap: 12,
+                                padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
+                                background: on ? `${THEME.primary}10` : 'transparent',
+                                border: `1.5px solid ${on ? THEME.primary + '55' : THEME.glassBorder}`,
+                                transition: 'all 0.15s',
+                                fontFamily: FONT_UI,
+                                marginBottom: idx < checkFields.length - 1 ? 10 : 0,
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    id={`chk-${f}`}
+                                    checked={on}
+                                    onChange={e => update(f, e.target.checked)}
+                                    style={{ cursor: 'pointer', accentColor: THEME.primary, width: 16, height: 16 }}
+                                />
+                                <span style={{ fontSize: 13, fontWeight: 600, color: on ? THEME.primary : THEME.textMain }}>
+                                    {meta.label}
+                                </span>
+                                <span style={{
+                                    marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: on ? THEME.primary : THEME.textMuted,
+                                    letterSpacing: '0.08em', textTransform: 'uppercase',
                                 }}>
-                                    <input
-                                        type="checkbox"
-                                        id={`chk-${f}`}
-                                        checked={on}
-                                        onChange={e => update(f, e.target.checked)}
-                                        style={{ cursor: 'pointer', accentColor: THEME.primary, width: 16, height: 16 }}
-                                    />
-                                    <span style={{ fontSize: 13, fontWeight: 600, color: on ? THEME.primary : THEME.textMain }}>
-                                        {meta.label}
-                                    </span>
-                                    <span style={{
-                                        marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: on ? THEME.primary : THEME.textMuted,
-                                        letterSpacing: '0.08em', textTransform: 'uppercase',
-                                    }}>
-                                        {on ? 'On' : 'Off'}
-                                    </span>
-                                </label>
-                            );
-                        })}
-                    </div>
+                                    {on ? 'On' : 'Off'}
+                                </span>
+                            </label>
+                        );
+                    })}
                 </div>
             )}
         </div>
@@ -529,7 +523,7 @@ const SSHTunnelSection = ({ formData, setFormData }) => {
 
                     {/* Auth type segmented control */}
                     <div>
-                        <div style={{ ...S.sectionTitle, marginBottom: 8 }}>Authentication</div>
+                        <div style={{ ...S.sectionHeading, marginBottom: 8 }}>Authentication</div>
                         <div style={{
                             display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6,
                             padding: 4, borderRadius: 12, background: THEME.surfaceHover,
@@ -1408,17 +1402,20 @@ const ConnectionsTab = () => {
                             </button>
                         </div>
 
-                        {/* Scrollable form body */}
+                        {/* Scrollable form body — flat layout, no nested cards */}
                         <div style={{
-                            flex: 1, overflowY: 'auto', padding: '24px 26px 26px',
-                            display: 'flex', flexDirection: 'column', gap: 18,
+                            flex: 1, overflowY: 'auto', padding: '28px 32px',
+                            background: THEME.surface,
+                            fontFamily: FONT_UI,
                         }}>
-                            {/* Engine picker (no card wrapper — flat) */}
+                            {/* ─── Engine picker ──────────────────────── */}
                             <DBTypeSelector value={formData.dbType} onChange={handleDbTypeChange} />
 
-                            {/* ── Connection identity card ─────────────────── */}
-                            <div style={S.sectionCard}>
-                                <div style={S.sectionTitle}><LinkIcon size={12} /> Identity</div>
+                            <hr style={S.sectionRule} />
+
+                            {/* ─── Connection identity ─────────────────── */}
+                            <div>
+                                <div style={S.sectionHeading}><LinkIcon size={12} /> Connection</div>
                                 <FloatingField
                                     label="Connection Name"
                                     value={formData.name}
@@ -1427,56 +1424,62 @@ const ConnectionsTab = () => {
                                     error={formErrors.name}
                                     required
                                     autoFocus
-                                    helper="A friendly name to identify this connection in lists & dashboards."
+                                    helper="A friendly name shown in connection lists and dashboards."
                                 />
                             </div>
 
-                            {/* ── Server + Auth + Options + Checkboxes (in one card) ── */}
-                            <div style={S.sectionCard}>
-                                <DynamicFields
-                                    dbType={formData.dbType}
-                                    formData={formData}
-                                    setFormData={setFormData}
-                                    formErrors={formErrors}
-                                    showPassword={showPassword}
-                                    togglePasswordVisibility={() => setShowPassword(p => !p)}
-                                />
-                            </div>
+                            <hr style={S.sectionRule} />
 
-                            {/* ── SSH Tunnel card ──────────────────────────── */}
+                            {/* ─── Server + Auth + Security ────────────── */}
+                            <DynamicFields
+                                dbType={formData.dbType}
+                                formData={formData}
+                                setFormData={setFormData}
+                                formErrors={formErrors}
+                                showPassword={showPassword}
+                                togglePasswordVisibility={() => setShowPassword(p => !p)}
+                            />
+
+                            <hr style={S.sectionRule} />
+
+                            {/* ─── SSH Tunnel ──────────────────────────── */}
                             <SSHTunnelSection formData={formData} setFormData={setFormData} />
 
-                            {/* ── Set as default ──────────────────────────── */}
+                            {/* ─── Set as default ──────────────────────── */}
                             {!editingConnection && (
-                                <label htmlFor="isDefault" style={{
-                                    display: 'flex', alignItems: 'center', gap: 12,
-                                    padding: '14px 18px', borderRadius: 12, cursor: 'pointer',
-                                    background: formData.isDefault ? `${THEME.primary}10` : THEME.surfaceHover,
-                                    border: `1.5px solid ${formData.isDefault ? THEME.primary + '55' : THEME.glassBorder}`,
-                                    transition: 'all 0.15s',
-                                }}>
-                                    <input
-                                        type="checkbox"
-                                        id="isDefault"
-                                        checked={formData.isDefault}
-                                        onChange={e => setFormData(p => ({ ...p, isDefault: e.target.checked }))}
-                                        style={{ cursor: 'pointer', accentColor: THEME.primary, width: 17, height: 17 }}
-                                    />
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 13, fontWeight: 600, color: formData.isDefault ? THEME.primary : THEME.textMain }}>
-                                            Set as default connection
+                                <>
+                                    <hr style={S.sectionRule} />
+                                    <label htmlFor="isDefault" style={{
+                                        display: 'flex', alignItems: 'center', gap: 12,
+                                        padding: '14px 16px', borderRadius: 10, cursor: 'pointer',
+                                        background: formData.isDefault ? `${THEME.primary}10` : 'transparent',
+                                        border: `1.5px solid ${formData.isDefault ? THEME.primary + '55' : THEME.glassBorder}`,
+                                        transition: 'all 0.15s',
+                                    }}>
+                                        <input
+                                            type="checkbox"
+                                            id="isDefault"
+                                            checked={formData.isDefault}
+                                            onChange={e => setFormData(p => ({ ...p, isDefault: e.target.checked }))}
+                                            style={{ cursor: 'pointer', accentColor: THEME.primary, width: 17, height: 17 }}
+                                        />
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 600, color: formData.isDefault ? THEME.primary : THEME.textMain }}>
+                                                Set as default connection
+                                            </div>
+                                            <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2 }}>
+                                                Auto-select this connection when the app opens
+                                            </div>
                                         </div>
-                                        <div style={{ fontSize: 11, color: THEME.textMuted, marginTop: 2 }}>
-                                            Auto-select this connection when the app opens
-                                        </div>
-                                    </div>
-                                </label>
+                                    </label>
+                                </>
                             )}
 
                             {errorMsg && (
                                 <div style={{
+                                    marginTop: 20,
                                     display: 'flex', alignItems: 'flex-start', gap: 10,
-                                    padding: '14px 16px', borderRadius: 12,
+                                    padding: '14px 16px', borderRadius: 10,
                                     background: 'rgba(239,68,68,0.08)',
                                     border: '1px solid rgba(239,68,68,0.3)',
                                 }}>
