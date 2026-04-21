@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
 import {
     Activity, AlertTriangle, Clock, Layers, Plus, RefreshCw,
-    Copy, CheckCircle, ArrowLeft, Loader2, AlertCircle, Trash2
+    Copy, CheckCircle, ArrowLeft, Loader2, AlertCircle, Trash2, X
 } from 'lucide-react';
 
 /* ── Safe fetch helpers (avoid global auth:logout on 401) ─────────────── */
@@ -123,8 +123,75 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
     const accent = THEME.primary || '#6366f1';
 
     return (
-            <div style={{ background:bg, border:`1px solid ${border}`, borderRadius: 18, padding:24, maxWidth:480, width:'90%' }}>
-                <h3 style={{ margin:'0 0 16px', fontSize:18, fontWeight:700, color:txt }}>Register New SDK Application</h3>
+        <div
+            onClick={onClose}
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.55)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                padding: 20,
+                animation: 'sdkModalFadeIn 0.15s ease-out',
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sdk-register-title"
+        >
+            <style>{`
+                @keyframes sdkModalFadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes sdkModalScaleIn {
+                    from { opacity: 0; transform: scale(0.96) translateY(6px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
+                }
+            `}</style>
+            <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                    position: 'relative',
+                    background: bg,
+                    border: `1px solid ${border}`,
+                    borderRadius: 18,
+                    padding: 24,
+                    maxWidth: 480,
+                    width: '100%',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                    animation: 'sdkModalScaleIn 0.18s ease-out',
+                }}
+            >
+                <button
+                    onClick={onClose}
+                    aria-label="Close"
+                    style={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        background: 'transparent',
+                        border: 'none',
+                        color: sub,
+                        cursor: 'pointer',
+                        padding: 6,
+                        borderRadius: 8,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <X size={18} />
+                </button>
+                <h3 id="sdk-register-title" style={{ margin:'0 0 16px', fontSize:18, fontWeight:700, color:txt, paddingRight: 28 }}>Register New SDK Application</h3>
 
                 {generatedKey ? (
                     <div>
@@ -178,6 +245,7 @@ function RegisterAppModal({ isOpen, onClose, onSuccess }) {
                     </div>
                 )}
             </div>
+        </div>
     );
 }
 
