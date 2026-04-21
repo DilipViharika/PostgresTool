@@ -151,8 +151,20 @@ function splitSql(content) {
                 const tag = m[0];
                 buf += tag; i += tag.length;
                 const end = content.indexOf(tag, i);
-                if (end < 0) { buf += content.slice(i); i = content.length; }
-                else          { buf += content.slice(i, end + tag.length); i = end + tag.length; }
+                if (end < 0) {
+                    // MED-7: unterminated dollar-quoted body. Emit a warning to
+                    // stderr so the CI log surfaces it — the remainder is swept
+                    // into the current statement so we don't silently drop SQL.
+                    console.error(
+                        `::warning::unterminated dollar-quoted string (tag ${tag}); ` +
+                        `file may be truncated or tag mismatched. Remainder treated as one statement.`
+                    );
+                    buf += content.slice(i);
+                    i = content.length;
+                } else {
+                    buf += content.slice(i, end + tag.length);
+                    i = end + tag.length;
+                }
                 continue;
             }
         }

@@ -39,16 +39,32 @@ const PLACEHOLDER: Record<Mode, string> = {
 
 export interface CopilotProps {
     workspaceId?: number | string;
+    connectionId?: number | string;   // required for mode='sql' — identifies the monitored DB
     defaultMode?: Mode;
 }
 
-export default function Copilot({ workspaceId, defaultMode = 'sql' }: CopilotProps) {
+// LOW-7: client-side size cap for the input textarea. The server-side cap
+// is 8 KB for `input` and 16 KB for `output` (see 0003_copilot.sql comment
+// and copilotService.js). We soft-cap the client at 32 KB so a user who
+// pastes a huge plan doesn't silently get truncated by the backend — the
+// UI tells them to trim it first. Keep in sync with copilotService limits.
+const INPUT_MAX_BYTES = 32 * 1024;
+
+export default function Copilot({ workspaceId, connectionId, defaultMode = 'sql' }: CopilotProps) {
     const [mode, setMode]         = useState<Mode>(defaultMode);
     const [input, setInput]       = useState('');
     const [busy, setBusy]         = useState(false);
     const [provider, setProvider] = useState<Provider | null>(null);
     const [turns, setTurns]       = useState<Turn[]>([]);
     const bottomRef = useRef<HTMLDivElement>(null);
+
+    // Byte-length, not char-length: multi-byte UTF-8 (emoji, accented text,
+    // Chinese schema dumps) fill the server buffer faster than String.length
+    // would suggest.
+    const inputBytes = typeof TextEncoder !== 'undefined'
+        ? new TextEncoder().encode(input).length
+        : input.length;
+    const overLimit = inputBytes > INPUT_MAX_BYTES;
 
     useEffect(() => {
         fetch('/api/copilot/provider', { credentials: 'include' })
@@ -64,6 +80,24 @@ export default function Copilot({ workspaceId, defaultMode = 'sql' }: CopilotPro
     async function send() {
         const text = input.trim();
         if (!text || busy) return;
+        if (overLimit) {
+            setTurns(t => [...t, {
+                id: String(Date.now() + 1),
+                role: 'assistant',
+                text: `Input is ${inputBytes.toLocaleString()} bytes — max ${INPUT_MAX_BYTES.toLocaleString()}. ` +
+                      `Trim the prompt or paste a smaller plan.`,
+            }]);
+            return;
+        }
+        if (mode === 'sql' && !connectionId) {
+            setTurns(t => [...t, {
+                id: String(Date.now() + 1),
+                role: 'assistant',
+                text: 'Select a monitored database connection before using SQL mode — ' +
+                      'the copilot needs live schema context from your database.',
+            }]);
+            return;
+        }
         const userTurn: Turn = { id: String(Date.now()), role: 'user', text };
         setTurns(t => [...t, userTurn]);
         setInput('');
@@ -74,7 +108,7 @@ export default function Copilot({ workspaceId, defaultMode = 'sql' }: CopilotPro
             if (workspaceId) headers['x-workspace-id'] = String(workspaceId);
 
             let body: any;
-            if (mode === 'sql')      body = { prompt: text };
+            if (mode === 'sql')      body = { prompt: text, connectionId };
             else if (mode === 'explain') {
                 try { body = { plan: JSON.parse(text) }; }
                 catch { body = { plan: text }; }
@@ -160,16 +194,28 @@ export default function Copilot({ workspaceId, defaultMode = 'sql' }: CopilotPro
             </div>
 
             <footer style={footer}>
-                <textarea
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={onKey}
-                    placeholder={PLACEHOLDER[mode]}
-                    style={textarea}
-                    rows={4}
-                    disabled={busy}
-                />
-                <button onClick={send} disabled={busy || !input.trim()} style={sendBtn}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <textarea
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyDown={onKey}
+                        placeholder={PLACEHOLDER[mode]}
+                        style={{
+                            ...textarea,
+                            borderColor: overLimit ? '#dc2626' : '#d1d5db',
+                        }}
+                        rows={4}
+                        disabled={busy}
+                    />
+                    <div style={{
+                        fontSize: 11, textAlign: 'right',
+                        color: overLimit ? '#dc2626' : '#6b7280',
+                    }}>
+                        {inputBytes.toLocaleString()} / {INPUT_MAX_BYTES.toLocaleString()} bytes
+                        {overLimit && ' — too long, trim before sending'}
+                    </div>
+                </div>
+                <button onClick={send} disabled={busy || !input.trim() || overLimit} style={sendBtn}>
                     {busy ? 'Thinking…' : 'Send'}
                 </button>
             </footer>

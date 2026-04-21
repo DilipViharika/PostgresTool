@@ -41,11 +41,15 @@ export default function scimRoutes(pool) {
             if (!token) return scimError(res, 401, 'missing bearer token');
             const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
             const { rows } = await query(
-                `SELECT workspace_id FROM pgmonitoringtool.scim_tokens
-                  WHERE token_hash = $1 AND revoked_at IS NULL LIMIT 1`,
+                `SELECT workspace_id, expires_at
+                   FROM pgmonitoringtool.scim_tokens
+                  WHERE token_hash = $1
+                    AND revoked_at IS NULL
+                    AND (expires_at IS NULL OR expires_at > now())
+                  LIMIT 1`,
                 [tokenHash]
             );
-            if (!rows[0]) return scimError(res, 401, 'invalid SCIM token');
+            if (!rows[0]) return scimError(res, 401, 'invalid or expired SCIM token');
             req.workspaceId = rows[0].workspace_id;
             await query(
                 `UPDATE pgmonitoringtool.scim_tokens
@@ -119,23 +123,77 @@ export default function scimRoutes(pool) {
             const email = req.body.userName || req.body.emails?.[0]?.value;
             if (!email) return scimError(res, 400, 'userName is required');
             const active = req.body.active !== false;
-            const name = req.body.name?.formatted
-                || [req.body.name?.givenName, req.body.name?.familyName].filter(Boolean).join(' ')
-                || email;
 
-            // Upsert user.
+            // CRIT-1 fix: the SCIM token is scoped to req.workspaceId. Never
+            // let a token for workspace A mutate a users row that does not
+            // belong (through workspace_members) to that workspace.
+            //   1. INSERT-if-missing — no ON CONFLICT UPDATE so a cross-tenant
+            //      email cannot have its status/username rewritten.
+            //   2. Select the row back out when conflict hit.
+            //   3. Add the caller's workspace membership.
+            //   4. Only update status after the user is a member of this
+            //      workspace, and constrain the UPDATE by workspace_members.
             const passwordHash = crypto.randomBytes(32).toString('hex');
-            const { rows } = await query(
-                `INSERT INTO pgmonitoringtool.users
-                    (username, email, password_hash, role, status, created_at)
-                 VALUES ($1,$2,$3,'viewer',$4, now())
-                 ON CONFLICT (email) DO UPDATE SET
-                    username = EXCLUDED.username,
-                    status = EXCLUDED.status
-                 RETURNING id, email, username, status, created_at`,
-                [email, email, passwordHash, active ? 'active' : 'suspended']
-            );
-            const user = rows[0];
+            let user;
+            // LOW-8: track whether this request actually created a new users
+            // row vs. re-attached an existing user to a new workspace. RFC 7644
+            // §3.3 says "If the service provider determines that the creation
+            // of the requested resource conflicts with existing resources …
+            // the service provider MAY return a 200 OK with the existing
+            // resource." — some IdPs (Okta) treat a 201 for a pre-existing
+            // user as a duplicate-provisioning warning, so returning 200 when
+            // the users row already existed is the more conservative choice.
+            let createdNew = false;
+            {
+                const ins = await query(
+                    `INSERT INTO pgmonitoringtool.users
+                        (username, email, password_hash, role, status, created_at)
+                     VALUES ($1,$2,$3,'viewer',$4, now())
+                     ON CONFLICT (email) DO NOTHING
+                     RETURNING id, email, username, status, created_at`,
+                    [email, email, passwordHash, active ? 'active' : 'suspended']
+                );
+                if (ins.rows[0]) {
+                    user = ins.rows[0];
+                    createdNew = true;
+                } else {
+                    const sel = await query(
+                        `SELECT id, email, username, status, created_at
+                           FROM pgmonitoringtool.users WHERE email = $1 LIMIT 1`,
+                        [email]
+                    );
+                    user = sel.rows[0];
+                    if (!user) return scimError(res, 500, 'user upsert failed');
+                }
+            }
+
+            // CRIT-1 HARDENING (escalation path closed by the regression
+            // test in scimCrossTenant.test.js): if a users row already exists
+            // and is NOT already a member of the caller's workspace, a SCIM
+            // token must NOT silently auto-link it. Doing so would allow a
+            // workspace-A SCIM token to re-parent a victim user from
+            // workspace B into workspace A and then mutate the GLOBAL
+            // `status` column, effectively suspending them everywhere.
+            //
+            // For new (just-inserted) users and for re-issuing a PUT-like
+            // SCIM create against a user already in this workspace, the
+            // flow below is fine. For the cross-tenant case we return 409
+            // Conflict — consistent with RFC 7644 §3.3's "resource already
+            // exists" semantics — and require an explicit admin action to
+            // add the user to another workspace.
+            if (!createdNew) {
+                const member = await query(
+                    `SELECT 1 FROM pgmonitoringtool.workspace_members
+                      WHERE workspace_id = $1 AND user_id = $2 LIMIT 1`,
+                    [req.workspaceId, user.id]
+                );
+                if (!member.rows[0]) {
+                    return scimError(res, 409,
+                        'user with this userName already exists in another workspace; ' +
+                        'cross-workspace linking must be performed by an administrator');
+                }
+            }
+
             await query(
                 `INSERT INTO pgmonitoringtool.workspace_members
                     (workspace_id, user_id, role)
@@ -143,12 +201,33 @@ export default function scimRoutes(pool) {
                  ON CONFLICT (workspace_id, user_id) DO NOTHING`,
                 [req.workspaceId, user.id]
             );
-            res.status(201).json(toScimUser({ ...user, role: 'viewer' }));
+
+            const desired = active ? 'active' : 'suspended';
+            if (user.status !== desired) {
+                const upd = await query(
+                    `UPDATE pgmonitoringtool.users u
+                        SET status = $2
+                       FROM pgmonitoringtool.workspace_members wm
+                      WHERE u.id = $1
+                        AND wm.user_id = u.id
+                        AND wm.workspace_id = $3
+                      RETURNING u.id, u.email, u.username, u.status, u.created_at`,
+                    [user.id, desired, req.workspaceId]
+                );
+                if (upd.rows[0]) user = upd.rows[0];
+            }
+
+            res.status(createdNew ? 201 : 200).json(toScimUser({ ...user, role: 'viewer' }));
         } catch (err) { next(err); }
     });
 
     router.patch('/scim/v2/Users/:id', async (req, res, next) => {
         try {
+            // CRIT-2 fix: return 404 BEFORE any UPDATE if the target user is
+            // not a member of the caller's workspace.
+            const existing = await findUserInWorkspace(req.workspaceId, req.params.id);
+            if (!existing) return scimError(res, 404, 'user not found');
+
             const ops = req.body.Operations || [];
             let active;
             for (const op of ops) {
@@ -160,9 +239,16 @@ export default function scimRoutes(pool) {
                 }
             }
             if (active !== undefined) {
+                // Belt-and-braces: constrain UPDATE through workspace_members
+                // join so a compromised SCIM token cannot fan out globally.
                 await query(
-                    `UPDATE pgmonitoringtool.users SET status = $2 WHERE id = $1`,
-                    [Number(req.params.id), active ? 'active' : 'suspended']
+                    `UPDATE pgmonitoringtool.users u
+                        SET status = $2
+                       FROM pgmonitoringtool.workspace_members wm
+                      WHERE u.id = $1
+                        AND wm.user_id = u.id
+                        AND wm.workspace_id = $3`,
+                    [Number(req.params.id), active ? 'active' : 'suspended', req.workspaceId]
                 );
             }
             const user = await findUserInWorkspace(req.workspaceId, req.params.id);

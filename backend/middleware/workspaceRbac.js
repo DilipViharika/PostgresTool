@@ -47,9 +47,26 @@ export async function resolveWorkspace(req, res, next) {
             return next();
         }
 
-        // Superadmin bypass.
+        // Platform-admin / superadmin bypass.
+        //   MED-5 fix: require the workspace row to actually exist before
+        //   granting owner-equivalent access, and audit the impersonation so
+        //   a compromised platform-admin account leaves forensic traces.
         if (req.user.role === 'superadmin' || req.user.role === 'admin') {
-            req.workspace = { id: wsId, role: 'owner' };
+            const { rows: w } = await query(
+                `SELECT id FROM pgmonitoringtool.workspaces WHERE id = $1 LIMIT 1`,
+                [wsId]
+            );
+            if (!w[0]) return res.status(404).json({ error: 'workspace_not_found' });
+            req.workspace = { id: wsId, role: 'owner', impersonated: true };
+            // Fire-and-forget audit — never block the request on audit failures.
+            import('../services/auditService.js').then(({ writeAudit }) =>
+                writeAudit({
+                    actor_id: req.user.id,
+                    action: 'workspace.impersonate',
+                    target: `ws:${wsId}`,
+                    details: { actor_role: req.user.role },
+                }).catch(() => {})
+            ).catch(() => {});
             return next();
         }
 

@@ -3,6 +3,16 @@
 --
 -- Turns are kept for replay / audit / future fine-tuning corpus export. Input
 -- is capped server-side to 8k chars, output to 16k.
+--
+-- APPLY ORDER
+-- ───────────
+-- Migrations in this directory are forward-only and are applied in strict
+-- lexicographic (filename-ASC) order by backend/db/migrate.js. This file
+-- MUST run after 0001_saml_sso_rbac.sql (which creates pgmonitoringtool.users
+-- and pgmonitoringtool.workspaces — the two FK targets below) and BEFORE
+-- 0004_security_hardening.sql (which adds copilot_turns.input_redacted). Do
+-- not renumber or re-order: the migration runner records filenames verbatim
+-- and will refuse to replay an already-applied migration under a new number.
 
 CREATE TABLE IF NOT EXISTS pgmonitoringtool.copilot_turns (
     id            BIGSERIAL PRIMARY KEY,

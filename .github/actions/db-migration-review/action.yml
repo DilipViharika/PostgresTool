@@ -65,13 +65,21 @@ outputs:
 runs:
   using: composite
   steps:
+    # SECURITY: all user-controlled values flow through env, never inline via
+    # ${{ … }}. GitHub Actions expression substitution happens before the
+    # shell runs, so inline interpolation of an action input is a known
+    # command-injection vector. See HIGH-3 in ROADMAP_CODE_AUDIT.md.
     - name: Discover changed migrations
       id: files
       shell: bash
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        MIGRATIONS_GLOB: ${{ inputs.migrations-glob }}
       run: |
         set -eo pipefail
-        base="${{ github.event.pull_request.base.sha }}"
-        head="${{ github.event.pull_request.head.sha }}"
+        base="$BASE_SHA"
+        head="$HEAD_SHA"
         if [ -z "$base" ] || [ -z "$head" ]; then
           base=$(git rev-parse HEAD~1 2>/dev/null || echo "")
           head=$(git rev-parse HEAD)
@@ -82,17 +90,21 @@ runs:
         else
           git ls-files > /tmp/changed.txt
         fi
-        pattern='${{ inputs.migrations-glob }}'
-        shopt -s globstar nullglob
+        pattern="$MIGRATIONS_GLOB"
+        shopt -s globstar nullglob extglob
         > /tmp/targets.txt
         while IFS= read -r f; do
+          # Quoted "$pattern" on the RHS keeps shell from re-parsing it as code.
+          # Pattern matching in `case` respects the pathname wildcards.
           case "$f" in
-            $pattern) echo "$f" >> /tmp/targets.txt ;;
+            $pattern) printf '%s\n' "$f" >> /tmp/targets.txt ;;
           esac
         done < /tmp/changed.txt
         count=$(wc -l < /tmp/targets.txt | tr -d ' ')
-        echo "targets=/tmp/targets.txt" >> "$GITHUB_OUTPUT"
-        echo "count=$count" >> "$GITHUB_OUTPUT"
+        {
+          printf 'targets=%s\n' /tmp/targets.txt
+          printf 'count=%s\n' "$count"
+        } >> "$GITHUB_OUTPUT"
         echo "Discovered $count migration files:"
         cat /tmp/targets.txt || true
 
@@ -100,10 +112,18 @@ runs:
       id: review
       if: steps.files.outputs.count != '0'
       shell: bash
+      env:
+        ENGINE: ${{ inputs.engine }}
       run: |
         set -eo pipefail
+        # Engine is constrained to an enum-like value; still, pass via env so
+        # a malicious workflow can't break the command line.
+        case "$ENGINE" in
+          postgres|mysql|mongo) ;;
+          *) echo "::error::unknown engine '$ENGINE'"; exit 2 ;;
+        esac
         node "$GITHUB_ACTION_PATH/lint.mjs" \
-          --engine="${{ inputs.engine }}" \
+          "--engine=$ENGINE" \
           --targets=/tmp/targets.txt \
           --out=/tmp/findings.json
         echo "findings-json=/tmp/findings.json" >> "$GITHUB_OUTPUT"
@@ -116,12 +136,14 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
+        REPO:    ${{ github.repository }}
+        PR:      ${{ github.event.pull_request.number }}
       run: |
         set -eo pipefail
         node "$GITHUB_ACTION_PATH/comment.mjs" \
           --findings=/tmp/findings.json \
-          --repo="${{ github.repository }}" \
-          --pr="${{ github.event.pull_request.number }}"
+          "--repo=$REPO" \
+          "--pr=$PR"
 
     - name: Report findings to VIGIL API (optional)
       if: steps.files.outputs.count != '0' && inputs.vigil-api-url != ''

@@ -10,6 +10,7 @@ import { query } from '../db.js';
 import { runAuditExport } from '../services/auditExport.js';
 import { resolveWorkspace, requireWorkspaceRole } from '../middleware/workspaceRbac.js';
 import { writeAudit } from '../services/auditService.js';
+import { invalidateIpAllowListCache } from '../middleware/ipAllowList.js';
 
 export default function governanceRoutes(pool, authenticate) {
     const router = Router();
@@ -44,6 +45,7 @@ export default function governanceRoutes(pool, authenticate) {
                      VALUES ($1,$2,$3,$4) RETURNING id`,
                     [req.workspace.id, cidr, label, req.user?.id]
                 );
+                invalidateIpAllowListCache(req.workspace.id);
                 await writeAudit({
                     actor_id: req.user?.id,
                     action: 'ip_allowlist.add',
@@ -65,6 +67,7 @@ export default function governanceRoutes(pool, authenticate) {
                       WHERE id = $1 AND workspace_id = $2`,
                     [Number(req.params.id), req.workspace.id]
                 );
+                invalidateIpAllowListCache(req.workspace.id);
                 await writeAudit({
                     actor_id: req.user?.id,
                     action: 'ip_allowlist.remove',
@@ -76,24 +79,31 @@ export default function governanceRoutes(pool, authenticate) {
     );
 
     // ── SCIM tokens (issue / rotate / revoke) ────────────────────────────────
+    //   MED-3 fix: tokens carry an explicit expires_at (default 365 days,
+    //   client can request shorter via body.ttlDays). SCIM auth rejects
+    //   expired tokens. See scimRoutes.js.
     router.post(
         '/governance/scim-tokens',
         authenticate, resolveWorkspace, requireWorkspaceRole('owner'),
         async (req, res, next) => {
             try {
+                const ttlDays = Math.min(Math.max(Number(req.body?.ttlDays) || 365, 1), 3650);
                 const token = `vigil_scim_${crypto.randomBytes(24).toString('base64url')}`;
                 const hash = crypto.createHash('sha256').update(token).digest('hex');
                 const prefix = token.slice(0, 16);
                 const { rows } = await query(
                     `INSERT INTO pgmonitoringtool.scim_tokens
-                        (workspace_id, token_hash, token_prefix, created_by)
-                     VALUES ($1,$2,$3,$4) RETURNING id, created_at`,
-                    [req.workspace.id, hash, prefix, req.user?.id]
+                        (workspace_id, token_hash, token_prefix, created_by,
+                         expires_at)
+                     VALUES ($1,$2,$3,$4, now() + ($5 || ' days')::interval)
+                     RETURNING id, created_at, expires_at`,
+                    [req.workspace.id, hash, prefix, req.user?.id, ttlDays]
                 );
                 await writeAudit({
                     actor_id: req.user?.id,
                     action: 'scim_token.create',
                     target: `ws:${req.workspace.id}`,
+                    details: { ttlDays },
                 }).catch(() => {});
                 // Token is returned ONCE — never stored in plaintext.
                 res.status(201).json({
@@ -101,6 +111,7 @@ export default function governanceRoutes(pool, authenticate) {
                     token,
                     prefix,
                     created_at: rows[0].created_at,
+                    expires_at: rows[0].expires_at,
                     warning: 'Store this token now — it will never be shown again.',
                 });
             } catch (err) { next(err); }
@@ -113,7 +124,8 @@ export default function governanceRoutes(pool, authenticate) {
         async (req, res, next) => {
             try {
                 const { rows } = await query(
-                    `SELECT id, token_prefix, created_at, last_used_at, revoked_at
+                    `SELECT id, token_prefix, created_at, last_used_at,
+                            revoked_at, expires_at
                        FROM pgmonitoringtool.scim_tokens
                       WHERE workspace_id = $1
                       ORDER BY created_at DESC`,
@@ -141,9 +153,11 @@ export default function governanceRoutes(pool, authenticate) {
     );
 
     // ── Audit export: on-demand trigger (cron handles periodic) ──────────────
+    //   HIGH-1 fix: resolveWorkspace must run before requireWorkspaceRole or
+    //   the role check fails closed for everyone and the feature is dead.
     router.post(
         '/governance/audit-export/run',
-        authenticate, requireWorkspaceRole('owner'),
+        authenticate, resolveWorkspace, requireWorkspaceRole('owner'),
         async (req, res, next) => {
             try {
                 const summary = await runAuditExport({

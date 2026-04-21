@@ -3,13 +3,14 @@
  * ─────────────────────────
  * Per-workspace IP allow-listing. Pure JavaScript — no external deps.
  *
- * If the active workspace has one or more rows in `ip_allowlist`, the
- * request's client IP must match at least one CIDR or the request is
- * rejected with 403 before any handler runs. Empty list = open (fail open
- * per workspace, fail closed once a single rule exists).
+ * Runs as a gate BEFORE any workspace route, so it resolves the active
+ * workspace ID on its own (from x-workspace-id header, ?workspace query
+ * param, or the caller's default). Fail-open when the workspace has no
+ * rules, fail-closed the moment a single CIDR is configured.
  *
- * Supports IPv4 and IPv6 CIDRs. Accepts req.ip (Express sets this when
- * `trust proxy` is configured) or falls back to socket.remoteAddress.
+ * Returns 403 with a stable error code when the client IP does not
+ * match. Supports IPv4 and IPv6 CIDRs. Accepts req.ip (Express sets
+ * this when `trust proxy` is configured) or socket.remoteAddress.
  */
 
 import { query } from '../db.js';
@@ -17,11 +18,33 @@ import { query } from '../db.js';
 const cache = new Map(); // workspaceId -> { cidrs: [...], ts }
 const CACHE_MS = 30_000;
 
+// Paths that intentionally bypass the allow-list (auth, metadata, SCIM).
+// SCIM has its own bearer token; authentication endpoints must remain
+// reachable so operators can log in from new offices.
+const BYPASS = [
+    /^\/api\/login\b/,
+    /^\/api\/auth\//,
+    /^\/api\/v1\/login\b/,
+    /^\/api\/v1\/auth\//,
+    /^\/api\/saml\/.+\/(metadata|acs|login)\b/,
+    /^\/api\/v1\/saml\/.+\/(metadata|acs|login)\b/,
+];
+
+function resolveWorkspaceId(req) {
+    const header = req.headers['x-workspace-id'];
+    const q = req.query?.workspace;
+    const n = Number(header || q || req.user?.defaultWorkspaceId || 0);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
 export function ipAllowListMiddleware() {
     return async function ipAllowList(req, res, next) {
         try {
-            const wsId = req.workspace?.id;
-            if (!wsId) return next();
+            if (BYPASS.some(rx => rx.test(req.path))) return next();
+
+            const wsId = resolveWorkspaceId(req);
+            if (!wsId) return next(); // nothing to check yet — resolveWorkspace will 401/403 later
+
             const cidrs = await getCidrs(wsId);
             if (cidrs.length === 0) return next(); // no rules → open
 
@@ -34,6 +57,7 @@ export function ipAllowListMiddleware() {
             return res.status(403).json({
                 error: 'ip_not_allowed',
                 ip,
+                workspace: wsId,
             });
         } catch (err) { next(err); }
     };
@@ -49,6 +73,16 @@ async function getCidrs(wsId) {
     const cidrs = rows.map(r => r.cidr);
     cache.set(wsId, { cidrs, ts: Date.now() });
     return cidrs;
+}
+
+/**
+ * LOW-10 fix: admins can force-expire the cache when rules change so the
+ * 30s window does not leak access after a revoke. Call from governance
+ * routes whenever a rule is added or removed.
+ */
+export function invalidateIpAllowListCache(wsId) {
+    if (wsId === undefined) cache.clear();
+    else cache.delete(Number(wsId));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

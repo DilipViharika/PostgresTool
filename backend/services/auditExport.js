@@ -17,6 +17,7 @@
  */
 
 import { gzipSync } from 'node:zlib';
+import { createHash } from 'node:crypto';
 import { query } from '../db.js';
 
 const DEFAULTS = {
@@ -87,6 +88,12 @@ export async function runAuditExport({ fromTs, toTs } = {}) {
         const slug = await workspaceSlug(wsId);
         const ndjson = batch.map(e => JSON.stringify(e)).join('\n');
         const gz = gzipSync(Buffer.from(ndjson, 'utf8'));
+        // LOW-4: emit a SHA-256 of the decompressed NDJSON payload AND of the
+        // on-the-wire gzip body so downstream SIEMs / integrity checkers can
+        // detect tampering even if the object is mutated in-bucket. The gzip
+        // digest doubles as an idempotency key.
+        const plainSha = createHash('sha256').update(ndjson, 'utf8').digest('hex');
+        const gzSha    = createHash('sha256').update(gz).digest('hex');
         const d = new Date(start);
         const yyyy = d.getUTCFullYear();
         const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
@@ -99,12 +106,22 @@ export async function runAuditExport({ fromTs, toTs } = {}) {
             Body: gz,
             ContentType: 'application/x-ndjson',
             ContentEncoding: 'gzip',
+            // ChecksumSHA256 is interpreted by S3 itself for integrity; the
+            // Metadata entries are retained so non-S3 backends (R2, MinIO,
+            // B2) still surface the hashes in the response headers.
+            ChecksumSHA256: Buffer.from(gzSha, 'hex').toString('base64'),
             Metadata: {
-                'vigil-workspace-id': String(wsId),
-                'vigil-event-count': String(batch.length),
+                'vigil-workspace-id':   String(wsId),
+                'vigil-event-count':    String(batch.length),
+                'vigil-content-sha256': plainSha,
+                'vigil-gzip-sha256':    gzSha,
+                'vigil-schema-version': '1',
             },
         }));
-        workspaces.push({ workspaceId: wsId, slug, key, events: batch.length });
+        workspaces.push({
+            workspaceId: wsId, slug, key, events: batch.length,
+            sha256: plainSha, gzipSha256: gzSha,
+        });
     }
     return { exported: events.length, workspaces };
 }

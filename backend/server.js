@@ -1684,9 +1684,10 @@ app.use('/api', (req, res, next) => {
 const modularMounts = ['/api', '/api/v1'];
 
 // ── IP allow-list gate (runs before every /api route) ───────────────────────
-// No-op when the workspace has no rules configured; denies non-matching IPs
-// when at least one CIDR is present. See middleware/ipAllowList.js.
-app.use('/api', ipAllowListMiddleware(pool));
+// Resolves the active workspace id from the request itself (header, query,
+// or default), then fails closed when a CIDR allow-list is configured and
+// the client's IP does not match. See middleware/ipAllowList.js.
+app.use('/api', ipAllowListMiddleware());
 
 // ── SCIM 2.0 (mounted at /scim/v2, dedicated Bearer-token auth) ──────────────
 app.use(scimRoutes(pool));
@@ -1726,7 +1727,7 @@ for (const prefix of modularMounts) {
     app.use(prefix, anomalyRoutes(pool, authenticate));
     app.use(prefix, pluginRoutes(pool, authenticate));
     app.use(prefix, governanceRoutes(pool, authenticate));
-    app.use(prefix, copilotRoutes(pool, authenticate));
+    app.use(prefix, copilotRoutes(pool, authenticate, getPool));
 }
 
 // ── Scheduled audit-log export (no-op when AUDIT_EXPORT_BUCKET unset) ────────
