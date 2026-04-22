@@ -5869,21 +5869,41 @@ app.use((err, req, res, _next) => {
     // ── Determine status code ───────────────────────────────────────────
     const status = err.status || err.statusCode || 500;
 
+    // ── Classify via systemDiagnostics so the client sees the same
+    //    structured `code` every other handler emits. Lets operators read
+    //    a single field in DevTools → Network and know exactly what to fix
+    //    (missing env var, missing migration, unreachable DB, etc.).
+    const classified = classifyConnectionError(err);
+
     // ── Structured logging with request context ─────────────────────────
     // Always log full details server-side, never expose them to client
     log('ERROR', 'Unhandled error', {
-        error:  err.message,
-        stack:  err.stack,
-        method: req.method,
-        path:   req.path,
-        ip:     req.ip,
-        userId: req.user?.id,
+        error:      err.message,
+        stack:      err.stack,
+        method:     req.method,
+        path:       req.path,
+        ip:         req.ip,
+        userId:     req.user?.id,
+        requestId:  req.id,
+        diagnostic: classified.code,
     });
 
-    // ── Sanitized response (NEVER leak stack traces to client) ──────
-    res.status(status).json({
-        error:   status >= 500 ? 'Internal Server Error' : err.message,
-    });
+    // ── Sanitized response ──────────────────────────────────────────────
+    //    We never leak stack traces. We DO leak:
+    //      - a stable diagnostic `code` (ENCRYPTION_NOT_CONFIGURED,
+    //        SCHEMA_NOT_MIGRATED, DB_UNREACHABLE, etc.) — safe, no secrets.
+    //      - a `requestId` the operator can grep for in server logs.
+    //      - the actionable `hint` when we recognise the error.
+    //    In non-prod we also include `details` so local dev is faster.
+    const body = {
+        error:     status >= 500 ? (classified.hint || 'Internal Server Error') : err.message,
+        code:      classified.code,
+        requestId: req.id,
+        path:      req.path,
+    };
+    if (classified.hint) body.hint = classified.hint;
+    if (!IS_PROD)         body.details = err.message;
+    res.status(status).json(body);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

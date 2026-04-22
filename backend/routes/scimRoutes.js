@@ -35,6 +35,13 @@ export default function scimRoutes(pool) {
     const router = Router();
 
     router.use(async (req, res, next) => {
+        // This router is mounted at the app root (see server.js) so it sees
+        // every request in the app. Only enforce SCIM bearer-token auth on
+        // actual SCIM endpoints — otherwise EVERY /api/* call would get a
+        // "missing bearer token" 401 with a SCIM error schema, which is
+        // exactly the outage this guard prevents. See history for the bug
+        // where `GET /api/health` returned a SCIM 401.
+        if (!req.path.startsWith('/scim/')) return next();
         try {
             const header = req.headers.authorization || '';
             const token = header.replace(/^Bearer\s+/i, '').trim();
