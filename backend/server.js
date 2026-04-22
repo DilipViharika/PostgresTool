@@ -21,6 +21,12 @@ import EnhancedAlertEngine      from './services/alertService.js';
 import EmailNotificationService from './services/emailService.js';
 import { openTunnel, closeTunnel, getTunnelPort, closeAll as closeAllTunnels } from './services/sshTunnel.js';
 import { encrypt, decrypt, isEncrypted, getPublicKey, unwrapField, validateEncryptionConfig } from './services/encryptionService.js';
+import {
+    DiagnosticCodes,
+    checkEncryptionConfig,
+    runSystemDiagnostics,
+    classifyConnectionError,
+} from './services/systemDiagnostics.js';
 
 import { buildAuthenticate, requireScreen, requireRole } from './middleware/authenticate.js';
 import userRoutes                           from './routes/userRoutes.js';
@@ -2759,9 +2765,19 @@ app.post('/api/connections', authenticate, ensureConnections, async (req, res) =
 
         res.status(201).json({ success: true, ...sanitizeConn(newConn), connectionId: newConn.id, testResult });
     } catch (e) {
-        if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
-        log('ERROR', 'Create connection error', { error: e.message, stack: e.stack });
-        res.status(500).json({ error: 'Internal server error', ...(IS_PROD ? {} : { details: e.message }), code: e.code });
+        if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists', code: 'DUPLICATE_NAME' });
+
+        // Map well-known misconfigurations to actionable 503s so the operator
+        // isn't staring at an opaque 500. `hint` is safe to surface — it names
+        // the env var or migration command, not the stack.
+        const classified = classifyConnectionError(e);
+        log('ERROR', 'Create connection error', {
+            error: e.message, stack: e.stack, code: e.code, diagnostic: classified.code,
+        });
+        const body = { error: classified.code === DiagnosticCodes.UNKNOWN ? 'Internal server error' : classified.hint || 'Configuration error', code: classified.code };
+        if (classified.hint) body.hint = classified.hint;
+        if (!IS_PROD) body.details = e.message;
+        res.status(classified.status).json(body);
     }
 });
 
@@ -2803,9 +2819,13 @@ app.put('/api/connections/:id', authenticate, ensureConnections, async (req, res
         await syncConnectionsCache();
         res.json(sanitizeConn(updated));
     } catch (e) {
-        if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists' });
-        log('ERROR', 'Update connection error', { error: e.message, stack: e.stack });
-        res.status(500).json({ error: 'Internal server error', ...(IS_PROD ? {} : { details: e.message }), code: e.code });
+        if (e.code === '23505') return res.status(409).json({ error: 'Connection name already exists', code: 'DUPLICATE_NAME' });
+        const classified = classifyConnectionError(e);
+        log('ERROR', 'Update connection error', { error: e.message, stack: e.stack, diagnostic: classified.code });
+        const body = { error: classified.code === DiagnosticCodes.UNKNOWN ? 'Internal server error' : classified.hint || 'Configuration error', code: classified.code };
+        if (classified.hint) body.hint = classified.hint;
+        if (!IS_PROD) body.details = e.message;
+        res.status(classified.status).json(body);
     }
 });
 
@@ -2837,8 +2857,12 @@ app.delete('/api/connections/:id', authenticate, ensureConnections, async (req, 
         await syncConnectionsCache();
         res.json({ success: true });
     } catch (e) {
-        log('ERROR', 'Delete connection error', { error: e.message, stack: e.stack });
-        res.status(500).json({ error: 'Internal server error', ...(IS_PROD ? {} : { details: e.message }), code: e.code });
+        const classified = classifyConnectionError(e);
+        log('ERROR', 'Delete connection error', { error: e.message, stack: e.stack, diagnostic: classified.code });
+        const body = { error: classified.code === DiagnosticCodes.UNKNOWN ? 'Internal server error' : classified.hint || 'Configuration error', code: classified.code };
+        if (classified.hint) body.hint = classified.hint;
+        if (!IS_PROD) body.details = e.message;
+        res.status(classified.status).json(body);
     }
 });
 
@@ -3224,15 +3248,27 @@ app.post('/api/connections/parse-url', authenticate, async (req, res) => {
  */
 app.get('/api/health', async (req, res) => {
     try {
-        const uptime = process.uptime();
+        const uptime  = process.uptime();
         const memUsage = process.memoryUsage();
         const memoryMB = Math.round(memUsage.heapUsed / 1024 / 1024);
 
-        res.json({
-            controlPlane: 'ok',
+        // Surface the same diagnostic the connection handler uses so operators
+        // can probe `/api/health` directly and see every config problem at
+        // once, instead of having to trigger a 503 to find out what's broken.
+        const diagnostics = await runSystemDiagnostics({ pool });
+        const status = diagnostics.ok ? 200 : 503;
+
+        res.status(status).json({
+            controlPlane: diagnostics.ok ? 'ok' : 'degraded',
             activeConnections: connectionPools.size,
             uptime: Math.round(uptime),
             memoryMB,
+            diagnostics: {
+                ok:         diagnostics.ok,
+                encryption: diagnostics.encryption,
+                schema:     diagnostics.schema,
+                blockers:   diagnostics.blockers,
+            },
             timestamp: new Date().toISOString(),
         });
     } catch (e) {
@@ -5855,12 +5891,35 @@ app.use((err, req, res, _next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 async function startup() {
     try {
-        // Validate encryption is properly configured before anything else
-        try {
-            validateEncryptionConfig();
-            log('INFO', 'Encryption self-test passed (AES-256-GCM)');
-        } catch (encErr) {
-            log('WARN', 'Encryption not configured — set ENCRYPTION_KEY or JWT_SECRET. ' + encErr.message);
+        // ── Preflight: refuse to boot with a misconfigured environment ─────
+        // Previously, a missing ENCRYPTION_KEY produced a quiet WARN at
+        // startup and then every POST /api/connections threw an opaque 500.
+        // Fail loudly and early instead so the operator sees the real issue
+        // on boot, not hours later from a user-facing error report.
+        const encCheck = checkEncryptionConfig();
+        if (!encCheck.ok) {
+            const banner =
+                '\n' + '━'.repeat(72) + '\n' +
+                `  FATHOM MISCONFIGURED — ${encCheck.code}\n` +
+                `  ${encCheck.hint}\n` +
+                '━'.repeat(72);
+            if (IS_PROD && process.env.FATHOM_ALLOW_DEGRADED_BOOT !== 'true') {
+                console.error(banner);
+                log('ERROR', 'Refusing to start in production without ENCRYPTION_KEY. '
+                          + 'Set FATHOM_ALLOW_DEGRADED_BOOT=true to override (not recommended).');
+                process.exit(78); // EX_CONFIG
+            }
+            console.warn(banner);
+            log('WARN', 'Booting in degraded mode — connection CRUD will return 503 until resolved.',
+                { code: encCheck.code });
+        } else {
+            try {
+                validateEncryptionConfig();
+                log('INFO', 'Encryption self-test passed (AES-256-GCM)');
+            } catch (encErr) {
+                log('ERROR', 'Encryption self-test failed despite config present: ' + encErr.message);
+                if (IS_PROD && process.env.FATHOM_ALLOW_DEGRADED_BOOT !== 'true') process.exit(78);
+            }
         }
 
         // Initialise connections table and warm the in-memory cache
