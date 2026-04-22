@@ -4,6 +4,11 @@
 
 import { v4 as uuid } from 'uuid';
 import { sendSlackAlert, updateAlertMessage } from './slackService.js';
+import { NotifierManager } from './notifiers/index.js';
+import {
+    buildNotifiersForOrg,
+    recordDispatchResult,
+} from './destinationService.js';
 
 function log(level, message, meta = {}) {
     const entry = { ts: new Date().toISOString(), level, msg: message, ...meta };
@@ -126,6 +131,11 @@ class EnhancedAlertEngine {
         }
         this.dedup.set(key, Date.now());
 
+        // `data.orgId` is the preferred carrier for per-tenant routing. Falls
+        // back to data.organizationId, then to null (routes to legacy global
+        // integrations only).
+        const orgId = data?.orgId ?? data?.organizationId ?? null;
+
         const alert = {
             id: uuid(),
             timestamp: new Date().toISOString(),
@@ -133,6 +143,7 @@ class EnhancedAlertEngine {
             category,
             message,
             data,
+            orgId,
             acknowledged: false,
             acknowledged_by: null,
             acknowledged_at: null,
@@ -154,7 +165,7 @@ class EnhancedAlertEngine {
                 );
             }
 
-            // ── Slack notification ──────────────────────────────────────
+            // ── Slack notification (legacy global Slack for backwards compat) ──
             const slackWebhook = process.env.SLACK_WEBHOOK_URL;
             sendSlackAlert(alert, slackWebhook)
                 .then(async (slackTs) => {
@@ -169,11 +180,63 @@ class EnhancedAlertEngine {
                 })
                 .catch(err => log('ERROR', 'Failed to send Slack alert', { error: err.message }));
 
+            // ── Per-org integration fan-out ────────────────────────────────
+            // Loads every enabled destination the org has configured (Slack,
+            // PagerDuty, Opsgenie, Teams, generic webhook) and dispatches in
+            // parallel via NotifierManager. Best-effort — failures never
+            // propagate to the caller or crash the alert loop.
+            if (alert.orgId) {
+                this._fanOutToOrgIntegrations(alert).catch(err =>
+                    log('ERROR', 'Per-org integration fan-out failed', { error: err.message })
+                );
+            }
+
             return alert;
         } catch (error) {
             log('ERROR', 'Failed to save alert', { error: error.message });
             return alert; // still return so caller has the object
         }
+    }
+
+    /**
+     * Dispatch an alert to every enabled destination the organisation has
+     * configured. Never throws — all errors are captured and logged so the
+     * alert loop stays live if one provider is misbehaving.
+     *
+     * Each destination is a row in pgmonitoringtool.notification_destinations.
+     * The NotifierManager provides per-alert-id dedupe and exponential
+     * backoff retry across the whole fan-out.
+     */
+    async _fanOutToOrgIntegrations(alert) {
+        const entries = await buildNotifiersForOrg(this.pool, alert.orgId);
+        if (entries.length === 0) return;
+
+        const notifiers = entries.map(e => e.notifier);
+        const manager = new NotifierManager({ notifiers });
+
+        // Adapt the internal alert shape to the notifier contract.
+        const dispatched = await manager.dispatch({
+            id: alert.id,
+            dedupKey: `${alert.orgId}:${alert.category}:${alert.severity}:${alert.id}`,
+            severity: alert.severity,
+            title: alert.message,
+            message: alert.message,
+            source: 'fathom',
+            component: alert.category,
+            timestamp: alert.timestamp,
+            metadata: alert.data || {},
+            resolved: false,
+        });
+
+        // Record per-destination outcome so the UI can show "last status".
+        // The notifier's name is prefixed `provider:name` by buildNotifierFromRow,
+        // so we tie it back to the destination via index alignment (parallel
+        // arrays — simpler than a reverse lookup).
+        await Promise.all(dispatched.map((d, i) => {
+            const destId = entries[i]?.destId;
+            if (!destId) return Promise.resolve();
+            return recordDispatchResult(this.pool, destId, d.result);
+        }));
     }
 
     async getRecent(limit = 50, includeAcknowledged = false) {

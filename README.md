@@ -75,6 +75,42 @@ The repository is set up for split deployment:
 `vercel.json` pins `installCommand` to `npm ci` (audit SEC-09) and the
 serverless function `maxDuration` to 30 s (audit PRF-04).
 
+## Enterprise features
+
+- **Per-organization alert fan-out** — Slack, PagerDuty, Opsgenie, Microsoft
+  Teams, and signed generic webhooks configured per tenant through
+  `/api/integrations`. At-rest secret encryption via `ENCRYPTION_KEY`.
+  See [`backend/docs/INTEGRATIONS.md`](backend/docs/INTEGRATIONS.md).
+- **SAML 2.0 SSO (SP-initiated)** — per-workspace IdP metadata; encrypted SP
+  private keys; configured through `/api/saml/*`.
+- **Streaming audit log export** — admin-only `GET /api/audit/export` returns
+  NDJSON or CSV with keyset pagination. See
+  [`backend/docs/AUDIT_EXPORT.md`](backend/docs/AUDIT_EXPORT.md).
+- **Postgres index advisor** — unused, redundant, and missing-index detection
+  over `pg_stat_user_indexes` and `pg_stat_statements`. Generates
+  `CREATE / DROP INDEX CONCURRENTLY` DDL; never executes it. See
+  [`backend/docs/INDEX_ADVISOR.md`](backend/docs/INDEX_ADVISOR.md).
+- **Postgres bloat & vacuum watcher** — table + index bloat estimation
+  (pgstattuple when available, statistics heuristic otherwise) and autovacuum
+  lag surfacing with conservative VACUUM recommendations. See
+  [`backend/docs/BLOAT_WATCHER.md`](backend/docs/BLOAT_WATCHER.md).
+- **Multi-language SDKs** — the `sdk/` tree ships JS, Python, and Go clients
+  at feature parity, driven by a shared OpenAPI contract at
+  `sdk/openapi/fathom-sdk.yaml`. The Go SDK ships Gin and `net/http`
+  middlewares; the Python SDK ships FastAPI, Django, and WSGI integrations.
+- **Distributed tracing** — OTLP/HTTP ingest at `/api/otlp/v1/traces`,
+  deterministic per-trace sampling, per-org retention, and pivots from any
+  span into its SQL query history. All three SDKs expose language-native
+  span APIs with W3C traceparent propagation. See
+  [`backend/docs/TRACING.md`](backend/docs/TRACING.md).
+- **Query workbench** — server-persisted multi-tab editor state, per-user
+  query history, workspace-shared saved queries and snippets (with
+  recursive `$snippet:name$` expansion). See
+  [`backend/docs/QUERY_WORKBENCH.md`](backend/docs/QUERY_WORKBENCH.md).
+- **Schema diff** — compare two Postgres connections and get a reviewable
+  migration script; works on any Postgres 12+ with no extensions. See
+  [`backend/docs/SCHEMA_DIFF.md`](backend/docs/SCHEMA_DIFF.md).
+
 ## Security
 
 FATHOM ships with custom Semgrep and Gitleaks rules (`.semgrep/fathom-rules.yml`,

@@ -53,12 +53,19 @@ import enterpriseUIRoutes from './routes/enterpriseUIRoutes.js';
 // ── Roadmap routes (W1–W3) ────────────────────────────────────────────────────
 import samlRoutes       from './routes/samlRoutes.js';
 import explainRoutes    from './routes/explainRoutes.js';
+import workbenchRoutes  from './routes/workbenchRoutes.js';
+import advisorRoutes    from './routes/advisorRoutes.js';
+import schemaDiffRoutes from './routes/schemaDiffRoutes.js';
+import bloatRoutes      from './routes/bloatRoutes.js';
 import alertDslRoutes   from './routes/alertDslRoutes.js';
 import anomalyRoutes    from './routes/anomalyRoutes.js';
 import pluginRoutes     from './routes/pluginRoutes.js';
 import scimRoutes       from './routes/scimRoutes.js';
 import governanceRoutes from './routes/governanceRoutes.js';
 import copilotRoutes    from './routes/copilotRoutes.js';
+import integrationsRoutes from './routes/integrationsRoutes.js';
+import otlpTraceRoutes  from './routes/otlpTraceRoutes.js';
+import { tenantIsolation } from './middleware/tenantIsolation.js';
 import { ipAllowListMiddleware } from './middleware/ipAllowList.js';
 import { scheduleAuditExport }   from './services/auditExport.js';
 
@@ -1731,12 +1738,24 @@ for (const prefix of modularMounts) {
         issuer:    CONFIG.JWT_ISSUER,
     });
     app.use(prefix, samlRoutes(pool, authenticate, requireRole, signJwt));
+
+    // ── Per-organization notification destinations (integration fan-out) ─
+    //    Write operations require owner/admin role inside the org; reads
+    //    require any org membership. Secrets are encrypted at rest and
+    //    never returned in API responses.
+    app.use(prefix, integrationsRoutes(pool, authenticate, tenantIsolation(pool)));
+
     app.use(prefix, explainRoutes(pool, authenticate));
+    app.use(prefix, workbenchRoutes(pool, authenticate));
+    app.use(prefix, advisorRoutes(pool, authenticate, getPool));
+    app.use(prefix, schemaDiffRoutes(pool, authenticate, getPool));
+    app.use(prefix, bloatRoutes(pool, authenticate, getPool));
     app.use(prefix, alertDslRoutes(pool, authenticate));
     app.use(prefix, anomalyRoutes(pool, authenticate));
     app.use(prefix, pluginRoutes(pool, authenticate));
     app.use(prefix, governanceRoutes(pool, authenticate));
     app.use(prefix, copilotRoutes(pool, authenticate, getPool));
+    app.use(prefix, otlpTraceRoutes(pool, authenticate));
 }
 
 // ── Scheduled audit-log export (no-op when AUDIT_EXPORT_BUCKET unset) ────────

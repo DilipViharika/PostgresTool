@@ -337,6 +337,45 @@ export const sdkEvents = pgmonitoringtool.table(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Notification Destinations (per-org alert fan-out)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Each row is one destination an organization has configured. At alert time
+// destinationService builds a NotifierManager containing every enabled
+// destination for the org, and NotifierManager dispatches in parallel with
+// per-alert-id dedupe and exponential-backoff retry.
+//
+// `secretEnc` is written via encryptionService.encrypt (AES-256-GCM) and
+// must never leave the backend in plaintext — integration routes redact it.
+
+export const notificationDestinations = pgmonitoringtool.table(
+  'notification_destinations',
+  {
+    id: serial('id').primaryKey(),
+    orgId: integer('org_id').notNull(),
+    name: varchar('name', { length: 120 }).notNull(),
+    provider: varchar('provider', { length: 32 }).notNull(),
+    minSeverity: varchar('min_severity', { length: 16 }).notNull().default('warning'),
+    enabled: boolean('enabled').notNull().default(true),
+    config: json('config').notNull().default({}),
+    secretEnc: text('secret_enc'),
+    createdBy: integer('created_by').references(() => users.id),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    lastUsedAt: timestamp('last_used_at'),
+    lastStatus: varchar('last_status', { length: 16 }),
+    lastError: text('last_error'),
+  },
+  (table) => [
+    index('notification_destinations_org_idx').on(table.orgId),
+    index('notification_destinations_enabled_idx').on(table.orgId, table.enabled),
+  ]
+);
+
+export type NotificationDestinationSelect = typeof notificationDestinations.$inferSelect;
+export type NotificationDestinationInsert = typeof notificationDestinations.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Relations
 // ─────────────────────────────────────────────────────────────────────────────
 

@@ -3,6 +3,9 @@
  * Zero dependencies, built-in batching, auto-capture for Express
  */
 
+import { FathomTracer } from './core/tracer.js';
+import { SpanBatcher } from './core/spanBatcher.js';
+
 // Inline EventEmitter for Node.js compatibility
 class EventEmitter {
   constructor() {
@@ -71,6 +74,12 @@ class FathomSDK extends EventEmitter {
     this.flushTimer = null;
     this.isShuttingDown = false;
     this.sessionId = this._generateId();
+
+    // Initialize tracing
+    this.tracing = new FathomTracer(this);
+    this.spanBatcher = new SpanBatcher(this, 100, this.flushInterval);
+    this.tracing.registerBatcher(this.spanBatcher);
+    this.spanBatcher.start();
 
     this._log('[SDK initialized]', {
       endpoint: this.endpoint,
@@ -374,6 +383,9 @@ class FathomSDK extends EventEmitter {
     if (this.queue.length > 0) {
       await this.flush();
     }
+
+    // Flush any remaining spans
+    await this.spanBatcher.shutdown();
 
     this._log('[Shutdown] Complete');
     this.emit('shutdown', { timestamp: new Date() });

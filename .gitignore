@@ -72,3 +72,8 @@ python/.venv/
 python/venv/
 python/.env
 python/.env.*
+
+venv/
+**/venv/
+.venv/
+**/.venv/

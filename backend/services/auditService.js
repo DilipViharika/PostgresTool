@@ -135,3 +135,150 @@ export async function listAuditEvents(pool, opts = {}) {
         offset,
     };
 }
+
+/* ─── Streaming export ─────────────────────────────────────────────────── */
+
+/**
+ * Async generator that yields audit rows in fixed-size pages, oldest first.
+ * Designed to back a streaming HTTP export so memory usage stays bounded
+ * regardless of result-set size.
+ *
+ * Supported filters: from, to (ISO strings or Date), action (ILIKE),
+ * username (ILIKE), level (exact match).
+ *
+ * @param {import('pg').Pool} pool
+ * @param {object} opts
+ * @param {string|Date} [opts.from]      — inclusive lower bound
+ * @param {string|Date} [opts.to]        — exclusive upper bound
+ * @param {string}      [opts.action]
+ * @param {string}      [opts.username]
+ * @param {string}      [opts.level]
+ * @param {number}      [opts.pageSize=1000]
+ * @param {number}      [opts.maxRows=100_000] — safety valve
+ */
+export async function* streamAuditEvents(pool, opts = {}) {
+    // pageSize: cap at 5000 so one page can't DoS the DB. No minimum — tiny
+    // values are fine, they just make more round-trips.
+    const pageSize = Math.min(Math.max(Number(opts.pageSize) || 1000, 1), 5000);
+    // maxRows: safety valve. Respect the caller's wishes; if they asked for
+    // 4 rows we yield 4, even if pageSize is bigger.
+    const maxRows = Math.max(Number(opts.maxRows) || 100_000, 1);
+
+    const conditions = [];
+    const params = [];
+    if (opts.from) {
+        params.push(new Date(opts.from));
+        conditions.push(`created_at >= $${params.length}`);
+    }
+    if (opts.to) {
+        params.push(new Date(opts.to));
+        conditions.push(`created_at < $${params.length}`);
+    }
+    if (opts.level) {
+        params.push(opts.level);
+        conditions.push(`level = $${params.length}`);
+    }
+    if (opts.action) {
+        params.push(`%${opts.action}%`);
+        conditions.push(`action ILIKE $${params.length}`);
+    }
+    if (opts.username) {
+        params.push(`%${opts.username}%`);
+        conditions.push(`actor_username ILIKE $${params.length}`);
+    }
+
+    // Keyset pagination on (created_at, id) so large exports don't drift as
+    // new rows arrive. First page has no cursor; subsequent pages filter by
+    // the last-seen timestamp and tie-break on id.
+    let cursorTs = null;
+    let cursorId = null;
+    let emitted = 0;
+
+    while (emitted < maxRows) {
+        const pageParams = [...params];
+        const pageConditions = [...conditions];
+        if (cursorTs != null) {
+            pageParams.push(cursorTs);
+            pageParams.push(cursorId);
+            pageConditions.push(
+                `(created_at, id) > ($${pageParams.length - 1}, $${pageParams.length})`
+            );
+        }
+        const where = pageConditions.length ? `WHERE ${pageConditions.join(' AND ')}` : '';
+        pageParams.push(pageSize);
+
+        let result;
+        try {
+            result = await pool.query(
+                `SELECT id, actor_id, actor_username, action, resource_type, resource_id,
+                        level, detail, metadata, ip_address, created_at
+                 FROM   ${S}.audit_log
+                 ${where}
+                 ORDER  BY created_at ASC, id ASC
+                 LIMIT  $${pageParams.length}`,
+                pageParams
+            );
+        } catch (err) {
+            // Legacy deployments without resource_type — try again without it.
+            if (err.message && err.message.includes('resource_type')) {
+                result = await pool.query(
+                    `SELECT id, actor_id, actor_username, action,
+                            NULL AS resource_type, resource_id,
+                            level, detail, metadata, ip_address, created_at
+                     FROM   ${S}.audit_log
+                     ${where}
+                     ORDER  BY created_at ASC, id ASC
+                     LIMIT  $${pageParams.length}`,
+                    pageParams
+                );
+            } else {
+                throw err;
+            }
+        }
+        const rows = result.rows;
+        if (rows.length === 0) return;
+        for (const row of rows) {
+            if (emitted >= maxRows) return;
+            yield row;
+            emitted += 1;
+        }
+        if (rows.length < pageSize) return;
+        const last = rows[rows.length - 1];
+        cursorTs = last.created_at;
+        cursorId = last.id;
+    }
+}
+
+/**
+ * CSV-escape one cell. Quotes the value if it contains a comma, quote, or
+ * newline; doubles interior quotes per RFC 4180.
+ */
+function csvCell(v) {
+    if (v === null || v === undefined) return '';
+    const s = (v instanceof Date) ? v.toISOString()
+            : typeof v === 'object' ? JSON.stringify(v)
+            : String(v);
+    if (s.includes('"') || s.includes(',') || s.includes('\n') || s.includes('\r')) {
+        return `"${s.replace(/"/g, '""')}"`;
+    }
+    return s;
+}
+
+export const AUDIT_EXPORT_COLUMNS = [
+    'id', 'created_at', 'actor_id', 'actor_username', 'action',
+    'resource_type', 'resource_id', 'level', 'detail', 'ip_address', 'metadata',
+];
+
+/**
+ * Render one row as a CSV line (no trailing newline).
+ */
+export function rowToCsv(row) {
+    return AUDIT_EXPORT_COLUMNS.map(c => csvCell(row[c])).join(',');
+}
+
+/**
+ * Render the standard CSV header line.
+ */
+export function csvHeader() {
+    return AUDIT_EXPORT_COLUMNS.join(',');
+}

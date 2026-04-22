@@ -16,4 +16,5 @@ export { PagerDutyNotifier } from './pagerdutyNotifier.js';
 export { OpsgenieNotifier } from './opsgenieNotifier.js';
 export { TeamsNotifier } from './teamsNotifier.js';
 export { WebhookNotifier, verifyWebhookSignature } from './webhookNotifier.js';
+export { SlackNotifier, buildSlackBlocks } from './slackNotifier.js';
 export { NotifierManager } from './notifierManager.js';
