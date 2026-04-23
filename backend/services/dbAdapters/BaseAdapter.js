@@ -201,6 +201,45 @@ export class BaseAdapter {
     getDriverName() {
         return 'Unknown Database';
     }
+
+    // ── Optional extended methods ────────────────────────────────────────
+    // Adapters may override these to surface engine-specific signals in
+    // the Plan / Wait / Bloat panels. Default implementations return a
+    // structured "not implemented" shape so the UI can branch cleanly
+    // instead of calling a missing method.
+
+    /**
+     * Capture an execution plan for a query.
+     * @param {string} queryOrId  SQL / PartiQL / CQL, or a native query id.
+     * @returns {Promise<{engine: string, plan?: any, error?: string}>}
+     */
+    async getPlanForQuery(_queryOrId) {
+        return {
+            engine: this.dbType,
+            plan:   null,
+            note:   `Plan capture is not implemented for ${this.dbType}.`,
+        };
+    }
+
+    /**
+     * Engine-native wait-event breakdown for the last hour.
+     * @returns {Promise<{window: string, events: Array<{event: string, ms?: number, micros?: number}>, note?: string}>}
+     */
+    async getWaitEvents() {
+        return {
+            window: '1h',
+            events: [],
+            note:   `Wait-event introspection is not implemented for ${this.dbType}.`,
+        };
+    }
+
+    /**
+     * Engine-native bloat-equivalent data (PG: dead tuples; RS: unsorted%;
+     * Snowflake: time-travel overhead; BQ: cold tables; Dynamo: cold tables).
+     */
+    async getBloatInfo() {
+        return [];
+    }
 }
 
 export default BaseAdapter;

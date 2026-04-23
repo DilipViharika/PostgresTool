@@ -71,9 +71,19 @@ import governanceRoutes from './routes/governanceRoutes.js';
 import copilotRoutes    from './routes/copilotRoutes.js';
 import integrationsRoutes from './routes/integrationsRoutes.js';
 import otlpTraceRoutes  from './routes/otlpTraceRoutes.js';
+import observabilityIngestRoutes from './routes/observabilityIngestRoutes.js';
+import syntheticRoutes  from './routes/syntheticRoutes.js';
+import kmsRoutes        from './routes/kmsRoutes.js';
+import erdRoutes        from './routes/erdRoutes.js';
 import { tenantIsolation } from './middleware/tenantIsolation.js';
 import { ipAllowListMiddleware } from './middleware/ipAllowList.js';
+import { hipaaMiddleware } from './middleware/hipaaMode.js';
 import { scheduleAuditExport }   from './services/auditExport.js';
+import {
+    renderMetrics as renderPromMetrics,
+    requestCounter as promRequestCounter,
+    startEventLoopLagMonitor,
+} from './services/promScrapeService.js';
 
 // ── Optional DB drivers (graceful fallback if not installed) ──
 let mysql2 = null;
@@ -1205,6 +1215,15 @@ app.use((req, res, next) => {
     res.setHeader('X-Request-Id', req.id);
     next();
 });
+
+// ── Prometheus request counter — counts every finished response by
+//    method + status. Feeds the /metrics scrape endpoint below.
+app.use(promRequestCounter());
+
+// ── HIPAA mode middleware — activated only when HIPAA_MODE=true.
+//    When inactive, returns a no-op with zero per-request cost.
+app.use(hipaaMiddleware({ log }));
+
 app.use(express.json({ limit: '100kb' }));
 app.use(express.text({ limit: '100kb' }));
 app.use(rateLimiter);
@@ -1702,6 +1721,14 @@ const modularMounts = ['/api', '/api/v1'];
 // the client's IP does not match. See middleware/ipAllowList.js.
 app.use('/api', ipAllowListMiddleware());
 
+// ── Prometheus scrape endpoint. Public (no auth) by convention — protect
+//    at the network layer (NetworkPolicy, service mesh). Content-Type must
+//    match the Prom text format: `text/plain; version=0.0.4`.
+app.get('/metrics', (_req, res) => {
+    res.setHeader('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+    res.send(renderPromMetrics());
+});
+
 // ── SCIM 2.0 (mounted at /scim/v2, dedicated Bearer-token auth) ──────────────
 app.use(scimRoutes(pool));
 
@@ -1762,6 +1789,19 @@ for (const prefix of modularMounts) {
     app.use(prefix, governanceRoutes(pool, authenticate));
     app.use(prefix, copilotRoutes(pool, authenticate, getPool));
     app.use(prefix, otlpTraceRoutes(pool, authenticate));
+
+    // ── Phase-5 gap-close routes ────────────────────────────────────────
+    //    Observability ingest (OTLP logs, Sentry-shape errors, RUM beacon,
+    //    Prom-compatible metrics push, GitHub/GitLab deploy markers).
+    //    Carries its own `X-Fathom-Ingest-Token` gate so SDKs can post
+    //    without a user JWT; falls back to authenticate() when unset.
+    app.use(prefix, observabilityIngestRoutes(pool, authenticate));
+    //    Synthetic HTTP/TCP checks — CRUD + on-demand run.
+    app.use(prefix, syntheticRoutes(pool, authenticate));
+    //    BYOK / KMS admin endpoints — provision, rotate, status.
+    app.use(prefix, kmsRoutes(pool, authenticate, requireRole));
+    //    Schema ERD graph for the interactive viewer.
+    app.use(prefix, erdRoutes(pool, authenticate, reqPool));
 }
 
 // ── Scheduled audit-log export (no-op when AUDIT_EXPORT_BUCKET unset) ────────
