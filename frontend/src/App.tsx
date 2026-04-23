@@ -120,6 +120,37 @@ const MongoShardingTab = lazyRetry(() => import('./components/views/mongodb/Mong
 const DemoPostgresTab = lazyRetry(() => import('./components/views/demo/DemoPostgresTab'));
 const DemoMySQLTab = lazyRetry(() => import('./components/views/demo/DemoMySQLTab'));
 const DemoMongoDBTab = lazyRetry(() => import('./components/views/demo/DemoMongoDBTab'));
+// Phase-5 engine demos (single component driven by engine key)
+const DemoEngineTab = lazyRetry(() => import('./components/views/demo/DemoEngineTab'));
+// Per-engine wrappers so each demo tab has its own entry in the sidebar.
+// SQL Server gets a dedicated bespoke tab — Query Store, wait stats donut,
+// Always-On replica graph, deadlock graph viewer, missing-index advisor.
+const DemoMSSQLTab         = lazyRetry(() => import('./components/views/demo/DemoMSSQLFullTab'));
+// Oracle gets a dedicated bespoke tab — ASH, Top SQL, AWR snapshot browser,
+// Data Guard health, v$waits, tablespace usage, v$lock blocking tree.
+const DemoOracleTab        = lazyRetry(() => import('./components/views/demo/DemoOracleFullTab'));
+// Redis gets a dedicated bespoke tab — memory-by-pattern treemap, slowlog
+// replayer, keyspace heatmap, LATENCY LATEST events, client list, config.
+const DemoRedisTab         = lazyRetry(() => import('./components/views/demo/DemoRedisFullTab'));
+// Elasticsearch gets a dedicated bespoke tab — shard allocation, hot threads,
+// ILM phase visualizer, index rollover, cluster health, search profiler.
+const DemoElasticTab       = lazyRetry(() => import('./components/views/demo/DemoElasticFullTab'));
+// Snowflake gets a dedicated bespoke tab — credits explorer, warehouse
+// recommender, clustering depth, query history, storage treemap, replication.
+const DemoSnowflakeTab     = lazyRetry(() => import('./components/views/demo/DemoSnowflakeFullTab'));
+// BigQuery gets a dedicated bespoke tab — slot heatmap, dry-run cost
+// estimator, per-stage job drilldown, partition pruning viewer, etc.
+const DemoBigQueryTab      = lazyRetry(() => import('./components/views/demo/DemoBigQueryFullTab'));
+// Redshift gets a dedicated bespoke tab — WLM queue tuner, vacuum scheduler,
+// distribution-skew analyzer, per-node resources, STL_QUERY + STV_LOCKS.
+const DemoRedshiftTab      = lazyRetry(() => import('./components/views/demo/DemoRedshiftFullTab'));
+// Cassandra gets a dedicated bespoke tab — ring topology with token ownership,
+// compactions, hinted-handoff tracker, keyspace replication, slow queries, MVs.
+const DemoCassandraTab     = lazyRetry(() => import('./components/views/demo/DemoCassandraFullTab'));
+// DynamoDB gets a dedicated bespoke tab — capacity-mode recommender with
+// cost analysis, hot-partition heatmap, Global Tables graph, CloudWatch bridge,
+// TTL monitor, Streams consumer lag.
+const DemoDynamoDBTab      = lazyRetry(() => import('./components/views/demo/DemoDynamoDBFullTab'));
 
 // Other
 const ReliabilityTab = lazyRetry(() => import('./components/views/ReliabilityTab'));
@@ -268,6 +299,16 @@ registerComponents({
     DemoPostgresTab,
     DemoMySQLTab,
     DemoMongoDBTab,
+    // Phase-5 engine demos
+    DemoMSSQLTab,
+    DemoOracleTab,
+    DemoRedisTab,
+    DemoElasticTab,
+    DemoSnowflakeTab,
+    DemoBigQueryTab,
+    DemoRedshiftTab,
+    DemoCassandraTab,
+    DemoDynamoDBTab,
     // Phase 1–4 new components
     FleetOverviewTab,
     ConnectionWizard,

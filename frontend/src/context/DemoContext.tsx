@@ -62,6 +62,17 @@ const DEMO_USER = {
         'demo-postgres',
         'demo-mysql',
         'demo-mongodb',
+        // Phase-5 demo engines — each has the same 11 sub-panels rendered
+        // by DemoEngineTab. Tabs use the format demo-<engine>-<panel>.
+        'demo-mssql',
+        'demo-oracle',
+        'demo-redis',
+        'demo-elasticsearch',
+        'demo-snowflake',
+        'demo-bigquery',
+        'demo-redshift',
+        'demo-cassandra',
+        'demo-dynamodb',
     ],
 };
 

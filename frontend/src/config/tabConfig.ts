@@ -456,9 +456,19 @@ export function buildTabConfig() {
 
         // ── Demo (rendered in sidebar footer, not in scrollable list) ──
         { section: 'Demo', accent: DS.amber, hidden: true },
-        { id: 'demo-postgres', icon: Database, label: 'PostgreSQL Demo', component: _components.DemoPostgresTab, badge: null },
-        { id: 'demo-mysql', icon: Database, label: 'MySQL Demo', component: _components.DemoMySQLTab, badge: null },
-        { id: 'demo-mongodb', icon: Database, label: 'MongoDB Demo', component: _components.DemoMongoDBTab, badge: null },
+        { id: 'demo-postgres',      icon: Database, label: 'PostgreSQL Demo',     component: _components.DemoPostgresTab,   badge: null },
+        { id: 'demo-mysql',         icon: Database, label: 'MySQL Demo',          component: _components.DemoMySQLTab,      badge: null },
+        { id: 'demo-mongodb',       icon: Database, label: 'MongoDB Demo',        component: _components.DemoMongoDBTab,    badge: null },
+        // Phase-5 engine demos — generic DemoEngineTab pre-bound to an engine.
+        { id: 'demo-mssql',         icon: Database, label: 'SQL Server Demo',     component: _components.DemoMSSQLTab,      badge: 'full' },
+        { id: 'demo-oracle',        icon: Database, label: 'Oracle Demo',         component: _components.DemoOracleTab,     badge: 'full' },
+        { id: 'demo-redis',         icon: Database, label: 'Redis Demo',          component: _components.DemoRedisTab,      badge: 'full' },
+        { id: 'demo-elasticsearch', icon: Database, label: 'Elasticsearch Demo',  component: _components.DemoElasticTab,    badge: 'full' },
+        { id: 'demo-snowflake',     icon: Database, label: 'Snowflake Demo',      component: _components.DemoSnowflakeTab,  badge: 'full' },
+        { id: 'demo-bigquery',      icon: Database, label: 'BigQuery Demo',       component: _components.DemoBigQueryTab,   badge: 'full' },
+        { id: 'demo-redshift',      icon: Database, label: 'Redshift Demo',       component: _components.DemoRedshiftTab,   badge: 'full' },
+        { id: 'demo-cassandra',     icon: Database, label: 'Cassandra Demo',      component: _components.DemoCassandraTab,  badge: 'full' },
+        { id: 'demo-dynamodb',      icon: Database, label: 'DynamoDB Demo',       component: _components.DemoDynamoDBTab,   badge: 'full' },
     ];
 }
 

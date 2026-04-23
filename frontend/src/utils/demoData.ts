@@ -15,8 +15,19 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 // ── In-memory connection store for demo mode ────────────────────────────────
 // Seeded with defaults; the ConnectionWizard can add more via POST /api/connections
 let _demoConnections = [
-    { id: 'demo-conn-1', name: 'Production DB', host: 'prod-pg.example.com', port: 5432, database: 'fathom_prod', dbType: 'postgresql', isDefault: true, status: 'connected', created_at: ago(43200) },
-    { id: 'demo-conn-2', name: 'Staging DB', host: 'staging-pg.example.com', port: 5432, database: 'fathom_staging', dbType: 'postgresql', isDefault: false, status: 'disconnected', created_at: ago(21600) },
+    { id: 'demo-conn-1',  name: 'Production DB',         host: 'prod-pg.example.com',        port: 5432,  database: 'fathom_prod',       dbType: 'postgresql',    isDefault: true,  status: 'connected',    created_at: ago(43200) },
+    { id: 'demo-conn-2',  name: 'Staging DB',            host: 'staging-pg.example.com',     port: 5432,  database: 'fathom_staging',    dbType: 'postgresql',    isDefault: false, status: 'disconnected', created_at: ago(21600) },
+    // Phase-5 engine demos — one canonical connection per engine so the
+    // ConnectionPicker always has something to show in demo mode.
+    { id: 'demo-mssql',   name: 'Orders SQL Server',     host: 'mssql.prod.acme',            port: 1433,  database: 'fathom_prod',       dbType: 'mssql',         isDefault: false, status: 'connected',    created_at: ago(18000) },
+    { id: 'demo-oracle',  name: 'Ledger Oracle',         host: 'oracle.prod.acme',           port: 1521,  database: 'FATHOM_PDB',        dbType: 'oracle',        isDefault: false, status: 'connected',    created_at: ago(21600) },
+    { id: 'demo-redis',   name: 'Session Redis',         host: 'redis.prod.acme',            port: 6379,  database: 'db0',               dbType: 'redis',         isDefault: false, status: 'connected',    created_at: ago(14400) },
+    { id: 'demo-es',      name: 'Search Elasticsearch',  host: 'es.prod.acme',               port: 9200,  database: 'logs-app-*',        dbType: 'elasticsearch', isDefault: false, status: 'connected',    created_at: ago(7200) },
+    { id: 'demo-sf',      name: 'Warehouse Snowflake',   host: 'acme.us-east-1.snowflakecomputing.com', port: 443, database: 'FATHOM_PROD', dbType: 'snowflake',  isDefault: false, status: 'connected',    created_at: ago(86400) },
+    { id: 'demo-bq',      name: 'Analytics BigQuery',    host: 'bigquery.googleapis.com',    port: 443,   database: 'acme-analytics',    dbType: 'bigquery',      isDefault: false, status: 'connected',    created_at: ago(86400) },
+    { id: 'demo-rs',      name: 'Reporting Redshift',    host: 'fathom.abc.us-east-1.redshift.amazonaws.com', port: 5439, database: 'fathom_reporting', dbType: 'redshift', isDefault: false, status: 'connected', created_at: ago(43200) },
+    { id: 'demo-cass',    name: 'Telemetry Cassandra',   host: 'cass.prod.acme',             port: 9042,  database: 'fathom_app',        dbType: 'cassandra',     isDefault: false, status: 'connected',    created_at: ago(32400) },
+    { id: 'demo-dynamo',  name: 'Sessions DynamoDB',     host: 'dynamodb.us-east-1.amazonaws.com', port: 443, database: 'us-east-1',    dbType: 'dynamodb',      isDefault: false, status: 'connected',    created_at: ago(7200) },
 ];
 let _activeConnectionId = 'demo-conn-1';
 
