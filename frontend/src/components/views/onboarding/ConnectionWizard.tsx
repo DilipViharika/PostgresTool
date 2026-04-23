@@ -36,6 +36,127 @@ const DB_TYPES = {
     icon: '🍃',
     description: 'Document-oriented database'
   },
+  // ── Phase-5 engines ─────────────────────────────────────────────────────
+  mssql: {
+    label: 'Microsoft SQL Server',
+    defaultPort: 1433,
+    color: '#CC2927',
+    icon: '🅼',
+    description: 'Enterprise relational database'
+  },
+  oracle: {
+    label: 'Oracle Database',
+    defaultPort: 1521,
+    color: '#F80000',
+    icon: '🅾',
+    description: 'Enterprise relational database (23ai)'
+  },
+  redis: {
+    label: 'Redis',
+    defaultPort: 6379,
+    color: '#DC382D',
+    icon: '🧰',
+    description: 'In-memory key-value store'
+  },
+  elasticsearch: {
+    label: 'Elasticsearch',
+    defaultPort: 9200,
+    color: '#00BFB3',
+    icon: '🔍',
+    description: 'Search + log analytics engine'
+  },
+  snowflake: {
+    label: 'Snowflake',
+    defaultPort: 443,
+    color: '#29B5E8',
+    icon: '❄️',
+    description: 'Cloud data warehouse'
+  },
+  bigquery: {
+    label: 'BigQuery',
+    defaultPort: 443,
+    color: '#669DF6',
+    icon: '🔶',
+    description: 'Google Cloud data warehouse'
+  },
+  redshift: {
+    label: 'AWS Redshift',
+    defaultPort: 5439,
+    color: '#FF9900',
+    icon: '🧊',
+    description: 'AWS data warehouse (PG wire)'
+  },
+  cassandra: {
+    label: 'Apache Cassandra',
+    defaultPort: 9042,
+    color: '#1287B1',
+    icon: '💍',
+    description: 'Wide-column distributed database'
+  },
+  dynamodb: {
+    label: 'AWS DynamoDB',
+    defaultPort: 443,
+    color: '#4053D6',
+    icon: '📦',
+    description: 'Managed NoSQL key-value store'
+  },
+};
+
+/**
+ * Per-engine guidance shown above the Details form for engines whose
+ * credentials don't match the standard host/port/user/password shape.
+ * The backend adapters accept these mapped fields — see
+ * backend/services/dbAdapters/index.js for the factory routing.
+ */
+const ENGINE_HINTS: Record<string, string> = {
+  mssql:
+    `• Host: SQL Server hostname or instance (e.g. sql.prod.acme)
+• Port: 1433 (default) or your configured port
+• Username / Password: SQL login, or use integrated auth via connection string
+• Database: target database name (e.g. fathom_prod)`,
+  oracle:
+    `• Host: Oracle listener host
+• Port: 1521 (default)
+• Username / Password: Oracle user credentials
+• Database: Service name or SID (e.g. FATHOM_PDB)`,
+  redis:
+    `• Host: Redis primary hostname
+• Port: 6379 (default) or 6380 for TLS
+• Username: leave blank for legacy Redis, or ACL user for Redis ≥ 6
+• Password: Redis AUTH token
+• Database: logical DB index (0-15), e.g. 0`,
+  elasticsearch:
+    `• Host: Elasticsearch coordinator node (e.g. https://es.prod.acme)
+• Port: 9200 (default)
+• Username / Password: your ES basic-auth credentials
+• Database: index pattern to monitor (e.g. logs-app-*)`,
+  snowflake:
+    `• Host: your Snowflake account identifier (e.g. acme-analytics.us-east-1.snowflakecomputing.com)
+• Port: 443 (HTTPS)
+• Username / Password: Snowflake user credentials (or key-pair via connection string)
+• Database: target database name (e.g. FATHOM_PROD) — configure warehouse + role post-connect`,
+  bigquery:
+    `• Host: GCP project ID (e.g. acme-analytics)
+• Port: 443 (HTTPS)
+• Username: service account email
+• Password: paste the service account key JSON as the password value (or use connection string)
+• Database: dataset or dataset:location (e.g. fathom_prod or fathom_prod:US)`,
+  redshift:
+    `• Host: your cluster endpoint (e.g. fathom.abc.us-east-1.redshift.amazonaws.com)
+• Port: 5439 (default)
+• Username / Password: Redshift user credentials
+• Database: target database name (e.g. fathom_prod)`,
+  cassandra:
+    `• Host: any contact point in the cluster (e.g. cass-1.prod.acme)
+• Port: 9042 (default native CQL port)
+• Username / Password: credentials (blank if PasswordAuthenticator is not enabled)
+• Database: default keyspace (e.g. fathom_app). Override the local datacenter via connection string.`,
+  dynamodb:
+    `• Host: AWS region (e.g. us-east-1) — DynamoDB has no traditional host
+• Port: 443 (HTTPS)
+• Username: AWS access key ID
+• Password: AWS secret access key
+• Database: table-name prefix (leave blank to monitor all tables in the region)`,
 };
 
 const PROVIDER_TEMPLATES = {
@@ -262,12 +383,27 @@ const ConnectionWizard = () => {
   };
 
   const handleGoToDashboard = () => {
-    // Navigate to the correct overview based on the connected DB type
+    // Navigate to the correct overview based on the connected DB type.
+    // Phase-5 engines land on their bespoke demo tab until real monitoring
+    // views land (each bespoke tab is a shipped Overview panel already).
     const dbType = (formData.type || 'postgresql').toLowerCase();
+    const PHASE5_TO_TAB: Record<string, string> = {
+      mssql:         'demo-mssql',
+      oracle:        'demo-oracle',
+      redis:         'demo-redis',
+      elasticsearch: 'demo-elasticsearch',
+      snowflake:     'demo-snowflake',
+      bigquery:      'demo-bigquery',
+      redshift:      'demo-redshift',
+      cassandra:     'demo-cassandra',
+      dynamodb:      'demo-dynamodb',
+    };
     if (dbType === 'mysql' || dbType === 'mariadb') {
       goToTab('mysql-overview');
     } else if (dbType === 'mongodb') {
       goToTab('mongo-overview');
+    } else if (PHASE5_TO_TAB[dbType]) {
+      goToTab(PHASE5_TO_TAB[dbType]);
     } else {
       goToTab('overview');
     }
@@ -740,6 +876,21 @@ const ConnectionWizard = () => {
             <p style={styles.description}>
               {selectedType && `Connect to your ${DB_TYPES[selectedType].label} database`}
             </p>
+
+            {/* Per-engine guidance for non-standard credential shapes. */}
+            {selectedType && ENGINE_HINTS[selectedType] && (
+              <div style={{
+                padding: '14px 16px', marginBottom: 16, borderRadius: 10,
+                background: `${DB_TYPES[selectedType].color}14`,
+                borderLeft: `4px solid ${DB_TYPES[selectedType].color}`,
+                fontSize: 13, color: '#374151',
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 6, color: DB_TYPES[selectedType].color }}>
+                  {DB_TYPES[selectedType].icon} {DB_TYPES[selectedType].label} — field mapping
+                </div>
+                <div style={{ whiteSpace: 'pre-line', lineHeight: 1.55 }}>{ENGINE_HINTS[selectedType]}</div>
+              </div>
+            )}
 
             {/* Connection String Option */}
             <div style={styles.toggleSection}>

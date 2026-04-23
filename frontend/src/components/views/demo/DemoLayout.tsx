@@ -26,9 +26,19 @@ import { ChevronDown, ChevronRight, ArrowUpRight, ArrowDownRight, Bell, User, Da
 const SIDEBAR_W = 240;
 
 const DEMO_TABS = [
-    { id: 'demo-postgres', label: 'PostgreSQL', short: 'PG' },
-    { id: 'demo-mysql', label: 'MySQL', short: 'MY' },
-    { id: 'demo-mongodb', label: 'MongoDB', short: 'MO' },
+    { id: 'demo-postgres',      label: 'PostgreSQL',    short: 'PG' },
+    { id: 'demo-mysql',         label: 'MySQL',         short: 'MY' },
+    { id: 'demo-mongodb',       label: 'MongoDB',       short: 'MO' },
+    // ── Phase-5 engines (bespoke demo tabs) ────────────────────────────
+    { id: 'demo-mssql',         label: 'SQL Server',    short: 'MS' },
+    { id: 'demo-oracle',        label: 'Oracle',        short: 'OR' },
+    { id: 'demo-redis',         label: 'Redis',         short: 'RE' },
+    { id: 'demo-elasticsearch', label: 'Elastic',       short: 'ES' },
+    { id: 'demo-snowflake',     label: 'Snowflake',     short: 'SF' },
+    { id: 'demo-bigquery',      label: 'BigQuery',      short: 'BQ' },
+    { id: 'demo-redshift',      label: 'Redshift',      short: 'RS' },
+    { id: 'demo-cassandra',     label: 'Cassandra',     short: 'CA' },
+    { id: 'demo-dynamodb',      label: 'DynamoDB',      short: 'DY' },
 ];
 
 /* ── Light theme color palette ── */
@@ -224,8 +234,9 @@ const DemoLayout = ({
                                 {title}
                             </span>
                         </div>
-                        {/* Demo tab switcher */}
-                        <div style={{ display: 'flex', gap: 4 }}>
+                        {/* Demo tab switcher — horizontal scroll when many engines are listed. */}
+                        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2,
+                                       scrollbarWidth: 'thin' }}>
                             {DEMO_TABS.map((dt) => {
                                 const isActive = dt.id === activeDemo;
                                 return (
@@ -233,8 +244,8 @@ const DemoLayout = ({
                                         key={dt.id}
                                         onClick={() => goToTab && goToTab(dt.id)}
                                         style={{
-                                            flex: 1,
-                                            padding: '6px 4px',
+                                            flex: '0 0 auto',
+                                            padding: '6px 10px',
                                             fontSize: 10,
                                             fontWeight: isActive ? 700 : 500,
                                             fontFamily: THEME.fontBody,
@@ -245,6 +256,7 @@ const DemoLayout = ({
                                             cursor: isActive ? 'default' : 'pointer',
                                             transition: 'all 0.15s ease',
                                             letterSpacing: '0.02em',
+                                            whiteSpace: 'nowrap',
                                         }}
                                         onMouseEnter={(e) => {
                                             if (!isActive) {
