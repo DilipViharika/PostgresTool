@@ -33,6 +33,18 @@
         "ws": "^8.19.0",
         "zod": "^3.24.0"
     },
+    "optionalDependencies": {
+        "_comment": "Phase-5 engine peer drivers. Each adapter in services/dbAdapters/ uses dynamic import() with graceful fallback, so these are OPTIONAL — npm install will still succeed on platforms where one of them can't build (e.g. oracledb needs the Oracle Instant Client). Only the drivers for engines you actually connect to need to be present at runtime.",
+        "mssql": "^11.0.1",
+        "oracledb": "^6.6.0",
+        "ioredis": "^5.4.2",
+        "@elastic/elasticsearch": "^8.15.0",
+        "snowflake-sdk": "^1.15.0",
+        "@google-cloud/bigquery": "^7.9.0",
+        "cassandra-driver": "^4.7.2",
+        "@aws-sdk/client-dynamodb": "^3.998.0",
+        "@aws-sdk/client-kms": "^3.998.0"
+    },
     "devDependencies": {
         "@types/bcryptjs": "^2.4.6",
         "@types/cors": "^2.8.17",

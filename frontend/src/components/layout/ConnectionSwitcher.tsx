@@ -44,17 +44,57 @@ const ConnectionSwitcher = () => {
         c.database.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Group by DB type
-    const groupedByType = {
-        postgresql: filteredConnections.filter(c => (c.dbType || 'postgresql').toLowerCase().includes('postgres')),
-        mysql: filteredConnections.filter(c => (c.dbType || '').toLowerCase().includes('mysql')),
-        mongodb: filteredConnections.filter(c => (c.dbType || '').toLowerCase().includes('mongo')),
-        other: filteredConnections.filter(c =>
-            !['postgresql', 'mysql', 'mongodb'].some(t =>
-                (c.dbType || 'postgresql').toLowerCase().includes(t)
-            )
-        ),
+    // Group by DB type — dynamic so Phase-5 engines (SQL Server, Oracle,
+    // Redis, Elasticsearch, Snowflake, BigQuery, Redshift, Cassandra,
+    // DynamoDB) each get their own group instead of being dumped into "Other".
+    // Normalise dbType to a canonical key so variants like `postgres` ≡
+    // `postgresql` and `mariadb` ≡ `mysql` collapse to the same bucket.
+    const canonicalType = (raw) => {
+        const t = (raw || 'postgresql').toLowerCase();
+        if (t.includes('postgres'))                     return 'postgresql';
+        if (t.includes('mysql') || t.includes('maria')) return 'mysql';
+        if (t.includes('mongo'))                        return 'mongodb';
+        if (t.includes('sqlserver') || t === 'mssql')   return 'mssql';
+        if (t.includes('oracle'))                       return 'oracle';
+        if (t.includes('redis'))                        return 'redis';
+        if (t.includes('elastic') || t.includes('opensearch')) return 'elasticsearch';
+        if (t.includes('snowflake'))                    return 'snowflake';
+        if (t.includes('bigquery'))                     return 'bigquery';
+        if (t.includes('redshift'))                     return 'redshift';
+        if (t.includes('cassandra') || t.includes('scylla')) return 'cassandra';
+        if (t.includes('dynamo'))                       return 'dynamodb';
+        return 'other';
     };
+
+    const TYPE_LABEL = {
+        postgresql:    'PostgreSQL',
+        mysql:         'MySQL',
+        mongodb:       'MongoDB',
+        mssql:         'SQL Server',
+        oracle:        'Oracle',
+        redis:         'Redis',
+        elasticsearch: 'Elasticsearch',
+        snowflake:     'Snowflake',
+        bigquery:      'BigQuery',
+        redshift:      'Redshift',
+        cassandra:     'Cassandra',
+        dynamodb:      'DynamoDB',
+        other:         'Other',
+    };
+
+    // Fixed display order — pinned engines first (existing), Phase-5 engines
+    // next, "other" last.
+    const GROUP_ORDER = [
+        'postgresql', 'mysql', 'mongodb',
+        'mssql', 'oracle', 'redis', 'elasticsearch',
+        'snowflake', 'bigquery', 'redshift', 'cassandra', 'dynamodb',
+        'other',
+    ];
+
+    const groupedByType = GROUP_ORDER.reduce((acc, key) => {
+        acc[key] = filteredConnections.filter(c => canonicalType(c.dbType) === key);
+        return acc;
+    }, {});
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -235,7 +275,7 @@ const ConnectionSwitcher = () => {
                                     <div key={type}>
                                         {/* Group Header */}
                                         <div style={styles.groupHeader}>
-                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                            {TYPE_LABEL[type] || (type.charAt(0).toUpperCase() + type.slice(1))}
                                         </div>
 
                                         {/* Group Items */}

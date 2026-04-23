@@ -42,6 +42,7 @@ const DEMO_USER = {
         'status-page',
         'ai-monitoring',
         'sql',
+        'engine-console',
         'api',
         'repository',
         'ai-advisor',

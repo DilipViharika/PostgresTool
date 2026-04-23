@@ -312,6 +312,7 @@ export function buildTabConfig() {
         // ── Developer Tools ──────────────────────────────────────────
         { section: 'Developer Tools', accent: DS.violet },
         { id: 'sql', icon: Terminal, label: 'SQL Console', component: _components.SqlConsoleTab, badge: null },
+        { id: 'engine-console', icon: Terminal, label: 'Engine Console', component: _components.EngineConsoleTab, badge: 'new' },
         { id: 'api', icon: Cpu, label: 'API Tracing', component: _components.ApiQueriesTab, badge: null },
         { id: 'repository', icon: GitBranch, label: 'Repository', component: _components.RepositoryTab, badge: null },
         {

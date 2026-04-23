@@ -116,6 +116,9 @@ const MongoReplicationTab = lazyRetry(() => import('./components/views/mongodb/M
 const MongoDataToolsTab = lazyRetry(() => import('./components/views/mongodb/MongoDataToolsTab'));
 const MongoShardingTab = lazyRetry(() => import('./components/views/mongodb/MongoShardingTab'));
 
+// Unified engine command console (Redis / Cassandra / DynamoDB / SQL engines)
+const EngineConsoleTab = lazyRetry(() => import('./components/views/console/EngineConsoleTab'));
+
 // Demo
 const DemoPostgresTab = lazyRetry(() => import('./components/views/demo/DemoPostgresTab'));
 const DemoMySQLTab = lazyRetry(() => import('./components/views/demo/DemoMySQLTab'));
@@ -299,6 +302,7 @@ registerComponents({
     DemoPostgresTab,
     DemoMySQLTab,
     DemoMongoDBTab,
+    EngineConsoleTab,
     // Phase-5 engine demos
     DemoMSSQLTab,
     DemoOracleTab,
@@ -328,6 +332,22 @@ registerComponents({
 const TAB_CONFIG = buildTabConfig();
 const TABS_ONLY = getTabsOnly(TAB_CONFIG);
 const SECTION_GROUPS = getSectionGroups(TAB_CONFIG);
+
+// Map each Phase-5 dbType to the bespoke demo tab it should land on when
+// a connection of that type becomes active (or is newly created). Classic
+// engines (postgresql/mysql/mongodb) have their own overview screens and
+// are handled inline in the navigation effects below.
+const PHASE5_DEMO_TABS: Record<string, string> = {
+    mssql:         'demo-mssql',
+    oracle:        'demo-oracle',
+    redis:         'demo-redis',
+    elasticsearch: 'demo-elasticsearch',
+    snowflake:     'demo-snowflake',
+    bigquery:      'demo-bigquery',
+    redshift:      'demo-redshift',
+    cassandra:     'demo-cassandra',
+    dynamodb:      'demo-dynamodb',
+};
 
 const getSectionForTab = (tabId) => {
     for (const g of SECTION_GROUPS) {
@@ -3466,6 +3486,8 @@ const ConnectionSelector = () => {
                     targetTab = 'mysql-overview';
                 } else if (dbType === 'mongodb') {
                     targetTab = 'mongo-overview';
+                } else if (dbType && PHASE5_DEMO_TABS[dbType]) {
+                    targetTab = PHASE5_DEMO_TABS[dbType];
                 }
 
                 // Defer navigation to allow state to settle
@@ -3990,6 +4012,8 @@ const DashboardInner = ({ onLogout }) => {
             targetTab = 'mysql-overview';
         } else if (dbType === 'mongodb') {
             targetTab = 'mongo-overview';
+        } else if (dbType && PHASE5_DEMO_TABS[dbType]) {
+            targetTab = PHASE5_DEMO_TABS[dbType];
         }
 
         // Only auto-navigate when the connection actually CHANGES (user switched DBs),

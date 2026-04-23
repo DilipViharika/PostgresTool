@@ -75,6 +75,8 @@ import observabilityIngestRoutes from './routes/observabilityIngestRoutes.js';
 import syntheticRoutes  from './routes/syntheticRoutes.js';
 import kmsRoutes        from './routes/kmsRoutes.js';
 import erdRoutes        from './routes/erdRoutes.js';
+import engineConsoleRoutes from './routes/engineConsoleRoutes.js';
+import { getAdapter as getDbAdapter } from './services/dbAdapters/index.js';
 import { tenantIsolation } from './middleware/tenantIsolation.js';
 import { ipAllowListMiddleware } from './middleware/ipAllowList.js';
 import { hipaaMiddleware } from './middleware/hipaaMode.js';
@@ -1802,6 +1804,35 @@ for (const prefix of modularMounts) {
     app.use(prefix, kmsRoutes(pool, authenticate, requireRole));
     //    Schema ERD graph for the interactive viewer.
     app.use(prefix, erdRoutes(pool, authenticate, reqPool));
+
+    //    Unified engine command console (Redis / Cassandra CQL / DynamoDB
+    //    PartiQL / T-SQL / Oracle / Snowflake / BigQuery / Redshift). Routes
+    //    through the adapter factory; the auditService records each call.
+    app.use(prefix, engineConsoleRoutes(
+        pool,
+        authenticate,
+        requireRole,
+        async (req, connectionId) => resolveConnection(connectionId, req.user?.id),
+        async (connection) => {
+            // Returns a CONNECTED adapter instance for the given connection.
+            // For the 9 Phase-5 engines the factory handles driver resolution;
+            // for mysql/mongo/postgres we just reuse the existing pools via
+            // getPool / getMongoClient — callers branch on dbType.
+            const cfg = await resolvePoolConfig(connection);
+            const adapter = getDbAdapter(connection.dbType, {
+                host: cfg.host, port: cfg.port, database: cfg.database,
+                user: cfg.user, username: cfg.user,
+                password: cfg.password, ssl: cfg.ssl,
+                account:   cfg.host,   // Snowflake alias
+                projectId: cfg.host,   // BigQuery alias
+                region:    cfg.host,   // DynamoDB alias
+                keyspace:  cfg.database,
+                contactPoints: cfg.host ? [cfg.host] : undefined,
+            });
+            await adapter.connect();
+            return adapter;
+        },
+    ));
 }
 
 // ── Scheduled audit-log export (no-op when AUDIT_EXPORT_BUCKET unset) ────────
@@ -2562,8 +2593,21 @@ app.post('/api/query', authenticate, requireRole('admin', 'super_admin'), async 
     if (validationError) return res.status(400).json({ error: validationError });
 
     const dbType = await reqDbType(req);
-    if (dbType === 'mongodb') {
-        return res.status(400).json({ error: 'SQL console is not available for MongoDB connections. Use the MongoDB Data Tools tab instead.' });
+
+    // Engines without SQL surfaces get a structured 400 pointing at the
+    // right console for that engine, rather than a cryptic pg error.
+    const NON_SQL_ENGINES = {
+        mongodb:   { hint: 'Use the MongoDB Data Tools tab (db.collection.find(...)).' },
+        redis:     { hint: 'Redis has no SQL. Use the Redis Commands tab for GET/SET/SCAN/etc.' },
+        dynamodb:  { hint: 'DynamoDB uses PartiQL. Use the DynamoDB PartiQL tab instead.' },
+        cassandra: { hint: 'Cassandra uses CQL. Use the Cassandra CQL tab instead.' },
+    };
+    if (NON_SQL_ENGINES[dbType]) {
+        return res.status(400).json({
+            error: `SQL console is not available for ${dbType} connections.`,
+            code:  'SQL_NOT_SUPPORTED_FOR_ENGINE',
+            hint:  NON_SQL_ENGINES[dbType].hint,
+        });
     }
 
     const safeSql = String(rawSql).slice(0, 50_000);
@@ -2702,15 +2746,29 @@ app.get('/api/connections/:id', authenticate, ensureConnections, async (req, res
     } catch (e) { res.json({}); }
 });
 
+// Engines whose credentials don't match the traditional host/port/user/password/db
+// shape. Relax the required-fields guard for these so BigQuery (project ID +
+// service account JSON) and DynamoDB (region + access key + secret) can both
+// be created via the standard wizard. See ENGINE_HINTS in ConnectionWizard.tsx
+// for the field-mapping guidance shown to operators.
+const PHASE5_RELAXED_FIELDS = new Set(['bigquery', 'dynamodb', 'snowflake', 'redis', 'cassandra', 'elasticsearch']);
+
 app.post('/api/connections', authenticate, ensureConnections, async (req, res) => {
     try {
         // Unwrap RSA-encrypted sensitive fields from the frontend
         const body = unwrapSensitiveFields(req.body);
         const { name, host, port, database, username, password, ssl, isDefault, dbType: rawDbType, type: rawType } = body;
         // Wizard sends `type`, backend historically uses `dbType` — accept either
-        const dbType = rawDbType || rawType || 'postgresql';
-        if (!name || !host || !port || !database || !username || !password) {
-            return res.status(400).json({ error: 'All fields are required' });
+        const dbType = (rawDbType || rawType || 'postgresql').toLowerCase();
+        const relaxed = PHASE5_RELAXED_FIELDS.has(dbType);
+        // Classic engines still require host + port + db + user + password. Phase-5
+        // engines with non-traditional credential shapes require only name + host
+        // (which the wizard maps to project ID / account ID / region).
+        if (!name || !host) {
+            return res.status(400).json({ error: 'name and host are required' });
+        }
+        if (!relaxed && (!port || !database || !username || !password)) {
+            return res.status(400).json({ error: 'host, port, database, username, password are required for this database type' });
         }
         if (isDefault) await dbSetDefault(req.user.id, req.user.role, -1);
 
@@ -2743,9 +2801,34 @@ app.post('/api/connections', authenticate, ensureConnections, async (req, res) =
         // Auto-test the new connection so the user gets immediate feedback
         let testResult = null;
         const connDbType = (newConn.dbType || 'postgresql').toLowerCase();
+        // Phase-5 engines go through the adapter factory. If the engine's
+        // peer driver (snowflake-sdk / ioredis / cassandra-driver / etc.)
+        // isn't installed, surface that as a DRIVER_NOT_INSTALLED warning
+        // instead of hard-failing the connection creation — the row is
+        // still stored so operators can fix the driver and retry.
+        const PHASE5_VIA_ADAPTER = new Set([
+            'mssql', 'oracle', 'snowflake', 'bigquery', 'redshift',
+            'cassandra', 'dynamodb', 'redis', 'elasticsearch',
+        ]);
         try {
             const cfg = await resolvePoolConfig(newConn);
-            if (connDbType === 'mongodb') {
+            if (PHASE5_VIA_ADAPTER.has(connDbType)) {
+                const { getAdapter } = await import('./services/dbAdapters/index.js');
+                const adapter = getAdapter(connDbType, {
+                    // Common fields
+                    host: cfg.host, port: cfg.port, database: cfg.database,
+                    user: cfg.user, username: cfg.user,
+                    password: cfg.password, ssl: cfg.ssl,
+                    // Per-engine aliases the adapters look for
+                    account:   cfg.host,                 // Snowflake account identifier
+                    projectId: cfg.host,                 // BigQuery project ID
+                    region:    cfg.host,                 // DynamoDB region
+                    keyspace:  cfg.database,             // Cassandra default keyspace
+                    contactPoints: cfg.host ? [cfg.host] : undefined,
+                });
+                await adapter.connect();
+                await adapter.disconnect?.().catch(() => undefined);
+            } else if (connDbType === 'mongodb') {
                 if (!mongodb) throw new Error('MongoDB driver not installed');
                 const userPart = cfg.user ? `${encodeURIComponent(cfg.user)}:${encodeURIComponent(cfg.password || '')}@` : '';
                 const sslParam = newConn.ssl ? '?tls=true&tlsAllowInvalidCertificates=true' : '';

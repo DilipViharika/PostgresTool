@@ -985,12 +985,32 @@ const ConnectionsTab = () => {
         conn.database?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Count by type
-    const typeStats = {
-        postgresql: connections.filter(c => c.dbType === 'postgresql').length,
-        mysql: connections.filter(c => c.dbType === 'mysql').length,
-        mongodb: connections.filter(c => c.dbType === 'mongodb').length,
+    // Count by type — dynamic so Phase-5 engines are counted too, not only
+    // the classic three. Each engine gets its own badge in the fleet tile.
+    const TYPE_BADGE = {
+        postgresql:    { label: 'PostgreSQL',    color: '#4a90d9' },
+        mysql:         { label: 'MySQL',         color: '#f5a623' },
+        mongodb:       { label: 'MongoDB',       color: '#00ed64' },
+        mssql:         { label: 'SQL Server',    color: '#CC2927' },
+        oracle:        { label: 'Oracle',        color: '#F80000' },
+        redis:         { label: 'Redis',         color: '#DC382D' },
+        elasticsearch: { label: 'Elasticsearch', color: '#00BFB3' },
+        snowflake:     { label: 'Snowflake',     color: '#29B5E8' },
+        bigquery:      { label: 'BigQuery',      color: '#669DF6' },
+        redshift:      { label: 'Redshift',      color: '#FF9900' },
+        cassandra:     { label: 'Cassandra',     color: '#1287B1' },
+        dynamodb:      { label: 'DynamoDB',      color: '#4053D6' },
     };
+    const typeStats = connections.reduce((acc, c) => {
+        const key = (c.dbType || 'postgresql').toLowerCase();
+        const mapped = TYPE_BADGE[key]
+            ? key
+            : key.includes('maria') ? 'mysql'
+            : key.includes('postgres') ? 'postgresql'
+            : key;
+        acc[mapped] = (acc[mapped] || 0) + 1;
+        return acc;
+    }, {});
 
     const isEmpty = connections.length === 0 && !connectionsLoading && !refreshing;
 
@@ -1171,9 +1191,14 @@ const ConnectionsTab = () => {
                                     </p>
                                     {connections.length > 0 && (
                                         <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-                                            {typeStats.postgresql > 0 && <span style={{ ...S.badge('#4a90d9'), fontSize: 10 }}>{typeStats.postgresql} PostgreSQL</span>}
-                                            {typeStats.mysql > 0 && <span style={{ ...S.badge('#f5a623'), fontSize: 10 }}>{typeStats.mysql} MySQL</span>}
-                                            {typeStats.mongodb > 0 && <span style={{ ...S.badge('#00ed64'), fontSize: 10 }}>{typeStats.mongodb} MongoDB</span>}
+                                            {Object.entries(typeStats).map(([key, count]) => {
+                                                const badge = TYPE_BADGE[key] || { label: key, color: '#9CA3AF' };
+                                                return (count as number) > 0 ? (
+                                                    <span key={key} style={{ ...S.badge(badge.color), fontSize: 10 }}>
+                                                        {count as number} {badge.label}
+                                                    </span>
+                                                ) : null;
+                                            })}
                                         </div>
                                     )}
                                 </div>

@@ -257,19 +257,20 @@ const ConnectionWizard = () => {
     }
   };
 
-  const dbIcon = (type) => {
+  // Derive icon/color from DB_TYPES so every registered engine (including
+  // Phase-5 engines like BigQuery / DynamoDB / Cassandra) displays with its
+  // brand glyph and color in the connection list, instead of defaulting to
+  // the PostgreSQL elephant.
+  const resolveDbType = (type) => {
     const t = (type || '').toLowerCase();
-    if (t.includes('mysql')) return '🐬';
-    if (t.includes('mongo')) return '🍃';
-    return '🐘';
+    if (t.includes('postgres')) return 'postgresql';
+    if (t.includes('mysql') || t.includes('mariadb')) return 'mysql';
+    if (t.includes('mongo')) return 'mongodb';
+    return DB_TYPES[t] ? t : 'postgresql';
   };
 
-  const dbColor = (type) => {
-    const t = (type || '').toLowerCase();
-    if (t.includes('mysql')) return '#f29111';
-    if (t.includes('mongo')) return '#13aa52';
-    return '#336791';
-  };
+  const dbIcon = (type) => DB_TYPES[resolveDbType(type)]?.icon || '🐘';
+  const dbColor = (type) => DB_TYPES[resolveDbType(type)]?.color || '#336791';
 
   // Step 1: Select database type
   const handleSelectType = (type) => {

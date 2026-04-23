@@ -87,7 +87,15 @@ const LTHEME = LT;
 const DemoLayout = ({
     sections = [],
     renderContent,
+    // `children` is the modern API used by the bespoke Phase-5 demo tabs
+    // (DemoBigQueryFullTab, DemoSnowflakeFullTab, etc). When neither
+    // `renderContent` nor `sections` are supplied, we render `children`
+    // directly into the main content area — the sidebar is still drawn
+    // with just the Demo switcher so users can jump between engines.
+    children,
     title,
+    subtitle,                     // accepted by the bespoke tabs; passed through
+    connectionBarMeta,            // accepted by the bespoke tabs; unused here
     accentColor,
     titleIcon: TitleIcon,
     headerStats = [],
@@ -95,8 +103,21 @@ const DemoLayout = ({
     statusItems = [],
     onRefresh,
     onExport,
-    activeDemo = 'demo-postgres',
+    activeDemo: propActiveDemo,
 }) => {
+    // Keep the unused-props warning in TypeScript quiet and document intent.
+    void subtitle; void connectionBarMeta;
+
+    // Fall back to the persisted active tab so bespoke tabs that omit
+    // `activeDemo` still highlight the correct pill in the top-row switcher.
+    const activeDemo = propActiveDemo || (() => {
+        try {
+            const t = localStorage.getItem('pg_monitor_active_tab') || '';
+            return t.startsWith('demo-') ? t : 'demo-postgres';
+        } catch {
+            return 'demo-postgres';
+        }
+    })();
     useAdaptiveTheme();
     let goToTab = null;
     try {
@@ -768,7 +789,13 @@ const DemoLayout = ({
                             zIndex: 5,
                         }}
                     >
-                        {renderContent(activeSection, activeItem)}
+                        {/* Legacy API: caller supplies `renderContent(section, item)`.
+                            New API: caller passes `children`. Prefer renderContent
+                            when present, otherwise fall back to children — this
+                            is what makes the 10 Phase-5 bespoke demo tabs work. */}
+                        {typeof renderContent === 'function'
+                            ? renderContent(activeSection, activeItem)
+                            : children}
                     </main>
                 </div>
 
