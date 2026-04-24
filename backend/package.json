@@ -30,20 +30,20 @@
         "node-cron": "^4.2.1",
         "nodemailer": "^8.0.1",
         "pg": "^8.18.0",
-        "uuid": "^13.0.0",
+        "uuid": "^14.0.0",
         "ws": "^8.19.0",
         "zod": "^3.24.0"
     },
     "optionalDependencies": {
+        "@aws-sdk/client-dynamodb": "^3.998.0",
+        "@aws-sdk/client-kms": "^3.998.0",
+        "@elastic/elasticsearch": "^8.15.0",
+        "@google-cloud/bigquery": "^8.1.1",
+        "cassandra-driver": "^4.7.2",
+        "ioredis": "^5.4.2",
         "mssql": "^11.0.1",
         "oracledb": "^6.6.0",
-        "ioredis": "^5.4.2",
-        "@elastic/elasticsearch": "^8.15.0",
-        "snowflake-sdk": "^1.15.0",
-        "@google-cloud/bigquery": "^7.9.0",
-        "cassandra-driver": "^4.7.2",
-        "@aws-sdk/client-dynamodb": "^3.998.0",
-        "@aws-sdk/client-kms": "^3.998.0"
+        "snowflake-sdk": "^1.1.7"
     },
     "devDependencies": {
         "@types/bcryptjs": "^2.4.6",
