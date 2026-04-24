@@ -4,6 +4,7 @@
     "type": "module",
     "description": "FATHOM — Universal Database Monitoring & Administration Backend",
     "main": "server.js",
+    "_note_optionalDependencies": "Phase-5 engine peer drivers. Each adapter in services/dbAdapters/ uses dynamic import() with graceful fallback, so these are OPTIONAL — npm install will still succeed on platforms where one of them can't build (e.g. oracledb needs the Oracle Instant Client). Only the drivers for engines you actually connect to need to be present at runtime.",
     "scripts": {
         "start": "node server.js",
         "dev": "nodemon server.js",
@@ -34,7 +35,6 @@
         "zod": "^3.24.0"
     },
     "optionalDependencies": {
-        "_comment": "Phase-5 engine peer drivers. Each adapter in services/dbAdapters/ uses dynamic import() with graceful fallback, so these are OPTIONAL — npm install will still succeed on platforms where one of them can't build (e.g. oracledb needs the Oracle Instant Client). Only the drivers for engines you actually connect to need to be present at runtime.",
         "mssql": "^11.0.1",
         "oracledb": "^6.6.0",
         "ioredis": "^5.4.2",
