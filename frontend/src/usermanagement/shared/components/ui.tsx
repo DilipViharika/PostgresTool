@@ -70,7 +70,7 @@ export const Sparkline = ({ data, color = T.primary, height = 28 }) => {
                 const opacity = v > max * 0.7 ? 'dd' : '66';
                 return (
                     <div key={i} style={{
-                        flex: 1, minWidth: 3, borderRadius: 12px,
+                        flex: 1, minWidth: 3, borderRadius: '12px',
                         height: `${(v / max) * 100}%`,
                         background: v === 0 ? T.glassBorder : `${color}${opacity}`,
                         transition: 'height 0.3s',
@@ -148,7 +148,7 @@ export const StatusBadge = ({ status }) => {
     return (
         <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 5,
-            padding: '3px 9px', borderRadius: 12px, fontSize: 11, fontWeight: 700, letterSpacing: '0.02em',
+            padding: '3px 9px', borderRadius: '12px', fontSize: 11, fontWeight: 700, letterSpacing: '0.02em',
             background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.color}${borderOpacity}`,
         }}>
             <span style={{ fontSize: 8, animation: status === 'active' ? 'umPulse 2s infinite' : 'none' }}>
