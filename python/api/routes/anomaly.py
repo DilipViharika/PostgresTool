@@ -232,12 +232,12 @@ def forecast(req: ForecastRequest) -> ForecastResponse:
         trend = alpha * (level - prev_level) + (1 - alpha) * trend
     # Band: use sample std of residuals over the window.
     residuals = []
-    l, t = vals[0], 0.0
+    lev, t = vals[0], 0.0
     for v in vals[-window:]:
-        prev = l
-        l = alpha * v + (1 - alpha) * (l + t)
-        t = alpha * (l - prev) + (1 - alpha) * t
-        residuals.append(v - l)
+        prev = lev
+        lev = alpha * v + (1 - alpha) * (lev + t)
+        t = alpha * (lev - prev) + (1 - alpha) * t
+        residuals.append(v - lev)
     mean_r = sum(residuals) / len(residuals)
     var_r = sum((r - mean_r) ** 2 for r in residuals) / max(len(residuals) - 1, 1)
     std_r = math.sqrt(var_r)
