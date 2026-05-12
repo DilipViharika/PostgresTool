@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import math
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
