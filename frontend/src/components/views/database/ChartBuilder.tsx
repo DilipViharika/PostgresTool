@@ -19,7 +19,8 @@ import {
     Legend,
     ResponsiveContainer,
 } from 'recharts';
-import { BarChart2, TrendingUp, PieChart as PieIcon, Maximize2, Download, X, Table2 } from 'lucide-react';
+import { BarChart2, TrendingUp, PieChart as PieIcon, Maximize2, Download, X, Table2, Sparkles } from 'lucide-react';
+import HighchartsChart from '../../shared/HighchartsChart';
 
 /**
  * ChartBuilder
@@ -42,6 +43,7 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
     useAdaptiveTheme();
 
     const [viewMode, setViewMode] = useState('chart'); // 'chart' or 'table'
+    const [engine, setEngine] = useState('recharts'); // 'recharts' or 'highcharts'
     const [chartType, setChartType] = useState('line');
     const [xAxisColumn, setXAxisColumn] = useState(columns[0] || '');
     const [yAxisColumn, setYAxisColumn] = useState(columns[1] || '');
@@ -459,6 +461,89 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
         }
     };
 
+    // Highcharts rendering — uses the shared HighchartsChart wrapper which
+    // already applies the FATHOM theme palette / typography defaults.
+    const renderHighchart = () => {
+        if (transformedData.length === 0) {
+            return (
+                <div style={styles.emptyState}>
+                    <div>No data to display</div>
+                </div>
+            );
+        }
+
+        const categories = transformedData.map((d) => String(d[xAxisColumn]));
+        const yValues = transformedData.map((d) => {
+            const v = d[yAxisColumn];
+            return typeof v === 'number' ? v : Number(v) || 0;
+        });
+
+        let options;
+        switch (chartType) {
+            case 'bar':
+                options = {
+                    chart: { type: 'column' },
+                    xAxis: { categories, title: { text: xAxisColumn } },
+                    yAxis: { title: { text: yAxisColumn } },
+                    series: [{ type: 'column', name: yAxisColumn, data: yValues, color: chartColors[0] }],
+                };
+                break;
+            case 'area':
+                options = {
+                    chart: { type: 'area' },
+                    xAxis: { categories, title: { text: xAxisColumn } },
+                    yAxis: { title: { text: yAxisColumn } },
+                    series: [{ type: 'area', name: yAxisColumn, data: yValues, color: chartColors[0] }],
+                };
+                break;
+            case 'pie':
+                options = {
+                    chart: { type: 'pie' },
+                    series: [
+                        {
+                            type: 'pie',
+                            name: yAxisColumn,
+                            data: transformedData.map((d, i) => ({
+                                name: String(d[xAxisColumn]),
+                                y: typeof d[yAxisColumn] === 'number' ? d[yAxisColumn] : Number(d[yAxisColumn]) || 0,
+                                color: chartColors[i % chartColors.length],
+                            })),
+                        },
+                    ],
+                };
+                break;
+            case 'scatter':
+                options = {
+                    chart: { type: 'scatter' },
+                    xAxis: { title: { text: xAxisColumn } },
+                    yAxis: { title: { text: yAxisColumn } },
+                    series: [
+                        {
+                            type: 'scatter',
+                            name: `${xAxisColumn} vs ${yAxisColumn}`,
+                            data: transformedData.map((d) => [
+                                typeof d[xAxisColumn] === 'number' ? d[xAxisColumn] : Number(d[xAxisColumn]) || 0,
+                                typeof d[yAxisColumn] === 'number' ? d[yAxisColumn] : Number(d[yAxisColumn]) || 0,
+                            ]),
+                            color: chartColors[0],
+                        },
+                    ],
+                };
+                break;
+            case 'line':
+            default:
+                options = {
+                    chart: { type: 'line' },
+                    xAxis: { categories, title: { text: xAxisColumn } },
+                    yAxis: { title: { text: yAxisColumn } },
+                    series: [{ type: 'line', name: yAxisColumn, data: yValues, color: chartColors[0] }],
+                };
+                break;
+        }
+
+        return <HighchartsChart options={options} height="100%" />;
+    };
+
     if (columns.length === 0 || rows.length === 0) {
         return (
             <div style={styles.container}>
@@ -510,6 +595,21 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
                         <Table2 size={14} />
                         Table
                     </button>
+                    {viewMode === 'chart' && (
+                        <button
+                            style={{
+                                ...styles.button,
+                                ...styles.buttonSecondary,
+                                background: engine === 'highcharts' ? THEME.primary : THEME.surface,
+                                color: engine === 'highcharts' ? THEME.textInverse : THEME.textMain,
+                            }}
+                            onClick={() => setEngine(engine === 'highcharts' ? 'recharts' : 'highcharts')}
+                            title="Toggle chart engine"
+                        >
+                            <Sparkles size={14} />
+                            {engine === 'highcharts' ? 'Highcharts' : 'Recharts'}
+                        </button>
+                    )}
                     {viewMode === 'chart' && (
                         <button style={styles.button} onClick={handleExportChart}>
                             <Download size={14} />
@@ -585,7 +685,7 @@ const ChartBuilder = ({ columns = [], rows = [], onClose = null }) => {
             <div style={styles.content}>
                 {viewMode === 'chart' ? (
                     <div ref={chartContainerRef} style={styles.chartContainer}>
-                        {renderChart()}
+                        {engine === 'highcharts' ? renderHighchart() : renderChart()}
                     </div>
                 ) : (
                     <div style={styles.tableContainer}>
