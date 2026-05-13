@@ -129,10 +129,6 @@ class CapacityPredictor:
         else:
             recommendation = 'Current growth trajectory manageable'
 
-        # Ensure recommendation is always a string
-        if recommendation is None:
-            recommendation = 'Unable to generate recommendation'
-
         return {
             'days_remaining': float(days_remaining),
             'projected_date': projected_date.isoformat(),
@@ -261,10 +257,7 @@ class CapacityPredictor:
         utilization = (current_gb / max_gb * 100) if max_gb > 0 else 0
 
         # Calculate recovery needed (to add 30 days)
-        if prediction['growth_rate'] > 0:
-            recovery_for_30_days = prediction['growth_rate'] * 30
-        else:
-            recovery_for_30_days = 0.0
+        recovery_for_30_days = prediction['growth_rate'] * 30 if prediction['growth_rate'] > 0 else 0.0
 
         result = {
             'days_remaining': prediction['days_remaining'],

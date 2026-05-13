@@ -5,7 +5,6 @@ Classifies query type, complexity, risk level, and resource impact.
 
 from typing import Any
 import re
-import hashlib
 
 
 class QueryClassifier:
@@ -46,7 +45,7 @@ class QueryClassifier:
         normalized = self._normalize_sql(sql)
 
         # Check cache
-        cache_key = hashlib.md5(normalized.encode()).hexdigest()
+        cache_key = self._hash_key(normalized)
         if cache_key in self.query_cache:
             return self.query_cache[cache_key]
 
@@ -106,6 +105,12 @@ class QueryClassifier:
         sql = ' '.join(sql.split())
 
         return sql.strip()
+
+    @staticmethod
+    def _hash_key(sql: str) -> str:
+        """Generate a hash key for caching."""
+        import hashlib
+        return hashlib.md5(sql.encode()).hexdigest()
 
     def _classify_type(self, sql: str) -> str:
         """Classify the query type."""

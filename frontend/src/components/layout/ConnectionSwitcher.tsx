@@ -365,7 +365,7 @@ const ConnectionSwitcher = () => {
 /**
  * Inline styles
  */
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
     wrapper: {
         position: 'relative',
         display: 'inline-block',

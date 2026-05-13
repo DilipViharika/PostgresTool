@@ -167,11 +167,11 @@ class AnomalyDetector:
             change_magnitude = abs(curr_trend - prev_trend)
 
             # Avoid division by zero
-            volatility = np.std(diffs) if len(diffs) > 0 else 0.0001
-            if volatility == 0:
-                volatility = 0.0001
+            volatility_std = np.std(diffs) if len(diffs) > 0 else 0.0001
+            if volatility_std == 0:
+                volatility_std = 0.0001
 
-            change_score = change_magnitude / volatility
+            change_score = change_magnitude / volatility_std
 
             if change_score > 2.0:  # Significant change threshold
                 direction = 'upward' if curr_trend > prev_trend else 'downward'
