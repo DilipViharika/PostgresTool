@@ -3031,6 +3031,23 @@ app.post('/api/connections/test', authenticate, async (req, res) => {
         }
         const dbType = (type || 'postgresql').toLowerCase();
 
+        // Phase-5 engines (MSSQL, Oracle, Redis, Elasticsearch, Snowflake,
+        // BigQuery, Redshift, Cassandra, DynamoDB) are routed through the
+        // shared adapter factory so the wizard's "Test Connection" step
+        // succeeds for every engine the backend actually supports — not just
+        // the legacy PostgreSQL / MySQL / MongoDB trio.
+        const PHASE5_VIA_ADAPTER = new Set([
+            'mssql', 'sqlserver', 'sql-server',
+            'oracle', 'oracledb',
+            'snowflake',
+            'bigquery', 'gbq',
+            'redshift',
+            'cassandra', 'scylla',
+            'dynamodb', 'dynamo',
+            'redis',
+            'elasticsearch', 'opensearch', 'elastic',
+        ]);
+
         try {
             if (dbType === 'mongodb') {
                 if (!mongodb) throw new Error('MongoDB driver (mongodb) not installed on the server');
@@ -3051,6 +3068,26 @@ app.post('/api/connections/test', authenticate, async (req, res) => {
                 });
                 await testConn.query('SELECT 1');
                 await testConn.end();
+            } else if (PHASE5_VIA_ADAPTER.has(dbType)) {
+                // Route Phase-5 engines through the adapter factory. Each
+                // adapter knows its own driver, default port, and credential
+                // shape — we pass aliases (account/projectId/region/etc.) so
+                // engines with non-traditional credential layouts pick up the
+                // right field from the wizard's generic host/port/user form.
+                const { getAdapter } = await import('./services/dbAdapters/index.js');
+                const adapter = getAdapter(dbType, {
+                    host, port, database,
+                    user: username, username,
+                    password, ssl,
+                    // Per-engine aliases (mirrors POST /api/connections):
+                    account:       host,                 // Snowflake account identifier
+                    projectId:     host,                 // BigQuery project ID
+                    region:        host,                 // DynamoDB region
+                    keyspace:      database,             // Cassandra default keyspace
+                    contactPoints: host ? [host] : undefined,
+                });
+                await adapter.connect();
+                await adapter.disconnect?.().catch(() => undefined);
             } else {
                 // Try with the user's SSL preference first; on cert errors, retry
                 // honoring buildSslOption (strict in prod by default).
@@ -3113,6 +3150,22 @@ app.post('/api/connections/:id/test', authenticate, ensureConnections, async (re
 
         const dbType = (c.dbType || 'postgresql').toLowerCase();
 
+        // Mirror POST /api/connections + /api/connections/test: re-testing
+        // an existing Phase-5 connection should also route through the
+        // shared adapter factory, otherwise the user sees a misleading
+        // "failed" status for every non-PG/MySQL/Mongo engine.
+        const PHASE5_VIA_ADAPTER = new Set([
+            'mssql', 'sqlserver', 'sql-server',
+            'oracle', 'oracledb',
+            'snowflake',
+            'bigquery', 'gbq',
+            'redshift',
+            'cassandra', 'scylla',
+            'dynamodb', 'dynamo',
+            'redis',
+            'elasticsearch', 'opensearch', 'elastic',
+        ]);
+
         try {
             if (dbType === 'mongodb') {
                 // ── MongoDB test ──
@@ -3135,6 +3188,26 @@ app.post('/api/connections/:id/test', authenticate, ensureConnections, async (re
                 });
                 await testConn.query('SELECT 1');
                 await testConn.end();
+            } else if (PHASE5_VIA_ADAPTER.has(dbType)) {
+                // ── Phase-5 engines via adapter factory ──
+                const { getAdapter } = await import('./services/dbAdapters/index.js');
+                const adapter = getAdapter(dbType, {
+                    host:     poolCfg.host,
+                    port:     poolCfg.port,
+                    database: poolCfg.database,
+                    user:     poolCfg.user,
+                    username: poolCfg.user,
+                    password: poolCfg.password,
+                    ssl:      c.ssl,
+                    // Per-engine aliases the adapters look for:
+                    account:       poolCfg.host,                       // Snowflake account
+                    projectId:     poolCfg.host,                       // BigQuery project
+                    region:        poolCfg.host,                       // DynamoDB region
+                    keyspace:      poolCfg.database,                   // Cassandra keyspace
+                    contactPoints: poolCfg.host ? [poolCfg.host] : undefined,
+                });
+                await adapter.connect();
+                await adapter.disconnect?.().catch(() => undefined);
             } else {
                 // ── PostgreSQL test ──
                 // PRF-03 (audit): always end() the test pool, even on failure.
