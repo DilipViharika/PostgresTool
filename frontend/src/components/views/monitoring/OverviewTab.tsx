@@ -1299,14 +1299,14 @@ const OverviewTab = () => {
 
         return {
             activeConns, maxConns, connPct, cacheHit, diskGB, uptimeHrs,
-            fetched, inserted, updated, deleted, readPct, writePct,
+            fetched, inserted, updated, deleted, totalOps, readPct, writePct,
             connColor, cacheColor, healthScore, healthColor,
         };
     }, [stats, traffic]);
 
     const {
         activeConns, maxConns, connPct, cacheHit, diskGB, uptimeHrs,
-        fetched, inserted, updated, deleted, readPct, writePct,
+        fetched, inserted, updated, deleted, totalOps, readPct, writePct,
         connColor, cacheColor, healthScore, healthColor,
     } = kpis;
 
@@ -1826,3 +1826,5 @@ const OverviewTab = () => {
 };
 
 export default React.memo(OverviewTab);
+.memo(OverviewTab);
+.memo(OverviewTab);
