@@ -1144,7 +1144,12 @@ const ConnectionsTab = () => {
 
                     <div style={{
                         position: 'relative', zIndex: 1, textAlign: 'center',
-                        maxWidth: 480, width: '100%', padding: '0 20px',
+                        // Widen the empty-state panel so a 4-column grid of
+                        // 12 engines fits comfortably without horizontal
+                        // overflow. Previous flex-row layout assumed only 3
+                        // engines and broke the page once Phase-5 engines
+                        // were added.
+                        maxWidth: 720, width: '100%', padding: '0 20px',
                         animation: 'cpFadeIn 0.5s ease-out',
                     }}>
                         {/* Icon */}
@@ -1170,18 +1175,27 @@ const ConnectionsTab = () => {
                             Add a database to start monitoring queries and performance.
                         </p>
 
-                        {/* Quick-add DB type row */}
-                        <div style={{ display: 'flex', gap: 22, justifyContent: 'center', marginBottom: 20 }}>
+                        {/* Quick-add DB type grid — 4 columns × 3 rows for the
+                            12 supported engines. Cards are compact (icon + label
+                            stacked) so all 12 fit without scrolling. */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(4, 1fr)',
+                            gap: 12,
+                            marginBottom: 20,
+                        }}>
                             {Object.entries(DB_TYPES).map(([key, db]) => (
                                 <button
                                     key={key}
                                     onClick={() => { openNew(); handleDbTypeChange(key); }}
                                     style={{
-                                        display: 'flex', alignItems: 'center', gap: 20,
-                                        padding: '10px 18px', borderRadius: 16, cursor: 'pointer',
+                                        display: 'flex', flexDirection: 'column',
+                                        alignItems: 'center', justifyContent: 'center', gap: 6,
+                                        padding: '14px 8px', borderRadius: 14, cursor: 'pointer',
                                         background: THEME.surface, border: `1px solid ${THEME.glassBorder}`,
                                         color: THEME.textMain, fontSize: 12, fontWeight: 600,
                                         transition: 'all 0.2s', fontFamily: FONT_UI,
+                                        minHeight: 76,
                                     }}
                                     onMouseEnter={e => {
                                         e.currentTarget.style.borderColor = db.accent + '66';
@@ -1196,8 +1210,8 @@ const ConnectionsTab = () => {
                                         e.currentTarget.style.boxShadow = 'none';
                                     }}
                                 >
-                                    <span style={{ fontSize: 18 }}>{db.icon}</span>
-                                    {db.label}
+                                    <span style={{ fontSize: 22, lineHeight: 1 }}>{db.icon}</span>
+                                    <span style={{ lineHeight: 1.2, textAlign: 'center' }}>{db.label}</span>
                                 </button>
                             ))}
                         </div>
