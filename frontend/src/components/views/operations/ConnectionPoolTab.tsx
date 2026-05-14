@@ -11,6 +11,9 @@ import {
 } from 'lucide-react';
 
 // ─── Database type definitions ───────────────────────────────────────────────
+// Every engine the backend adapter factory supports (backend/services/dbAdapters/
+// index.js → SUPPORTED_DB_TYPES) must appear here, otherwise it cannot be
+// selected from the "DATABASE ENGINE" picker in the New Connection modal.
 const DB_TYPES = {
     postgresql: {
         label: 'PostgreSQL',
@@ -35,6 +38,86 @@ const DB_TYPES = {
         accent: '#00ed64',
         icon: '🍃',
         fields: ['host', 'port', 'database', 'username', 'password', 'ssl', 'authSource', 'replicaSet'],
+    },
+    // ── Phase-5 engines ─────────────────────────────────────────────────────
+    mssql: {
+        label: 'SQL Server',
+        defaultPort: 1433,
+        color: '#CC2927',
+        accent: '#CC2927',
+        icon: '🅼',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    oracle: {
+        label: 'Oracle',
+        defaultPort: 1521,
+        color: '#F80000',
+        accent: '#F80000',
+        icon: '🅾',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    redis: {
+        label: 'Redis',
+        defaultPort: 6379,
+        color: '#DC382D',
+        accent: '#DC382D',
+        icon: '🧰',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    elasticsearch: {
+        label: 'Elasticsearch',
+        defaultPort: 9200,
+        color: '#00BFB3',
+        accent: '#00BFB3',
+        icon: '🔍',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    snowflake: {
+        label: 'Snowflake',
+        defaultPort: 443,
+        color: '#29B5E8',
+        accent: '#29B5E8',
+        icon: '❄️',
+        // Snowflake uses `host` for the account identifier
+        // (e.g. acme-analytics.us-east-1.snowflakecomputing.com).
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    bigquery: {
+        label: 'BigQuery',
+        defaultPort: 443,
+        color: '#669DF6',
+        accent: '#669DF6',
+        icon: '🔶',
+        // BigQuery: `host` = project ID, `username` = service-account email,
+        // `password` = service-account key JSON, `database` = dataset.
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    redshift: {
+        label: 'Redshift',
+        defaultPort: 5439,
+        color: '#FF9900',
+        accent: '#FF9900',
+        icon: '🧊',
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    cassandra: {
+        label: 'Cassandra',
+        defaultPort: 9042,
+        color: '#1287B1',
+        accent: '#1287B1',
+        icon: '💍',
+        // `database` is treated as the default keyspace by the backend.
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
+    },
+    dynamodb: {
+        label: 'DynamoDB',
+        defaultPort: 443,
+        color: '#4053D6',
+        accent: '#4053D6',
+        icon: '📦',
+        // DynamoDB: `host` = AWS region, `username`/`password` = access-key
+        // pair, `database` = optional table-name prefix.
+        fields: ['host', 'port', 'database', 'username', 'password', 'ssl'],
     },
 };
 
