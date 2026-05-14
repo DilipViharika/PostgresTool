@@ -1826,5 +1826,3 @@ const OverviewTab = () => {
 };
 
 export default React.memo(OverviewTab);
-.memo(OverviewTab);
-.memo(OverviewTab);

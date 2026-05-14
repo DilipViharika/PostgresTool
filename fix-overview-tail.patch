@@ -1,0 +1,23 @@
+From 1d1773aeb7d272ae591cc87c63d6e999990ea55f Mon Sep 17 00:00:00 2001
+From: Dilip <patildilip1164@gmail.com>
+Date: Thu, 14 May 2026 09:50:44 +0000
+Subject: [PATCH] fix(overview): remove duplicate export-default tail breaking
+ vercel build
+
+---
+ frontend/src/components/views/monitoring/OverviewTab.tsx | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/frontend/src/components/views/monitoring/OverviewTab.tsx b/frontend/src/components/views/monitoring/OverviewTab.tsx
+index f0d1aa0..a3d9137 100644
+--- a/frontend/src/components/views/monitoring/OverviewTab.tsx
++++ b/frontend/src/components/views/monitoring/OverviewTab.tsx
+@@ -1826,5 +1826,3 @@ const OverviewTab = () => {
+ };
+ 
+ export default React.memo(OverviewTab);
+-.memo(OverviewTab);
+-.memo(OverviewTab);
+-- 
+2.34.1
+
