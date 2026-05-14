@@ -50,7 +50,22 @@ const SSOCallback = lazyRetry(() => import('./components/auth/SSOCallback'));
 
 /* ── Lazy-loaded tab components for faster initial load ── */
 // Monitoring features
-const OverviewTab = lazyRetry(() => import('./components/views/monitoring/OverviewTab'));
+// OverviewTab — picks between the legacy 1,800-line layout and the new
+// mockup-derived OverviewTabLight via a localStorage flag. Toggle by setting
+//   localStorage.setItem('fathom_overview_v2', 'true')   // enable new layout
+//   localStorage.removeItem('fathom_overview_v2')        // back to legacy
+// (or wire a UI switch later). Default is the new design.
+const OverviewTab = lazyRetry(() => {
+    try {
+        const flag = localStorage.getItem('fathom_overview_v2');
+        // Default to NEW layout unless the user has explicitly opted out
+        // by setting the flag to 'false'.
+        if (flag === 'false') {
+            return import('./components/views/monitoring/OverviewTab');
+        }
+    } catch { /* localStorage unavailable — fall through to new layout */ }
+    return import('./components/views/monitoring/OverviewTabLight');
+});
 const PerformanceTab = lazyRetry(() => import('./components/views/monitoring/PerformanceTab'));
 const ResourcesTab = lazyRetry(() => import('./components/views/monitoring/ResourcesTab'));
 const CloudWatchTab = lazyRetry(() => import('./components/views/monitoring/CloudWatchTab'));
