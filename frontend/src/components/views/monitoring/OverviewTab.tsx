@@ -1,19 +1,22 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { THEME, useAdaptiveTheme, useGlobalRefresh } from '../../../utils/theme';
-import { GlassCard, LiveStatusBadge } from '../../ui/SharedComponents';
 import { fetchData } from '../../../utils/api';
 import { useConnection } from '../../../context/ConnectionContext';
 import { useNavigation } from '../../../context/NavigationContext';
 import { fmtNum, fmtRelTime } from '../../../lib/utils';
 
+// Dropped imports: GlassCard / LiveStatusBadge (never used in this file), plus
+// ArrowUpRight, ArrowDownRight, TrendingDown, ShieldCheck, GitCommit,
+// ToggleLeft, ToggleRight, Package, CheckSquare, Sparkles, FlaskConical,
+// Terminal, Globe — all imported but never rendered. Kept everything that's
+// actually referenced downstream.
 import {
-    Zap, Clock, Database, Activity, Server, HardDrive, ArrowUpRight, ArrowDownRight,
-    TrendingUp, TrendingDown, Shield, ShieldCheck, Cpu, Network, RefreshCw, Eye,
+    Zap, Clock, Database, Activity, Server, HardDrive,
+    TrendingUp, Shield, Cpu, Network, RefreshCw, Eye,
     BarChart3, Layers, Radio, Timer, CheckCircle, AlertTriangle, GitBranch, Gauge,
     Lock, Unlock, ArrowUp, ArrowDown, ChevronRight, MemoryStick, Bell, BellRing,
-    ChevronDown, Play, Pause, HardDriveDownload, Leaf, GitCommit, Hourglass,
-    ToggleLeft, ToggleRight, Package, CheckSquare, AlertCircle, Info, X, Sparkles,
-    Boxes, FlaskConical, Terminal, Globe,
+    ChevronDown, Play, Pause, HardDriveDownload, Leaf, Hourglass,
+    AlertCircle, Info, X, Boxes,
 } from 'lucide-react';
 
 import {
@@ -391,38 +394,123 @@ const RefreshControl = ({ interval, setInterval: setIv, onManualRefresh, loading
     );
 };
 
-const PgVersionBadge = ({ version = '16.2', environment = 'prod' }) => {
-    const envData = ENVIRONMENTS.find((e) => e.id === environment) || ENVIRONMENTS[0];
+// PgVersionBadge / EnvSwitcher were defined here previously but never rendered
+// — and would have crashed because ENVIRONMENTS = []. Removed in the Overview
+// redesign. If you want a version chip back, surface stats.pgVersion in the
+// header next to the connection name instead of recreating the standalone
+// component.
+
+/**
+ * NavCTA — the "open the relevant deep-dive tab" footer button shared by
+ * BackupStatusCard, LongTxnCard, and VacuumHealthCard. Each card previously
+ * inlined its own copy (3× near-identical 14-line blocks with hand-rolled
+ * hover handlers); extracting it removes the duplication and gives us one
+ * place to tune the visual.
+ */
+const NavCTA = React.memo(({ label, onClick }: { label: string; onClick: () => void }) => (
+    <button
+        onClick={onClick}
+        style={{
+            marginTop: 12, width: '100%', padding: '8px 0', borderRadius: 8,
+            border: `1px solid ${THEME.primary}25`, background: `${THEME.primary}08`,
+            color: THEME.primary, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            transition: 'all 0.15s',
+        }}
+        onMouseEnter={(e) => {
+            e.currentTarget.style.background = `${THEME.primary}18`;
+            e.currentTarget.style.borderColor = `${THEME.primary}40`;
+        }}
+        onMouseLeave={(e) => {
+            e.currentTarget.style.background = `${THEME.primary}08`;
+            e.currentTarget.style.borderColor = `${THEME.primary}25`;
+        }}
+    >
+        {label} <span style={{ fontSize: 13 }}>→</span>
+    </button>
+));
+NavCTA.displayName = 'NavCTA';
+
+/**
+ * AlertsBanner — surfaces /api/overview/alerts at the top of the dashboard.
+ *
+ * Before this redesign, `alertsData` was being fetched every refresh cycle
+ * and silently dropped — the standalone `NotificationBell` component kept
+ * its own empty local state that nothing populated, so the user never saw
+ * any of these alerts. We now render the highest-severity ones inline with
+ * a "View all" affordance routing to the dedicated alerts tab.
+ */
+const AlertsBanner = React.memo(({ alerts, onViewAll, onDismiss }: {
+    alerts: any[]; onViewAll?: () => void; onDismiss?: () => void;
+}) => {
+    if (!alerts || alerts.length === 0) return null;
+
+    const order: Record<string, number> = { critical: 0, error: 0, warning: 1, warn: 1, info: 2 };
+    const sorted = [...alerts].sort(
+        (a, b) => (order[(a.severity || '').toLowerCase()] ?? 3) - (order[(b.severity || '').toLowerCase()] ?? 3)
+    );
+    const top = sorted[0];
+    const topSev = (top.severity || 'info').toLowerCase();
+    const isCritical = topSev === 'critical' || topSev === 'error';
+    const isWarning = topSev === 'warning' || topSev === 'warn';
+    const accent = isCritical ? THEME.danger : isWarning ? THEME.warning : THEME.primary;
+    const Icon = isCritical ? AlertCircle : isWarning ? AlertTriangle : Info;
+
+    const summary = sorted.length === 1
+        ? (top.message || top.title || 'Active alert')
+        : `${sorted.length} active alerts · ${top.message || top.title || 'see details'}`;
+
     return (
-        <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 12,
-            background: `linear-gradient(135deg, ${envData.color}12, ${envData.color}08)`,
-            border: `1px solid ${envData.color}28`, animation: 'tremorCountUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-            animationDelay: '0.3s',
-        }}>
-            <div style={{
-                width: 18, height: 18, borderRadius: 8, background: `${envData.color}20`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+        <div
+            role="status"
+            style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px', borderRadius: 12,
+                background: `${accent}10`, border: `1px solid ${accent}30`,
+                animation: 'tremorCountUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+            }}
+        >
+            <Icon size={16} color={accent} style={{ flexShrink: 0 }} />
+            <span style={{
+                fontSize: 12, color: accent, fontWeight: 600, flex: 1,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
-                <Database size={10} color={envData.color} />
-            </div>
-            <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span className="ov-mono" style={{
-                        fontSize: 10.5, fontWeight: 700, color: envData.color, lineHeight: 1
-                    }}>
-                        PostgreSQL {version}
-                    </span>
-                </div>
-                <div className="ov-mono" style={{ fontSize: 8.5, color: THEME.textDim, marginTop: 1, lineHeight: 1 }}>
-                    x86_64-linux-gnu
-                </div>
-            </div>
+                {summary}
+            </span>
+            {onViewAll && (
+                <button
+                    onClick={onViewAll}
+                    style={{
+                        fontSize: 11, padding: '4px 10px', borderRadius: 6,
+                        border: `1px solid ${accent}40`, background: `${accent}15`,
+                        color: accent, fontWeight: 600, cursor: 'pointer',
+                    }}
+                >
+                    View all
+                </button>
+            )}
+            {onDismiss && (
+                <button
+                    onClick={onDismiss}
+                    aria-label="Dismiss alerts banner"
+                    style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        width: 22, height: 22, borderRadius: 6,
+                        border: 'none', background: 'transparent', color: accent,
+                        cursor: 'pointer', flexShrink: 0,
+                    }}
+                >
+                    <X size={13} />
+                </button>
+            )}
         </div>
     );
-};
+});
+AlertsBanner.displayName = 'AlertsBanner';
 
-const BackupStatusCard = ({ lastBackup }) => {
+// React.memo'd so the 30s auto-refresh tick doesn't re-render this card when
+// its `lastBackup` prop reference hasn't changed.
+const BackupStatusCard = React.memo(({ lastBackup }: any) => {
     const backup = lastBackup || {
         timestamp: null, sizeGB: 0, type: 'N/A', status: 'unknown', duration: 'N/A', nextScheduled: 'N/A',
     };
@@ -459,20 +547,37 @@ const BackupStatusCard = ({ lastBackup }) => {
             </div>
 
             <div>
-                <div className="ov-mono" style={{
-                    fontSize: 20, fontWeight: 700, color: isOld ? THEME.warning : THEME.textMain,
-                    lineHeight: 1, letterSpacing: '-0.01em',
-                }}>
-                    {fmtRelTime(backup.timestamp)}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
-                    <span style={{ fontSize: 11, color: THEME.textDim }}>
-                        <strong style={{ color: THEME.textMuted }}>{backup.sizeGB} GB</strong> compressed
-                    </span>
-                    <span style={{ fontSize: 11, color: THEME.textDim }}>
-                        took <strong style={{ color: THEME.textMuted }}>{backup.duration}</strong>
-                    </span>
-                </div>
+                {/* Explicit empty state when /api/overview/backup has no record
+                    or times out — previously this rendered "0 GB compressed ·
+                    took N/A" which read like a real failed backup. */}
+                {backup.timestamp ? (
+                    <>
+                        <div className="ov-mono" style={{
+                            fontSize: 20, fontWeight: 700, color: isOld ? THEME.warning : THEME.textMain,
+                            lineHeight: 1, letterSpacing: '-0.01em',
+                        }}>
+                            {fmtRelTime(backup.timestamp)}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
+                            <span style={{ fontSize: 11, color: THEME.textDim }}>
+                                <strong style={{ color: THEME.textMuted }}>{backup.sizeGB} GB</strong> compressed
+                            </span>
+                            <span style={{ fontSize: 11, color: THEME.textDim }}>
+                                took <strong style={{ color: THEME.textMuted }}>{backup.duration}</strong>
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    <div style={{
+                        fontSize: 13, color: THEME.textDim, fontWeight: 500,
+                        padding: '4px 0',
+                    }}>
+                        No backup data available
+                        <div style={{ fontSize: 10, color: THEME.textDim, opacity: 0.7, marginTop: 2, fontWeight: 400 }}>
+                            Endpoint returned no record or timed out
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div style={{
@@ -487,7 +592,8 @@ const BackupStatusCard = ({ lastBackup }) => {
             </div>
         </div>
     );
-};
+});
+BackupStatusCard.displayName = 'BackupStatusCard';
 
 const formatDuration = (totalSec) => {
     const sec = Math.round(Number(totalSec) || 0);
@@ -497,7 +603,7 @@ const formatDuration = (totalSec) => {
     return `${m}m ${String(s).padStart(2, '0')}s`;
 };
 
-const LongTxnCard = ({ data, onNavigate }) => {
+const LongTxnCard = React.memo(({ data, onNavigate }: any) => {
     const txns = (Array.isArray(data) ? data : []).map(t => ({
         pid: t.pid,
         duration: t.duration || formatDuration(t.txn_duration_sec || t.query_duration_sec || 0),
@@ -542,21 +648,7 @@ const LongTxnCard = ({ data, onNavigate }) => {
                 <div style={{ fontSize: 10.5, color: THEME.textDim, textAlign: 'center', padding: '12px 0' }}>
                     No long-running transactions detected
                 </div>
-                {onNavigate && (
-                    <button
-                        onClick={onNavigate}
-                        style={{
-                            marginTop: 12, width: '100%', padding: '8px 0', borderRadius: 8,
-                            border: `1px solid ${THEME.primary}25`, background: `${THEME.primary}08`,
-                            color: THEME.primary, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.15s',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.background = `${THEME.primary}18`; e.currentTarget.style.borderColor = `${THEME.primary}40`; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = `${THEME.primary}08`; e.currentTarget.style.borderColor = `${THEME.primary}25`; }}
-                    >
-                        Performance &amp; Queries <span style={{ fontSize: 13 }}>→</span>
-                    </button>
-                )}
+                {onNavigate && <NavCTA label="Performance & Queries" onClick={onNavigate} />}
             </div>
         );
     }
@@ -642,26 +734,13 @@ const LongTxnCard = ({ data, onNavigate }) => {
                     );
                 })}
             </div>
-            {onNavigate && (
-                <button
-                    onClick={onNavigate}
-                    style={{
-                        marginTop: 12, width: '100%', padding: '8px 0', borderRadius: 8,
-                        border: `1px solid ${THEME.primary}25`, background: `${THEME.primary}08`,
-                        color: THEME.primary, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.15s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = `${THEME.primary}18`; e.currentTarget.style.borderColor = `${THEME.primary}40`; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = `${THEME.primary}08`; e.currentTarget.style.borderColor = `${THEME.primary}25`; }}
-                >
-                    Performance &amp; Queries <span style={{ fontSize: 13 }}>→</span>
-                </button>
-            )}
+            {onNavigate && <NavCTA label="Performance & Queries" onClick={onNavigate} />}
         </div>
     );
-};
+});
+LongTxnCard.displayName = 'LongTxnCard';
 
-const VacuumHealthCard = ({ data, onNavigate }) => {
+const VacuumHealthCard = React.memo(({ data, onNavigate }: any) => {
     const raw = data || {};
     const summary = raw.summary || raw;
     const vacuum = {
@@ -769,24 +848,11 @@ const VacuumHealthCard = ({ data, onNavigate }) => {
                 <span className="ov-mono">{vacuum.lastRunAgo}</span>
             </div>
 
-            {onNavigate && (
-                <button
-                    onClick={onNavigate}
-                    style={{
-                        marginTop: 12, width: '100%', padding: '8px 0', borderRadius: 8,
-                        border: `1px solid ${THEME.primary}25`, background: `${THEME.primary}08`,
-                        color: THEME.primary, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.15s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = `${THEME.primary}18`; e.currentTarget.style.borderColor = `${THEME.primary}40`; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = `${THEME.primary}08`; e.currentTarget.style.borderColor = `${THEME.primary}25`; }}
-                >
-                    Vacuum &amp; Maintenance <span style={{ fontSize: 13 }}>→</span>
-                </button>
-            )}
+            {onNavigate && <NavCTA label="Vacuum & Maintenance" onClick={onNavigate} />}
         </div>
     );
-};
+});
+VacuumHealthCard.displayName = 'VacuumHealthCard';
 
 const ConnectionStatusBanner = () => {
     const { connections, activeConnection, activeConnectionId, loading, switchConnection } = useConnection();
@@ -1010,6 +1076,9 @@ const OverviewTab = () => {
     const [topTables, setTopTables] = useState(cachedOv?.topTables ?? []);
     const [timeseriesData, setTimeseriesData] = useState(cachedOv?.timeseriesData ?? null);
     const [alertsData, setAlertsData] = useState(cachedOv?.alertsData ?? []);
+    // Track dismissed-count rather than the dismissed list — that way if 2
+    // alerts are dismissed and a 3rd new alert arrives, the banner reappears.
+    const [dismissedAlertCount, setDismissedAlertCount] = useState(0);
 
     const velocityData = useMemo(() => {
         if (timeseriesData?.velocity && Array.isArray(timeseriesData.velocity) && timeseriesData.velocity.length > 0) {
@@ -1191,47 +1260,73 @@ const OverviewTab = () => {
 
     const { stats, traffic } = data;
 
-    const activeConns = Number(stats?.activeConnections || 0);
-    const maxConns = Number(stats?.maxConnections || 100);
-    const connPct = Math.round((activeConns / maxConns) * 100);
-    const cacheHit = Number(stats?.indexHitRatio || 0);
-    const diskGB = Number(stats?.diskUsedGB || 0);
-    const uptimeHrs = (Number(stats?.uptimeSeconds || 0) / 3600).toFixed(1);
-    const pgVersion = stats?.pgVersion || '';
+    // ── Derived KPIs ────────────────────────────────────────────────────────
+    // Everything below previously recomputed on every render — including
+    // every 30s auto-refresh tick — even though it only depends on `stats`
+    // and `traffic`. With 5 Recharts panels and ~6 child cards downstream
+    // that produced a measurable jank window per refresh. Memoising here
+    // stabilises the props that flow into the (now React.memo'd) cards so
+    // memoization actually pays off.
+    const kpis = useMemo(() => {
+        const activeConns = Number(stats?.activeConnections || 0);
+        const maxConns = Number(stats?.maxConnections || 100);
+        const connPct = Math.round((activeConns / maxConns) * 100);
+        const cacheHit = Number(stats?.indexHitRatio || 0);
+        const diskGB = Number(stats?.diskUsedGB || 0);
+        const uptimeHrs = (Number(stats?.uptimeSeconds || 0) / 3600).toFixed(1);
 
-    const fetched = Number(traffic?.tup_fetched || 0);
-    const inserted = Number(traffic?.tup_inserted || 0);
-    const updated = Number(traffic?.tup_updated || 0);
-    const deleted = Number(traffic?.tup_deleted || 0);
-    const totalOps = fetched + inserted + updated + deleted;
-    const readPct = totalOps > 0 ? Math.round((fetched / totalOps) * 100) : 75;
-    const writePct = 100 - readPct;
+        const fetched = Number(traffic?.tup_fetched || 0);
+        const inserted = Number(traffic?.tup_inserted || 0);
+        const updated = Number(traffic?.tup_updated || 0);
+        const deleted = Number(traffic?.tup_deleted || 0);
+        const totalOps = fetched + inserted + updated + deleted;
+        const readPct = totalOps > 0 ? Math.round((fetched / totalOps) * 100) : 75;
+        const writePct = 100 - readPct;
 
-    const throughputRows = [
+        const connColor = connPct > 85 ? THEME.danger : connPct > 65 ? THEME.warning : THEME.success;
+        const cacheColor = cacheHit > 98 ? THEME.success : cacheHit > 95 ? THEME.warning : THEME.danger;
+
+        // Health-score weighting kept identical to pre-redesign behaviour.
+        // The constant +20 floor is intentional historical baseline; if the
+        // formula needs to change, revisit separately.
+        const healthScore = Math.round(
+            (cacheHit > 99 ? 30 : cacheHit > 95 ? 20 : 10) +
+                (connPct < 70 ? 30 : connPct < 85 ? 20 : 10) +
+                (diskGB < 150 ? 20 : diskGB < 180 ? 12 : 5) +
+                20,
+        );
+        const healthColor = healthScore >= 80 ? THEME.success : healthScore >= 60 ? THEME.warning : THEME.danger;
+
+        return {
+            activeConns, maxConns, connPct, cacheHit, diskGB, uptimeHrs,
+            fetched, inserted, updated, deleted, readPct, writePct,
+            connColor, cacheColor, healthScore, healthColor,
+        };
+    }, [stats, traffic]);
+
+    const {
+        activeConns, maxConns, connPct, cacheHit, diskGB, uptimeHrs,
+        fetched, inserted, updated, deleted, readPct, writePct,
+        connColor, cacheColor, healthScore, healthColor,
+    } = kpis;
+
+    const throughputRows = useMemo(() => [
         { label: 'Tuples Fetched', raw: fetched, color: THEME.primary, icon: Eye },
         { label: 'Tuples Inserted', raw: inserted, color: THEME.success, icon: ArrowUp },
         { label: 'Tuples Updated', raw: updated, color: THEME.warning, icon: RefreshCw },
         { label: 'Tuples Deleted', raw: deleted, color: THEME.danger, icon: ArrowDown },
-    ];
-    const maxThroughput = Math.max(...throughputRows.map((r) => r.raw), 1);
-
-    const connColor = connPct > 85 ? THEME.danger : connPct > 65 ? THEME.warning : THEME.success;
-    const cacheColor = cacheHit > 98 ? THEME.success : cacheHit > 95 ? THEME.warning : THEME.danger;
-
-    const healthScore = Math.round(
-        (cacheHit > 99 ? 30 : cacheHit > 95 ? 20 : 10) +
-            (connPct < 70 ? 30 : connPct < 85 ? 20 : 10) +
-            (diskGB < 150 ? 20 : diskGB < 180 ? 12 : 5) +
-            20,
+    ], [fetched, inserted, updated, deleted]);
+    const maxThroughput = useMemo(
+        () => Math.max(...throughputRows.map((r) => r.raw), 1),
+        [throughputRows]
     );
-    const healthColor = healthScore >= 80 ? THEME.success : healthScore >= 60 ? THEME.warning : THEME.danger;
 
-    const workloadData = [
+    const workloadData = useMemo(() => [
         { name: 'Reads', value: readPct, color: THEME.primary },
         { name: 'Writes', value: writePct > 0 ? writePct : 1, color: THEME.secondary },
-    ];
+    ], [readPct, writePct]);
 
-    const metricCards = [
+    const metricCards = useMemo(() => [
         {
             label: 'Active Sessions',
             value: `${activeConns}`,
@@ -1276,13 +1371,24 @@ const OverviewTab = () => {
             detail: Number(uptimeHrs) > 24 ? 'Stable' : 'Recently restarted',
             healthy: Number(uptimeHrs) > 24,
         },
-    ];
+    ], [activeConns, maxConns, connPct, cacheHit, diskGB, uptimeHrs, connColor, cacheColor]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '12px 0 40px 0' }}>
             <TremorStyles />
 
             <ConnectionStatusBanner />
+
+            {/* Inline alerts banner — surfaces /api/overview/alerts which was
+                previously fetched-and-dropped. Re-appears whenever the alert
+                count exceeds the last-acknowledged count. */}
+            {alertsData && alertsData.length > dismissedAlertCount && (
+                <AlertsBanner
+                    alerts={alertsData}
+                    onViewAll={() => nav?.goToTab('alerts')}
+                    onDismiss={() => setDismissedAlertCount(alertsData.length)}
+                />
+            )}
 
             {/* Row 1: Hero Metric Cards — Tremor-style clean layout */}
             <div className="ov-stagger" style={{ display: 'grid', gridTemplateColumns: `repeat(${metricCards.length}, 1fr)`, gap: 12 }}>
