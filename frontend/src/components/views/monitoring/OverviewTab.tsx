@@ -653,11 +653,25 @@ const LongTxnCard = React.memo(({ data, onNavigate }: any) => {
         );
     }
 
+    // Safe duration parser — /api/overview/long-transactions can return
+    // durations as strings ("4m 12s"), numeric seconds, or null. The previous
+    // implementation called .replace() directly on t.duration which crashed
+    // the whole dashboard with a TypeError when the field was anything other
+    // than the expected string shape.
+    const parseDurationToMs = (raw: any): number => {
+        if (raw == null) return 0;
+        if (typeof raw === 'number') return raw * 1000;       // assume seconds
+        if (typeof raw !== 'string') return 0;
+        const m = /(\d+)\s*m/.exec(raw);
+        const s = /(\d+)\s*s/.exec(raw);
+        const mins = m ? Number(m[1]) : 0;
+        const secs = s ? Number(s[1]) : 0;
+        return (mins * 60 + secs) * 1000;
+    };
+
     const maxDurMs = Math.max(
-        ...txns.map((t) => {
-            const [m, s] = t.duration.replace('m ', ':').replace('s', '').split(':').map(Number);
-            return (m * 60 + s) * 1000;
-        }),
+        ...txns.map((t) => parseDurationToMs(t.duration)),
+        1, // guard against Math.max returning -Infinity on an all-zero array
     );
 
     return (
@@ -695,10 +709,12 @@ const LongTxnCard = React.memo(({ data, onNavigate }: any) => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {txns.slice(0, 3).map((t, i) => {
-                    const [m, s] = t.duration.replace('m ', ':').replace('s', '').split(':').map(Number);
-                    const durSec = m * 60 + s;
-                    const pct = Math.min((durSec / (maxDurMs / 1000)) * 100, 100);
-                    const isIdle = t.state.includes('idle');
+                    // Same safe parser as above — handles missing / numeric /
+                    // null `duration` fields without crashing.
+                    const durMs = parseDurationToMs(t.duration);
+                    const durSec = durMs / 1000;
+                    const pct = maxDurMs > 0 ? Math.min((durSec / (maxDurMs / 1000)) * 100, 100) : 0;
+                    const isIdle = typeof t.state === 'string' && t.state.includes('idle');
                     return (
                         <div key={t.pid} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
