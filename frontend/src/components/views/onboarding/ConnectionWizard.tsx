@@ -159,11 +159,20 @@ const ENGINE_HINTS: Record<string, string> = {
 • Database: table-name prefix (leave blank to monitor all tables in the region)`,
 };
 
+/**
+ * Provider templates. Clicking one applies its preset to the wizard:
+ *   - sets selectedType to template.dbType
+ *   - turns SSL on (every hosted provider here requires it)
+ *   - advances to the Details step
+ *
+ * Provider-specific guidance is shown on step 2 via PROVIDER_HINTS below.
+ */
 const PROVIDER_TEMPLATES = {
   aws_rds: {
     label: 'AWS RDS',
     icon: '☁️',
     template: {
+      dbType: 'postgresql',
       hostPattern: '*.*.rds.amazonaws.com',
       ssl: true,
       hint: 'Use your RDS endpoint as the host'
@@ -173,6 +182,7 @@ const PROVIDER_TEMPLATES = {
     label: 'Neon',
     icon: '⚡',
     template: {
+      dbType: 'postgresql',
       hostPattern: 'pg-*.neon.tech',
       ssl: true,
       hint: 'Neon requires SSL. Use your connection string above.'
@@ -182,6 +192,7 @@ const PROVIDER_TEMPLATES = {
     label: 'Supabase',
     icon: '🟢',
     template: {
+      dbType: 'postgresql',
       hostPattern: '*.supabase.co',
       ssl: true,
       hint: 'Supabase uses PostgreSQL. Find your credentials in Settings > Database.'
@@ -191,6 +202,7 @@ const PROVIDER_TEMPLATES = {
     label: 'PlanetScale',
     icon: '🪐',
     template: {
+      dbType: 'mysql',
       hostPattern: '*.psdb.cloud',
       ssl: true,
       hint: 'PlanetScale MySQL requires SSL. Use connection string above.'
@@ -200,11 +212,56 @@ const PROVIDER_TEMPLATES = {
     label: 'MongoDB Atlas',
     icon: '🎯',
     template: {
+      dbType: 'mongodb',
       hostPattern: 'cluster*.mongodb.net',
       ssl: true,
       hint: 'Use mongodb+srv:// connection string from Atlas console.'
     }
   },
+};
+
+/**
+ * Provider-specific guidance shown on step 2 when a provider template was
+ * selected. Keyed by the same keys as PROVIDER_TEMPLATES above.
+ */
+const PROVIDER_HINTS: Record<string, string> = {
+  supabase:
+    `Find your credentials in the Supabase dashboard → Project Settings → Database.
+• Host: db.<project-ref>.supabase.co (direct) or aws-0-<region>.pooler.supabase.com (pooler — recommended for serverless)
+• Port: 5432 (direct) or 6543 (transaction pooler) or 5432 (session pooler)
+• Username: postgres (direct) or postgres.<project-ref> (pooler)
+• Password: the password you set when you created the project
+• Database: postgres
+• SSL: required (already enabled by this template)
+Tip: for monitoring queries that hold connections open (pg_stat_*), prefer the direct or session pooler over the transaction pooler — pgBouncer in transaction mode breaks SET LOCAL and prepared statements.`,
+  neon:
+    `Find your connection string in the Neon dashboard → Connection Details.
+• Host: ep-<endpoint>-<region>.<region>.aws.neon.tech
+• Port: 5432
+• Username / Password / Database: from the Neon connection details
+• SSL: required (already enabled)
+Tip: Neon endpoints sleep after inactivity; the first query after sleep can take a few seconds.`,
+  aws_rds:
+    `Use your RDS endpoint from the AWS console → RDS → Databases → [your instance] → Connectivity & security.
+• Host: <db-id>.<random>.<region>.rds.amazonaws.com
+• Port: 5432 (Postgres) or 3306 (MySQL) — change the engine above if not Postgres
+• Username / Password: master user credentials
+• Database: your initial database name
+• SSL: required for compliance; use the RDS CA bundle if you want to verify the cert.`,
+  planetscale:
+    `Use your branch's connection string from the PlanetScale dashboard → Branches → Connect.
+• Host: aws.connect.psdb.cloud
+• Port: 3306
+• Username: PlanetScale-issued database user
+• Password: PlanetScale-issued password
+• Database: your database name
+• SSL: required (already enabled).`,
+  mongodb_atlas:
+    `Use the mongodb+srv:// connection string from Atlas → Database → Connect → Drivers.
+• Host: cluster<n>.<random>.mongodb.net
+• Username / Password: database user from Atlas → Security → Database Access
+• Database: any DB in the cluster (the SRV string handles host discovery)
+• Note: add this server's IP to Atlas → Security → Network Access, or 0.0.0.0/0 for testing.`,
 };
 
 const ConnectionWizard = () => {
@@ -230,6 +287,31 @@ const ConnectionWizard = () => {
   const [connectionId, setConnectionId] = useState(null);
   const [useConnectionString, setUseConnectionString] = useState(false);
   const [parsedFromString, setParsedFromString] = useState(null);
+  // Which PROVIDER_TEMPLATES key (if any) was chosen on step 1. Used on step 2
+  // to surface provider-specific guidance (e.g. where Supabase users find
+  // their connection string).
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+
+  /**
+   * Apply a provider template: select the right engine, force SSL on, and
+   * advance to the Details step. The user still fills in host/credentials
+   * (or pastes a connection string) — the template just sets defaults.
+   */
+  const handleProviderTemplate = (key: string) => {
+    const tpl = PROVIDER_TEMPLATES[key]?.template;
+    if (!tpl) return;
+    const dbType = tpl.dbType || 'postgresql';
+    setSelectedType(dbType);
+    setSelectedProvider(key);
+    setFormData((f) => ({
+      ...f,
+      type: dbType,
+      ssl: !!tpl.ssl,
+      // Seed default port from DB_TYPES so the form has a sensible starting value.
+      port: f.port || String(DB_TYPES[dbType]?.defaultPort ?? ''),
+    }));
+    setStep(2);
+  };
 
   const { goToTab } = useNavigation();
   const { connections, activeConnectionId, switchConnection, refreshConnections } = useConnection();
@@ -275,6 +357,9 @@ const ConnectionWizard = () => {
   // Step 1: Select database type
   const handleSelectType = (type) => {
     setSelectedType(type);
+    // Picking a raw engine clears any previous provider-template selection,
+    // so the provider-specific hint doesn't linger on the wrong engine.
+    setSelectedProvider(null);
     setFormData(prev => ({
       ...prev,
       type,
@@ -713,7 +798,7 @@ const ConnectionWizard = () => {
               Connections
             </h3>
             <button
-              onClick={() => { setShowWizard(!showWizard); setStep(1); setSelectedType(null); setTestStatus(null); setTestError(null); }}
+              onClick={() => { setShowWizard(!showWizard); setStep(1); setSelectedType(null); setSelectedProvider(null); setTestStatus(null); setTestError(null); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 14px', borderRadius: 20,
@@ -854,12 +939,20 @@ const ConnectionWizard = () => {
                 {Object.entries(PROVIDER_TEMPLATES).map(([key, provider]) => (
                   <div
                     key={key}
+                    role="button"
+                    tabIndex={0}
                     style={{
                       ...styles.typeCard,
-                      opacity: 0.7,
-                      cursor: 'help',
+                      cursor: 'pointer',
                     }}
                     title={provider.template.hint}
+                    onClick={() => handleProviderTemplate(key)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleProviderTemplate(key);
+                      }
+                    }}
                   >
                     <div style={styles.typeIcon}>{provider.icon}</div>
                     <div style={styles.typeLabel}>{provider.label}</div>
@@ -877,6 +970,22 @@ const ConnectionWizard = () => {
             <p style={styles.description}>
               {selectedType && `Connect to your ${DB_TYPES[selectedType].label} database`}
             </p>
+
+            {/* Provider-specific guidance when a hosted-provider template was
+                selected on step 1 (Supabase, Neon, RDS, etc.). */}
+            {selectedProvider && PROVIDER_HINTS[selectedProvider] && (
+              <div style={{
+                padding: '14px 16px', marginBottom: 16, borderRadius: 10,
+                background: '#1f9c5414',
+                borderLeft: '4px solid #1f9c54',
+                fontSize: 13, color: '#374151',
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 6, color: '#1f9c54' }}>
+                  {PROVIDER_TEMPLATES[selectedProvider]?.icon} {PROVIDER_TEMPLATES[selectedProvider]?.label} — setup notes
+                </div>
+                <div style={{ whiteSpace: 'pre-line', lineHeight: 1.55 }}>{PROVIDER_HINTS[selectedProvider]}</div>
+              </div>
+            )}
 
             {/* Per-engine guidance for non-standard credential shapes. */}
             {selectedType && ENGINE_HINTS[selectedType] && (
