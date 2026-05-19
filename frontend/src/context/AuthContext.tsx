@@ -104,6 +104,10 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // ── Periodic token expiry check ────────────────────────────────────────
+    // 15s window so a token that expires mid-session is noticed quickly even
+    // if the user is idle (and isn't making API calls that would 401 first).
+    // The real source of truth is the 401 → auth:logout event from api.ts;
+    // this is just a belt-and-suspenders client-side guard.
     useEffect(() => {
         if (!currentUser) return;
         const interval = setInterval(() => {
@@ -114,7 +118,7 @@ export const AuthProvider = ({ children }) => {
                 setCurrentUser(null);
                 setError('Session expired. Please sign in again.');
             }
-        }, 60000);
+        }, 15000);
         return () => clearInterval(interval);
     }, [currentUser]);
 

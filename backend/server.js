@@ -281,8 +281,14 @@ function buildSslOption(sslEnabled) {
 // (default ~100 max). Three is plenty for the metadata workload (control-plane
 // reads/writes only), and the per-user query workload runs through dynamic
 // pools created by getPool() with their own caps.
+//
+// On Vercel specifically we default to 1: a single cold-started serverless
+// function rarely needs to multiplex control-plane queries, and many cold
+// starts × 3 connections each saturates small Neon tiers fast. Long-lived
+// hosts (Railway/Fly/Render/Docker) keep the default of 3.
 // Override with FATHOM_ADMIN_POOL_MAX if a deployment genuinely needs more.
-const ADMIN_POOL_MAX = Number(process.env.FATHOM_ADMIN_POOL_MAX) || 3;
+const ADMIN_POOL_DEFAULT = process.env.VERCEL === '1' ? 1 : 3;
+const ADMIN_POOL_MAX = Number(process.env.FATHOM_ADMIN_POOL_MAX) || ADMIN_POOL_DEFAULT;
 const pool = HAS_ADMIN_DB
     ? new Pool(
           process.env.DATABASE_URL
@@ -327,6 +333,13 @@ const POOL_IDLE_EVICT_MS =
     Number(process.env.FATHOM_POOL_IDLE_EVICT_MS) || 30 * 60 * 1000; // 30 min
 const POOL_EVICT_SWEEP_MS =
     Number(process.env.FATHOM_POOL_EVICT_SWEEP_MS) || 5 * 60 * 1000; // 5 min
+// Hard cap on simultaneously-live connection pools / Mongo clients across the
+// process. When we hit the cap we evict the least-recently-used entry instead
+// of throwing — see evictLruPoolIfNeeded() below.
+const MAX_LIVE_POOLS =
+    Number(process.env.FATHOM_MAX_LIVE_POOLS) || 20;
+const MAX_LIVE_MONGO_CLIENTS =
+    Number(process.env.FATHOM_MAX_LIVE_MONGO_CLIENTS) || 20;
 
 function touchPool(id)       { poolLastUsed.set(id, Date.now()); }
 function touchMongoClient(id){ mongoLastUsed.set(id, Date.now()); }
@@ -387,10 +400,11 @@ async function getPool(connectionId, userId) {
     // await their Promise instead of starting a second concurrent creation.
     if (poolInFlight.has(id)) return poolInFlight.get(id);
 
-    // Cap total live pools across the process.
-    if (connectionPools.size >= 20) {
-        throw new Error('Too many active connections. Please close some connections first.');
-    }
+    // Cap total live pools across the process. When we hit the cap, evict the
+    // least-recently-used pool (calling .end() on it) and continue, so a busy
+    // tenant doesn't get rejected just because someone else opened a pool an
+    // hour ago and never came back.
+    await evictLruPoolIfNeeded();
 
     const dbType = (conn.dbType || 'postgresql').toLowerCase();
     if (dbType === 'mongodb') {
@@ -459,6 +473,9 @@ async function getMongoClient(connectionId, userId) {
 
     if (!mongodb) throw new Error('MongoDB driver not installed on the server. Run: npm install mongodb');
 
+    // Cap total live Mongo clients across the process; evict LRU on overflow.
+    await evictLruMongoClientIfNeeded();
+
     const creation = (async () => {
         const cfg = await resolvePoolConfig(conn);
         const userPart = cfg.user ? `${encodeURIComponent(cfg.user)}:${encodeURIComponent(cfg.password || '')}@` : '';
@@ -508,6 +525,71 @@ async function destroyPool(connectionId) {
         await m.client.close().catch(err => log('WARN', `MongoDB close failed for connection ${id}`, { error: err.message }));
         log('INFO', `Destroyed MongoDB client for connection ${id}`);
     }
+}
+
+/**
+ * Find the connection id whose pool has been least-recently used, ignoring
+ * any pool that is currently the in-flight creation target (we'd otherwise
+ * evict the pool we're about to return). Returns undefined when the map is
+ * empty or every entry is in flight.
+ */
+function _pickLruId(map, lastUsedMap, inFlightMap) {
+    let oldestId;
+    let oldestTs = Infinity;
+    for (const [id] of map) {
+        if (inFlightMap.has(id)) continue;
+        const ts = lastUsedMap.get(id) ?? 0;
+        if (ts < oldestTs) {
+            oldestTs = ts;
+            oldestId = id;
+        }
+    }
+    return oldestId;
+}
+
+/**
+ * If we're at or above the live-pool cap, evict the LRU SQL pool to make room.
+ * No-op when under the cap. Safe to call before every pool creation.
+ */
+async function evictLruPoolIfNeeded() {
+    if (connectionPools.size < MAX_LIVE_POOLS) return;
+    const victim = _pickLruId(connectionPools, poolLastUsed, poolInFlight);
+    if (victim === undefined) {
+        // Every pool is being created right now; this should be vanishingly
+        // rare. Don't throw — let the caller wait via the in-flight Promise.
+        log('WARN', 'Pool cap reached but no eligible LRU victim found', {
+            size: connectionPools.size,
+            cap: MAX_LIVE_POOLS,
+        });
+        return;
+    }
+    const idle = Math.round((Date.now() - (poolLastUsed.get(victim) ?? 0)) / 1000);
+    log('INFO', `Evicting LRU pool to make room for new connection`, {
+        victimId: victim,
+        idleSeconds: idle,
+    });
+    await destroyPool(victim);
+}
+
+/**
+ * Same as evictLruPoolIfNeeded but for the Mongo client map.
+ */
+async function evictLruMongoClientIfNeeded() {
+    if (mongoClients.size < MAX_LIVE_MONGO_CLIENTS) return;
+    const victim = _pickLruId(mongoClients, mongoLastUsed, mongoInFlight);
+    if (victim === undefined) {
+        log('WARN', 'Mongo client cap reached but no eligible LRU victim found', {
+            size: mongoClients.size,
+            cap: MAX_LIVE_MONGO_CLIENTS,
+        });
+        return;
+    }
+    const idle = Math.round((Date.now() - (mongoLastUsed.get(victim) ?? 0)) / 1000);
+    log('INFO', `Evicting LRU MongoDB client to make room for new connection`, {
+        victimId: victim,
+        idleSeconds: idle,
+    });
+    await destroyPool(victim);
 }
 
 // PRF-02 (audit): periodically evict pools that have not served a request in
@@ -1275,6 +1357,113 @@ app.get('/health', (_req, res) => res.json({
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AUTH HELPERS — shared by /api/auth/login and the SSO callback
+// ─────────────────────────────────────────────────────────────────────────────
+// NEW_SCREENS used to be declared inside the login handler, which meant the
+// SSO callback referenced it across a scope it couldn't actually see (latent
+// bug that only manifested if anyone ever called the SSO path; lift to module
+// scope to fix). FIXME: this hardcoded screen union breaks RBAC for any
+// screen listed here — see audit item #8. Track per-role screens in the DB
+// and remove this list when ready.
+const NEW_SCREENS = Object.freeze([
+    'backup', 'checkpoint', 'maintenance',
+    'replication', 'bloat', 'regression', 'cloudwatch',
+    'tasks', 'log-patterns', 'alert-correlation', 'Table',
+    'table-indexes', 'table-sizes',
+    'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring',
+    'retention', 'terraform', 'custom-dashboard',
+    'mongo-overview', 'mongo-performance', 'mongo-storage',
+    'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
+    'demo-data',
+    'demo-pg-overview', 'demo-pg-performance', 'demo-pg-resources', 'demo-pg-reliability', 'demo-pg-alerts', 'demo-pg-optimizer', 'demo-pg-indexes', 'demo-pg-regression',
+    'demo-pg-bloat', 'demo-pg-table', 'demo-pg-pool', 'demo-pg-replication', 'demo-pg-checkpoint', 'demo-pg-maintenance', 'demo-pg-capacity', 'demo-pg-backup',
+    'demo-pg-schema', 'demo-pg-schema-viz', 'demo-pg-security', 'demo-pg-cloudwatch', 'demo-pg-log-patterns', 'demo-pg-alert-correlation', 'demo-pg-opentelemetry', 'demo-pg-kubernetes',
+    'demo-pg-status-page', 'demo-pg-ai-monitoring', 'demo-pg-sql', 'demo-pg-api', 'demo-pg-repository', 'demo-pg-ai-advisor', 'demo-pg-tasks', 'demo-pg-users',
+    'demo-pg-admin-panel', 'demo-pg-retention', 'demo-pg-terraform', 'demo-pg-custom-dashboard', 'demo-mysql-overview', 'demo-mysql-performance', 'demo-mysql-resources', 'demo-mysql-reliability',
+    'demo-mysql-alerts', 'demo-mysql-optimizer', 'demo-mysql-indexes', 'demo-mysql-regression', 'demo-mysql-bloat', 'demo-mysql-table', 'demo-mysql-pool', 'demo-mysql-replication',
+    'demo-mysql-checkpoint', 'demo-mysql-maintenance', 'demo-mysql-capacity', 'demo-mysql-backup', 'demo-mysql-schema', 'demo-mysql-schema-viz', 'demo-mysql-security', 'demo-mysql-cloudwatch',
+    'demo-mysql-log-patterns', 'demo-mysql-alert-correlation', 'demo-mysql-opentelemetry', 'demo-mysql-kubernetes', 'demo-mysql-status-page', 'demo-mysql-ai-monitoring', 'demo-mysql-sql', 'demo-mysql-api',
+    'demo-mysql-repository', 'demo-mysql-ai-advisor', 'demo-mysql-tasks', 'demo-mysql-users', 'demo-mysql-admin-panel', 'demo-mysql-retention', 'demo-mysql-terraform', 'demo-mysql-custom-dashboard',
+    'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-replication', 'demo-mongo-sharding', 'demo-mongo-data-tools',
+]);
+
+/**
+ * Create a session row, build a JWT payload, sign the JWT, and run the
+ * post-login bookkeeping tasks (touchLastLogin, recordLogin, writeAudit).
+ * Failures in the bookkeeping tasks are logged but do not fail the login.
+ *
+ * @param {{
+ *   user: any,
+ *   req: import('express').Request,
+ *   source: 'password' | 'sso',
+ *   provider?: string,           // SSO provider name when source === 'sso'
+ *   deviceLabelFallback?: string // device label when no UA header is present
+ * }} args
+ * @returns {Promise<{ token: string, payload: any, sessionId: string }>}
+ */
+async function issueSession({ user, req, source, provider, deviceLabelFallback }) {
+    const sessionId = await createSession(pool, {
+        userId:      user.id,
+        ip:          req.ip,
+        userAgent:   req.headers['user-agent'],
+        deviceLabel: req.headers['user-agent']?.slice(0, 255) ?? (deviceLabelFallback || 'Unknown'),
+        location:    null,
+    });
+
+    const allowedScreens = [...new Set([...(user.allowed_screens ?? []), ...NEW_SCREENS])];
+
+    const payload = {
+        id:             user.id,
+        username:       user.username,
+        name:           user.name,
+        email:          user.email,
+        role:           user.role,
+        accessLevel:    user.access_level,
+        allowedScreens,
+        sid:            sessionId,
+    };
+
+    const token = jwt.sign(payload, CONFIG.JWT_SECRET, {
+        expiresIn: CONFIG.JWT_EXPIRES_IN,
+        audience:  CONFIG.JWT_AUDIENCE,
+        issuer:    CONFIG.JWT_ISSUER,
+    });
+
+    const auditAction = source === 'sso' ? 'SSO_LOGIN_SUCCESS' : 'LOGIN_SUCCESS';
+    const auditDetail = source === 'sso'
+        ? `Logged in via ${provider || 'unknown'}`
+        : (req.headers['user-agent']?.slice(0, 120) || '');
+
+    const postTasks = [
+        ['touchLastLogin', touchLastLogin(pool, user.id)],
+        ['recordLogin',    recordLogin(pool, user.id)],
+        ['writeAudit',     writeAudit(pool, {
+            actorId:       user.id,
+            actorUsername: user.username,
+            action:        auditAction,
+            level:         'info',
+            detail:        auditDetail,
+            ip:            req.ip,
+        })],
+    ];
+    const results = await Promise.allSettled(postTasks.map(([, p]) => p));
+    results.forEach((r, i) => {
+        if (r.status === 'rejected') {
+            const [name] = postTasks[i];
+            log('WARN', `Post-login task '${name}' failed`, {
+                task:   name,
+                source,
+                provider,
+                error:  r.reason?.message,
+                userId: user.id,
+            });
+        }
+    });
+
+    return { token, payload, sessionId };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // AUTH — POST /api/auth/login
 // ─────────────────────────────────────────────────────────────────────────────
 app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res) => {
@@ -1328,70 +1517,11 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
             return res.status(403).json({ error: `Account is ${user.status}` });
         }
 
-        const sessionId = await createSession(pool, {
-            userId:      user.id,
-            ip:          req.ip,
-            userAgent:   req.headers['user-agent'],
-            deviceLabel: req.headers['user-agent']?.slice(0, 255) ?? 'Unknown',
-            location:    null,
-        });
-
-        const NEW_SCREENS = [
-            'backup', 'checkpoint', 'maintenance',
-            'replication', 'bloat', 'regression', 'cloudwatch',
-            'tasks', 'log-patterns', 'alert-correlation', 'Table',
-            'table-indexes', 'table-sizes',
-            'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring',
-            'retention', 'terraform', 'custom-dashboard',
-            'mongo-overview', 'mongo-performance', 'mongo-storage',
-            'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
-            'demo-data',
-            'demo-pg-overview', 'demo-pg-performance', 'demo-pg-resources', 'demo-pg-reliability', 'demo-pg-alerts', 'demo-pg-optimizer', 'demo-pg-indexes', 'demo-pg-regression',
-            'demo-pg-bloat', 'demo-pg-table', 'demo-pg-pool', 'demo-pg-replication', 'demo-pg-checkpoint', 'demo-pg-maintenance', 'demo-pg-capacity', 'demo-pg-backup',
-            'demo-pg-schema', 'demo-pg-schema-viz', 'demo-pg-security', 'demo-pg-cloudwatch', 'demo-pg-log-patterns', 'demo-pg-alert-correlation', 'demo-pg-opentelemetry', 'demo-pg-kubernetes',
-            'demo-pg-status-page', 'demo-pg-ai-monitoring', 'demo-pg-sql', 'demo-pg-api', 'demo-pg-repository', 'demo-pg-ai-advisor', 'demo-pg-tasks', 'demo-pg-users',
-            'demo-pg-admin-panel', 'demo-pg-retention', 'demo-pg-terraform', 'demo-pg-custom-dashboard', 'demo-mysql-overview', 'demo-mysql-performance', 'demo-mysql-resources', 'demo-mysql-reliability',
-            'demo-mysql-alerts', 'demo-mysql-optimizer', 'demo-mysql-indexes', 'demo-mysql-regression', 'demo-mysql-bloat', 'demo-mysql-table', 'demo-mysql-pool', 'demo-mysql-replication',
-            'demo-mysql-checkpoint', 'demo-mysql-maintenance', 'demo-mysql-capacity', 'demo-mysql-backup', 'demo-mysql-schema', 'demo-mysql-schema-viz', 'demo-mysql-security', 'demo-mysql-cloudwatch',
-            'demo-mysql-log-patterns', 'demo-mysql-alert-correlation', 'demo-mysql-opentelemetry', 'demo-mysql-kubernetes', 'demo-mysql-status-page', 'demo-mysql-ai-monitoring', 'demo-mysql-sql', 'demo-mysql-api',
-            'demo-mysql-repository', 'demo-mysql-ai-advisor', 'demo-mysql-tasks', 'demo-mysql-users', 'demo-mysql-admin-panel', 'demo-mysql-retention', 'demo-mysql-terraform', 'demo-mysql-custom-dashboard',
-            'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-replication', 'demo-mongo-sharding', 'demo-mongo-data-tools',
-        ];
-        const baseScreens    = user.allowed_screens ?? [];
-        const allowedScreens = [...new Set([...baseScreens, ...NEW_SCREENS])];
-
-        const payload = {
-            id:             user.id,
-            username:       user.username,
-            name:           user.name,
-            email:          user.email,
-            role:           user.role,
-            accessLevel:    user.access_level,
-            allowedScreens,
-            sid:            sessionId,
-        };
-
-        const token = jwt.sign(payload, CONFIG.JWT_SECRET, {
-            expiresIn: CONFIG.JWT_EXPIRES_IN,
-            audience:  CONFIG.JWT_AUDIENCE,
-            issuer:    CONFIG.JWT_ISSUER,
-        });
         recordLoginAttempt(username, true);
-
-        const results = await Promise.allSettled([
-            touchLastLogin(pool, user.id),
-            recordLogin(pool, user.id),
-            writeAudit(pool, {
-                actorId:       user.id,
-                actorUsername: user.username,
-                action:        'LOGIN_SUCCESS',
-                level:         'info',
-                detail:        req.headers['user-agent']?.slice(0, 120),
-                ip:            req.ip,
-            }),
-        ]);
-        results.forEach((r, i) => {
-            if (r.status === 'rejected') log('WARN', `Post-login task ${i} failed`, { error: r.reason?.message });
+        const { token, payload } = await issueSession({
+            user,
+            req,
+            source: 'password',
         });
 
         res.json({
@@ -1439,47 +1569,12 @@ app.get('/api/auth/sso/:provider/callback', async (req, res) => {
             return res.redirect(`${CONFIG.FRONTEND_URL}/auth/callback?error=Account not found or inactive`);
         }
 
-        const sessionId = await createSession(pool, {
-            userId:      user.id,
-            ip:          req.ip,
-            userAgent:   req.headers['user-agent'],
-            deviceLabel: req.headers['user-agent']?.slice(0, 255) ?? 'SSO Login',
-            location:    null,
-        });
-
-        const allowedScreens = [...new Set([...(user.allowed_screens ?? []), ...NEW_SCREENS])];
-
-        const payload = {
-            id:             user.id,
-            username:       user.username,
-            name:           user.name,
-            email:          user.email,
-            role:           user.role,
-            accessLevel:    user.access_level,
-            allowedScreens,
-            sid:            sessionId,
-        };
-
-        const token = jwt.sign(payload, CONFIG.JWT_SECRET, {
-            expiresIn: CONFIG.JWT_EXPIRES_IN,
-            audience:  CONFIG.JWT_AUDIENCE,
-            issuer:    CONFIG.JWT_ISSUER,
-        });
-
-        const results = await Promise.allSettled([
-            touchLastLogin(pool, user.id),
-            recordLogin(pool, user.id),
-            writeAudit(pool, {
-                actorId:       user.id,
-                actorUsername: user.username,
-                action:        'SSO_LOGIN_SUCCESS',
-                level:         'info',
-                detail:        `Logged in via ${provider}`,
-                ip:            req.ip,
-            }),
-        ]);
-        results.forEach((r, i) => {
-            if (r.status === 'rejected') log('WARN', `Post-SSO login task ${i} failed`, { error: r.reason?.message });
+        const { token, payload } = await issueSession({
+            user,
+            req,
+            source: 'sso',
+            provider,
+            deviceLabelFallback: 'SSO Login',
         });
 
         // SEC-08 (audit): do NOT put the JWT in the redirect URL — URLs leak to
@@ -6303,19 +6398,4 @@ export default app;
 // Skip startup only when imported by Vercel's serverless runtime.
 if (process.env.VERCEL !== '1') {
     startup();
-} => shutdown('SIGINT'));
-
-// ─────────────────────────────────────────────────────────────────────────────
-// EXPORTS & STARTUP
-// ─────────────────────────────────────────────────────────────────────────────
-// Export the Express app for any environment that imports this module
-// (e.g. Vercel serverless, tests, etc.)
-export default app;
-
-// Start the server when running directly (Railway, local dev, Docker, etc.)
-// Skip startup only when imported by Vercel's serverless runtime.
-if (process.env.VERCEL !== '1') {
-    startup();
-}
-tartup();
 }

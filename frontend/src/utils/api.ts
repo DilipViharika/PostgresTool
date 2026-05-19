@@ -205,6 +205,13 @@ export function connectWS(onMessage, intervalMs = 10000) {
                 headers: { Authorization: `Bearer ${token}` },
                 signal: AbortSignal.timeout(10000),
             });
+            // If the server says the token is no longer valid, hard-logout
+            // so the UI redirects to /login instead of silently looping.
+            if (res.status === 401) {
+                stopped = true;
+                window.dispatchEvent(new CustomEvent('auth:logout'));
+                return;
+            }
             if (!res.ok) return;
             const data = await res.json();
 
