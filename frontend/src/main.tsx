@@ -35,6 +35,12 @@ createRoot(root).render(
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      // Silent in production (the PWA simply degrades to a normal SPA), but
+      // surface failures in dev so they don't go unnoticed.
+      if (import.meta.env.DEV) {
+        console.warn('[SW] Service worker registration failed:', err);
+      }
+    });
   });
 }

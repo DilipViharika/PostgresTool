@@ -597,8 +597,25 @@ function cached(key, ttl) {
         const hit = cache.get(scopedKey);
         if (hit) { res.setHeader('X-Cache', 'HIT'); return res.json(hit); }
         res.setHeader('X-Cache', 'MISS');
+
+        // Capture the body on first res.json() call, then restore the original
+        // method immediately so any outer middleware that wraps res.json after
+        // us isn't fighting our wrapper. We never overwrite the response — the
+        // handler's JSON still flows straight through to the client.
         const origJson = res.json.bind(res);
-        res.json = (body) => { cache.set(scopedKey, body, ttl); return origJson(body); };
+        let captured = false;
+        res.json = (body) => {
+            if (!captured) {
+                captured = true;
+                res.json = origJson; // restore before sending
+                // Only cache successful responses; never cache an error payload.
+                // Handlers can opt out by setting res.locals.noCache = true.
+                if (res.statusCode >= 200 && res.statusCode < 300 && !res.locals?.noCache) {
+                    try { cache.set(scopedKey, body, ttl); } catch { /* cache full / non-fatal */ }
+                }
+            }
+            return origJson(body);
+        };
         next();
     };
 }
@@ -6286,4 +6303,19 @@ export default app;
 // Skip startup only when imported by Vercel's serverless runtime.
 if (process.env.VERCEL !== '1') {
     startup();
+} => shutdown('SIGINT'));
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPORTS & STARTUP
+// ─────────────────────────────────────────────────────────────────────────────
+// Export the Express app for any environment that imports this module
+// (e.g. Vercel serverless, tests, etc.)
+export default app;
+
+// Start the server when running directly (Railway, local dev, Docker, etc.)
+// Skip startup only when imported by Vercel's serverless runtime.
+if (process.env.VERCEL !== '1') {
+    startup();
+}
+tartup();
 }

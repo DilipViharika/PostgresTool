@@ -6,6 +6,11 @@
  * Enterprise tiers get higher limits.
  */
 
+function log(level, message, meta = {}) {
+    const fn = level === 'ERROR' ? console.error : level === 'WARN' ? console.warn : console.log;
+    fn(JSON.stringify({ ts: new Date().toISOString(), level, msg: message, ...meta }));
+}
+
 const buckets = new Map();
 const MAX_BUCKETS = 100000;
 
@@ -31,12 +36,18 @@ export function rateLimiter(opts = {}) {
 
         // Emergency purge if buckets exceed MAX_BUCKETS
         if (buckets.size > MAX_BUCKETS) {
+            const before = buckets.size;
             const sortedEntries = Array.from(buckets.entries())
                 .sort((a, b) => b[1].windowStart - a[1].windowStart)
                 .slice(0, Math.floor(MAX_BUCKETS * 0.8));
             buckets.clear();
             sortedEntries.forEach(([k, v]) => buckets.set(k, v));
-            console.warn(`[RateLimiter] Emergency purge triggered: reduced buckets from ${buckets.size} to ${Math.floor(MAX_BUCKETS * 0.8)}`);
+            log('WARN', 'Emergency purge triggered', {
+                component: 'rateLimiter',
+                before,
+                after: buckets.size,
+                maxBuckets: MAX_BUCKETS,
+            });
         }
 
         // Tier-based limits: enterprise gets 5x, pro gets 2x

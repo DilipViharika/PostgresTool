@@ -10,6 +10,11 @@
 
 import { getUserOrganizations } from '../enterprise/organization/orgService.js';
 
+function log(level, message, meta = {}) {
+    const fn = level === 'ERROR' ? console.error : level === 'WARN' ? console.warn : console.log;
+    fn(JSON.stringify({ ts: new Date().toISOString(), level, msg: message, ...meta }));
+}
+
 export function tenantIsolation(pool) {
     return async function (req, res, next) {
         // Skip for super_admin — they can access all orgs
@@ -38,7 +43,12 @@ export function tenantIsolation(pool) {
             req.orgRole = membership.role; // 'owner', 'admin', 'member', 'viewer'
             next();
         } catch (err) {
-            console.error('[tenantIsolation] Error:', err.message);
+            log('ERROR', 'Tenant isolation lookup failed', {
+                component: 'tenantIsolation',
+                userId: req.user?.id,
+                orgId,
+                error: err.message,
+            });
             return res.status(500).json({ error: 'Failed to verify organization access' });
         }
     };

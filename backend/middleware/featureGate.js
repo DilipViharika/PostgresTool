@@ -11,6 +11,11 @@
 import { isFeatureEnabled } from '../enterprise/licensing/licenseService.js';
 import { isFeatureAvailable, TIERS } from '../enterprise/licensing/tiers.js';
 
+function log(level, message, meta = {}) {
+    const fn = level === 'ERROR' ? console.error : level === 'WARN' ? console.warn : console.log;
+    fn(JSON.stringify({ ts: new Date().toISOString(), level, msg: message, ...meta }));
+}
+
 /**
  * @param {import('pg').Pool} pool
  * @param {string} feature - Feature key to check
@@ -45,7 +50,12 @@ export function requireFeature(pool, feature) {
             }
             next();
         } catch (err) {
-            console.error('[featureGate] Error:', err.message);
+            log('ERROR', 'Feature gate lookup failed', {
+                component: 'featureGate',
+                feature,
+                orgId,
+                error: err.message,
+            });
             // Fail open for community features, fail closed for enterprise
             if (isFeatureAvailable('community', feature)) return next();
             return res.status(403).json({ error: 'Unable to verify feature access' });

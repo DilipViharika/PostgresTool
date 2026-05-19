@@ -9,6 +9,11 @@
 import { isIpAllowed } from '../enterprise/security/ipWhitelistService.js';
 import { isFeatureEnabled } from '../enterprise/licensing/licenseService.js';
 
+function log(level, message, meta = {}) {
+    const fn = level === 'ERROR' ? console.error : level === 'WARN' ? console.warn : console.log;
+    fn(JSON.stringify({ ts: new Date().toISOString(), level, msg: message, ...meta }));
+}
+
 export function ipWhitelistMiddleware(pool) {
     return async function (req, res, next) {
         const orgId = req.orgId;
@@ -33,7 +38,11 @@ export function ipWhitelistMiddleware(pool) {
             }
             next();
         } catch (err) {
-            console.error('[ipWhitelist] Error:', err.message);
+            log('ERROR', 'IP whitelist check failed', {
+                component: 'ipWhitelist',
+                orgId,
+                error: err.message,
+            });
             // Fail open — don't block users if whitelist check fails
             next();
         }

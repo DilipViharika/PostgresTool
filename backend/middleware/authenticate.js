@@ -12,6 +12,11 @@
 import jwt                          from 'jsonwebtoken';
 import { isSessionActive, authenticateApiKey } from '../services/sessionService.js';
 
+function log(level, message, meta = {}) {
+    const fn = level === 'ERROR' ? console.error : level === 'WARN' ? console.warn : console.log;
+    fn(JSON.stringify({ ts: new Date().toISOString(), level, msg: message, ...meta }));
+}
+
 /**
  * Per-API-key rate limiting
  * Tracks requests per minute for each API key
@@ -111,7 +116,8 @@ export function buildAuthenticate(pool, config) {
             try {
                 active = await isSessionActive(pool, payload.sid);
             } catch (err) {
-                console.error('[SECURITY] Session revocation lookup failed', {
+                log('ERROR', 'Session revocation lookup failed', {
+                    component: 'auth',
                     sid: payload.sid,
                     error: err.message,
                 });
@@ -121,9 +127,9 @@ export function buildAuthenticate(pool, config) {
         } else {
             // Legacy token without sid detected — could be revoked but cannot verify
             // Log warning and set upgrade header to prompt frontend re-authentication
-            console.warn('[SECURITY] Token without sid detected — legacy token may be revoked', {
+            log('WARN', 'Token without sid detected — legacy token may be revoked', {
+                component: 'auth',
                 userId: payload.id,
-                timestamp: new Date().toISOString(),
             });
             res.set('X-Token-Upgrade-Required', 'true');
         }
