@@ -28,7 +28,7 @@ import {
     classifyConnectionError,
 } from './services/systemDiagnostics.js';
 
-import { buildAuthenticate, requireScreen, requireRole } from './middleware/authenticate.js';
+import { buildAuthenticate, buildEnforcePasswordChange, requireScreen, requireRole } from './middleware/authenticate.js';
 import userRoutes                           from './routes/userRoutes.js';
 import sessionRoutes                        from './routes/sessionRoutes.js';
 import auditRoutes                          from './routes/auditRoutes.js';
@@ -479,7 +479,21 @@ async function getMongoClient(connectionId, userId) {
     const creation = (async () => {
         const cfg = await resolvePoolConfig(conn);
         const userPart = cfg.user ? `${encodeURIComponent(cfg.user)}:${encodeURIComponent(cfg.password || '')}@` : '';
-        const sslParam = conn.ssl ? '?tls=true&tlsAllowInvalidCertificates=true' : '';
+        // SEC: TLS certificate validation. Default to strict in production so
+        // a MITM can't swap in a self-signed cert. Operators with self-signed
+        // certs on internal Mongo clusters can opt back in via the same env
+        // var used for Postgres (FATHOM_TLS_ALLOW_SELF_SIGNED=true). In dev,
+        // unless FATHOM_TLS_STRICT=true, we keep the lax behavior so localhost
+        // self-signed setups still work out of the box.
+        let sslParam = '';
+        if (conn.ssl) {
+            const allowSelfSigned =
+                process.env.FATHOM_TLS_ALLOW_SELF_SIGNED === 'true'
+                || (!IS_PROD && process.env.FATHOM_TLS_STRICT !== 'true');
+            sslParam = allowSelfSigned
+                ? '?tls=true&tlsAllowInvalidCertificates=true'
+                : '?tls=true';
+        }
         const connStr = `mongodb://${userPart}${cfg.host}:${cfg.port || 27017}/${cfg.database || 'admin'}${sslParam}`;
 
         const client = new mongodb.MongoClient(connStr, {
@@ -719,6 +733,9 @@ function rateLimiter(req, res, next) {
     let bucket = rateBuckets.get(ip);
     if (!bucket || now - bucket.windowStart > CONFIG.RATE_LIMIT.WINDOW_MS) {
         bucket = { windowStart: now, count: 0 };
+        // Cap before insert so even an attack that rotates IPs can't grow the
+        // map past the cap on a long-lived Vercel instance.
+        trimMapToCap(rateBuckets, 50_000);
         rateBuckets.set(ip, bucket);
     }
     if (++bucket.count > CONFIG.RATE_LIMIT.MAX_REQUESTS) {
@@ -743,6 +760,7 @@ function strictRateLimiter(windowMs = 60_000, maxReqs = 10) {
         let b = strictBuckets.get(key);
         if (!b || now - b.windowStart > windowMs) {
             b = { windowStart: now, count: 0 };
+            trimMapToCap(strictBuckets, 50_000);
             strictBuckets.set(key, b);
         }
         if (++b.count > maxReqs) {
@@ -789,12 +807,17 @@ function securityHeaders(_req, res, next) {
 // ─────────────────────────────────────────────────────────────────────────────
 const DANGEROUS_SQL = /\b(INSERT|UPDATE|DELETE|DROP|TRUNCATE|CREATE|ALTER|GRANT|REVOKE|COPY|EXECUTE|DO\b|CALL|NOTIFY|LISTEN|LOAD|LOCK\s+TABLE|CHECKPOINT|SECURITY\s+LABEL|SET\s+ROLE|RESET\s+ALL)\b/i;
 
-// Additional bypass patterns to detect SQL injection attempts
+// Additional bypass patterns to detect SQL injection attempts.
+//
+// Note: the previous /\$\d+/ rule was removed — $1/$2/$N is the standard
+// Postgres bind-placeholder syntax, and legitimate users will paste
+// parameterized queries (EXACTLY what this tool is supposed to analyze).
+// Bind placeholders cannot create an injection by themselves: in EXPLAIN
+// they are bound to literal NULL, so they are safe to allow.
 const INJECTION_BYPASS_PATTERNS = [
     /\bUNION\b/i,                              // UNION-based injection
     /\b(AND|OR)\b.*=.*1\b/i,                   // Tautology injection
     /['"`];?\s*-{2}|['"`];?\s*\/\*/,           // Comment-based injection
-    /\$\d+/,                                   // Parameter injection attempt
     /\bEXISTS\b.*\(/i,                         // EXISTS-based injection
     /\bCASE\b.*\bWHEN\b/i,                     // CASE-based injection
 ];
@@ -904,6 +927,7 @@ function recordLoginAttempt(username, success) {
     }
     if (success) { loginAttempts.delete(username); return; }
     record.count++;
+    trimMapToCap(loginAttempts, 20_000);
     loginAttempts.set(username, record);
 }
 
@@ -1270,6 +1294,26 @@ app.use(securityHeaders);
 // ─────────────────────────────────────────────────────────────────────────────
 const csrfTokens = new Map();
 const CSRF_TOKEN_TTL = 1 * 60 * 60 * 1000; // 1 hour
+// Hard size cap so an unbounded flood of token requests (or a long-lived
+// Vercel instance with no sweep) can't grow this Map without bound. Map
+// iteration order is insertion order, so we drop the oldest first.
+const CSRF_TOKEN_MAX = 10_000;
+
+/**
+ * Drop oldest entries from a Map until its size is at or below `cap`.
+ * Safe to call after every insertion as a cheap upper bound — Map iteration
+ * is O(n) only in the size of the overflow, not the whole map.
+ */
+function trimMapToCap(map, cap) {
+    if (map.size <= cap) return;
+    const toDrop = map.size - cap;
+    let i = 0;
+    for (const k of map.keys()) {
+        if (i >= toDrop) break;
+        map.delete(k);
+        i++;
+    }
+}
 
 // Cleanup stale CSRF tokens every 10 minutes
 if (process.env.VERCEL !== '1') {
@@ -1333,13 +1377,26 @@ if (process.env.NODE_ENV !== 'production') {
     app.use((req, _res, next) => { log('INFO', `${req.method} ${req.path}`, { ip: req.ip }); next(); });
 }
 
-const authenticate = buildAuthenticate(pool, CONFIG);
+// Build the raw JWT/API-key authenticator, then wrap it so every protected
+// route also enforces the "must change password" flag. We expose the wrapped
+// version under the name `authenticate` — every existing `app.get(...,
+// authenticate, ...)` in this file picks up the password gate for free.
+const _rawAuthenticate = buildAuthenticate(pool, CONFIG);
+const _enforcePwChange = pool ? buildEnforcePasswordChange(pool) : (_req, _res, next) => next();
+const authenticate = function authenticate(req, res, next) {
+    _rawAuthenticate(req, res, (err) => {
+        if (err) return next(err);
+        if (res.headersSent) return; // 401/403 already sent
+        _enforcePwChange(req, res, next);
+    });
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CSRF Token Endpoint
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/csrf-token', authenticate, (req, res) => {
     // Generate a random CSRF token
+    trimMapToCap(csrfTokens, CSRF_TOKEN_MAX);
     const token = randomUUID();
     csrfTokens.set(token, { createdAt: Date.now() });
     res.json({ csrfToken: token });
@@ -1357,35 +1414,14 @@ app.get('/health', (_req, res) => res.json({
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AUTH HELPERS — shared by /api/auth/login and the SSO callback
+// AUTH HELPERS — shared by /api/auth/login and future SSO callbacks
 // ─────────────────────────────────────────────────────────────────────────────
-// NEW_SCREENS used to be declared inside the login handler, which meant the
-// SSO callback referenced it across a scope it couldn't actually see (latent
-// bug that only manifested if anyone ever called the SSO path; lift to module
-// scope to fix). FIXME: this hardcoded screen union breaks RBAC for any
-// screen listed here — see audit item #8. Track per-role screens in the DB
-// and remove this list when ready.
-const NEW_SCREENS = Object.freeze([
-    'backup', 'checkpoint', 'maintenance',
-    'replication', 'bloat', 'regression', 'cloudwatch',
-    'tasks', 'log-patterns', 'alert-correlation', 'Table',
-    'table-indexes', 'table-sizes',
-    'opentelemetry', 'kubernetes', 'status-page', 'ai-advisor', 'ai-monitoring',
-    'retention', 'terraform', 'custom-dashboard',
-    'mongo-overview', 'mongo-performance', 'mongo-storage',
-    'mongo-replication', 'mongo-data-tools', 'mongo-sharding',
-    'demo-data',
-    'demo-pg-overview', 'demo-pg-performance', 'demo-pg-resources', 'demo-pg-reliability', 'demo-pg-alerts', 'demo-pg-optimizer', 'demo-pg-indexes', 'demo-pg-regression',
-    'demo-pg-bloat', 'demo-pg-table', 'demo-pg-pool', 'demo-pg-replication', 'demo-pg-checkpoint', 'demo-pg-maintenance', 'demo-pg-capacity', 'demo-pg-backup',
-    'demo-pg-schema', 'demo-pg-schema-viz', 'demo-pg-security', 'demo-pg-cloudwatch', 'demo-pg-log-patterns', 'demo-pg-alert-correlation', 'demo-pg-opentelemetry', 'demo-pg-kubernetes',
-    'demo-pg-status-page', 'demo-pg-ai-monitoring', 'demo-pg-sql', 'demo-pg-api', 'demo-pg-repository', 'demo-pg-ai-advisor', 'demo-pg-tasks', 'demo-pg-users',
-    'demo-pg-admin-panel', 'demo-pg-retention', 'demo-pg-terraform', 'demo-pg-custom-dashboard', 'demo-mysql-overview', 'demo-mysql-performance', 'demo-mysql-resources', 'demo-mysql-reliability',
-    'demo-mysql-alerts', 'demo-mysql-optimizer', 'demo-mysql-indexes', 'demo-mysql-regression', 'demo-mysql-bloat', 'demo-mysql-table', 'demo-mysql-pool', 'demo-mysql-replication',
-    'demo-mysql-checkpoint', 'demo-mysql-maintenance', 'demo-mysql-capacity', 'demo-mysql-backup', 'demo-mysql-schema', 'demo-mysql-schema-viz', 'demo-mysql-security', 'demo-mysql-cloudwatch',
-    'demo-mysql-log-patterns', 'demo-mysql-alert-correlation', 'demo-mysql-opentelemetry', 'demo-mysql-kubernetes', 'demo-mysql-status-page', 'demo-mysql-ai-monitoring', 'demo-mysql-sql', 'demo-mysql-api',
-    'demo-mysql-repository', 'demo-mysql-ai-advisor', 'demo-mysql-tasks', 'demo-mysql-users', 'demo-mysql-admin-panel', 'demo-mysql-retention', 'demo-mysql-terraform', 'demo-mysql-custom-dashboard',
-    'demo-mongo-overview', 'demo-mongo-performance', 'demo-mongo-storage', 'demo-mongo-replication', 'demo-mongo-sharding', 'demo-mongo-data-tools',
-]);
+// Note: a hardcoded NEW_SCREENS union used to be applied here, granting every
+// authenticated user implicit access to ~80 admin/demo screens regardless of
+// role. That broke requireScreen() RBAC. The list has been removed — a user's
+// allowed_screens column is now the sole source of truth. To grant a user
+// access to a new screen, update their row in pgmonitoringtool.users (see
+// userService.updateUser → allowedScreens).
 
 /**
  * Create a session row, build a JWT payload, sign the JWT, and run the
@@ -1410,7 +1446,7 @@ async function issueSession({ user, req, source, provider, deviceLabelFallback }
         location:    null,
     });
 
-    const allowedScreens = [...new Set([...(user.allowed_screens ?? []), ...NEW_SCREENS])];
+    const allowedScreens = [...new Set(user.allowed_screens ?? [])];
 
     const payload = {
         id:             user.id,
@@ -1537,96 +1573,14 @@ app.post('/api/auth/login', strictRateLimiter(15 * 60_000, 10), async (req, res)
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SSO AUTH — GET /api/auth/sso/:provider
+// SSO — removed. The legacy /api/auth/sso/:provider* routes and the
+// /api/auth/sso/exchange endpoint used to log anyone in as the local `admin`
+// user (the callback hardcoded { email: 'admin@company.com' } and did no IdP
+// roundtrip). Production SSO lives in routes/samlRoutes.js (mounted at
+// /api/saml/...). If you need an OIDC fallback, add a route here that fully
+// validates the provider's code/state and never returns a token tied to a
+// hardcoded local account.
 // ─────────────────────────────────────────────────────────────────────────────
-app.get('/api/auth/sso/:provider', (req, res) => {
-    const { provider } = req.params;
-    log('INFO', `Initiating Mock SSO for provider: ${provider}`);
-    const mockCode = 'mock-auth-code-123';
-    const callbackUrl = `${req.protocol}://${req.get('host')}/api/auth/sso/${provider}/callback?code=${mockCode}`;
-    res.redirect(callbackUrl);
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SSO CALLBACK — GET /api/auth/sso/:provider/callback
-// ─────────────────────────────────────────────────────────────────────────────
-app.get('/api/auth/sso/:provider/callback', async (req, res) => {
-    const { provider } = req.params;
-    const { code, error } = req.query;
-
-    if (error) {
-        log('WARN', `SSO Provider Error (${provider})`, { error });
-        return res.redirect(`${CONFIG.FRONTEND_URL}/auth/callback?error=${encodeURIComponent(error)}`);
-    }
-
-    try {
-        const ssoProfile = { email: 'admin@company.com', name: 'Enterprise Admin' };
-
-        const user = await getUserByUsername(pool, ssoProfile.email)
-            || await getUserByUsername(pool, 'admin');
-
-        if (!user || user.status !== 'active') {
-            return res.redirect(`${CONFIG.FRONTEND_URL}/auth/callback?error=Account not found or inactive`);
-        }
-
-        const { token, payload } = await issueSession({
-            user,
-            req,
-            source: 'sso',
-            provider,
-            deviceLabelFallback: 'SSO Login',
-        });
-
-        // SEC-08 (audit): do NOT put the JWT in the redirect URL — URLs leak to
-        // referrer headers, browser history, and server access logs. Instead:
-        //   1. Mint a single-use exchange code (random, short-lived).
-        //   2. Store { token, payload } in an in-memory map keyed by the code.
-        //   3. Redirect the browser with ONLY the code.
-        //   4. Frontend POSTs the code to /api/auth/sso/exchange and receives
-        //      the JWT in a JSON response body (not in a URL).
-        const exchangeCode = crypto.randomBytes(32).toString('hex');
-        ssoExchangeCodes.set(exchangeCode, {
-            token,
-            user: payload,
-            expiresAt: Date.now() + 60_000, // 60-second TTL
-        });
-        const redirectUri = new URL(`${CONFIG.FRONTEND_URL}/auth/callback`);
-        redirectUri.searchParams.append('code', exchangeCode);
-        res.redirect(redirectUri.toString());
-
-    } catch (err) {
-        log('ERROR', 'SSO Callback processing failed', { error: err.message });
-        res.redirect(`${CONFIG.FRONTEND_URL}/auth/callback?error=Internal server error during SSO`);
-    }
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SSO EXCHANGE — POST /api/auth/sso/exchange
-// SEC-08 (audit): single-use code -> JWT exchange. The token travels in the
-// JSON response body, never in a URL.
-// ─────────────────────────────────────────────────────────────────────────────
-const ssoExchangeCodes = new Map();
-// Sweep expired codes every minute to prevent unbounded growth.
-setInterval(() => {
-    const now = Date.now();
-    for (const [k, v] of ssoExchangeCodes) {
-        if (v.expiresAt <= now) ssoExchangeCodes.delete(k);
-    }
-}, 60_000).unref?.();
-
-app.post('/api/auth/sso/exchange', (req, res) => {
-    const { code } = req.body || {};
-    if (!code || typeof code !== 'string') {
-        return res.status(400).json({ error: 'exchange code required' });
-    }
-    const entry = ssoExchangeCodes.get(code);
-    // Delete first to enforce single-use semantics even under concurrent calls.
-    ssoExchangeCodes.delete(code);
-    if (!entry || entry.expiresAt <= Date.now()) {
-        return res.status(401).json({ error: 'Invalid or expired exchange code' });
-    }
-    res.json({ token: entry.token, user: entry.user });
-});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PASSWORD MANAGEMENT — Change Password
@@ -1657,7 +1611,9 @@ app.post('/api/auth/change-password', authenticate, async (req, res) => {
             return res.status(401).json({ error: 'Current password is incorrect' });
         }
 
-        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        // bcrypt cost 12 matches services/userService.js — keep all password
+        // hashing across the codebase at the same cost factor.
+        const newPasswordHash = await bcrypt.hash(newPassword, 12);
         const result = await pool.query(
             'UPDATE pgmonitoringtool.users SET password_hash = $1, must_change_password = false, password_changed_at = NOW() WHERE id = $2 RETURNING id, username, email',
             [newPasswordHash, userId]
@@ -1688,12 +1644,37 @@ app.post('/api/auth/change-password', authenticate, async (req, res) => {
 // PASSWORD MANAGEMENT — Forgot Password (Request Reset) — DB-backed tokens
 // ─────────────────────────────────────────────────────────────────────────────
 
-app.post('/api/auth/forgot-password', async (req, res) => {
-    const { email, username } = req.body;
+// Rate-limit: 5 attempts per 15 minutes per IP+path. Even if an attacker
+// rotates user identifiers, they can't grind through a list quickly.
+app.post('/api/auth/forgot-password', strictRateLimiter(15 * 60_000, 5), async (req, res) => {
+    const { email, username } = req.body || {};
 
     if (!email && !username) {
         return res.status(400).json({ error: 'Email or username is required' });
     }
+
+    // SEC: equalize response timing between "user exists" (DB insert) and
+    // "user does not exist" (no insert) so an attacker can't enumerate
+    // accounts by measuring response latency. We always do the DB lookup,
+    // and when the user is missing we still wait at least as long as the
+    // typical insert path would take before returning.
+    const MIN_RESPONSE_MS = 250;
+    const startedAt = Date.now();
+
+    const finishWithGenericSuccess = async (devToken) => {
+        const elapsed = Date.now() - startedAt;
+        if (elapsed < MIN_RESPONSE_MS) {
+            await new Promise(r => setTimeout(r, MIN_RESPONSE_MS - elapsed));
+        }
+        res.json({
+            success: true,
+            message: 'If the account exists, a reset link has been sent.',
+            // Debug only — never exposed in production. The dev convenience
+            // also leaks the existence of the account in non-prod environments;
+            // do not log it anywhere else.
+            ...(devToken && process.env.NODE_ENV !== 'production' && { resetToken: devToken }),
+        });
+    };
 
     try {
         // Find user by email or username
@@ -1708,10 +1689,9 @@ app.post('/api/auth/forgot-password', async (req, res) => {
             user = await getUserByUsername(pool, username);
         }
 
-        // Always return success for security (don't reveal if account exists)
         if (!user) {
             log('INFO', 'Password reset requested for non-existent account', { email, username });
-            return res.json({ success: true, message: 'If the account exists, a reset link has been sent.' });
+            return finishWithGenericSuccess(null);
         }
 
         // Generate reset token and persist to DB
@@ -1726,12 +1706,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         log('INFO', 'Password reset token generated (DB)', { userId: user.id, username: user.username });
 
         // In production, send email here with reset link
-        res.json({
-            success: true,
-            message: 'If the account exists, a reset link has been sent.',
-            // Debug only — remove in production
-            ...(process.env.NODE_ENV !== 'production' && { resetToken: token })
-        });
+        return finishWithGenericSuccess(token);
 
     } catch (err) {
         log('ERROR', 'Forgot password error', { error: err.message });
@@ -1781,8 +1756,8 @@ app.post('/api/auth/reset-password', async (req, res) => {
             return res.status(400).json({ error: 'Reset token has expired' });
         }
 
-        // Update password
-        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        // Update password — bcrypt cost 12 (matches services/userService.js).
+        const newPasswordHash = await bcrypt.hash(newPassword, 12);
         const result = await pool.query(
             'UPDATE pgmonitoringtool.users SET password_hash = $1, must_change_password = false, password_changed_at = NOW() WHERE id = $2 RETURNING id, username',
             [newPasswordHash, tokenData.user_id]
@@ -2051,7 +2026,10 @@ app.get('/api/overview/long-transactions', authenticate, cached('ov:longtxn', 15
             LIMIT 20
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2076,7 +2054,10 @@ app.get('/api/overview/vacuum', authenticate, cached('ov:vacuum', 30000), async 
         const urgent = rows.filter(t => Number(t.bloat_pct) > 20).length;
         const warn = rows.filter(t => Number(t.bloat_pct) > 10 && Number(t.bloat_pct) <= 20).length;
         res.json({ urgentCount: urgent, warnCount: warn, tables: rows });
-    } catch (e) { res.json({ urgentCount: 0, warnCount: 0, tables: [] }); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({ urgentCount: 0, warnCount: 0, tables: [] });
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2095,7 +2076,10 @@ app.get('/api/overview/backup', authenticate, cached('ov:backup', 60000), async 
         const archiver = results[0].status === 'fulfilled' ? results[0].value.rows[0] : {};
         const role = results[1].status === 'fulfilled' ? results[1].value.rows[0] : {};
         res.json({ ...archiver, ...role });
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2113,7 +2097,10 @@ app.get('/api/overview/replication', authenticate, cached('ov:repl', 15000), asy
             ORDER BY client_addr
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2148,7 +2135,10 @@ app.get('/api/overview/top-tables', authenticate, cached('ov:toptbl', 60000), as
             LIMIT 10
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2179,7 +2169,10 @@ app.get('/api/overview/alerts', authenticate, cached('ov:alerts', 15000), async 
         if (longTxnCount > 0) alerts.push({ id: 'longtxn', severity: 'warning', title: `${longTxnCount} long-running transaction(s)`, message: 'Transactions open > 5 minutes', ts: new Date().toISOString() });
         if (deadlocks > 0) alerts.push({ id: 'deadlock', severity: 'info', title: `${deadlocks} deadlock(s) since stats reset`, message: 'Check pg_stat_database for details', ts: new Date().toISOString() });
         res.json(alerts);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/performance/stats', authenticate, cached('perf:stats', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
@@ -2193,14 +2186,20 @@ app.get('/api/performance/stats', authenticate, cached('perf:stats', CONFIG.CACH
         }
         const q = await (await reqPool(req)).query(`SELECT query, calls, mean_exec_time AS mean_time_ms, round((shared_blks_hit::numeric/NULLIF(shared_blks_hit+shared_blks_read,0))*100,1) AS cache_hit_pct FROM "${schema}".pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10`);
         res.json({ available: true, slowQueries: q.rows });
-    } catch (e) { res.json({ available: false, error: e.message, slowQueries: [] }); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({ available: false, error: e.message, slowQueries: [] });
+    }
 });
 
 app.get('/api/performance/table-io', authenticate, cached('perf:io', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
     try {
         const r = await (await reqPool(req)).query("SELECT relname AS table_name, seq_scan, idx_scan FROM pg_stat_user_tables ORDER BY seq_scan DESC LIMIT 20");
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2365,7 +2364,10 @@ app.get('/api/reliability/active-connections', authenticate, async (req, res) =>
             FROM pg_stat_activity WHERE pid<>pg_backend_pid() ORDER BY duration_sec DESC
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/reliability/locks', authenticate, async (req, res) => {
@@ -2378,14 +2380,20 @@ app.get('/api/reliability/locks', authenticate, async (req, res) => {
             WHERE  NOT bl.granted
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/reliability/replication', authenticate, async (req, res) => {
     try {
         const r = await (await reqPool(req)).query("SELECT application_name, state, pg_wal_lsn_diff(sent_lsn, replay_lsn) AS replication_lag_bytes FROM pg_stat_replication");
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.post('/api/optimizer/analyze', authenticate, async (req, res) => {
@@ -2420,7 +2428,10 @@ app.get('/api/alerts', authenticate, async (req, res) => {
         const limit               = parseInt(req.query.limit, 10) || 50;
         const includeAcknowledged = req.query.includeAcknowledged === 'true';
         res.json(await alerts.getRecent(limit, includeAcknowledged));
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 app.get('/api/alerts/statistics', authenticate, async (req, res) => {
@@ -2683,14 +2694,20 @@ app.get('/api/admin/settings', authenticate, cached('admin:settings', CONFIG.CAC
     try {
         const r = await (await reqPool(req)).query("SELECT name, setting, unit, context FROM pg_settings WHERE name IN ('max_connections','shared_buffers','work_mem','maintenance_work_mem','effective_cache_size','wal_level','checkpoint_completion_target') ORDER BY name");
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/admin/extensions', authenticate, cached('admin:ext', CONFIG.CACHE_TTL.EXTENSIONS), async (req, res) => {
     try {
         const r = await (await reqPool(req)).query("SELECT extname AS name, extversion AS version FROM pg_extension");
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/admin/cache/stats', authenticate, (req, res) => res.json(cache.stats()));
@@ -2843,19 +2860,25 @@ app.get('/api/connections', authenticate, ensureConnections, async (req, res) =>
     try {
         const conns = await dbLoadConnections(req.user.id, req.user.role);
         res.json(conns.map(sanitizeConn));
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/connections/:id', authenticate, ensureConnections, async (req, res, next) => {
     // Skip non-numeric IDs so named routes (/active, /health, /count) can match
     if (!/^\d+$/.test(req.params.id)) return next();
     try {
-        const id = parseInt(req.params.id);
+        const id = parseInt(req.params.id, 10);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
         const c = conns.find(c => c.id === id);
         if (!c) return res.status(404).json({ error: 'Connection not found' });
         res.json(sanitizeConn(c));
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // Engines whose credentials don't match the traditional host/port/user/password/db
@@ -3018,7 +3041,7 @@ app.post('/api/connections', authenticate, ensureConnections, async (req, res) =
 
 app.put('/api/connections/:id', authenticate, ensureConnections, async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = parseInt(req.params.id, 10);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
         const existing = conns.find(c => c.id === id);
         if (!existing) return res.status(404).json({ error: 'Connection not found' });
@@ -3066,7 +3089,7 @@ app.put('/api/connections/:id', authenticate, ensureConnections, async (req, res
 
 app.delete('/api/connections/:id', authenticate, ensureConnections, async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = parseInt(req.params.id, 10);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
         const c = conns.find(c => c.id === id);
         if (!c) return res.status(404).json({ error: 'Connection not found' });
@@ -3246,7 +3269,7 @@ app.post('/api/connections/test', authenticate, async (req, res) => {
 
 app.post('/api/connections/:id/test', authenticate, ensureConnections, async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = parseInt(req.params.id, 10);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
         const c = conns.find(c => c.id === id);
         if (!c) return res.status(404).json({ error: 'Connection not found' });
@@ -3347,12 +3370,15 @@ app.post('/api/connections/:id/test', authenticate, ensureConnections, async (re
             await syncConnectionsCache();
             res.json({ success: false, error: e.message });
         }
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = parseInt(req.params.id, 10);
         const conns = await dbLoadConnections(req.user.id, req.user.role);
         const c = conns.find(c => c.id === id);
         if (!c) return res.status(404).json({ error: 'Connection not found' });
@@ -3384,7 +3410,10 @@ app.post('/api/connections/:id/switch', authenticate, async (req, res) => {
         await syncConnectionsCache();
         log('INFO', `Active connection switched to ${id} (${c.name}) for user ${req.user.id}`);
         res.json({ success: true, message: `Switched to "${c.name}"`, connectionId: id });
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 app.get('/api/connections/active', authenticate, async (req, res) => {
@@ -3407,7 +3436,10 @@ app.get('/api/connections/active', authenticate, async (req, res) => {
         // If we resolved a default but the user hasn't explicitly set one, record it
         if (active && !userActiveId) setUserActiveConnectionId(req.user.id, active.id);
         res.json({ connectionId: active?.id ?? null, connection: active ? sanitizeConn(active) : null });
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3656,7 +3688,10 @@ app.get('/api/feedback/mine', authenticate, async (req, res) => {
             [req.user.username, limit, offset]
         );
         res.json({ rows: result.rows, limit, offset });
-    } catch (e) { res.json({ rows: [], limit, offset: 0 }); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({ rows: [], limit, offset: 0 });
+    }
 });
 
 app.get('/api/admin/feedback', authenticate, requireScreen('admin'), async (req, res) => {
@@ -3675,7 +3710,10 @@ app.get('/api/admin/feedback', authenticate, requireScreen('admin'), async (req,
             pool.query(`SELECT COUNT(*) AS total FROM pgmonitoringtool.user_feedback ${where}`, params.slice(0,-2)),
         ]);
         res.json({ rows: rows.rows, total: parseInt(countRow.rows[0].total), limit, offset });
-    } catch (e) { res.json({ rows: [], total: 0, limit, offset }); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({ rows: [], total: 0, limit, offset });
+    }
 });
 
 app.patch('/api/admin/feedback/:id/status', authenticate, requireScreen('admin'), async (req, res) => {
@@ -3684,7 +3722,7 @@ app.patch('/api/admin/feedback/:id/status', authenticate, requireScreen('admin')
         if (!ALLOWED.includes(req.body.status)) return res.status(400).json({ error: `Status must be one of: ${ALLOWED.join(', ')}` });
         const result = await pool.query(
             `UPDATE pgmonitoringtool.user_feedback SET status=$1 WHERE id=$2 RETURNING id,status`,
-            [req.body.status, parseInt(req.params.id)]
+            [req.body.status, parseInt(req.params.id, 10)]
         );
         if (!result.rowCount) return res.status(404).json({ error: 'Feedback not found' });
         res.json({ success: true, ...result.rows[0] });
@@ -3710,7 +3748,10 @@ app.get('/api/admin/feedback/summary', authenticate, requireScreen('admin'), asy
             FROM pgmonitoringtool.user_feedback
         `);
         res.json(result.rows[0]);
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3772,7 +3813,10 @@ app.get('/api/replication/status', authenticate, cached('repl:status', CONFIG.CA
             walSender:   walSender.rows[0],
             settings:    walSettings.rows,
         });
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3821,7 +3865,10 @@ app.get('/api/bloat/tables', authenticate, cached('bloat:tables', CONFIG.CACHE_T
                 LIMIT 100
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
@@ -3849,7 +3896,10 @@ app.get('/api/bloat/indexes', authenticate, cached('bloat:indexes', CONFIG.CACHE
                 LIMIT 80
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE_TTL.BLOAT), async (req, res) => {
@@ -3882,7 +3932,10 @@ app.get('/api/bloat/summary', authenticate, cached('bloat:summary', CONFIG.CACHE
             FROM pg_stat_user_tables
         `);
         res.json(r.rows[0] || {});
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3980,7 +4033,7 @@ app.delete('/api/regression/baselines/:fp', authenticate, (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 app.get('/api/logs/slow-queries', authenticate, cached('logs:slow', CONFIG.CACHE_TTL.PERFORMANCE), async (req, res) => {
     try {
-        const threshold = parseInt(req.query.min_ms) || 1000;
+        const threshold = parseInt(req.query.min_ms, 10) || 1000;
         const r = await (await reqPool(req)).query(`
             SELECT query,
                    calls,
@@ -4016,7 +4069,10 @@ app.get('/api/logs/error-events', authenticate, cached('logs:errors', 15_000), a
                 LIMIT 40
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -4424,7 +4480,10 @@ app.get('/api/checkpoint/stats', authenticate, cached('chk:stats', CONFIG.CACHE_
             `)
         ]);
         res.json({ bgwriter: bgwriter.rows[0], wal: walLsn.rows[0], settings: walSettings.rows });
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -4458,7 +4517,10 @@ app.get('/api/backup/status', authenticate, cached('bk:status', 30_000), async (
             wal:       walInfo.rows[0],
             settings:  recoveryInfo.rows
         });
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -4493,7 +4555,10 @@ app.get('/api/tables/stats', authenticate, cached('tables:stats', 30_000), async
             LIMIT 100
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), async (req, res) => {
@@ -4514,7 +4579,10 @@ app.get('/api/tables/columns', authenticate, cached('tables:columns', 60_000), a
             ORDER BY schemaname, tablename, attname
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/tables/dependencies', authenticate, cached('tables:deps', 60_000), async (req, res) => {
@@ -4576,7 +4644,10 @@ app.get('/api/tables/toast', authenticate, cached('tables:toast', 60_000), async
             LIMIT 50
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/tables/temp', authenticate, cached('tables:temp', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
@@ -4597,7 +4668,10 @@ app.get('/api/tables/temp', authenticate, cached('tables:temp', CONFIG.CACHE_TTL
             WHERE c.relpersistence = 't'
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CACHE_TTL.INDEXES), async (req, res) => {
@@ -4635,7 +4709,10 @@ app.get('/api/tables/indexes', authenticate, cached('tables:indexes', CONFIG.CAC
             ORDER BY ui.schemaname, ui.relname, ui.idx_scan DESC
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_TTL.TABLE_STATS), async (req, res) => {
@@ -4670,7 +4747,10 @@ app.get('/api/tables/sizes', authenticate, cached('tables:sizes', CONFIG.CACHE_T
             ORDER BY pg_total_relation_size(c.oid) DESC
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 
@@ -4744,7 +4824,10 @@ app.get('/api/tables/locks', authenticate, cached('tables:locks', CONFIG.CACHE_T
             LIMIT 100
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // ── /api/tables/autovacuum ── per-table daemon run history & timestamps ────────
@@ -4778,7 +4861,10 @@ app.get('/api/tables/autovacuum', authenticate, cached('tables:autovacuum', CONF
                 n_dead_tup DESC
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // ── /api/tables/connections ── pg_stat_activity grouped by state/app/user ─────
@@ -4804,7 +4890,10 @@ app.get('/api/tables/connections', authenticate, cached('tables:connections', CO
             LIMIT 50
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 // ─────────────────────────────────────────────────────────────────────────────
 // VACUUM & MAINTENANCE
@@ -4847,7 +4936,10 @@ app.get('/api/maintenance/vacuum-stats', authenticate, cached('maint:vacuum', CO
             `)
         ]);
         res.json({ tables: tables.rows, workers: workers.rows, settings: settings.rows });
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 app.post('/api/maintenance/vacuum', authenticate, requireScreen('admin'), async (req, res) => {
@@ -4904,7 +4996,10 @@ app.get('/api/resources/growth', authenticate, cached('res:growth', 60_000), asy
             idx_scan: parseInt(row.idx_scan || 0),
             growth_rate: parseFloat(row.growth_rate || 0).toFixed(1),
         })));
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 app.get('/api/resources/disk-io', authenticate, cached('res:diskio', 15_000), async (req, res) => {
@@ -4929,7 +5024,10 @@ app.get('/api/resources/disk-io', authenticate, cached('res:diskio', 15_000), as
             LIMIT 30
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/resources/growth-trend', authenticate, cached('res:trend', 120_000), async (req, res) => {
@@ -4967,7 +5065,10 @@ app.get('/api/resources/growth-trend', authenticate, cached('res:trend', 120_000
             last_autoanalyze: t.last_autoanalyze,
         }));
         res.json(trend);
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 app.get('/api/resources/vacuum-status', authenticate, cached('res:vacuum', 30_000), async (req, res) => {
@@ -4993,7 +5094,10 @@ app.get('/api/resources/vacuum-status', authenticate, cached('res:vacuum', 30_00
             LIMIT 50
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/resources/maintenance-logs', authenticate, cached('res:maint', 30_000), async (req, res) => {
@@ -5030,7 +5134,10 @@ app.get('/api/resources/maintenance-logs', authenticate, cached('res:maint', 30_
             run_count: parseInt(row.run_count || 0),
             status: 'completed',
         })));
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -5070,7 +5177,10 @@ app.get('/api/schema/migrations', authenticate, cached('schema:migrations', CONF
         }
         const { rows } = await pool.query(`SELECT * FROM "public"."${tableName}" ORDER BY 1 DESC LIMIT 50`);
         res.json({ migrations: rows, pending: [], tableName });
-    } catch (e) { res.json({ migrations: [], pending: [], message: e.message }); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({ migrations: [], pending: [], message: e.message });
+    }
 });
 
 // Schema browser endpoint
@@ -5095,7 +5205,10 @@ app.get('/api/schema/browser', authenticate, cached('schema:browser', CONFIG.CAC
             schemas[key][r.table_name].push({ name: r.column_name, type: r.data_type, nullable: r.is_nullable === 'YES', default: r.column_default });
         });
         res.json(schemas);
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // Threats endpoint
@@ -5117,7 +5230,10 @@ app.get('/api/security/threats', authenticate, cached('sec:threats', CONFIG.CACH
             ORDER BY query_start DESC LIMIT 20
         `);
         res.json(rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // Compliance checks endpoint
@@ -5141,7 +5257,10 @@ app.get('/api/security/compliance', authenticate, cached('sec:compliance', CONFI
         const rls = await pool.query("SELECT count(*) as cnt FROM pg_class WHERE relrowsecurity = true");
         checks.push({ id: 'rls', cat: 'Access Control', label: 'Row Level Security', status: parseInt(rls.rows[0]?.cnt) > 0 ? 'pass' : 'warn', standard: 'GDPR', score: parseInt(rls.rows[0]?.cnt) > 0 ? 100 : 0 });
         res.json(checks);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // Audit events endpoint
@@ -5158,7 +5277,10 @@ app.get('/api/security/audit-events', authenticate, cached('sec:audit', CONFIG.C
             ORDER BY query_start DESC LIMIT 30
         `);
         res.json(rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.get('/api/security/superuser-activity', authenticate, requireScreen('security'), cached('sec:superuser', 15_000), async (req, res) => {
@@ -5207,7 +5329,10 @@ app.get('/api/security/superuser-activity', authenticate, requireScreen('securit
             })),
             superuser_roles: roles.rows,
         });
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -5232,7 +5357,10 @@ app.get('/api/admin/hba', authenticate, requireRole('admin', 'super_admin'), asy
             ORDER BY line_num
         `).catch(() => ({ rows: [] }));
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 app.post('/api/admin/hba', authenticate, requireRole('super_admin'), async (req, res) => {
@@ -5281,7 +5409,10 @@ app.get('/api/admin/connections', authenticate, requireRole('admin', 'super_admi
             duration: row.duration_sec != null ? `${row.duration_sec}s` : '—',
             durationMs: Math.round((row.duration_sec || 0) * 1000),
         })));
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 app.post('/api/admin/connections/kill', authenticate, requireRole('admin', 'super_admin'), async (req, res) => {
@@ -5318,7 +5449,10 @@ app.get('/api/alerts/recent', authenticate, async (req, res) => {
         const limit = Math.min(parseInt(req.query.limit || '10', 10), 100);
         const recent = await alerts.getRecent(limit, false);
         res.json({ alerts: recent, count: recent.length, timestamp: new Date().toISOString() });
-    } catch (e) { res.json({ alerts: [], count: 0, timestamp: new Date().toISOString() }); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({ alerts: [], count: 0, timestamp: new Date().toISOString() });
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -5371,7 +5505,10 @@ app.get('/api/indexes/health', authenticate, cached('idx:health', CONFIG.CACHE_T
             criticalCount: u.unused_count,
             seqScanRate:   parseFloat(s.seq_scan_rate || 0),
         });
-    } catch (e) { res.json({ hitRatio: 0, totalIndexes: 0, totalSize: '—', totalBytes: 0, criticalCount: 0, seqScanRate: 0 }); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({ hitRatio: 0, totalIndexes: 0, totalSize: '—', totalBytes: 0, criticalCount: 0, seqScanRate: 0 });
+    }
 });
 
 // Missing indexes: tables with high seq scans and no covering index
@@ -5400,7 +5537,10 @@ app.get('/api/indexes/missing', authenticate, cached('idx:missing', CONFIG.CACHE
             LIMIT 20
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // Unused indexes: never scanned since stats reset, non-primary
@@ -5427,7 +5567,10 @@ app.get('/api/indexes/unused', authenticate, cached('idx:unused', CONFIG.CACHE_T
             LIMIT 30
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // Duplicate / redundant indexes: indexes whose column sets are subsets of other indexes on the same table
@@ -5458,7 +5601,10 @@ app.get('/api/indexes/duplicates', authenticate, cached('idx:dupes', CONFIG.CACH
             LIMIT 20
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // Bloated indexes: high inefficiency + large size
@@ -5501,7 +5647,10 @@ app.get('/api/indexes/bloat', authenticate, cached('idx:bloat', CONFIG.CACHE_TTL
             LIMIT 30
         `);
         res.json(r.rows);
-    } catch (e) { res.json([]); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json([]);
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -5546,7 +5695,10 @@ app.post('/api/ai/chat', authenticate, async (req, res) => {
         // Normalise to the same shape the frontend already expects: { content: [{ text }] }
         const text = data.choices?.[0]?.message?.content || '';
         res.json({ content: [{ text }] });
-    } catch (e) { res.json({}); }
+    } catch (e) {
+        log('WARN', `Handler error ${req.method} ${req.path}`, { error: e.message });
+        res.json({});
+    }
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════

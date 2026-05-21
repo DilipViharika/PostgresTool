@@ -33,6 +33,16 @@ export default function explainRoutes(
 ) {
     const router = Router();
 
+    // Translate err.status (set by assertExplainSafe & friends) into an HTTP
+    // status so a 400 doesn't surface as a generic 500 via Express's default
+    // error handler.
+    function handleExplainError(err, res, next) {
+        if (err && typeof err.status === 'number') {
+            return res.status(err.status).json({ error: err.message });
+        }
+        return next(err);
+    }
+
     // ── Postgres EXPLAIN capture ─────────────────────────────────────────────
     router.post(
         '/explain/postgres',
@@ -68,7 +78,7 @@ export default function explainRoutes(
                 } finally {
                     client.release();
                 }
-            } catch (err) { next(err); }
+            } catch (err) { handleExplainError(err, res, next); }
         }
     );
 
@@ -102,7 +112,7 @@ export default function explainRoutes(
                 } finally {
                     conn.release();
                 }
-            } catch (err) { next(err); }
+            } catch (err) { handleExplainError(err, res, next); }
         }
     );
 

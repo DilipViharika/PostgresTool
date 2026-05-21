@@ -22,12 +22,58 @@ import { query as controlQuery } from '../db.js';
 // ─────────────────────────────────────────────────────────────────────────────
 // Safety: these prefixes must be rejected before we ANALYZE.
 // EXPLAIN ANALYZE *executes* the query; we do not want to run mutations.
+// Even a plain EXPLAIN (no ANALYZE) is not entirely safe — a malicious query
+// can still trigger side effects via volatile functions, so we apply the
+// same allowlist to both Postgres and MySQL EXPLAIN paths.
 // ─────────────────────────────────────────────────────────────────────────────
 const MUTATION_RE =
-    /\b(INSERT|UPDATE|DELETE|MERGE|TRUNCATE|DROP|CREATE|ALTER|GRANT|REVOKE|CALL|DO)\b/i;
+    /\b(INSERT|UPDATE|DELETE|MERGE|TRUNCATE|DROP|CREATE|ALTER|GRANT|REVOKE|CALL|DO|COPY|EXECUTE|REPLACE|RENAME|LOAD|LOCK)\b/i;
+
+const MAX_EXPLAIN_SQL = 16_000;
 
 export function isSafeForAnalyze(sql) {
     return !MUTATION_RE.test(sql);
+}
+
+/**
+ * Throw if the given SQL is unsuitable for EXPLAIN: empty, too long,
+ * contains mutation keywords, or contains a semicolon (we don't allow
+ * multi-statement EXPLAIN — the second statement would execute unchecked).
+ * Caller is expected to be a request handler that translates the thrown
+ * Error's `status` into an HTTP response.
+ */
+function assertExplainSafe(sql) {
+    if (!sql || typeof sql !== 'string') {
+        const err = new Error('sql is required');
+        err.status = 400;
+        throw err;
+    }
+    if (sql.length > MAX_EXPLAIN_SQL) {
+        const err = new Error(`sql too long (max ${MAX_EXPLAIN_SQL} characters)`);
+        err.status = 400;
+        throw err;
+    }
+    // Strip comments first so they can't hide mutations or extra statements.
+    const stripped = sql
+        .replace(/--[^\n]*/g, ' ')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/#[^\n]*/g, ' ')
+        .trim();
+    if (!stripped) {
+        const err = new Error('sql is empty after stripping comments');
+        err.status = 400;
+        throw err;
+    }
+    if (/;/.test(stripped.replace(/;$/, ''))) {
+        const err = new Error('multi-statement EXPLAIN is not allowed');
+        err.status = 400;
+        throw err;
+    }
+    if (!isSafeForAnalyze(stripped)) {
+        const err = new Error('Refusing to EXPLAIN a mutating statement');
+        err.status = 400;
+        throw err;
+    }
 }
 
 /**
@@ -50,16 +96,29 @@ export function fingerprintSql(sql) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function capturePostgresPlan({ client, sql, analyze = false }) {
-    if (analyze && !isSafeForAnalyze(sql)) {
-        const err = new Error('Refusing to ANALYZE a mutating statement');
-        err.status = 400;
-        throw err;
-    }
+    // Reject mutating/multi-statement SQL up front. EXPLAIN ANALYZE actually
+    // executes the query, and even plain EXPLAIN can have side effects via
+    // volatile functions, so we apply the allowlist to both.
+    assertExplainSafe(sql);
+
     const prefix = analyze
         ? 'EXPLAIN (ANALYZE, BUFFERS, VERBOSE, SETTINGS, FORMAT JSON) '
         : 'EXPLAIN (VERBOSE, SETTINGS, FORMAT JSON) ';
     const started = Date.now();
-    const result = await client.query(prefix + sql);
+    // Wrap in a READ ONLY transaction with a hard statement timeout so a
+    // pathological query (e.g. EXPLAIN ANALYZE of a slow SELECT) cannot pin
+    // the connection indefinitely. Postgres enforces READ ONLY even against
+    // statements that slipped past the regex allowlist above.
+    await client.query('BEGIN TRANSACTION READ ONLY');
+    let result;
+    try {
+        await client.query('SET LOCAL statement_timeout = 15000');
+        result = await client.query(prefix + sql);
+        await client.query('COMMIT');
+    } catch (err) {
+        await client.query('ROLLBACK').catch(() => undefined);
+        throw err;
+    }
     const elapsed = Date.now() - started;
     const row = result.rows[0] || {};
     const plan = row['QUERY PLAN'] || row.query_plan || result.rows;
@@ -67,7 +126,15 @@ export async function capturePostgresPlan({ client, sql, analyze = false }) {
 }
 
 export async function captureMysqlPlan({ connection, sql }) {
-    const [rows] = await connection.query(`EXPLAIN FORMAT=JSON ${sql}`);
+    // Same allowlist as Postgres — MySQL EXPLAIN has historically run
+    // subqueries in materialized form, so refusing mutations matters here too.
+    assertExplainSafe(sql);
+
+    // Per-statement timeout via MAX_EXECUTION_TIME hint (MySQL 5.7+, MariaDB
+    // ignores the hint silently, which is fine — the worst case is the same
+    // as before the fix).
+    const wrapped = `EXPLAIN FORMAT=JSON /*+ MAX_EXECUTION_TIME(15000) */ ${sql}`;
+    const [rows] = await connection.query(wrapped);
     const raw = rows?.[0]?.EXPLAIN || rows?.[0]?.explain || rows?.[0];
     const plan = typeof raw === 'string' ? JSON.parse(raw) : raw;
     return { plan };
